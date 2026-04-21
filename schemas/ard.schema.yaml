@@ -1,0 +1,22 @@
+# ARD — Architecture Risks and Decisions
+# Replaces/extends the prior "architecturalDecisions" concept.
+# ARDs are first-class catalog objects representing either:
+#   risk     — a known architectural risk (e.g., SPOF, security gap, technical debt)
+#   decision — an architectural decision that was made, with rationale
+# AuditBoard is the system of record for controls linkage (future integration).
+schemaVersion: "1.0"
+type: ard
+requiredFields:
+  - id
+  - name
+  - category
+  - status
+  - description
+  - affectedComponent
+  - impact
+optionalFields:
+  - mitigationPath
+  - decisionRationale
+  - relatedARDs
+  - controlReferences
+  - linkedDA

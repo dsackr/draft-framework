@@ -1,0 +1,13 @@
+schemaVersion: "1.0"
+type: product_service
+requiredFields:
+  - id
+  - name
+  - product
+  - runsOn
+  - catalogStatus
+  - lifecycleStatus
+optionalFields:
+  - description
+  - variants
+  - notes

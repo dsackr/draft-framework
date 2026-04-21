@@ -1,0 +1,71 @@
+schemaVersion: "1.0"
+id: aag.da
+type: aag
+name: Deployment Architecture Analysis Guideline
+description: Interview guide for engineering leaders declaring how a product is deployed.
+version: 1.0.0
+catalogStatus: approved
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@frontlineed.com
+tags:
+  - da
+  - analysis
+  - governance
+appliesTo:
+  type: deployment_architecture
+requirements:
+  - id: ra-conformance
+    description: The DA must reference a valid RA ID or explicitly document that no applicable RA exists yet.
+    rationale: Connecting deployments to patterns enables governance discoverability and impact analysis.
+    controlReferences:
+      - CC.Frontline.10.1.1
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: appliesPattern
+        example: ra.dotnet.three-tier.ha
+    minimumSatisfactions: 1
+  - id: variant-selection
+    description: Each deployed RBB must specify which variant is selected.
+    rationale: Variant selection is the primary architectural decision in a DA — it drives availability cost and capacity.
+    controlReferences:
+      - CC.Frontline.10.1.1
+    canBeSatisfiedBy:
+      - mechanism: internalComponent
+        criteria:
+          variantDeclared: true
+        example: "rbb.service.web.iis-standard with variant: ha"
+    minimumSatisfactions: 1
+  - id: availability-requirement
+    description: The product availability tier must be documented.
+    rationale: Availability requirements justify variant selections and inform operational support models.
+    controlReferences:
+      - CC.Frontline.10.1.1
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: availabilityRequirement
+        example: 99.9%, business-hours, 24x7
+    minimumSatisfactions: 1
+  - id: additional-interactions
+    description: Any external systems this product interacts with beyond what its component RBBs declare must be documented — or explicitly stated as none.
+    rationale: Product-specific integrations are invisible to the architecture without explicit declaration.
+    canBeSatisfiedBy:
+      - mechanism: externalInteraction
+        criteria:
+          capability: any
+        example: Product-specific SaaS integration, partner API
+      - mechanism: architecturalDecision
+        key: noAdditionalInteractions
+        example: No additional interactions beyond component RBBs
+    minimumSatisfactions: 1
+  - id: data-classification
+    description: The type of data this product stores or processes must be documented.
+    rationale: Data classification drives security posture requirements and compliance obligations.
+    controlReferences:
+      - CC.Frontline.0.2.1
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: dataClassification
+        example: PII, student records, internal-only, public
+    minimumSatisfactions: 1

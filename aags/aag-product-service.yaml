@@ -1,0 +1,66 @@
+schemaVersion: "1.0"
+id: aag.product-service
+type: aag
+name: Product Service Architecture Analysis Guideline
+description: >
+  Interview guide for documenting a Frontline Product Service. A PS contains
+  1st party Frontline-authored code deployed on a standard RBB pattern.
+  Version 1 of this framework does not enumerate individual code packages —
+  it acknowledges that 1st party code is present and documents the deployment
+  context, RBB dependency, variant requirements, and external integrations.
+version: 1.0.0
+catalogStatus: approved
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@frontlineed.com
+tags:
+  - product-service
+  - analysis
+  - governance
+appliesTo:
+  type: product_service
+requirements:
+  - id: rbb-selection
+    description: What RBB pattern does this Product Service run on?
+    canBeSatisfiedBy:
+      - mechanism: internalComponent
+        criteria: runsOn field references a valid RBB id
+        example: "runsOn: rbb.service.web.iis-standard"
+  - id: variant-coverage
+    description: >
+      What deployment variants are defined for this Product Service?
+      At least one named variant must exist.
+    canBeSatisfiedBy:
+      - mechanism: internalComponent
+        criteria: variants map contains at least one named variant
+        example: "variants: { ha: { ... }, sa: { ... } }"
+  - id: product-ownership
+    description: What product does this PS belong to?
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        criteria: product field is populated
+        example: "product: student-health"
+  - id: firstparty-code
+    description: >
+      Does this service contain Frontline-authored code?
+      (This is the defining characteristic of a Product Service vs an RBB.)
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        criteria: >
+          The object type is product_service — this requirement is satisfied
+          by declaration. No further enumeration of code packages is required
+          in version 1 of this framework.
+  - id: availability-requirement
+    description: What availability tier does this PS require?
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        criteria: Declared in the DA that deploys this PS via availabilityRequirement
+        example: "availabilityRequirement: 24x7"
+  - id: external-integrations
+    description: >
+      What external systems, services, or APIs does this PS integrate with?
+      Documented at the DA level via externalInteractions.
+    canBeSatisfiedBy:
+      - mechanism: externalInteraction
+        criteria: DA externalInteractions list documents integrations relevant to this PS
