@@ -1,0 +1,22 @@
+schemaVersion: "1.0"
+id: abb.appliance.aws-lambda-runtime
+type: abb
+subtype: appliance
+name: AWS Lambda Runtime
+description: >
+  AWS Lambda serverless execution environment. Runs organization-authored
+  function code without requiring host management. Scales automatically.
+  Host infrastructure is entirely blackbox.
+version: 1.0.0
+catalogStatus: draft
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+  - appliance
+  - lambda
+vendor: Amazon Web Services
+capability: compute
+networkPlacement: vpc-private
+patchingOwner: aws-managed

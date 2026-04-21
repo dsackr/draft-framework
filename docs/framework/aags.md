@@ -81,6 +81,21 @@ This extends the service baseline for database services. In plain language, it r
 
 Concrete example: `rbb.service.dbms.sqlserver-2022` satisfies these requirements through decisions such as `backup.strategy`, `backup.rto`, `backup.rpo`, `ha.mechanism`, `encryption.atRest`, and `accessControl.model`.
 
+### `aag.appliance-abb`
+
+This AAG applies to appliance ABBs. In plain language, it requires the object
+to document what capability the appliance provides, how resilient it is, where
+it sits in the network, who owns patching, and what compliance posture it
+carries.
+
+### `aag.saas-service`
+
+This AAG applies to SaaS Service objects. In plain language, it requires the
+architect to document whether data leaves the infrastructure boundary, what data
+residency commitments the vendor makes, whether a DPA is in place, how the
+organization authenticates to the service, what compliance certifications the
+vendor carries, and what SLA the vendor offers.
+
 ### `aag.ra`
 
 This AAG applies to reference architectures. In plain language, it requires an RA to declare a clear pattern type, a complete list of required RBBs with roles, and pattern-level decisions that explain why the pattern exists in its current form.

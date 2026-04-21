@@ -1,0 +1,20 @@
+schemaVersion: "1.0"
+type: saas_service
+requiredFields:
+  - id          # format: saas.<vendor>-<product>
+  - name
+  - vendor
+  - capability
+  - catalogStatus
+  - lifecycleStatus
+  - dataLeavesInfrastructure
+optionalFields:
+  - description
+  - dataResidencyCommitment
+  - dpaNotes
+  - vendorSLA
+  - authenticationModel
+  - complianceCerts
+  - incidentNotificationProcess
+  - notes
+  - controlReferences

@@ -6,15 +6,20 @@ A Software Distribution Manifest, or SDM, is a declaration that a specific produ
 
 Unlike an RA, which is generic, an SDM is tied to a named product. It answers the question “what does this product deploy?” rather than “what does this class of solution usually require?”
 
-## What `deployedRBBs` Means
+## What An SDM Contains
 
-The defining field in an SDM is `deployedRBBs`. Each entry identifies:
+The defining structure in an SDM is no longer a flat deployment list. An SDM is
+organized around:
 
-- the RBB
-- the named variant used
-- the instance name that gives the deployed role a product-specific identity
+- `scalingUnits`
+- `serviceGroups`
+- `architecturalDecisions`
+- `architectureRisksAndDecisions`
 
-An SDM does not break those RBBs open and redraw their internal ABBs. The no-grandchildren rule exists to keep deployment views readable. The variant field is open-ended for the same reason it is open-ended on RBBs and RAs. `ha` and `sa` are common values, but an SDM can also select variants such as `hp`, `sp`, `geo-redundant`, or other descriptive keys defined by the referenced RBB.
+Each service group can contain Product Services, RBBs, Appliance ABBs, SaaS
+Services, and group-local external interactions. This is a better fit for real
+architecture interview data because it preserves operational grouping and
+deployment intent.
 
 ## What `appliesPattern` Means
 
@@ -22,13 +27,15 @@ The `appliesPattern` field tells the reader which RA the deployment claims to fo
 
 This field is metadata only. It is useful because it says whether the product is aligned to a recognized pattern, but it is not itself a deployed object and should not be rendered as a node in a deployment diagram.
 
-## Why An SDM Only Declares Additional External Interactions
+## Intent Versus Current State
 
-An SDM only declares external interactions that are not already covered by its component RBBs.
+The `intent` field on Product Service and RBB entries exists only for explicit
+architecture choice. It should be populated when the architect is intentionally
+deviating from the Reference Architecture, or when no Reference Architecture
+exists.
 
-If the host RBB already says it interacts with Active Directory, centralized logging, and patch management, the SDM should not repeat those interactions. The SDM only adds product-specific interactions that are outside the reusable baseline captured in the RBBs.
-
-This keeps deployment declarations focused on what is unique to the product instead of turning them into copies of lower-level objects.
+It should not be used as a shorthand way to restate current production state.
+Current state concerns belong in ARDs and notes.
 
 ## Long-Term Placement
 

@@ -15,10 +15,13 @@ Compliance mappings are plug-and-play. AAGs define architecture requirements, wh
 - [AI rebuild prompt](docs/ai-rebuild-prompt.md)
 - [Framework overview](docs/framework/overview.md)
 - [ABBs](docs/framework/abbs.md)
+- [Product services](docs/framework/product-services.md)
+- [SaaS services](docs/framework/saas-services.md)
 - [RBBs](docs/framework/rbbs.md)
 - [AAGs](docs/framework/aags.md)
 - [Reference architectures](docs/framework/reference-architectures.md)
 - [Software distribution manifests](docs/framework/software-distribution-manifests.md)
+- [SDM structure](docs/framework/da-structure.md)
 - [Naming conventions](docs/framework/naming-conventions.md)
 - [How to add objects](docs/framework/how-to-add-objects.md)
 - [Security and compliance controls](docs/framework/security-and-compliance-controls.md)
@@ -27,6 +30,7 @@ Compliance mappings are plug-and-play. AAGs define architecture requirements, wh
 
 ```text
 abbs/                       Architecture Building Blocks
+saas-services/              Vendor-managed SaaS service objects
 rbbs/                       Reusable host and service building blocks
 aags/                       Architecture Analysis Guidelines
 ards/                       Architecture Risks and Decisions

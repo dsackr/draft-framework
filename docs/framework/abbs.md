@@ -57,6 +57,32 @@ ABBs become useful when they are referenced as internal components in RBBs.
 
 This separation makes the architecture easier to reason about. For example, `rbb.service.dbms.sqlserver-2022` does not need to redefine what SQL Server 2022 is. It can simply reference `abb.software.microsoft-sqlserver-2022` as its function ABB and focus on the architectural decisions that matter at the service level.
 
+## Appliance ABBs
+
+An Appliance ABB is a special ABB subtype for a vendor-managed component whose
+host is blackbox, but which is still deployed inside the adopter's
+infrastructure boundary. The key idea is that there is no separable host for
+the architect to model. The appliance and the underlying host are effectively
+the same thing from the framework's perspective.
+
+Use an Appliance ABB when the organization configures the component and places
+it in its own AWS account, VPC, or datacenter, but does not manage the
+underlying operating system, firmware, or host lifecycle directly.
+
+Do not use an Appliance ABB when the component is just software installed on a
+managed host. In that case it remains a
+regular ABB and should appear as part of an RBB.
+
+Do not use an Appliance ABB for a subscribed vendor service where traffic or
+data leaves the adopter's infrastructure boundary and is processed in the
+vendor's environment. That is a SaaS Service, not an Appliance ABB.
+
+Good examples of Appliance ABB concerns are load balancers, blackbox runtime
+hosts, managed file appliances, or vendor appliances with opaque host internals.
+The catalog captures capability, network placement, patching ownership, and
+compliance posture instead of trying to invent a host model the architect does
+not actually control.
+
 ## How To Add A New ABB
 
 1. Decide whether the object is an OS, hardware, software, or agent ABB.

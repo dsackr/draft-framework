@@ -1,0 +1,33 @@
+schemaVersion: "1.0"
+id: rbb.host.serverless.lambda
+type: rbb
+category: host
+subtype: host
+name: AWS Lambda Serverless Host
+description: >
+  Serverless execution environment provided by AWS Lambda. The host is entirely
+  AWS-managed and blackbox to the organization. Function code is deployed as a
+  Product Service. No OS management, no agent installation, and no patching
+  responsibility exist at this layer.
+version: 1.0.0
+catalogStatus: draft
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+  - lambda
+  - serverless
+variants:
+  standard:
+    notes: >
+      Standard Lambda execution environment. HA and scaling are inherent
+      to the Lambda platform — AWS manages concurrency and availability.
+internalComponents:
+  - ref: abb.appliance.aws-lambda-runtime
+    role: appliance
+    notes: AWS-managed serverless execution environment. Blackbox host.
+externalInteractions:
+  - name: AWS Lambda Service
+    capability: compute
+    notes: The Lambda service itself provides the execution environment.

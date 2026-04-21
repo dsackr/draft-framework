@@ -17,6 +17,7 @@ DRAFT is built around a few strict principles. First, Git is the system of recor
 The repository should contain these top-level folders:
 
 - `abbs/` for Architecture Building Blocks
+- `saas-services/` for SaaS Service objects
 - `rbbs/` for Reusable Building Blocks
 - `aags/` for Architecture Analysis Guidelines
 - `ards/` for Architecture Risks and Decisions
@@ -59,6 +60,17 @@ An ABB, or Architecture Building Block, is a configuration document for a specif
 
 ABBs carry vendor lifecycle metadata and framework lifecycle intent. ABB categories are `os`, `hardware`, `software`, and `agent`. ABBs may declare a `platformDependency` when they depend on another platform or external system.
 
+ABBs may also use `subtype: appliance`. Appliance ABBs model blackbox
+vendor-managed components that are still deployed inside the adopter's
+infrastructure boundary.
+
+### SaaS Service
+
+A SaaS Service is a vendor-managed subscribed service. It exists as a
+first-class object because it can move data through vendor-managed
+infrastructure outside the adopter's boundary, making data governance a primary
+architecture concern.
+
 ### RBB
 
 An RBB, or Reusable Building Block, is a reusable architecture pattern that Reference Architectures and Software Distribution Manifests are assembled from. There are two categories: `host` and `service`.
@@ -73,7 +85,9 @@ The distinction between ABB and RBB is important. An ABB is an individual vendor
 
 An AAG, or Architecture Analysis Guideline, is a first-class catalog object that defines the requirements an architecture object must satisfy before it is considered complete enough for approval. AAGs are not visual components in a deployment. They are governance rules.
 
-In the current DRAFT implementation, AAGs are written for host RBBs, service RBBs, DBMS service RBBs, reference architectures, software distribution manifests, and product services.
+In the current DRAFT implementation, AAGs are written for host RBBs, service
+RBBs, DBMS service RBBs, appliance ABBs, SaaS Services, reference
+architectures, software distribution manifests, and product services.
 
 ### Compliance Framework
 
@@ -99,7 +113,10 @@ Reference Architectures point to required RBBs and define pattern-level decision
 
 ### Software Distribution Manifest
 
-A Software Distribution Manifest declares how a specific product is deployed. It references a Reference Architecture via `appliesPattern`, documents deployed Product Services and deployed RBBs, lists product-level external interactions, and links any architecture risks and decisions.
+A Software Distribution Manifest declares how a specific product is deployed. It
+references a Reference Architecture via `appliesPattern`, groups deployable
+components into service groups and scaling units, and links any architecture
+risks and decisions.
 
 The SDM is where pattern intent becomes deployment reality. The SDM can declare deviations from a pattern, and those deviations should be documented via ARDs rather than hidden in prose.
 
@@ -240,19 +257,21 @@ Software Distribution Manifest objects include:
 
 - `appliesPattern`
 - `architecturalDecisions`
-- `deployedProductServices`
-- `deployedRBBs`
-- `externalInteractions`
+- `scalingUnits`
+- `serviceGroups`
 - `architectureRisksAndDecisions`
 
-Each deployed Product Service and deployed RBB entry can include:
+Each service group can include:
 
-- `ref`
-- `variant`
-- `instance`
-- `location`
-- `notes`
-- `riskRef`
+- `productServices`
+- `rbbs`
+- `applianceAbbs`
+- `saasServices`
+- `externalInteractions`
+
+Product Service and RBB entries can use `intent` only when the architect is
+making an explicit design decision that deviates from the Reference Architecture
+default, or when no Reference Architecture exists.
 
 Software Distribution Manifests are validated against `aag.sdm`. Risk references and ARD lists must resolve to actual ARD objects.
 

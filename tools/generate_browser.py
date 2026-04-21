@@ -26,6 +26,7 @@ CATALOG_FOLDERS = [
     "ards",
     "compliance-frameworks",
     "compliance-mappings",
+    "saas-services",
     "sdms",
     "product-services",
     "rbbs",
@@ -54,7 +55,7 @@ REF_CONTAINER_KEYS = {
     "framework",
     "aagId",
 }
-CATALOG_ID_PREFIXES = ("abb.", "rbb.", "aag.", "ard.", "ps.", "ra.", "sdm.", "framework.", "aagmap.")
+CATALOG_ID_PREFIXES = ("abb.", "rbb.", "aag.", "ard.", "ps.", "ra.", "sdm.", "framework.", "aagmap.", "saas.")
 
 
 def discover_yaml_files(root: Path) -> list[Path]:
@@ -129,6 +130,8 @@ def shape_for(obj: dict[str, Any]) -> str:
         return "round-rectangle"
     if obj["type"] == "product_service":
         return "round-rectangle"
+    if obj["type"] == "saas_service":
+        return "round-rectangle"
     if obj["type"] == "abb":
         return "ellipse"
     if obj["type"] == "rbb":
@@ -146,7 +149,8 @@ def filter_type_for(obj: dict[str, Any]) -> str:
 
 def type_label_for(obj: dict[str, Any]) -> str:
     if obj["type"] == "abb":
-        return f"ABB / {obj.get('category', 'unknown')}"
+        suffix = " / appliance" if obj.get("subtype") == "appliance" else f" / {obj.get('category', 'unknown')}"
+        return f"ABB{suffix}"
     if obj["type"] == "aag":
         return "AAG"
     if obj["type"] == "compliance_framework":
@@ -157,6 +161,8 @@ def type_label_for(obj: dict[str, Any]) -> str:
         return f"ARD / {obj.get('category', 'risk')}"
     if obj["type"] == "product_service":
         return "Product Service"
+    if obj["type"] == "saas_service":
+        return "SaaS Service"
     if obj["type"] == "reference_architecture":
         return "Reference Architecture"
     if obj["type"] == "software_distribution_manifest":
@@ -266,14 +272,18 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
         deployed.get("ref")
         for obj in objects
         if obj.get("type") == "software_distribution_manifest"
-        for deployed in obj.get("deployedRBBs", [])
+        for group in obj.get("serviceGroups", [])
+        if isinstance(group, dict)
+        for deployed in group.get("rbbs", [])
         if isinstance(deployed, dict) and deployed.get("riskRef")
     }
     risk_marked_product_service_ids = {
         deployed.get("ref")
         for obj in objects
         if obj.get("type") == "software_distribution_manifest"
-        for deployed in obj.get("deployedProductServices", [])
+        for group in obj.get("serviceGroups", [])
+        if isinstance(group, dict)
+        for deployed in group.get("productServices", [])
         if isinstance(deployed, dict) and deployed.get("riskRef")
     }
     browser_objects: list[dict[str, Any]] = []
@@ -296,6 +306,18 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "status": obj.get("status", ""),
                 "product": obj.get("product", ""),
                 "runsOn": obj.get("runsOn", ""),
+                "subtype": obj.get("subtype", ""),
+                "vendor": obj.get("vendor", ""),
+                "capability": obj.get("capability", ""),
+                "networkPlacement": obj.get("networkPlacement", ""),
+                "patchingOwner": obj.get("patchingOwner", ""),
+                "complianceCerts": obj.get("complianceCerts", []),
+                "dataLeavesInfrastructure": obj.get("dataLeavesInfrastructure", None),
+                "dataResidencyCommitment": obj.get("dataResidencyCommitment", ""),
+                "dpaNotes": obj.get("dpaNotes", ""),
+                "vendorSLA": obj.get("vendorSLA", ""),
+                "authenticationModel": obj.get("authenticationModel", ""),
+                "incidentNotificationProcess": obj.get("incidentNotificationProcess", ""),
                 "owner": obj.get("owner", {}),
                 "shape": shape_for(obj),
                 "color": f"#{LIFECYCLE_COLORS.get(obj.get('lifecycleStatus'), LIFECYCLE_COLORS['unknown'])}",
@@ -310,8 +332,8 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "satisfiesAAG": obj.get("satisfiesAAG", []),
                 "inherits": obj.get("inherits", ""),
                 "requiredRBBs": obj.get("requiredRBBs", []),
-                "deployedRBBs": obj.get("deployedRBBs", []),
-                "deployedProductServices": obj.get("deployedProductServices", []),
+                "scalingUnits": obj.get("scalingUnits", []),
+                "serviceGroups": obj.get("serviceGroups", []),
                 "appliesPattern": obj.get("appliesPattern", ""),
                 "architectureRisksAndDecisions": obj.get("architectureRisksAndDecisions", []),
                 "affectedComponent": obj.get("affectedComponent", ""),
@@ -568,6 +590,28 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border-color: rgba(20,184,166,0.45);
       color: #99f6e4;
       background: rgba(20,184,166,0.12);
+    }
+    .saas-badge {
+      border-color: rgba(168,85,247,0.45);
+      color: #e9d5ff;
+      background: rgba(168,85,247,0.14);
+    }
+    .appliance-badge {
+      border-color: rgba(245,158,11,0.45);
+      color: #fde68a;
+      background: rgba(245,158,11,0.14);
+    }
+    .info-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      background: rgba(59,130,246,0.18);
+      border: 1px solid rgba(59,130,246,0.38);
+      color: #bfdbfe;
+      width: fit-content;
     }
     .variant-ha {
       border-color: rgba(16,185,129,0.45);
@@ -861,9 +905,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       gap: 18px;
     }
     .topology-strip,
-    .location-box,
-    .eks-box,
-    .cluster-box {
+    .scaling-unit-box,
+    .service-group-box,
+    .deployment-target-cluster {
       background: rgba(15,23,42,0.78);
       border-radius: 18px;
     }
@@ -920,37 +964,43 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border-color: rgba(148,163,184,0.35);
       color: #e2e8f0;
     }
-    .topology-locations {
+    .topology-scaling-units,
+    .topology-unscoped-groups {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 18px;
       align-items: start;
     }
-    .location-box {
+    .scaling-unit-box {
       padding: 16px;
       display: grid;
       gap: 14px;
-      border: 2px solid #37474f;
+      border: 2px solid #64748b;
       background: rgba(30,41,59,0.9);
       min-width: 0;
     }
-    .location-box.aws {
-      border-color: #e91e8c;
-      background: linear-gradient(180deg, rgba(233,30,140,0.08), rgba(30,41,59,0.92));
+    .scaling-unit-box.shared {
+      border-style: dashed;
     }
-    .location-header {
+    .scaling-unit-header,
+    .deployment-target-header,
+    .service-group-header {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
     }
-    .location-title {
+    .scaling-unit-title,
+    .deployment-target-title,
+    .service-group-title {
       font-size: 15px;
       font-weight: 700;
       color: #f8fafc;
     }
-    .location-badge {
+    .location-badge,
+    .lane-label,
+    .scaling-unit-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -961,14 +1011,43 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border: 1px solid rgba(148,163,184,0.3);
       color: #e2e8f0;
     }
-    .location-box.aws .location-badge {
+    .location-badge.aws {
       border-color: rgba(233,30,140,0.45);
       color: #fbcfe8;
     }
-    .location-content {
+    .scaling-unit-content,
+    .deployment-target-content,
+    .service-group-content {
       display: grid;
       gap: 14px;
     }
+    .deployment-target-cluster {
+      padding: 14px;
+      border: 1px solid rgba(51,65,85,0.9);
+      display: grid;
+      gap: 12px;
+    }
+    .service-group-box {
+      padding: 14px;
+      border: 1px solid rgba(71,85,105,0.9);
+      display: grid;
+      gap: 12px;
+      background: rgba(30,41,59,0.96);
+    }
+    .service-group-lanes {
+      display: grid;
+      gap: 12px;
+    }
+    .service-group-lane {
+      display: grid;
+      gap: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(51,65,85,0.55);
+    }
+    .lane-label.ps { color: #99f6e4; border-color: rgba(20,184,166,0.38); }
+    .lane-label.rbb { color: #bfdbfe; border-color: rgba(59,130,246,0.38); }
+    .lane-label.appliance { color: #d1d5db; border-color: rgba(148,163,184,0.38); }
+    .lane-label.saas { color: #e9d5ff; border-color: rgba(168,85,247,0.38); }
     .cluster-box {
       padding: 14px;
       border: 2px dashed rgba(249,115,22,0.7);
@@ -1019,6 +1098,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .topology-node.ps-node {
       background: rgba(45,66,74,0.95);
       border-color: rgba(20,184,166,0.35);
+    }
+    .topology-node.rbb-node {
+      border-left: 4px solid rgba(59,130,246,0.75);
+    }
+    .topology-node.appliance-node {
+      border-left: 4px solid rgba(148,163,184,0.75);
+      background: rgba(42,50,66,0.95);
+    }
+    .topology-node.saas-node {
+      border-left: 4px solid rgba(168,85,247,0.78);
+      background: rgba(58,45,74,0.95);
     }
     .topology-node.pod {
       border-color: rgba(59,130,246,0.45);
@@ -1077,6 +1167,34 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
     .topology-risk:hover {
       border-color: rgba(245,158,11,0.72);
+    }
+    .topology-info {
+      position: absolute;
+      top: 8px;
+      right: 40px;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(59,130,246,0.18);
+      border: 1px solid rgba(59,130,246,0.42);
+      color: #bfdbfe;
+      font-size: 13px;
+    }
+    .topology-internal-interactions {
+      display: grid;
+      gap: 8px;
+    }
+    .topology-internal-link {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px dashed rgba(148,163,184,0.45);
+      color: var(--subtle);
+      background: rgba(15,23,42,0.5);
+      font-size: 13px;
+      line-height: 1.5;
     }
     .impact-sidebar {
       background: var(--card);
@@ -1313,7 +1431,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .filter(object => !['aag', 'ard', 'compliance_framework', 'aag_control_mapping'].includes(object.type))
         .map(object => object.type)
     );
-    const impactOrder = ['software_distribution_manifest', 'reference_architecture', 'product_service', 'rbb', 'abb'];
+    const impactOrder = ['software_distribution_manifest', 'reference_architecture', 'product_service', 'rbb', 'abb', 'saas_service'];
     const impactLifecycleOrder = lifecycleValues;
     let activeFilter = 'All';
     let currentDetailId = null;
@@ -1362,7 +1480,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function formatTypeLabel(typeValue) {
-      return formatTitleCase(String(typeValue || '').replace(/[._-]/g, ' '));
+      const normalized = String(typeValue || '');
+      if (normalized === 'saas_service') return 'SaaS Service';
+      if (normalized === 'product_service') return 'Product Service';
+      if (normalized === 'software_distribution_manifest') return 'Software Distribution Manifest';
+      if (normalized === 'aag_control_mapping') return 'AAG Control Mapping';
+      if (normalized === 'reference_architecture') return 'Reference Architecture';
+      if (normalized === 'compliance_framework') return 'Compliance Framework';
+      return formatTitleCase(normalized.replace(/[._-]/g, ' '));
     }
 
     function capabilityClass(capability) {
@@ -1405,10 +1530,25 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return `<span class="badge ps-badge">${escapeHtml(product || 'unknown product')}</span>`;
     }
 
+    function saasBadge() {
+      return '<span class="badge saas-badge">SaaS</span>';
+    }
+
+    function applianceBadge() {
+      return '<span class="badge appliance-badge">appliance</span>';
+    }
+
     function variantBadge(variant) {
       const normalized = String(variant || '').toLowerCase();
       const cls = normalized === 'ha' ? 'variant-ha' : normalized === 'sa' ? 'variant-sa' : '';
       return `<span class="badge ${cls}">${escapeHtml((variant || '').toUpperCase())}</span>`;
+    }
+
+    function boolBadge(value, trueLabel = 'true', falseLabel = 'false') {
+      const active = value === true;
+      const text = active ? trueLabel : falseLabel;
+      const cls = active ? 'saas-badge' : 'catalog-stub';
+      return `<span class="badge ${cls}">${escapeHtml(text)}</span>`;
     }
 
     function currentHashState() {
@@ -1625,10 +1765,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                   ${object.type === 'ard' ? ardCategoryBadge(object.ardCategory) : ''}
                   ${object.type === 'ard' ? ardStatusBadge(object.status) : ''}
                   ${object.type === 'product_service' ? productBadge(object.product) : ''}
+                  ${object.type === 'saas_service' ? saasBadge() : ''}
                 </div>
                 <div class="badges">
                   <div class="badge">${escapeHtml(object.typeLabel)}</div>
                   ${object.type === 'product_service' ? `<div class="object-id">${escapeHtml(object.product)}</div>` : ''}
+                  ${object.type === 'abb' && object.subtype === 'appliance' ? applianceBadge() : ''}
                 </div>
               </article>
             `).join('')}
@@ -1818,76 +1960,38 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
-    function deployedRbbTableMarkup(object) {
-      const deployed = object.deployedRBBs || [];
-      if (!deployed.length) {
-        return '<div class="empty-card">No deployed RBBs are documented for this software distribution manifest.</div>';
+    function sdmServiceGroupsMarkup(object) {
+      const groups = object.serviceGroups || [];
+      const scalingUnits = new Map((object.scalingUnits || []).map(unit => [unit.name, unit]));
+      if (!groups.length) {
+        return '<div class="empty-card">No service groups are documented for this software distribution manifest.</div>';
       }
       return `
         <section class="section-card">
-          <h3>Deployed RBBs</h3>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Instance</th>
-                <th>RBB</th>
-                <th>Variant</th>
-                <th>Location</th>
-                <th>Risk</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${deployed.map(item => {
-                const risk = item.riskRef ? objectLookup[item.riskRef] : null;
-                return `
-                  <tr>
-                    <td>${escapeHtml(item.instance || 'Unnamed')}</td>
-                    <td>${escapeHtml(item.ref || '')}</td>
-                    <td>${escapeHtml(item.variant || '')}</td>
-                    <td>${escapeHtml(item.location || '')}</td>
-                    <td>${item.riskRef ? (risk ? `<span class="risk-badge" data-object-link="${risk.id}">⚠ ARD</span>` : `<span class="risk-badge" title="Missing ARD reference">⚠ Missing</span>`) : ''}</td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        </section>
-      `;
-    }
-
-    function deployedProductServicesTableMarkup(object) {
-      const deployed = object.deployedProductServices || [];
-      if (!deployed.length) {
-        return '<div class="empty-card">No product services are documented for this software distribution manifest.</div>';
-      }
-      return `
-        <section class="section-card">
-          <h3>Deployed Product Services</h3>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Instance</th>
-                <th>Product Service</th>
-                <th>Variant</th>
-                <th>Location</th>
-                <th>Risk</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${deployed.map(item => {
-                const risk = item.riskRef ? objectLookup[item.riskRef] : null;
-                return `
-                  <tr>
-                    <td>${escapeHtml(item.instance || 'Unnamed')}</td>
-                    <td>${item.ref && objectLookup[item.ref] ? `<span class="ard-link" data-object-link="${item.ref}">${escapeHtml(item.ref)}</span>` : escapeHtml(item.ref || '')}</td>
-                    <td>${item.variant ? variantBadge(item.variant) : ''}</td>
-                    <td>${escapeHtml(item.location || '')}</td>
-                    <td>${item.riskRef ? (risk ? `<span class="risk-badge" data-object-link="${risk.id}">⚠ ARD</span>` : `<span class="risk-badge" title="Missing ARD reference">⚠ Missing</span>`) : ''}</td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
+          <h3>Service Groups</h3>
+          <div class="section-stack">
+            ${groups.map(group => {
+              const scalingUnit = group.scalingUnit ? scalingUnits.get(group.scalingUnit) : null;
+              const externalInteractions = (group.externalInteractions || []).filter(item => (item.type || 'external') !== 'internal');
+              const internalInteractions = (group.externalInteractions || []).filter(item => (item.type || 'external') === 'internal');
+              return `
+                <article class="aag-card">
+                  <div class="aag-name">${escapeHtml(group.name || 'Unnamed Service Group')}</div>
+                  <div class="interaction-notes">${escapeHtml(group.deploymentTarget || 'Unspecified deployment target')}</div>
+                  <div class="badges">
+                    ${group.scalingUnit ? `<span class="badge">${escapeHtml(group.scalingUnit)}</span>` : '<span class="badge">unscoped</span>'}
+                    ${scalingUnit?.type ? `<span class="badge">${escapeHtml(scalingUnit.type)}</span>` : ''}
+                    ${(group.productServices || []).length ? `<span class="badge ps-badge">${(group.productServices || []).length} PS</span>` : ''}
+                    ${(group.rbbs || []).length ? `<span class="badge">${(group.rbbs || []).length} RBB</span>` : ''}
+                    ${(group.applianceAbbs || []).length ? applianceBadge() : ''}
+                    ${(group.saasServices || []).length ? saasBadge() : ''}
+                  </div>
+                  ${externalInteractions.length ? `<div class="interaction-notes"><strong>External:</strong> ${escapeHtml(externalInteractions.map(item => item.name).join(', '))}</div>` : ''}
+                  ${internalInteractions.length ? `<div class="interaction-notes"><strong>Internal:</strong> ${escapeHtml(internalInteractions.map(item => `${item.name} → ${item.ref || 'unknown'}`).join(', '))}</div>` : ''}
+                </article>
+              `;
+            }).join('')}
+          </div>
         </section>
       `;
     }
@@ -1928,6 +2032,56 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </table>
           ` : '<div class="empty-card">No variants are documented for this product service.</div>'}
         </section>
+      `;
+    }
+
+    function applianceAbbDetailMarkup(object) {
+      return `
+        <section class="section-card">
+          <h3>Appliance ABB</h3>
+          <div class="section-stack">
+            <div class="badges">
+              ${applianceBadge()}
+              ${lifecycleBadge(object.lifecycleStatus)}
+              ${catalogBadge(object.catalogStatus)}
+            </div>
+            <dl class="definition-list">
+              <dt>Vendor</dt><dd>${escapeHtml(object.vendor || '')}</dd>
+              <dt>Capability</dt><dd>${escapeHtml(object.capability || '')}</dd>
+              <dt>Network Placement</dt><dd>${escapeHtml(object.networkPlacement || '')}</dd>
+              <dt>Patching Owner</dt><dd>${escapeHtml(object.patchingOwner || '')}</dd>
+              <dt>Compliance Certs</dt><dd>${escapeHtml((object.complianceCerts || []).join(', ') || 'None documented')}</dd>
+            </dl>
+          </div>
+        </section>
+        ${objectLookup['aag.appliance-abb'] ? aagRequirementsMarkup(objectLookup['aag.appliance-abb']) : ''}
+      `;
+    }
+
+    function saasServiceDetailMarkup(object) {
+      return `
+        <section class="section-card">
+          <h3>SaaS Service</h3>
+          <div class="section-stack">
+            <div class="badges">
+              ${saasBadge()}
+              ${lifecycleBadge(object.lifecycleStatus)}
+              ${catalogBadge(object.catalogStatus)}
+              ${boolBadge(object.dataLeavesInfrastructure === true, 'Data Leaves Infrastructure', 'Data Stays In Boundary')}
+            </div>
+            <dl class="definition-list">
+              <dt>Vendor</dt><dd>${escapeHtml(object.vendor || '')}</dd>
+              <dt>Capability</dt><dd>${escapeHtml(object.capability || '')}</dd>
+              <dt>Data Residency</dt><dd>${escapeHtml(object.dataResidencyCommitment || 'Not documented')}</dd>
+              <dt>DPA Notes</dt><dd>${escapeHtml(object.dpaNotes || 'Not documented')}</dd>
+              <dt>Vendor SLA</dt><dd>${escapeHtml(object.vendorSLA || 'Not documented')}</dd>
+              <dt>Authentication Model</dt><dd>${escapeHtml(object.authenticationModel || 'Not documented')}</dd>
+              <dt>Compliance Certs</dt><dd>${escapeHtml((object.complianceCerts || []).join(', ') || 'None documented')}</dd>
+            </dl>
+            ${object.incidentNotificationProcess ? `<div class="interaction-notes"><strong>Incident Notification:</strong> ${escapeHtml(object.incidentNotificationProcess)}</div>` : ''}
+          </div>
+        </section>
+        ${objectLookup['aag.saas-service'] ? aagRequirementsMarkup(objectLookup['aag.saas-service']) : ''}
       `;
     }
 
@@ -2025,6 +2179,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const ref = entry.ref || '';
       const object = objectLookup[ref];
       const serviceObject = objectType === 'product_service' && object?.runsOn ? objectLookup[object.runsOn] : object;
+      if (objectType === 'appliance') return { icon: '🔧', cls: '' };
+      if (objectType === 'saas_service') return { icon: '☁', cls: 'cloud' };
       if (objectType === 'product_service' && isContainerHostObject(objectLookup[object?.runsOn])) {
         return { icon: '⬢', cls: 'pod' };
       }
@@ -2039,9 +2195,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return { icon: '🖧', cls: '' };
     }
 
-    function locationPresentation(location) {
+    function deploymentTargetPresentation(location) {
       const text = String(location || 'Unspecified');
-      if (/AWS Account/i.test(text)) {
+      if (/AWS/i.test(text)) {
         return { cls: 'aws', badge: 'AWS', icon: '🟧' };
       }
       if (/Datacenter|\\bDC\\b/i.test(text)) {
@@ -2050,10 +2206,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return { cls: 'generic', badge: 'Host', icon: '🖧' };
     }
 
-    function clusterReplicaCount(entry) {
-      const service = objectLookup[entry.ref];
-      const count = service?.variants?.ha?.architecturalDecisions?.minNodes;
-      return Number.isInteger(count) && count > 0 ? count : 3;
+    function topologyBadgeMarkup(entry) {
+      if (!entry) return '';
+      const ard = entry.riskRef ? objectLookup[entry.riskRef] : null;
+      if (entry.riskRef) {
+        if (ard) {
+          const isDecision = ard.ardCategory === 'decision' && ard.status === 'accepted';
+          const cls = isDecision ? 'topology-info' : 'topology-risk';
+          const symbol = isDecision ? 'ⓘ' : '⚠';
+          return `<span class="${cls}" data-object-link="${ard.id}" title="${escapeHtml(ard.name)}">${symbol}</span>`;
+        }
+        return '<span class="topology-risk" title="Missing ARD reference">?</span>';
+      }
+      if (String(entry.intent || '').toLowerCase() === 'sa') {
+        return '<span class="topology-info" title="Explicit architecture decision">ⓘ</span>';
+      }
+      return '';
     }
 
     function topologyNodeMarkup(entry, options = {}) {
@@ -2061,33 +2229,43 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         objectType = 'rbb',
         overrideLabel = null,
         meta = '',
-        variant = entry.variant || '',
+        variant = entry.intent || '',
         psLabel = false,
+        badgeLabel = '',
       } = options;
       const icon = topologyNodeIcon(entry, objectType);
-      const risk = entry.riskRef ? objectLookup[entry.riskRef] : null;
       const targetId = entry.ref || '';
+      const classes = ['topology-node'];
+      if (psLabel) classes.push('ps-node');
+      if (objectType === 'rbb') classes.push('rbb-node');
+      if (objectType === 'appliance') classes.push('appliance-node');
+      if (objectType === 'saas_service') classes.push('saas-node');
+      if (icon.cls) classes.push(icon.cls);
       return `
-        <article class="topology-node ${icon.cls} ${psLabel ? 'ps-node' : ''}" ${targetId && objectLookup[targetId] ? `data-object-link="${escapeHtml(targetId)}"` : ''}>
-          ${entry.riskRef ? (risk ? `<span class="topology-risk" data-object-link="${risk.id}" title="${escapeHtml(risk.name)}">⚠</span>` : `<span class="topology-risk" title="Missing ARD reference">?</span>`) : ''}
+        <article class="${classes.join(' ')}" ${targetId && objectLookup[targetId] ? `data-object-link="${escapeHtml(targetId)}"` : ''}>
+          ${topologyBadgeMarkup(entry)}
           <div class="topology-node-flags">
-            ${psLabel ? '<span class="ps-corner">PS</span>' : '<span></span>'}
-            ${psLabel && variant ? variantBadge(variant) : '<span></span>'}
+            ${badgeLabel ? `<span class="ps-corner">${escapeHtml(badgeLabel)}</span>` : '<span></span>'}
+            ${variant ? variantBadge(variant) : '<span></span>'}
           </div>
           <span class="topology-node-icon ${icon.cls}">${icon.icon}</span>
-          <div class="topology-node-label">${escapeHtml(overrideLabel || instanceLabel(entry.instance))}</div>
+          <div class="topology-node-label">${escapeHtml(overrideLabel || instanceLabel(entry.instance || entry.ref))}</div>
           ${meta ? `<div class="topology-node-meta">${escapeHtml(meta)}</div>` : ''}
         </article>
       `;
     }
 
     function clusterMarkup(ref, entries, options = {}) {
-      const { objectType = 'rbb' } = options;
+      const { objectType = 'rbb', badgeLabel = '', labelOverride = null } = options;
       const service = objectLookup[ref];
       const labelBase = shortRefLabel(ref);
-      const clusterLabel = service?.serviceCategory === 'web' ? `${labelBase} ASG` : `${labelBase} Cluster`;
+      const clusterLabel = labelOverride || `${labelBase} Cluster`;
       const cards = [];
-      entries.forEach(entry => cards.push(topologyNodeMarkup(entry, { objectType, psLabel: objectType === 'product_service' })));
+      entries.forEach(entry => cards.push(topologyNodeMarkup(entry, {
+        objectType,
+        psLabel: objectType === 'product_service',
+        badgeLabel: badgeLabel || (objectType === 'product_service' ? 'PS' : objectType === 'rbb' ? 'RBB' : '')
+      })));
       return `
         <section class="cluster-box">
           <div class="cluster-label">${escapeHtml(clusterLabel)}</div>
@@ -2098,27 +2276,122 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
-    function renderDeploymentTopology(sdm) {
-      const deployedProductServices = sdm.deployedProductServices || [];
-      const deployedRbbs = sdm.deployedRBBs || [];
-      const deployed = [...deployedProductServices, ...deployedRbbs];
-      const knownLocations = deployed.map(item => item.location).filter(Boolean);
-      const defaultLocation = knownLocations[0] || 'Unspecified';
-      const byLocation = new Map();
-
-      deployed.forEach(entry => {
-        const location = entry.location || defaultLocation || 'Unspecified';
-        if (!byLocation.has(location)) {
-          byLocation.set(location, []);
+    function serviceGroupTopologyMarkup(group) {
+      const psEntries = group.productServices || [];
+      const rbbEntries = group.rbbs || [];
+      const applianceEntries = group.applianceAbbs || [];
+      const saasEntries = group.saasServices || [];
+      const psContainerEntries = psEntries.filter(entry => isContainerHostObject(objectLookup[objectLookup[entry.ref]?.runsOn]));
+      const psStandardEntries = psEntries.filter(entry => !isContainerHostObject(objectLookup[objectLookup[entry.ref]?.runsOn]));
+      const psClusters = new Map();
+      const psSingles = [];
+      psStandardEntries.forEach(entry => {
+        const key = `${entry.ref}::${entry.intent || ''}`;
+        if ((entry.intent || '').toLowerCase() === 'ha') {
+          if (!psClusters.has(key)) psClusters.set(key, []);
+          psClusters.get(key).push(entry);
+        } else {
+          psSingles.push(entry);
         }
-        byLocation.get(location).push(entry);
+      });
+      const rbbClusters = new Map();
+      const rbbSingles = [];
+      rbbEntries.forEach(entry => {
+        const key = `${entry.ref}::${entry.intent || ''}`;
+        if ((entry.intent || '').toLowerCase() === 'ha') {
+          if (!rbbClusters.has(key)) rbbClusters.set(key, []);
+          rbbClusters.get(key).push(entry);
+        } else {
+          rbbSingles.push(entry);
+        }
+      });
+      const internalInteractions = (group.externalInteractions || []).filter(item => (item.type || 'external') === 'internal');
+      const targetMeta = deploymentTargetPresentation(group.deploymentTarget);
+      return `
+        <section class="service-group-box">
+          <div class="service-group-header">
+            <div class="service-group-title">${escapeHtml(group.name || 'Unnamed Service Group')}</div>
+            <span class="location-badge ${escapeHtml(targetMeta.cls)}">${targetMeta.icon} ${escapeHtml(group.deploymentTarget || 'Unspecified')}</span>
+          </div>
+          <div class="service-group-content">
+            <div class="service-group-lanes">
+              ${psEntries.length ? `
+                <section class="service-group-lane">
+                  <span class="lane-label ps">Product Services</span>
+                  ${[...psClusters.entries()].map(([key, entries]) => entries.length > 1
+                    ? clusterMarkup(key.split('::')[0], entries, { objectType: 'product_service', badgeLabel: 'PS', labelOverride: `${shortRefLabel(key.split('::')[0])} Cluster` })
+                    : `<div class="node-grid">${entries.map(entry => topologyNodeMarkup(entry, { objectType: 'product_service', badgeLabel: 'PS', psLabel: true })).join('')}</div>`
+                  ).join('')}
+                  ${psSingles.length ? `<div class="node-grid">${psSingles.map(entry => topologyNodeMarkup(entry, { objectType: 'product_service', badgeLabel: 'PS', psLabel: true })).join('')}</div>` : ''}
+                  ${psContainerEntries.length ? `
+                    <section class="eks-box">
+                      <div class="eks-label">EKS</div>
+                      <div class="node-grid">
+                        ${psContainerEntries.map(entry => topologyNodeMarkup(entry, { objectType: 'product_service', badgeLabel: 'PS', psLabel: true })).join('')}
+                      </div>
+                    </section>
+                  ` : ''}
+                </section>
+              ` : ''}
+              ${rbbEntries.length ? `
+                <section class="service-group-lane">
+                  <span class="lane-label rbb">RBB Infrastructure</span>
+                  ${[...rbbClusters.entries()].map(([key, entries]) => clusterMarkup(key.split('::')[0], entries, { objectType: 'rbb', badgeLabel: 'RBB', labelOverride: `${shortRefLabel(key.split('::')[0])} Cluster` })).join('')}
+                  ${rbbSingles.length ? `<div class="node-grid">${rbbSingles.map(entry => topologyNodeMarkup(entry, { objectType: 'rbb', badgeLabel: 'RBB' })).join('')}</div>` : ''}
+                </section>
+              ` : ''}
+              ${applianceEntries.length ? `
+                <section class="service-group-lane">
+                  <span class="lane-label appliance">Appliance ABBs</span>
+                  <div class="node-grid">
+                    ${applianceEntries.map(entry => topologyNodeMarkup(entry, { objectType: 'appliance', badgeLabel: 'APPL' })).join('')}
+                  </div>
+                </section>
+              ` : ''}
+              ${saasEntries.length ? `
+                <section class="service-group-lane">
+                  <span class="lane-label saas">SaaS Services</span>
+                  <div class="node-grid">
+                    ${saasEntries.map(entry => topologyNodeMarkup(entry, { objectType: 'saas_service', badgeLabel: 'SaaS' })).join('')}
+                  </div>
+                </section>
+              ` : ''}
+            </div>
+            ${internalInteractions.length ? `
+              <section class="topology-internal-interactions">
+                ${internalInteractions.map(interaction => `<div class="topology-internal-link">${escapeHtml(interaction.name || 'Internal interaction')} → ${escapeHtml(interaction.ref || 'unknown')}</div>`).join('')}
+              </section>
+            ` : ''}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderDeploymentTopology(sdm) {
+      const serviceGroups = sdm.serviceGroups || [];
+      const scalingUnits = sdm.scalingUnits || [];
+      const scalingUnitMap = new Map(scalingUnits.map(unit => [unit.name, unit]));
+      const groupsByScalingUnit = new Map();
+      const unscopedGroups = [];
+
+      serviceGroups.forEach(group => {
+        if (group.scalingUnit && scalingUnitMap.has(group.scalingUnit)) {
+          if (!groupsByScalingUnit.has(group.scalingUnit)) groupsByScalingUnit.set(group.scalingUnit, []);
+          groupsByScalingUnit.get(group.scalingUnit).push(group);
+        } else {
+          unscopedGroups.push(group);
+        }
       });
 
-      const externalMarkup = (sdm.externalInteractions || []).length ? `
+      const externalInteractions = serviceGroups.flatMap(group =>
+        (group.externalInteractions || []).filter(interaction => (interaction.type || 'external') !== 'internal')
+      );
+
+      const externalMarkup = externalInteractions.length ? `
         <section class="topology-strip">
           <div class="legend-title">External Interactions</div>
           <div class="topology-strip-grid">
-            ${(sdm.externalInteractions || []).map(interaction => {
+            ${externalInteractions.map(interaction => {
               const icon = topologyInteractionIcon(interaction);
               return `
                 <article class="topology-interaction">
@@ -2132,62 +2405,36 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         </section>
       ` : '';
 
-      const locationMarkup = [...byLocation.entries()].map(([location, entries]) => {
-        const meta = locationPresentation(location);
-        const productServices = entries.filter(entry => deployedProductServices.includes(entry));
-        const rbbs = entries.filter(entry => deployedRbbs.includes(entry));
-        const eksEntries = productServices.filter(entry => isContainerHostObject(objectLookup[objectLookup[entry.ref]?.runsOn]));
-        const standardPsEntries = productServices.filter(entry => !isContainerHostObject(objectLookup[objectLookup[entry.ref]?.runsOn]));
-        const psClusters = new Map();
-        const standalonePs = [];
-        const rbbClusters = new Map();
-        const standaloneRbbs = [];
-
-        standardPsEntries.forEach(entry => {
-          const key = `${entry.ref}::${entry.variant}`;
-          if (entry.variant === 'ha') {
-            if (!psClusters.has(key)) {
-              psClusters.set(key, []);
-            }
-            psClusters.get(key).push(entry);
-          } else {
-            standalonePs.push(entry);
-          }
+      const scalingUnitMarkup = scalingUnits.map(unit => {
+        const groups = groupsByScalingUnit.get(unit.name) || [];
+        if (!groups.length) return '';
+        const targets = new Map();
+        groups.forEach(group => {
+          const target = group.deploymentTarget || 'Unspecified';
+          if (!targets.has(target)) targets.set(target, []);
+          targets.get(target).push(group);
         });
-
-        rbbs.forEach(entry => {
-          if (entry.variant === 'ha') {
-            const key = `${entry.ref}::${entry.variant}`;
-            if (!rbbClusters.has(key)) {
-              rbbClusters.set(key, []);
-            }
-            rbbClusters.get(key).push(entry);
-          } else {
-            standaloneRbbs.push(entry);
-          }
-        });
-
         return `
-          <section class="location-box ${meta.cls}">
-            <div class="location-header">
-              <div class="location-title">${escapeHtml(location)}</div>
-              <span class="location-badge">${meta.icon} ${escapeHtml(meta.badge)}</span>
+          <section class="scaling-unit-box ${escapeHtml(unit.type || '')}">
+            <div class="scaling-unit-header">
+              <div class="scaling-unit-title">${escapeHtml(unit.name || 'Unnamed Scaling Unit')}</div>
+              <span class="scaling-unit-badge">${escapeHtml(unit.type === 'replicable' ? `${unit.name} (×${unit.instanceCount || '?'})` : `${unit.name} (×1)`)}</span>
             </div>
-            <div class="location-content">
-              ${[...psClusters.entries()]
-                .map(([key, groupEntries]) => groupEntries.length > 1 ? clusterMarkup(key.split('::')[0], groupEntries, { objectType: 'product_service' }) : `<div class="node-grid">${groupEntries.map(entry => topologyNodeMarkup(entry, { objectType: 'product_service', psLabel: true })).join('')}</div>`)
-                .join('')}
-              ${standalonePs.length ? `<div class="node-grid">${standalonePs.map(entry => topologyNodeMarkup(entry, { objectType: 'product_service', psLabel: true })).join('')}</div>` : ''}
-              ${standaloneRbbs.length ? `<div class="node-grid">${standaloneRbbs.map(entry => topologyNodeMarkup(entry, { objectType: 'rbb' })).join('')}</div>` : ''}
-              ${[...rbbClusters.entries()].map(([key, groupEntries]) => clusterMarkup(key.split('::')[0], groupEntries, { objectType: 'rbb' })).join('')}
-              ${eksEntries.length ? `
-                <section class="eks-box">
-                  <div class="eks-label">EKS</div>
-                  <div class="node-grid">
-                    ${eksEntries.map(entry => topologyNodeMarkup(entry, { objectType: 'product_service', psLabel: true })).join('')}
-                  </div>
-                </section>
-              ` : ''}
+            <div class="scaling-unit-content">
+              ${[...targets.entries()].map(([target, grouped]) => {
+                const meta = deploymentTargetPresentation(target);
+                return `
+                  <section class="deployment-target-cluster">
+                    <div class="deployment-target-header">
+                      <div class="deployment-target-title">${escapeHtml(target)}</div>
+                      <span class="location-badge ${escapeHtml(meta.cls)}">${meta.icon} ${escapeHtml(meta.badge)}</span>
+                    </div>
+                    <div class="deployment-target-content">
+                      ${grouped.map(group => serviceGroupTopologyMarkup(group)).join('')}
+                    </div>
+                  </section>
+                `;
+              }).join('')}
             </div>
           </section>
         `;
@@ -2196,9 +2443,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return `
         <div class="topology-layout">
           ${externalMarkup}
-          <div class="topology-locations">
-            ${locationMarkup || '<div class="empty-card">No deployment topology data is available for this software distribution manifest.</div>'}
+          <div class="topology-scaling-units">
+            ${scalingUnitMarkup}
           </div>
+          <div class="topology-unscoped-groups">
+            ${unscopedGroups.map(group => serviceGroupTopologyMarkup(group)).join('')}
+          </div>
+          ${!scalingUnitMarkup && !unscopedGroups.length ? '<div class="empty-card">No deployment topology data is available for this software distribution manifest.</div>' : ''}
         </div>
       `;
     }
@@ -2376,6 +2627,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           ${productServiceDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
+      } else if (object.type === 'saas_service') {
+        detailBody = `
+          ${headerMarkup}
+          ${saasServiceDetailMarkup(object)}
+          ${usedByMarkup(object)}
+        `;
       } else if (object.type === 'software_distribution_manifest') {
         detailBody = `
           ${headerMarkup}
@@ -2392,12 +2649,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                   : `<span class="interaction-notes">${escapeHtml(object.appliesPattern || 'No applied reference architecture documented.')}</span>`}
               </div>
             </section>
-            ${deployedProductServicesTableMarkup(object)}
-            ${deployedRbbTableMarkup(object)}
-            <section class="section-card">
-              <h3>External Interactions</h3>
-              ${interactionMarkup(object)}
-            </section>
+            ${sdmServiceGroupsMarkup(object)}
             ${sdmRisksMarkup(object)}
             <section class="decisions-card">
               <h3>Architectural Decisions</h3>
@@ -2412,6 +2664,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <div id="topology-canvas"></div>
             </section>
           </div>
+          ${usedByMarkup(object)}
+        `;
+      } else if (object.type === 'abb' && object.subtype === 'appliance') {
+        detailBody = `
+          ${headerMarkup}
+          ${applianceAbbDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
       } else if (object.type === 'rbb' || object.type === 'abb' || object.type === 'reference_architecture') {
@@ -2490,7 +2748,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         renderTopologyIntoCanvas();
       }
-      if (!['aag', 'ard', 'software_distribution_manifest', 'product_service', 'compliance_framework', 'aag_control_mapping'].includes(object.type)) {
+      if (!['aag', 'ard', 'software_distribution_manifest', 'product_service', 'compliance_framework', 'aag_control_mapping', 'saas_service'].includes(object.type) && !(object.type === 'abb' && object.subtype === 'appliance')) {
         renderInternalDiagram(object);
       }
     }

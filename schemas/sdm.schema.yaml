@@ -1,15 +1,72 @@
 schemaVersion: "1.0"
 type: software_distribution_manifest
 requiredFields:
-  - id            # format: sdm.<product-slug>
+  - id            # format: sdm.<product>
   - name
-  - appliesPattern
   - catalogStatus # stub | draft | approved
   - lifecycleStatus
 optionalFields:
   - description
+  - appliesPattern
   - architecturalDecisions
-  - deployedProductServices
-  - deployedRBBs
-  - externalInteractions
+  - scalingUnits
+  - serviceGroups
   - architectureRisksAndDecisions
+
+scalingUnit:
+  requiredFields:
+    - name
+    - type
+  optionalFields:
+    - instanceCount
+    - notes
+
+serviceGroup:
+  requiredFields:
+    - name
+    - deploymentTarget
+  optionalFields:
+    - scalingUnit
+    - productServices
+    - rbbs
+    - applianceAbbs
+    - saasServices
+    - externalInteractions
+
+productServiceEntry:
+  requiredFields:
+    - ref
+  optionalFields:
+    - intent
+    - riskRef
+    - notes
+
+rbbEntry:
+  requiredFields:
+    - ref
+  optionalFields:
+    - intent
+    - instance
+    - riskRef
+    - notes
+
+applianceAbbEntry:
+  requiredFields:
+    - ref
+  optionalFields:
+    - notes
+
+saasServiceEntry:
+  requiredFields:
+    - ref
+  optionalFields:
+    - notes
+
+externalInteraction:
+  requiredFields:
+    - name
+  optionalFields:
+    - type
+    - ref
+    - capability
+    - notes

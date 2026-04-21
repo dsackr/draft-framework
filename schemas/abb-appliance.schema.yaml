@@ -1,0 +1,17 @@
+schemaVersion: "1.0"
+type: abb
+subtype: appliance
+requiredFields:
+  - id          # format: abb.appliance.<vendor>-<product>
+  - name
+  - vendor
+  - capability
+  - catalogStatus
+  - lifecycleStatus
+optionalFields:
+  - description
+  - notes
+  - networkPlacement
+  - patchingOwner
+  - complianceCerts
+  - controlReferences

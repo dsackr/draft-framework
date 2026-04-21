@@ -6,26 +6,47 @@ DRAFT — Deployable Reference Architecture Framework Toolkit — exists to make
 
 The point is not to create documentation for its own sake. The point is to give infrastructure, engineering, security, and architecture teams a shared source of truth that can be validated automatically and browsed consistently.
 
-## The Six Object Types
+## The Object Types
 
-The catalog contains six object types.
+The catalog contains a small set of first-class object types. Each exists because
+it answers a different architecture question.
+
+| Object Type | Purpose |
+|---|---|
+| ABB | Defines a vendor product that is installed on a managed host. |
+| Appliance ABB | Defines a blackbox vendor-managed component deployed inside the infrastructure boundary. |
+| SaaS Service | Defines a subscribed vendor-managed service where data may leave the infrastructure boundary. |
+| RBB | Defines a reusable host or service pattern. |
+| Product Service | Defines first-party code deployed on an RBB or blackbox host pattern. |
+| AAG | Defines the questions and requirements that must be satisfied before approval. |
+| ARD | Defines an explicit architecture risk or decision. |
+| Reference Architecture | Defines a reusable architecture pattern. |
+| Software Distribution Manifest | Defines how a specific product is actually distributed and deployed. |
+| Compliance Framework / AAG Control Mapping | Defines how architecture requirements map to selectable control catalogs. |
 
 - ABBs define discrete vendor products at specific versions.
+- Appliance ABBs define blackbox vendor-managed components that still live inside the adopter's infrastructure boundary.
+- SaaS Services define subscribed vendor-managed services where data may leave the adopter's infrastructure boundary.
 - RBBs define reusable architecture components built from ABBs.
-- AAGs define the requirements a catalog object must satisfy before it can be approved. In practice the current AAG set covers RBBs, RAs, and SDMs.
+- Product Services define first-party code deployed on an RBB or blackbox host pattern.
+- AAGs define the requirements a catalog object must satisfy before it can be approved.
+- ARDs define explicit architecture risks and documented decisions.
 - RAs define reusable patterns in terms of required RBBs and roles.
-- SDMs define how a specific product is deployed using those RBBs.
-- External interactions define the black-box systems a component depends on, whether or not those systems exist elsewhere in the catalog.
+- SDMs define how a specific product is deployed using service groups, scaling units, and deployable components.
+- Compliance Frameworks and AAG Control Mappings let the same architecture requirements be viewed through different control catalogs.
 
 ## How The Objects Relate
 
 The relationship model is deliberate.
 
-- ABBs are the smallest reusable units.
+- ABBs are the smallest reusable units when the technology is installed on a managed host.
+- Appliance ABBs model components that are deployed inside the infrastructure boundary but do not expose a separable host.
+- SaaS Services model subscribed services that may route data through vendor-managed infrastructure outside the boundary.
 - Host RBBs are assembled from OS, hardware, and agent ABBs plus platform interactions.
 - Service RBBs compose a host RBB with one function ABB.
+- Product Services declare where first-party code runs.
 - RAs say which RBBs, in which named variants, are required for a given pattern.
-- SDMs say which RBBs are actually deployed for a specific product.
+- SDMs say which Product Services, RBBs, Appliance ABBs, and SaaS Services are actually present for a specific product.
 - AAGs define what must be addressed before a reusable architecture component or pattern declaration can be approved.
 
 A useful way to think about the catalog is this: ABBs define what a component is, RBBs define how it behaves architecturally, RAs define which components a pattern requires, SDMs define what a product actually uses, and AAGs define what questions must be answered before the component can be trusted.
