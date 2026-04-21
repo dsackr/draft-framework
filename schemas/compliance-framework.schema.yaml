@@ -1,0 +1,15 @@
+schemaVersion: "1.0"
+type: compliance_framework
+requiredFields:
+  - id                # format: framework.<slug>
+  - name
+  - frameworkKind     # common | organizational
+  - catalogStatus     # stub | draft | approved
+  - lifecycleStatus
+optionalFields:
+  - description
+  - version
+  - controlIdNamespace
+  - defaultSelection  # boolean
+  - extends           # list of framework ids
+  - notes

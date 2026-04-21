@@ -18,6 +18,8 @@ TYPE_PREFIX = {
     "rbb": "rbb.",
     "aag": "aag.",
     "ard": "ard.",
+    "compliance_framework": "framework.",
+    "aag_control_mapping": "aagmap.",
     "product_service": "ps.",
     "reference_architecture": "ra.",
     "deployment_architecture": "da.",
@@ -25,8 +27,11 @@ TYPE_PREFIX = {
 BASE_REQUIRED = ["schemaVersion", "id", "type", "name", "lifecycleStatus", "catalogStatus"]
 VALID_ARD_CATEGORY = {"risk", "decision"}
 VALID_ARD_STATUS = {"open", "accepted", "mitigated", "resolved"}
+VALID_FRAMEWORK_KIND = {"common", "organizational"}
 ARD_ID_PATTERN = re.compile(r"^ard\.[a-z0-9-]+\.[0-9]+$")
 PS_ID_PATTERN = re.compile(r"^ps\.[a-z0-9-]+\.[a-z0-9-]+$")
+FRAMEWORK_ID_PATTERN = re.compile(r"^framework\.[a-z0-9-]+$")
+AAG_MAPPING_ID_PATTERN = re.compile(r"^aagmap\.[a-z0-9-]+(?:\.[a-z0-9-]+)+$")
 DECISION_ENUMS = {
     "autoscaling": {"required", "optional", "none"},
     "loadBalancer": {"required", "optional", "none"},
@@ -371,6 +376,76 @@ def validate_product_service(obj: dict[str, Any], path: Path, catalog_by_id: dic
         failures.append(f"{path}: [{object_id or 'unknown'}] at least one named variant must be present")
 
 
+def validate_compliance_framework(obj: dict[str, Any], path: Path, catalog_by_id: dict[str, dict[str, Any]], failures: list[str]) -> None:
+    object_id = obj.get("id", "")
+    if object_id and not FRAMEWORK_ID_PATTERN.match(str(object_id)):
+        failures.append(f"{path}: invalid compliance framework id '{object_id}' (expected format framework.<slug>)")
+
+    framework_kind = obj.get("frameworkKind")
+    if framework_kind not in VALID_FRAMEWORK_KIND:
+        failures.append(f"{path}: invalid frameworkKind '{framework_kind}'")
+
+    extends = obj.get("extends", [])
+    if extends and not isinstance(extends, list):
+        failures.append(f"{path}: extends must be a list of framework ids")
+    elif isinstance(extends, list):
+        for framework_id in extends:
+            target = catalog_by_id.get(framework_id)
+            if not target or target.get("type") != "compliance_framework":
+                failures.append(f"{path}: extends references unknown compliance framework '{framework_id}'")
+
+
+def validate_aag_control_mapping(
+    obj: dict[str, Any],
+    path: Path,
+    catalog_by_id: dict[str, dict[str, Any]],
+    aags: dict[str, dict[str, Any]],
+    failures: list[str],
+) -> None:
+    object_id = obj.get("id", "")
+    if object_id and not AAG_MAPPING_ID_PATTERN.match(str(object_id)):
+        failures.append(
+            f"{path}: invalid AAG control mapping id '{object_id}' (expected format aagmap.<framework-slug>.<mapping-name>)"
+        )
+
+    framework_id = obj.get("framework")
+    framework = catalog_by_id.get(framework_id) if framework_id else None
+    if not framework or framework.get("type") != "compliance_framework":
+        failures.append(f"{path}: framework references unknown compliance framework '{framework_id}'")
+
+    aag_id = obj.get("aagId")
+    if not aag_id or aag_id not in aags:
+        failures.append(f"{path}: aagId references unknown AAG '{aag_id}'")
+        resolved_requirements: list[dict[str, Any]] = []
+    else:
+        resolved_requirements = resolve_aag_requirements(aag_id, aags)
+
+    requirement_index = {
+        requirement.get("id"): requirement
+        for requirement in resolved_requirements
+        if isinstance(requirement, dict) and is_non_empty(requirement.get("id"))
+    }
+
+    mappings = obj.get("requirementMappings", [])
+    if not isinstance(mappings, list) or not mappings:
+        failures.append(f"{path}: requirementMappings must be a non-empty list")
+        return
+
+    for mapping in mappings:
+        if not isinstance(mapping, dict):
+            failures.append(f"{path}: each requirementMappings entry must be a mapping")
+            continue
+        requirement_id = mapping.get("requirementId")
+        if not is_non_empty(requirement_id):
+            failures.append(f"{path}: requirementMappings entries must include requirementId")
+            continue
+        if requirement_id not in requirement_index:
+            failures.append(f"{path}: requirementMappings references unknown requirement '{requirement_id}' for AAG '{aag_id}'")
+        controls = mapping.get("controls", [])
+        if not isinstance(controls, list) or not controls or not all(is_non_empty(control) for control in controls):
+            failures.append(f"{path}: requirementMappings '{requirement_id}' must include a non-empty controls list")
+
+
 def validate_da_refs(
     obj: dict[str, Any],
     path: Path,
@@ -443,6 +518,10 @@ def main() -> int:
             validate_ard(obj, path, failures)
         if obj.get("type") == "product_service":
             validate_product_service(obj, path, catalog_by_id, failures)
+        if obj.get("type") == "compliance_framework":
+            validate_compliance_framework(obj, path, catalog_by_id, failures)
+        if obj.get("type") == "aag_control_mapping":
+            validate_aag_control_mapping(obj, path, catalog_by_id, aags, failures)
         if obj.get("type") == "rbb":
             validate_rbb(obj, path, aags, catalog_ids, failures)
         if obj.get("type") == "reference_architecture":

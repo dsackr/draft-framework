@@ -23,8 +23,6 @@ requirements:
   - id: backup-strategy
     description: The DBMS service must document backup strategy together with recovery time and recovery point expectations.
     rationale: A database platform is not governable unless durability expectations are explicit.
-    controlReferences:
-      - CC.SecurityCompliance.10.2.1
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
         key: backup.strategy
@@ -47,8 +45,6 @@ requirements:
   - id: encryption-at-rest
     description: The DBMS service must document how data is encrypted at rest.
     rationale: Storage protection is a core control for regulated and business-critical data.
-    controlReferences:
-      - CC.SecurityCompliance.0.2.1
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
         key: encryption.atRest
@@ -57,8 +53,6 @@ requirements:
   - id: access-control-model
     description: The DBMS service must document its administrative and application access control model.
     rationale: Database access boundaries must be understandable to engineering, security, and operations teams.
-    controlReferences:
-      - CC.SecurityCompliance.04.1.1
     canBeSatisfiedBy:
       - mechanism: externalInteraction
         criteria:

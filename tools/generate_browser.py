@@ -24,6 +24,8 @@ CATALOG_FOLDERS = [
     "aags",
     "abbs",
     "ards",
+    "compliance-frameworks",
+    "compliance-mappings",
     "deployment-architectures",
     "product-services",
     "rbbs",
@@ -49,7 +51,10 @@ REF_CONTAINER_KEYS = {
     "platformDependency",
     "linkedDA",
     "riskRef",
+    "framework",
+    "aagId",
 }
+CATALOG_ID_PREFIXES = ("abb.", "rbb.", "aag.", "ard.", "ps.", "ra.", "da.", "framework.", "aagmap.")
 
 
 def discover_yaml_files(root: Path) -> list[Path]:
@@ -78,17 +83,17 @@ def extract_refs(node: Any, path: str = "") -> list[tuple[str, str]]:
     if isinstance(node, dict):
         for key, value in node.items():
             child_path = f"{path}.{key}" if path else key
-            if key in REF_CONTAINER_KEYS and isinstance(value, str) and value.startswith(("abb.", "rbb.", "aag.", "ard.", "ps.", "ra.", "da.")):
+            if key in REF_CONTAINER_KEYS and isinstance(value, str) and value.startswith(CATALOG_ID_PREFIXES):
                 refs.append((value, child_path))
             elif key.endswith("Refs") and isinstance(value, list):
                 for index, item in enumerate(value):
-                    if isinstance(item, str) and item.startswith(("abb.", "rbb.", "aag.", "ard.", "ps.", "ra.", "da.")):
+                    if isinstance(item, str) and item.startswith(CATALOG_ID_PREFIXES):
                         refs.append((item, f"{child_path}[{index}]"))
             else:
                 refs.extend(extract_refs(value, child_path))
     elif isinstance(node, list):
         for index, item in enumerate(node):
-            if isinstance(item, str) and item.startswith(("abb.", "rbb.", "aag.", "ard.", "ps.", "ra.", "da.")):
+            if isinstance(item, str) and item.startswith(CATALOG_ID_PREFIXES):
                 refs.append((item, f"{path}[{index}]"))
             else:
                 refs.extend(extract_refs(item, f"{path}[{index}]"))
@@ -116,6 +121,10 @@ def shape_for(obj: dict[str, Any]) -> str:
         return "star"
     if obj["type"] == "aag":
         return "barrel"
+    if obj["type"] == "compliance_framework":
+        return "hexagon"
+    if obj["type"] == "aag_control_mapping":
+        return "tag"
     if obj["type"] == "ard":
         return "round-rectangle"
     if obj["type"] == "product_service":
@@ -140,6 +149,10 @@ def type_label_for(obj: dict[str, Any]) -> str:
         return f"ABB / {obj.get('category', 'unknown')}"
     if obj["type"] == "aag":
         return "AAG"
+    if obj["type"] == "compliance_framework":
+        return "Compliance Framework"
+    if obj["type"] == "aag_control_mapping":
+        return "AAG Control Mapping"
     if obj["type"] == "ard":
         return f"ARD / {obj.get('category', 'risk')}"
     if obj["type"] == "product_service":
@@ -177,6 +190,73 @@ def internal_component_refs(obj: dict[str, Any]) -> list[dict[str, str]]:
             seen.add(ref)
 
     return refs
+
+
+def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    frameworks = sorted(
+        [obj for obj in registry.values() if obj.get("type") == "compliance_framework"],
+        key=lambda item: item.get("name", ""),
+    )
+    mapping_objects = [obj for obj in registry.values() if obj.get("type") == "aag_control_mapping"]
+    local_mappings: dict[str, dict[str, dict[str, list[str]]]] = {}
+    frameworks_by_id = {framework["id"]: framework for framework in frameworks}
+
+    for mapping in mapping_objects:
+        framework_id = str(mapping.get("framework", ""))
+        aag_id = str(mapping.get("aagId", ""))
+        if not framework_id or not aag_id:
+            continue
+        requirement_index = local_mappings.setdefault(framework_id, {}).setdefault(aag_id, {})
+        for requirement_mapping in mapping.get("requirementMappings", []):
+            if not isinstance(requirement_mapping, dict) or not requirement_mapping.get("requirementId"):
+                continue
+            requirement_index[str(requirement_mapping["requirementId"])] = [
+                str(control) for control in requirement_mapping.get("controls", []) if str(control).strip()
+            ]
+
+    resolved_cache: dict[str, dict[str, dict[str, list[str]]]] = {}
+
+    def resolve_framework_mappings(framework_id: str, stack: set[str] | None = None) -> dict[str, dict[str, list[str]]]:
+        if framework_id in resolved_cache:
+            return resolved_cache[framework_id]
+        stack = stack or set()
+        if framework_id in stack:
+            return {}
+        stack.add(framework_id)
+        framework = frameworks_by_id.get(framework_id, {})
+        merged: dict[str, dict[str, list[str]]] = {}
+        for parent_id in framework.get("extends", []) if isinstance(framework.get("extends"), list) else []:
+            parent_mappings = resolve_framework_mappings(str(parent_id), stack)
+            for aag_id, requirement_map in parent_mappings.items():
+                merged.setdefault(aag_id, {}).update(requirement_map)
+        for aag_id, requirement_map in local_mappings.get(framework_id, {}).items():
+            merged.setdefault(aag_id, {}).update(requirement_map)
+        resolved_cache[framework_id] = merged
+        stack.remove(framework_id)
+        return merged
+
+    default_framework_id = next(
+        (framework["id"] for framework in frameworks if framework.get("defaultSelection") is True),
+        frameworks[0]["id"] if frameworks else "",
+    )
+
+    return {
+        "frameworks": [
+            {
+                "id": framework["id"],
+                "name": framework.get("name", framework["id"]),
+                "frameworkKind": framework.get("frameworkKind", ""),
+                "catalogStatus": framework.get("catalogStatus", ""),
+                "lifecycleStatus": framework.get("lifecycleStatus", ""),
+                "defaultSelection": framework.get("defaultSelection", False),
+                "extends": framework.get("extends", []),
+                "description": framework.get("description", ""),
+            }
+            for framework in frameworks
+        ],
+        "defaultFrameworkId": default_framework_id,
+        "mappingsByFramework": {framework["id"]: resolve_framework_mappings(framework["id"]) for framework in frameworks},
+    }
 
 
 def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]:
@@ -239,8 +319,12 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "mitigationPath": obj.get("mitigationPath", ""),
                 "decisionRationale": obj.get("decisionRationale", ""),
                 "relatedARDs": obj.get("relatedARDs", []),
-                "controlReferences": obj.get("controlReferences", []),
                 "linkedDA": obj.get("linkedDA", ""),
+                "framework": obj.get("framework", ""),
+                "frameworkKind": obj.get("frameworkKind", ""),
+                "aagId": obj.get("aagId", ""),
+                "requirementMappings": obj.get("requirementMappings", []),
+                "defaultSelection": obj.get("defaultSelection", False),
                 "hasRiskRef": obj.get("id") in risk_marked_rbb_ids or obj.get("id") in risk_marked_product_service_ids,
                 "outboundRefs": outbound_refs.get(object_id, []),
                 "referencedBy": referenced_by.get(object_id, []),
@@ -265,6 +349,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
         "lifecycleValues": lifecycle_values,
         "referencedBy": referenced_by,
         "warnings": warnings,
+        "compliance": build_compliance_payload(registry),
     }
 
 
@@ -1114,6 +1199,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border-radius: 999px;
       flex: 0 0 auto;
     }
+    .sidebar-select {
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(71, 85, 105, 0.9);
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--text);
+      padding: 10px 12px;
+      font: inherit;
+    }
+    .sidebar-help {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
     .decisions-card {
       background: rgba(30,41,59,0.92);
       border: 1px solid var(--border);
@@ -1200,14 +1301,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     const allObjects = browserData.objects.slice().sort((a, b) => a.name.localeCompare(b.name));
     const objectLookup = browserData.lookup;
     const referencedByIndex = browserData.referencedBy || {};
+    const complianceData = browserData.compliance || {};
     const appRoot = document.getElementById('app-root');
     const sidebarContent = document.getElementById('sidebar-content');
     const legend = document.getElementById('legend');
     const typeFilters = ['All', ...browserData.filterValues];
     const lifecycleValues = browserData.lifecycleValues || [];
+    const complianceFrameworks = complianceData.frameworks || [];
     const deployableTypes = new Set(
       allObjects
-        .filter(object => !['aag', 'ard'].includes(object.type))
+        .filter(object => !['aag', 'ard', 'compliance_framework', 'aag_control_mapping'].includes(object.type))
         .map(object => object.type)
     );
     const impactOrder = ['deployment_architecture', 'reference_architecture', 'product_service', 'rbb', 'abb'];
@@ -1221,6 +1324,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     let impactSelectedId = null;
     let impactSearchTerm = '';
     let suppressHashSync = false;
+    let selectedFrameworkId = (() => {
+      try {
+        const saved = window.localStorage.getItem('draft-framework:selected-framework');
+        if (saved && objectLookup[saved]) {
+          return saved;
+        }
+      } catch (error) {}
+      return complianceData.defaultFrameworkId || complianceFrameworks[0]?.id || null;
+    })();
     let impactLifecycleFilters = Object.fromEntries(
       impactLifecycleOrder.map(status => [status, status !== 'exit'])
     );
@@ -1374,6 +1486,36 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       sidebarContent.innerHTML = contentHtml;
     }
 
+    function selectedFramework() {
+      return (selectedFrameworkId && objectLookup[selectedFrameworkId]) || complianceFrameworks[0] || null;
+    }
+
+    function selectedFrameworkMappings() {
+      return complianceData.mappingsByFramework?.[selectedFrameworkId] || {};
+    }
+
+    function controlsForRequirement(aagId, requirementId) {
+      return selectedFrameworkMappings()?.[aagId]?.[requirementId] || [];
+    }
+
+    function complianceFrameworkMarkup() {
+      if (!complianceFrameworks.length) {
+        return '';
+      }
+      const current = selectedFramework();
+      return `
+        <div class="sidebar-block">
+          <div class="legend-title">Compliance Framework</div>
+          <select id="framework-select" class="sidebar-select">
+            ${complianceFrameworks.map(framework => `
+              <option value="${framework.id}" ${framework.id === current?.id ? 'selected' : ''}>${escapeHtml(framework.name)}</option>
+            `).join('')}
+          </select>
+          <div class="sidebar-help">${escapeHtml(current?.description || 'Select the control framework used to render AAG mappings.')}</div>
+        </div>
+      `;
+    }
+
     function currentFilterMarkup() {
       return `
         <div class="sidebar-block">
@@ -1381,6 +1523,36 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <div class="current-filter"><span class="dot" style="background:#38bdf8"></span><span>${escapeHtml(activeFilter === 'All' ? 'All' : formatTypeLabel(activeFilter))}</span></div>
         </div>
       `;
+    }
+
+    function sidebarMarkup(extraMarkup = '') {
+      return `${complianceFrameworkMarkup()}${currentFilterMarkup()}${extraMarkup}`;
+    }
+
+    function rerenderCurrentView() {
+      if (currentMode === 'detail') {
+        renderDetailView();
+        return;
+      }
+      if (currentMode === 'impact') {
+        renderImpactView();
+        return;
+      }
+      renderListView();
+    }
+
+    function attachSidebarHandlers() {
+      const frameworkSelect = document.getElementById('framework-select');
+      if (!frameworkSelect) {
+        return;
+      }
+      frameworkSelect.addEventListener('change', event => {
+        selectedFrameworkId = event.target.value || complianceData.defaultFrameworkId || complianceFrameworks[0]?.id || null;
+        try {
+          window.localStorage.setItem('draft-framework:selected-framework', selectedFrameworkId || '');
+        } catch (error) {}
+        rerenderCurrentView();
+      });
     }
 
     function attachTopNavHandlers() {
@@ -1429,7 +1601,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       destroyImpactCy();
       const filtered = filterObjects();
       syncHashForListView();
-      renderSidebarContent(currentFilterMarkup());
+      renderSidebarContent(sidebarMarkup());
       appRoot.innerHTML = `
         <div class="view-shell">
           ${topNavMarkup()}
@@ -1478,6 +1650,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       });
 
       attachTopNavHandlers();
+      attachSidebarHandlers();
     }
 
     function flattenDecisionEntries(prefix, value, entries) {
@@ -1552,13 +1725,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function controlBadges(controls) {
       if (!controls || !controls.length) {
-        return '<span class="interaction-notes">No control references</span>';
+        return '<span class="interaction-notes">No controls mapped for the selected framework.</span>';
       }
       return controls.map(control => `<span class="control-badge">${escapeHtml(control)}</span>`).join('');
     }
 
     function aagRequirementsMarkup(object) {
       const requirements = object.requirements || [];
+      const framework = selectedFramework();
       if (!requirements.length) {
         return '<div class="empty-card">No requirements are documented for this AAG.</div>';
       }
@@ -1574,10 +1748,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                   <div class="requirement-rationale-label">Rationale</div>
                   <div class="requirement-rationale">${escapeHtml(requirement.rationale)}</div>
                 ` : ''}
-                ${(requirement.controlReferences || []).length ? `
-                  <div class="mechanism-label">Security and Compliance Controls</div>
-                  <div class="control-badges">${controlBadges(requirement.controlReferences || [])}</div>
-                ` : ''}
+                <div class="mechanism-label">Mapped Controls${framework ? ` / ${escapeHtml(framework.name)}` : ''}</div>
+                <div class="control-badges">${controlBadges(controlsForRequirement(object.id, requirement.id || ''))}</div>
                 <div class="mechanism-label">Can be satisfied by</div>
                 <div class="mechanism-list">
                   ${(requirement.canBeSatisfiedBy || []).map(mechanism => `
@@ -1596,12 +1768,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function rbbAagMarkup(object) {
       const aagIds = object.satisfiesAAG || [];
+      const framework = selectedFramework();
       if (!aagIds.length) {
         return '';
       }
       return `
         <section class="section-card">
-          <h3>AAG Satisfaction</h3>
+          <h3>AAG Satisfaction${framework ? ` / ${escapeHtml(framework.name)}` : ''}</h3>
           <div class="section-stack">
             ${aagIds.map(aagId => {
               const aag = objectLookup[aagId];
@@ -1610,7 +1783,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 <article class="aag-card">
                   <div class="aag-name">Satisfies: ${escapeHtml(aagId)}</div>
                   ${requirements.length ? requirements.map(requirement => `
-                    <div class="aag-control-line">└─ ${escapeHtml(requirement.id || 'requirement')} → ${escapeHtml((requirement.controlReferences || []).join(', ') || 'No control references')}</div>
+                    <div class="aag-control-line">└─ ${escapeHtml(requirement.id || 'requirement')} → ${escapeHtml(controlsForRequirement(aagId, requirement.id || '').join(', ') || 'No controls mapped')}</div>
                   `).join('') : '<div class="interaction-notes">No requirements found on referenced AAG.</div>'}
                 </article>
               `;
@@ -1754,6 +1927,67 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               </tbody>
             </table>
           ` : '<div class="empty-card">No variants are documented for this product service.</div>'}
+        </section>
+      `;
+    }
+
+    function complianceFrameworkDetailMarkup(object) {
+      const parents = Array.isArray(object.extends) ? object.extends : [];
+      return `
+        <section class="section-card">
+          <h3>Compliance Framework</h3>
+          <div class="section-stack">
+            <div class="badges">
+              <div class="badge">${escapeHtml(object.frameworkKind || 'common')}</div>
+              ${object.defaultSelection ? '<div class="badge">Default Selection</div>' : ''}
+              ${lifecycleBadge(object.lifecycleStatus)}
+            </div>
+            <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
+            ${parents.length ? `
+              <div><strong>Extends:</strong> ${parents.map(parentId => objectLookup[parentId]
+                ? `<span class="ard-link" data-object-link="${parentId}">${escapeHtml(parentId)}</span>`
+                : escapeHtml(parentId)
+              ).join(', ')}</div>
+            ` : ''}
+          </div>
+        </section>
+      `;
+    }
+
+    function complianceMappingDetailMarkup(object) {
+      const mappings = object.requirementMappings || [];
+      return `
+        <section class="section-card">
+          <h3>Framework Mapping</h3>
+          <div class="section-stack">
+            <div><strong>Framework:</strong> ${object.framework && objectLookup[object.framework]
+              ? `<span class="ard-link" data-object-link="${object.framework}">${escapeHtml(object.framework)}</span>`
+              : escapeHtml(object.framework || '')}</div>
+            <div><strong>AAG:</strong> ${object.aagId && objectLookup[object.aagId]
+              ? `<span class="ard-link" data-object-link="${object.aagId}">${escapeHtml(object.aagId)}</span>`
+              : escapeHtml(object.aagId || '')}</div>
+          </div>
+        </section>
+        <section class="section-card">
+          <h3>Requirement Mappings</h3>
+          ${mappings.length ? `
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Requirement</th>
+                  <th>Controls</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${mappings.map(entry => `
+                  <tr>
+                    <td>${escapeHtml(entry.requirementId || '')}</td>
+                    <td>${controlBadges(entry.controls || [])}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : '<div class="empty-card">No requirement mappings are documented for this object.</div>'}
         </section>
       `;
     }
@@ -2089,7 +2323,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         return;
       }
       syncHashForDetailView(object.id);
-      renderSidebarContent(currentFilterMarkup());
+      renderSidebarContent(sidebarMarkup());
       const headerMarkup = `
         <section class="header-card">
           <div class="header-top">
@@ -2117,6 +2351,18 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         detailBody = `
           ${headerMarkup}
           ${aagRequirementsMarkup(object)}
+          ${usedByMarkup(object)}
+        `;
+      } else if (object.type === 'compliance_framework') {
+        detailBody = `
+          ${headerMarkup}
+          ${complianceFrameworkDetailMarkup(object)}
+          ${usedByMarkup(object)}
+        `;
+      } else if (object.type === 'aag_control_mapping') {
+        detailBody = `
+          ${headerMarkup}
+          ${complianceMappingDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
       } else if (object.type === 'ard') {
@@ -2216,6 +2462,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       });
 
       attachTopNavHandlers();
+      attachSidebarHandlers();
       attachObjectLinkHandlers(appRoot);
       if (object.type === 'deployment_architecture') {
         const renderTopologyIntoCanvas = () => {
@@ -2243,7 +2490,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         renderTopologyIntoCanvas();
       }
-      if (!['aag', 'ard', 'deployment_architecture', 'product_service'].includes(object.type)) {
+      if (!['aag', 'ard', 'deployment_architecture', 'product_service', 'compliance_framework', 'aag_control_mapping'].includes(object.type)) {
         renderInternalDiagram(object);
       }
     }
@@ -2480,10 +2727,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const hasItems = orderedGroups.length > 0;
 
       return `
-        <div class="sidebar-block">
-          <div class="legend-title">Current Filter</div>
-          <div class="current-filter"><span class="dot" style="background:#38bdf8"></span><span>${escapeHtml(activeFilter)}</span></div>
-        </div>
         <aside class="impact-sidebar">
           <div>
             <h3 style="margin:0 0 10px">Impact Analysis</h3>
@@ -2825,7 +3068,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       currentMode = 'impact';
       syncHashForImpactView();
       const selection = impactSelectedId ? computeImpactSelection(impactSelectedId) : { selected: null, impacted: new Set(), siblings: new Set(), supported: false };
-      renderSidebarContent(impactSidebarMarkup(selection));
+      renderSidebarContent(sidebarMarkup(impactSidebarMarkup(selection)));
       appRoot.innerHTML = `
         <div class="view-shell">
           ${topNavMarkup()}
@@ -2878,6 +3121,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
       });
       renderImpactGraph(selection);
+      attachSidebarHandlers();
     }
 
     window.addEventListener('resize', () => {

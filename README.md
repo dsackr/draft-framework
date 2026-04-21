@@ -8,6 +8,8 @@ If you are new to the repo, start with the framework documents below before edit
 
 The current framework validates RBBs, RAs, and DAs against Architecture Analysis Guidelines. ABBs remain governed by their schema and lifecycle metadata rather than an AAG.
 
+Compliance mappings are plug-and-play. AAGs define architecture requirements, while separate compliance framework and mapping objects determine which controls are shown for a selected framework such as a baseline controls pack, NIST CSF, SOC 2, or an organization-specific overlay.
+
 ## Start Here
 
 - [AI rebuild prompt](docs/ai-rebuild-prompt.md)
@@ -28,6 +30,8 @@ abbs/                       Architecture Building Blocks
 rbbs/                       Reusable host and service building blocks
 aags/                       Architecture Analysis Guidelines
 ards/                       Architecture Risks and Decisions
+compliance-frameworks/      Selectable compliance frameworks
+compliance-mappings/        Requirement-to-control mappings per framework
 product-services/           first-party product services
 reference-architectures/    Pattern-level architecture definitions
 deployment-architectures/   Product-specific deployment declarations

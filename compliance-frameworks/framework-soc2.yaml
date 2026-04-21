@@ -1,0 +1,18 @@
+schemaVersion: "1.0"
+id: framework.soc2
+type: compliance_framework
+name: SOC 2
+description: >
+  Starter framework definition for SOC 2 mappings. Add or refresh control
+  mappings in compliance-mappings/ as your organization curates them.
+version: 2017.0.0
+catalogStatus: stub
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+  - compliance
+  - soc2
+  - starter-pack
+frameworkKind: common

@@ -1,0 +1,21 @@
+schemaVersion: "1.0"
+id: framework.organization-controls
+type: compliance_framework
+name: Organization Controls Overlay
+description: >
+  Template framework for organization-specific controls. Implementers can clone
+  this framework, rename it, and add local mappings without modifying core AAGs.
+version: 1.0.0
+catalogStatus: stub
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+  - compliance
+  - organizational
+  - extensibility
+frameworkKind: organizational
+notes: >
+  Use this as the starting point for internal control catalogs, policy overlays,
+  or audit mappings that are specific to one organization.

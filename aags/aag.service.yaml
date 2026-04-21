@@ -40,8 +40,6 @@ requirements:
   - id: secrets-management
     description: The service must document how credentials, certificates, or runtime secrets are managed.
     rationale: Secret handling is a core part of service operability and security posture.
-    controlReferences:
-      - CC.SecurityCompliance.04.3.1
     canBeSatisfiedBy:
       - mechanism: externalInteraction
         criteria:

@@ -1,0 +1,23 @@
+schemaVersion: "1.0"
+id: framework.security-compliance-controls
+type: compliance_framework
+name: Security and Compliance Controls
+description: >
+  Baseline controls pack bundled with DRAFT. This framework carries the current
+  control mappings that were previously embedded directly in AAG requirements.
+version: 1.0.0
+catalogStatus: approved
+lifecycleStatus: maintain
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+  - compliance
+  - controls
+  - baseline
+frameworkKind: common
+controlIdNamespace: CC.SecurityCompliance
+defaultSelection: true
+notes: >
+  This is the default framework selected by the browser until another framework
+  is chosen.

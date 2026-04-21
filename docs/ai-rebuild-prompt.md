@@ -20,6 +20,8 @@ The repository should contain these top-level folders:
 - `rbbs/` for Reusable Building Blocks
 - `aags/` for Architecture Analysis Guidelines
 - `ards/` for Architecture Risks and Decisions
+- `compliance-frameworks/` for selectable compliance framework objects
+- `compliance-mappings/` for AAG requirement-to-control mappings
 - `product-services/` for Product Service objects
 - `reference-architectures/` for Reference Architecture objects
 - `deployment-architectures/` for Deployment Architecture objects
@@ -72,6 +74,16 @@ The distinction between ABB and RBB is important. An ABB is an individual vendor
 An AAG, or Architecture Analysis Guideline, is a first-class catalog object that defines the requirements an architecture object must satisfy before it is considered complete enough for approval. AAGs are not visual components in a deployment. They are governance rules.
 
 In the current DRAFT implementation, AAGs are written for host RBBs, service RBBs, DBMS service RBBs, reference architectures, deployment architectures, and product services.
+
+### Compliance Framework
+
+A Compliance Framework is a first-class catalog object that defines a selectable control catalog. It exists so the same architecture requirement model can be viewed under different compliance regimes without rewriting the AAGs themselves.
+
+Common examples include a baseline controls pack, NIST CSF, SOC 2, or an organization-specific overlay.
+
+### AAG Control Mapping
+
+An AAG Control Mapping is a first-class catalog object that maps one AAG's requirement IDs to the control IDs used by one selected compliance framework. It is the bridge between architecture requirements and compliance catalogs.
 
 ### ARD
 
@@ -152,7 +164,6 @@ Each requirement is mechanism-based rather than field-path-based. A requirement 
 - `id`
 - `description`
 - `rationale`
-- `controlReferences` (optional)
 - `canBeSatisfiedBy`
 - `minimumSatisfactions`
 
@@ -163,6 +174,32 @@ Each satisfaction mechanism is one of:
 - `architecturalDecision`
 
 This model matters because an AAG defines what must be addressed, not necessarily the exact implementation path. For example, authentication can be satisfied by an explicit external identity interaction or by a documented architectural decision, depending on the object type.
+
+### Compliance Framework Schema
+
+Compliance framework objects include:
+
+- `frameworkKind`
+- optional `controlIdNamespace`
+- optional `defaultSelection`
+- optional `extends`
+
+These objects make compliance selection data-driven. A framework may extend another framework so an organization-specific overlay can inherit a baseline control pack and override only the differences.
+
+### AAG Control Mapping Schema
+
+AAG control mapping objects include:
+
+- `framework`
+- `aagId`
+- `requirementMappings`
+
+Each requirement mapping includes:
+
+- `requirementId`
+- `controls`
+
+This separation keeps AAGs architecture-focused while allowing control catalogs to be refreshed independently.
 
 ### ARD Schema
 
@@ -176,7 +213,6 @@ ARD objects include:
 - `mitigationPath` (optional)
 - `decisionRationale` (required for decision ARDs)
 - `relatedARDs` (optional)
-- `controlReferences` (optional)
 - `linkedDA` (optional)
 
 ARD IDs must match `ard.<domain>.<sequence>`.
@@ -375,6 +411,7 @@ The browser generator should follow these rules:
 - load all YAML objects from the catalog folders
 - register each object in a single `id -> object` registry
 - build outbound and inbound reference indexes
+- build a compliance index from `compliance_framework` and `aag_control_mapping` objects
 - warn on unresolved references instead of crashing
 - generate list filters from data
 - generate lifecycle filters from data

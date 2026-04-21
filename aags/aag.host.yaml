@@ -20,9 +20,6 @@ requirements:
   - id: authentication
     description: The host must address how administrators and services authenticate to the platform.
     rationale: Identity control is a baseline host requirement because unmanaged access breaks supportability and auditability.
-    controlReferences:
-      - CC.SecurityCompliance.04.2.2
-      - CC.SecurityCompliance.04.4.1
     canBeSatisfiedBy:
       - mechanism: externalInteraction
         criteria:
@@ -35,8 +32,6 @@ requirements:
   - id: logging
     description: The host must address how logs leave the host and reach an operationally supported logging destination.
     rationale: Logging is required for troubleshooting, security response, and evidentiary review.
-    controlReferences:
-      - CC.SecurityCompliance.06.1.1
     canBeSatisfiedBy:
       - mechanism: externalInteraction
         criteria:
@@ -49,8 +44,6 @@ requirements:
   - id: security-monitoring
     description: The host must address endpoint security or runtime security monitoring.
     rationale: Hosts must show how they are protected and observed by a security control plane.
-    controlReferences:
-      - CC.SecurityCompliance.06.3.1
     canBeSatisfiedBy:
       - mechanism: externalInteraction
         criteria:
@@ -67,9 +60,6 @@ requirements:
   - id: patch-management
     description: The host must address how patching is orchestrated and what operational mechanism applies updates.
     rationale: Patching is a governance control, not an implementation detail that can be left implicit.
-    controlReferences:
-      - CC.SecurityCompliance.03.1.1
-      - CC.SecurityCompliance.03.2.1
     canBeSatisfiedBy:
       - mechanism: externalInteraction
         criteria:

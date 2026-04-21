@@ -13,7 +13,6 @@ The framework models AAGs in terms of requirements and satisfaction mechanisms r
 - an `id`
 - a `description`
 - a `rationale`
-- optional `controlReferences`
 - a list of `canBeSatisfiedBy` mechanisms
 - a `minimumSatisfactions` count
 
@@ -94,11 +93,15 @@ This AAG applies to deployment architectures. In plain language, it requires a D
 
 Concrete example: a deployment architecture satisfies this AAG by pointing to a reference architecture, selecting a variant for each deployed component, documenting an availability target, and identifying its data classification.
 
-## Control References
+## Compliance Framework Mappings
 
-Each AAG requirement may carry one or more `controlReferences`, which are IDs from the Security and Compliance Controls framework that mandate the requirement. This creates a traceable line from a specific control to the architecture decision that satisfies it.
+Control mappings no longer live inside the AAG files themselves. Instead, DRAFT models compliance as a separate framework-and-mapping layer.
 
-For example, a security-monitoring control is satisfied when a Host RBB includes the necessary monitoring agent or security interaction. The engineer does not need to read the control text in order to build a compliant RBB. Satisfying the AAG requirement is sufficient because the control mapping is already captured in the catalog.
+That separation matters because the same AAG can be viewed under multiple control catalogs. One organization might want to see the baseline Security and Compliance Controls pack. Another might want to view the same AAG through a NIST CSF mapping, a SOC 2 mapping, or an internal controls overlay. The requirement does not change. Only the mapped controls do.
+
+In practice, the browser lets the architect select a compliance framework. The framework selector then drives which controls are displayed under each requirement and in each RBB AAG-satisfaction panel.
+
+That means the AAG stays architecture-focused while the controls remain maintainable as a separate dataset that can be refreshed independently.
 
 ## Inheritance
 
