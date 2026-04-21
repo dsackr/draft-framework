@@ -4,7 +4,7 @@ Use this document as the canonical prompt for rebuilding DRAFT — Deployable Re
 
 ## What This Repository Is
 
-The repository is a Git-as-source-of-truth architecture catalog for Frontline Education. All architecture data is stored as YAML. Python tooling validates the YAML and generates a static browser UI that is published through GitHub Pages. There is no database, no Node.js runtime, and no server-side rendering. The catalog is deliberately designed so that architecture objects can be reviewed in pull requests, versioned over time, and consumed later by automation.
+The repository is a Git-as-source-of-truth architecture catalog. All architecture data is stored as YAML. Python tooling validates the YAML and generates a static browser UI that is published through GitHub Pages. There is no database, no Node.js runtime, and no server-side rendering. The catalog is deliberately designed so that architecture objects can be reviewed in pull requests, versioned over time, and consumed later by automation.
 
 The purpose of the catalog is to describe reusable architecture primitives, product-specific services, architecture patterns, deployment declarations, and governance requirements in a consistent machine-readable model. The repository is not a diagram repository and not a CMDB. It is a structured architecture knowledge base.
 
@@ -56,7 +56,7 @@ ID immutability is part of the DRAFT contract. Once an object reaches `catalogSt
 
 An ABB, or Architecture Building Block, is a configuration document for a specific vendor product at a specific version. ABBs represent installable, vendor-provided building blocks such as operating systems, infrastructure hardware profiles, vendor software, or agents. An ABB is not a deployment, not a pattern, and not first-party product code. It is the catalog’s unit of reusable vendor technology definition.
 
-ABBs carry vendor lifecycle metadata and Frontline lifecycle intent. ABB categories are `os`, `hardware`, `software`, and `agent`. ABBs may declare a `platformDependency` when they depend on another platform or external system.
+ABBs carry vendor lifecycle metadata and framework lifecycle intent. ABB categories are `os`, `hardware`, `software`, and `agent`. ABBs may declare a `platformDependency` when they depend on another platform or external system.
 
 ### RBB
 
@@ -94,7 +94,7 @@ The DA is where pattern intent becomes deployment reality. The DA can declare de
 
 ### Product Service
 
-A Product Service, or PS, is a first-class catalog object for a Frontline-authored service. If a workload contains first-party Frontline code, it is a Product Service. If it is vendor software that could be reused across products, it is an RBB, even if only one product currently uses it.
+A Product Service, or PS, is a first-class catalog object for a first-party service. If a workload contains organization-authored code, it is a Product Service. If it is vendor software that could be reused across products, it is an RBB, even if only one product currently uses it.
 
 A Product Service does not enumerate code packages in version 1 of DRAFT. Instead, it declares the owning product, the reusable pattern it runs on via `runsOn`, and its deployment variants.
 

@@ -4,7 +4,7 @@
 
 DRAFT — Deployable Reference Architecture Framework Toolkit — exists to make architecture decisions explicit, reviewable, and reusable. It is a Git-based catalog of YAML objects that describe the building blocks engineering teams are allowed to assemble, the patterns those building blocks support, the deployment declarations that map those patterns to real products, and the analysis rules that determine whether an architecture description is complete enough to be approved.
 
-The point is not to create documentation for its own sake. The point is to give Cloud Ops, Product Engineering, Security, and Architecture a shared source of truth that can be validated automatically and browsed consistently.
+The point is not to create documentation for its own sake. The point is to give infrastructure, engineering, security, and architecture teams a shared source of truth that can be validated automatically and browsed consistently.
 
 ## The Six Object Types
 
@@ -40,7 +40,7 @@ The technology is being explored but is not yet a standard. Engineers can evalua
 
 ### `invest`
 
-Frontline wants new work to move in this direction. If you are starting a new workload and an invest-status option fits, that is usually the default choice.
+New work should move in this direction. If you are starting a new workload and an invest-status option fits, that is usually the default choice.
 
 ### `maintain`
 
@@ -52,7 +52,7 @@ The technology is still supported for now, but engineers should plan migrations 
 
 ### `exit`
 
-The technology is beyond its useful life for Frontline and should be removed as quickly as practical.
+The technology is beyond its useful life in the framework and should be removed as quickly as practical.
 
 Concrete example: Windows Server 2012 R2 still appears in the catalog because it exists in the estate, but its lifecycle status makes the engineering direction unambiguous.
 

@@ -15,7 +15,7 @@ An ABB records the information engineers need in order to make technology choice
 - vendor name
 - product name
 - product version
-- Frontline lifecycle status
+- framework lifecycle status
 - vendor lifecycle dates when those dates are known
 - optional `platformDependency`
 
@@ -27,7 +27,7 @@ An ABB is not a deployment artifact. It does not say where or how many times a p
 
 An ABB is not an RBB. It does not describe a reusable architecture pattern built from multiple components.
 
-An ABB is not a running system. If Frontline has a production SQL Server cluster, the ABB is not the cluster. The ABB is the reusable standard describing the SQL Server version that a cluster or service RBB may depend on.
+An ABB is not a running system. If an organization has a production SQL Server cluster, the ABB is not the cluster. The ABB is the reusable standard describing the SQL Server version that a cluster or service RBB may depend on.
 
 ## Naming Convention
 

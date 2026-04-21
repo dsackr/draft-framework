@@ -3,8 +3,8 @@ id: aag.product-service
 type: aag
 name: Product Service Architecture Analysis Guideline
 description: >
-  Interview guide for documenting a Frontline Product Service. A PS contains
-  1st party Frontline-authored code deployed on a standard RBB pattern.
+  Interview guide for documenting a Product Service. A PS contains
+  1st party organization-authored code deployed on a standard RBB pattern.
   Version 1 of this framework does not enumerate individual code packages —
   it acknowledges that 1st party code is present and documents the deployment
   context, RBB dependency, variant requirements, and external integrations.
@@ -43,7 +43,7 @@ requirements:
         example: "product: student-health"
   - id: firstparty-code
     description: >
-      Does this service contain Frontline-authored code?
+      Does this service contain organization-authored code?
       (This is the defining characteristic of a Product Service vs an RBB.)
     canBeSatisfiedBy:
       - mechanism: architecturalDecision

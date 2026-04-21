@@ -4,7 +4,7 @@
 
 An Architecture Analysis Guideline, or AAG, is the governance layer for catalog objects that need an explicit completeness test. It does not describe the component itself. It describes the concerns that must be addressed before the object is mature enough to be approved.
 
-That distinction matters. The catalog object says what the component or pattern is, what it includes, and what it interacts with. The AAG says what questions that object must answer before Frontline should trust it as a reusable standard.
+That distinction matters. The catalog object says what the component or pattern is, what it includes, and what it interacts with. The AAG says what questions that object must answer before the framework should trust it as a reusable standard.
 
 ## How The Model Works
 
@@ -17,7 +17,7 @@ The framework models AAGs in terms of requirements and satisfaction mechanisms r
 - a list of `canBeSatisfiedBy` mechanisms
 - a `minimumSatisfactions` count
 
-This is more useful than simple field existence because it captures intent. Frontline usually does not care that a field exists for its own sake. Frontline cares that authentication, logging, patching, backup, or access control has actually been addressed.
+This is more useful than simple field existence because it captures intent. The framework does not care that a field exists for its own sake. It cares that authentication, logging, patching, backup, or access control has actually been addressed.
 
 ## Satisfaction Mechanisms
 
@@ -92,13 +92,13 @@ Concrete example: `ra.dotnet.three-tier.ha` satisfies this AAG by declaring `pat
 
 This AAG applies to deployment architectures. In plain language, it requires a DA to declare which RA it conforms to, which variant each deployed RBB uses, what availability target the product is built for, whether it has product-specific external interactions beyond its component RBBs, and what data classification it handles.
 
-Concrete example: `da.frontline-teach` satisfies this AAG by pointing to `ra.dotnet.three-tier.ha`, selecting `ha` for each deployed RBB, documenting a `24x7` availability requirement, and identifying student records as its data classification.
+Concrete example: a deployment architecture satisfies this AAG by pointing to a reference architecture, selecting a variant for each deployed component, documenting an availability target, and identifying its data classification.
 
 ## Control References
 
-Each AAG requirement may carry one or more `controlReferences`, which are IDs of Roper controls that mandate the requirement. This creates a traceable line from a specific Roper control to the architecture decision that satisfies it.
+Each AAG requirement may carry one or more `controlReferences`, which are IDs from an external control framework that mandate the requirement. This creates a traceable line from a specific control to the architecture decision that satisfies it.
 
-For example, `CC.Frontline.06.3.1`, which covers security monitoring, is satisfied when a Host RBB includes a CrowdStrike Falcon agent as an internal component. The engineer does not need to read the Roper control text in order to build a compliant RBB. Satisfying the AAG requirement is sufficient because the control mapping is already captured in the catalog.
+For example, a security-monitoring control is satisfied when a Host RBB includes the necessary monitoring agent or security interaction. The engineer does not need to read the control text in order to build a compliant RBB. Satisfying the AAG requirement is sufficient because the control mapping is already captured in the catalog.
 
 ## Inheritance
 
@@ -134,4 +134,4 @@ Validation will still flag the missing requirement. Draft status is acceptable f
 
 ### Who writes AAGs?
 
-In practice, AAGs are authored and maintained by the architecture function, usually with input from Cloud Ops, Security, Database, and Platform teams. A good AAG captures the recurring questions those teams need answered before they can safely support a reusable component.
+In practice, AAGs are authored and maintained by the architecture function, usually with input from infrastructure, security, database, and platform teams. A good AAG captures the recurring questions those teams need answered before they can safely support a reusable component.

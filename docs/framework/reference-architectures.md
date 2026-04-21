@@ -2,9 +2,9 @@
 
 ## What An RA Is
 
-A Reference Architecture, or RA, is a pattern specification. It describes the architecture shape that Frontline expects for a class of solutions, but it does not describe an actual deployment.
+A Reference Architecture, or RA, is a pattern specification. It describes the architecture shape the framework expects for a class of solutions, but it does not describe an actual deployment.
 
-If an engineer asks, “what does a resilient .NET application stack look like here,” the answer belongs in an RA. If the engineer asks, “what does Frontline Teach actually deploy today,” the answer belongs in a DA.
+If an engineer asks, “what does a resilient .NET application stack look like here,” the answer belongs in an RA. If the engineer asks, “what does a specific product actually deploy today,” the answer belongs in a DA.
 
 ## What `requiredRBBs` Means
 
@@ -18,7 +18,7 @@ This field does more than list ingredients. It says which reusable components mu
 
 ## Concrete Example
 
-`ra.dotnet.three-tier.ha` says that a three-tier .NET high-availability pattern requires:
+A representative reference architecture says that a three-tier .NET high-availability pattern requires:
 
 - a web-tier service RBB using the HA variant of `rbb.service.web.iis-standard`
 - a data-tier service RBB using the HA variant of a SQL Server DBMS RBB
@@ -35,11 +35,11 @@ A DA may say `appliesPattern: ra.dotnet.three-tier.ha`, but that field is metada
 
 RAs create shared vocabulary and discoverability across engineering teams.
 
-- Cloud Ops can see what patterns are supported.
-- Product Engineering can see which reusable components are expected.
+- Infrastructure teams can see what patterns are supported.
+- Product teams can see which reusable components are expected.
 - Architecture can make standards explicit instead of relying on oral tradition.
 
-An RA makes it possible to say, “this is the standard pattern Frontline recognizes for this class of workload.”
+An RA makes it possible to say, “this is the standard pattern the framework recognizes for this class of workload.”
 
 ## FAQ
 
@@ -53,4 +53,4 @@ Yes, but that should be treated as an explicit exception rather than invisible d
 
 ### Who owns RAs?
 
-RAs are architecture-owned artifacts, usually written in collaboration with Cloud Ops, Product Engineering, Database, Security, and Platform teams so that they reflect both desired standards and actual supportable patterns.
+RAs are architecture-owned artifacts, usually written in collaboration with infrastructure, product, database, security, and platform teams so that they reflect both desired standards and actual supportable patterns.

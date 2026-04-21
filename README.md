@@ -28,7 +28,7 @@ abbs/                       Architecture Building Blocks
 rbbs/                       Reusable host and service building blocks
 aags/                       Architecture Analysis Guidelines
 ards/                       Architecture Risks and Decisions
-product-services/           Frontline-authored product services
+product-services/           first-party product services
 reference-architectures/    Pattern-level architecture definitions
 deployment-architectures/   Product-specific deployment declarations
 docs/                       Generated browser and framework documentation

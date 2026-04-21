@@ -18,7 +18,7 @@ A good ID is not just readable. It is durable. Once an ID is in use, other objec
 | Service RBB | `rbb.service.<category>.<product>` | `rbb.service.dbms.sqlserver-2022` |
 | AAG | `aag.<name>` | `aag.host`, `aag.service.dbms` |
 | Reference architecture | `ra.<pattern-slug>` | `ra.dotnet.three-tier.ha` |
-| Deployment architecture | `da.<product-slug>` | `da.frontline-teach` |
+| Deployment architecture | `da.<product-slug>` | `da.student-health` |
 
 ## Core Rules
 
