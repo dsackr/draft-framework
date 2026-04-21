@@ -2,7 +2,7 @@
 
 ## What This Catalog Is
 
-The Frontline Architecture Catalog exists to make architecture decisions explicit, reviewable, and reusable. It is a Git-based catalog of YAML objects that describe the building blocks Frontline engineers are allowed to assemble, the patterns those building blocks support, the deployment declarations that map those patterns to real products, and the analysis rules that determine whether an architecture description is complete enough to be approved.
+DRAFT — Deployable Reference Architecture Framework Toolkit — exists to make architecture decisions explicit, reviewable, and reusable. It is a Git-based catalog of YAML objects that describe the building blocks engineering teams are allowed to assemble, the patterns those building blocks support, the deployment declarations that map those patterns to real products, and the analysis rules that determine whether an architecture description is complete enough to be approved.
 
 The point is not to create documentation for its own sake. The point is to give Cloud Ops, Product Engineering, Security, and Architecture a shared source of truth that can be validated automatically and browsed consistently.
 
@@ -32,7 +32,7 @@ A useful way to think about the catalog is this: ABBs define what a component is
 
 ## Lifecycle Status
 
-Lifecycle status describes Frontline’s strategic stance toward a technology or pattern.
+Lifecycle status describes the framework's strategic stance toward a technology or pattern.
 
 ### `pre-invest`
 
