@@ -34,7 +34,6 @@ deployment-architectures/   Product-specific deployment declarations
 docs/                       Generated browser and framework documentation
 tools/                      Validator and browser generator
 schemas/                    Reserved for schema artifacts
-adrs/                       Architecture decision records
 ```
 
 ## Running The Tools

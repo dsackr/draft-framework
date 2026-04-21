@@ -26,7 +26,6 @@ The repository should contain these top-level folders:
 - `schemas/` for schema notes and simple YAML schema artifacts
 - `tools/` for Python validation and browser generation
 - `docs/` for generated browser output and DRAFT documentation
-- `adrs/` for architecture decision records outside the catalog object model
 
 The browser generator should discover YAML files by walking the catalog folders listed above, not by hardcoded filenames. Every YAML file under those folders is part of the catalog.
 
