@@ -87,11 +87,11 @@ This AAG applies to reference architectures. In plain language, it requires an R
 
 Concrete example: `ra.dotnet.three-tier.ha` satisfies this AAG by declaring `patternType`, listing web-tier and data-tier RBBs with roles, and documenting pattern-level decisions such as web-tier autoscaling and AlwaysOn on the data tier.
 
-### `aag.da`
+### `aag.sdm`
 
-This AAG applies to deployment architectures. In plain language, it requires a DA to declare which RA it conforms to, which variant each deployed RBB uses, what availability target the product is built for, whether it has product-specific external interactions beyond its component RBBs, and what data classification it handles.
+This AAG applies to software distribution manifests. In plain language, it requires an SDM to declare which RA it conforms to, which variant each deployed RBB uses, what availability target the product is built for, whether it has product-specific external interactions beyond its component RBBs, and what data classification it handles.
 
-Concrete example: a deployment architecture satisfies this AAG by pointing to a reference architecture, selecting a variant for each deployed component, documenting an availability target, and identifying its data classification.
+Concrete example: a software distribution manifest satisfies this AAG by pointing to a reference architecture, selecting a variant for each deployed component, documenting an availability target, and identifying its data classification.
 
 ## Compliance Framework Mappings
 
@@ -111,13 +111,13 @@ Inheritance works the same way in AAGs as it does in many programming models.
 
 ## How Validation Works
 
-`tools/validate.py` evaluates AAG satisfaction in two ways. For RBBs, it loads every AAG referenced in the object’s `satisfiesAAG` list, resolves inheritance, and then tests each requirement’s permitted mechanisms. For RAs and DAs, it applies the AAG identified by `appliesTo.type` and checks the explicit validation rules for those object types.
+`tools/validate.py` evaluates AAG satisfaction in two ways. For RBBs, it loads every AAG referenced in the object’s `satisfiesAAG` list, resolves inheritance, and then tests each requirement’s permitted mechanisms. For RAs and SDMs, it applies the AAG identified by `appliesTo.type` and checks the explicit validation rules for those object types.
 
 - An `externalInteraction` mechanism is satisfied when the RBB has an `externalInteractions` entry whose capability matches the requirement criteria.
 - An `internalComponent` mechanism is satisfied when the RBB has an `internalComponents` entry whose role matches the requirement criteria.
 - An `architecturalDecision` mechanism is satisfied when the required key exists and is non-empty in any variant’s `architecturalDecisions` map.
 
-If the number of satisfied mechanisms is less than `minimumSatisfactions`, the validator emits a failure. RA and DA failures use the same style of message, but the validator checks their rules directly because those objects do not expose the same RBB-specific structures.
+If the number of satisfied mechanisms is less than `minimumSatisfactions`, the validator emits a failure. RA and SDM failures use the same style of message, but the validator checks their rules directly because those objects do not expose the same RBB-specific structures.
 
 Example:
 

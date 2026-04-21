@@ -1,9 +1,9 @@
 schemaVersion: "1.0"
-id: aagmap.security-compliance-controls.aag-da
+id: aagmap.security-compliance-controls.aag-sdm
 type: aag_control_mapping
-name: Deployment Architecture AAG to Security and Compliance Controls Mapping
+name: Software Distribution Manifest AAG to Security and Compliance Controls Mapping
 description: >
-  Maps deployment architecture AAG requirements to the bundled Security and
+  Maps software distribution manifest AAG requirements to the bundled Security and
   Compliance Controls framework.
 version: 1.0.0
 catalogStatus: approved
@@ -14,9 +14,9 @@ owner:
 tags:
   - compliance
   - mapping
-  - da
+  - sdm
 framework: framework.security-compliance-controls
-aagId: aag.da
+aagId: aag.sdm
 requirementMappings:
   - requirementId: ra-conformance
     controls:

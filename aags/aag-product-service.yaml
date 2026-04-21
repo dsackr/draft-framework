@@ -55,12 +55,12 @@ requirements:
     description: What availability tier does this PS require?
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
-        criteria: Declared in the DA that deploys this PS via availabilityRequirement
+        criteria: Declared in the SDM that deploys this PS via availabilityRequirement
         example: "availabilityRequirement: 24x7"
   - id: external-integrations
     description: >
       What external systems, services, or APIs does this PS integrate with?
-      Documented at the DA level via externalInteractions.
+      Documented at the SDM level via externalInteractions.
     canBeSatisfiedBy:
       - mechanism: externalInteraction
-        criteria: DA externalInteractions list documents integrations relevant to this PS
+        criteria: SDM externalInteractions list documents integrations relevant to this PS

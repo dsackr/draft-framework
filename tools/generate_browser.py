@@ -26,7 +26,7 @@ CATALOG_FOLDERS = [
     "ards",
     "compliance-frameworks",
     "compliance-mappings",
-    "deployment-architectures",
+    "sdms",
     "product-services",
     "rbbs",
     "reference-architectures",
@@ -49,12 +49,12 @@ REF_CONTAINER_KEYS = {
     "hardwareAbb",
     "inherits",
     "platformDependency",
-    "linkedDA",
+    "linkedSDM",
     "riskRef",
     "framework",
     "aagId",
 }
-CATALOG_ID_PREFIXES = ("abb.", "rbb.", "aag.", "ard.", "ps.", "ra.", "da.", "framework.", "aagmap.")
+CATALOG_ID_PREFIXES = ("abb.", "rbb.", "aag.", "ard.", "ps.", "ra.", "sdm.", "framework.", "aagmap.")
 
 
 def discover_yaml_files(root: Path) -> list[Path]:
@@ -117,7 +117,7 @@ def build_reference_index(registry: dict[str, dict[str, Any]]) -> tuple[dict[str
 def shape_for(obj: dict[str, Any]) -> str:
     if obj["type"] == "reference_architecture":
         return "hexagon"
-    if obj["type"] == "deployment_architecture":
+    if obj["type"] == "software_distribution_manifest":
         return "star"
     if obj["type"] == "aag":
         return "barrel"
@@ -159,8 +159,8 @@ def type_label_for(obj: dict[str, Any]) -> str:
         return "Product Service"
     if obj["type"] == "reference_architecture":
         return "Reference Architecture"
-    if obj["type"] == "deployment_architecture":
-        return "Deployment Architecture"
+    if obj["type"] == "software_distribution_manifest":
+        return "Software Distribution Manifest"
     if obj["type"] == "rbb":
         if obj.get("category") == "service":
             return f"Service RBB / {obj.get('serviceCategory', 'service')}"
@@ -265,14 +265,14 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
     risk_marked_rbb_ids = {
         deployed.get("ref")
         for obj in objects
-        if obj.get("type") == "deployment_architecture"
+        if obj.get("type") == "software_distribution_manifest"
         for deployed in obj.get("deployedRBBs", [])
         if isinstance(deployed, dict) and deployed.get("riskRef")
     }
     risk_marked_product_service_ids = {
         deployed.get("ref")
         for obj in objects
-        if obj.get("type") == "deployment_architecture"
+        if obj.get("type") == "software_distribution_manifest"
         for deployed in obj.get("deployedProductServices", [])
         if isinstance(deployed, dict) and deployed.get("riskRef")
     }
@@ -319,7 +319,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "mitigationPath": obj.get("mitigationPath", ""),
                 "decisionRationale": obj.get("decisionRationale", ""),
                 "relatedARDs": obj.get("relatedARDs", []),
-                "linkedDA": obj.get("linkedDA", ""),
+                "linkedSDM": obj.get("linkedSDM", ""),
                 "framework": obj.get("framework", ""),
                 "frameworkKind": obj.get("frameworkKind", ""),
                 "aagId": obj.get("aagId", ""),
@@ -1313,7 +1313,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .filter(object => !['aag', 'ard', 'compliance_framework', 'aag_control_mapping'].includes(object.type))
         .map(object => object.type)
     );
-    const impactOrder = ['deployment_architecture', 'reference_architecture', 'product_service', 'rbb', 'abb'];
+    const impactOrder = ['software_distribution_manifest', 'reference_architecture', 'product_service', 'rbb', 'abb'];
     const impactLifecycleOrder = lifecycleValues;
     let activeFilter = 'All';
     let currentDetailId = null;
@@ -1362,7 +1362,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function formatTypeLabel(typeValue) {
-      return formatTitleCase(String(typeValue || '').replace(/\./g, ' '));
+      return formatTitleCase(String(typeValue || '').replace(/[._-]/g, ' '));
     }
 
     function capabilityClass(capability) {
@@ -1793,7 +1793,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
-    function daRisksMarkup(object) {
+    function sdmRisksMarkup(object) {
       const references = object.architectureRisksAndDecisions || [];
       if (!references.length) {
         return '';
@@ -1821,7 +1821,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     function deployedRbbTableMarkup(object) {
       const deployed = object.deployedRBBs || [];
       if (!deployed.length) {
-        return '<div class="empty-card">No deployed RBBs are documented for this deployment architecture.</div>';
+        return '<div class="empty-card">No deployed RBBs are documented for this software distribution manifest.</div>';
       }
       return `
         <section class="section-card">
@@ -1858,7 +1858,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     function deployedProductServicesTableMarkup(object) {
       const deployed = object.deployedProductServices || [];
       if (!deployed.length) {
-        return '<div class="empty-card">No product services are documented for this deployment architecture.</div>';
+        return '<div class="empty-card">No product services are documented for this software distribution manifest.</div>';
       }
       return `
         <section class="section-card">
@@ -2098,9 +2098,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
-    function renderDeploymentTopology(da) {
-      const deployedProductServices = da.deployedProductServices || [];
-      const deployedRbbs = da.deployedRBBs || [];
+    function renderDeploymentTopology(sdm) {
+      const deployedProductServices = sdm.deployedProductServices || [];
+      const deployedRbbs = sdm.deployedRBBs || [];
       const deployed = [...deployedProductServices, ...deployedRbbs];
       const knownLocations = deployed.map(item => item.location).filter(Boolean);
       const defaultLocation = knownLocations[0] || 'Unspecified';
@@ -2114,11 +2114,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         byLocation.get(location).push(entry);
       });
 
-      const externalMarkup = (da.externalInteractions || []).length ? `
+      const externalMarkup = (sdm.externalInteractions || []).length ? `
         <section class="topology-strip">
           <div class="legend-title">External Interactions</div>
           <div class="topology-strip-grid">
-            ${(da.externalInteractions || []).map(interaction => {
+            ${(sdm.externalInteractions || []).map(interaction => {
               const icon = topologyInteractionIcon(interaction);
               return `
                 <article class="topology-interaction">
@@ -2197,7 +2197,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <div class="topology-layout">
           ${externalMarkup}
           <div class="topology-locations">
-            ${locationMarkup || '<div class="empty-card">No deployment topology data is available for this deployment architecture.</div>'}
+            ${locationMarkup || '<div class="empty-card">No deployment topology data is available for this software distribution manifest.</div>'}
           </div>
         </div>
       `;
@@ -2211,7 +2211,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <span>${escapeHtml(object.id)}</span>
             ${ardCategoryBadge(object.ardCategory)}
             ${ardStatusBadge(object.status)}
-            ${object.linkedDA && objectLookup[object.linkedDA] ? `<span>Linked DA: <span class="ard-link" data-object-link="${object.linkedDA}">${escapeHtml(object.linkedDA)}</span></span>` : object.linkedDA ? `<span>Linked DA: ${escapeHtml(object.linkedDA)}</span>` : ''}
+            ${object.linkedSDM && objectLookup[object.linkedSDM] ? `<span>Linked SDM: <span class="ard-link" data-object-link="${object.linkedSDM}">${escapeHtml(object.linkedSDM)}</span></span>` : object.linkedSDM ? `<span>Linked SDM: ${escapeHtml(object.linkedSDM)}</span>` : ''}
           </div>
           <section class="ard-section">
             <h3>Description</h3>
@@ -2376,14 +2376,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           ${productServiceDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
-      } else if (object.type === 'deployment_architecture') {
+      } else if (object.type === 'software_distribution_manifest') {
         detailBody = `
           ${headerMarkup}
           <div class="detail-tabs">
-            <button class="detail-tab" data-da-tab="details">Details</button>
-            <button class="detail-tab active" data-da-tab="topology">Deployment Topology</button>
+            <button class="detail-tab" data-sdm-tab="details">Details</button>
+            <button class="detail-tab active" data-sdm-tab="topology">Deployment Topology</button>
           </div>
-          <div class="detail-panel" data-da-panel="details" hidden>
+          <div class="detail-panel" data-sdm-panel="details" hidden>
             <section class="section-card">
               <h3>Applied Pattern</h3>
               <div class="section-stack">
@@ -2398,7 +2398,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <h3>External Interactions</h3>
               ${interactionMarkup(object)}
             </section>
-            ${daRisksMarkup(object)}
+            ${sdmRisksMarkup(object)}
             <section class="decisions-card">
               <h3>Architectural Decisions</h3>
             ${object.architecturalDecisions && Object.keys(object.architecturalDecisions).length
@@ -2406,7 +2406,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 : '<div class="empty-card">No architectural decisions are defined for this object.</div>'}
             </section>
           </div>
-          <div class="detail-panel" data-da-panel="topology">
+          <div class="detail-panel" data-sdm-panel="topology">
             <section class="section-card">
               <h3>Deployment Topology</h3>
               <div id="topology-canvas"></div>
@@ -2464,7 +2464,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       attachTopNavHandlers();
       attachSidebarHandlers();
       attachObjectLinkHandlers(appRoot);
-      if (object.type === 'deployment_architecture') {
+      if (object.type === 'software_distribution_manifest') {
         const renderTopologyIntoCanvas = () => {
           const topologyCanvas = document.getElementById('topology-canvas');
           if (topologyCanvas && !topologyCanvas.dataset.rendered) {
@@ -2474,14 +2474,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           }
         };
 
-        appRoot.querySelectorAll('[data-da-tab]').forEach(button => {
+        appRoot.querySelectorAll('[data-sdm-tab]').forEach(button => {
           button.addEventListener('click', () => {
-            const nextTab = button.dataset.daTab;
-            appRoot.querySelectorAll('[data-da-tab]').forEach(tab => {
-              tab.classList.toggle('active', tab.dataset.daTab === nextTab);
+            const nextTab = button.dataset.sdmTab;
+            appRoot.querySelectorAll('[data-sdm-tab]').forEach(tab => {
+              tab.classList.toggle('active', tab.dataset.sdmTab === nextTab);
             });
-            appRoot.querySelectorAll('[data-da-panel]').forEach(panel => {
-              panel.hidden = panel.dataset.daPanel !== nextTab;
+            appRoot.querySelectorAll('[data-sdm-panel]').forEach(panel => {
+              panel.hidden = panel.dataset.sdmPanel !== nextTab;
             });
             if (nextTab === 'topology') {
               renderTopologyIntoCanvas();
@@ -2490,7 +2490,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         renderTopologyIntoCanvas();
       }
-      if (!['aag', 'ard', 'deployment_architecture', 'product_service', 'compliance_framework', 'aag_control_mapping'].includes(object.type)) {
+      if (!['aag', 'ard', 'software_distribution_manifest', 'product_service', 'compliance_framework', 'aag_control_mapping'].includes(object.type)) {
         renderInternalDiagram(object);
       }
     }
@@ -2668,7 +2668,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           });
           traverseUp(parent, new Set([selected.id, parent.id]), impacted);
         });
-      } else if (selected.type === 'deployment_architecture') {
+      } else if (selected.type === 'software_distribution_manifest') {
         traverseDown(selected, new Set([selected.id]), impacted);
       } else {
         traverseDown(selected, new Set([selected.id]), impacted);
@@ -2792,7 +2792,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             category: object.category || '',
             serviceCategory: object.serviceCategory || '',
             lifecycleStatus: object.lifecycleStatus,
-            shape: object.type === 'reference_architecture' || object.type === 'deployment_architecture' ? 'round-rectangle' : object.shape,
+            shape: object.type === 'reference_architecture' || object.type === 'software_distribution_manifest' ? 'round-rectangle' : object.shape,
             color: object.color,
             borderStyle: object.type === 'reference_architecture' ? 'dashed' : 'solid',
             nodeWidth: object.type === 'abb' || object.type === 'rbb' ? 145 : 150,
@@ -2849,7 +2849,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         return tierNodes;
       };
       const tiers = [
-        addTier(nodeList.filter(node => node.data('type') === 'deployment_architecture')),
+        addTier(nodeList.filter(node => node.data('type') === 'software_distribution_manifest')),
         addTier(nodeList.filter(node => node.data('type') === 'reference_architecture')),
         addTier(nodeList.filter(node => node.data('type') === 'product_service')
           .sort((a, b) => String(a.data('label') || '').localeCompare(String(b.data('label') || '')))),

@@ -18,7 +18,7 @@ A good ID is not just readable. It is durable. Once an ID is in use, other objec
 | Service RBB | `rbb.service.<category>.<product>` | `rbb.service.dbms.sqlserver-2022` |
 | AAG | `aag.<name>` | `aag.host`, `aag.service.dbms` |
 | Reference architecture | `ra.<pattern-slug>` | `ra.dotnet.three-tier.ha` |
-| Deployment architecture | `da.<product-slug>` | `da.student-health` |
+| Software distribution manifest | `sdm.<product-slug>` | `sdm.student-health` |
 
 ## Core Rules
 
@@ -57,4 +57,4 @@ The rule of thumb is simple: if changing the version would create a different su
 
 ### Putting deployment-specific detail into reusable IDs
 
-Environment names, data-center names, and hostnames do not belong in reusable object IDs. Product-specific instance names belong in DAs, not in ABB or RBB IDs.
+Environment names, data-center names, and hostnames do not belong in reusable object IDs. Product-specific instance names belong in SDMs, not in ABB or RBB IDs.

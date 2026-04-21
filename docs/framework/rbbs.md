@@ -4,7 +4,7 @@
 
 An RA Building Block, or RBB, is a reusable architecture component. This is the level where the catalog stops describing individual products and starts describing how those products are assembled into something architectural.
 
-RAs and DAs are built from RBBs, not directly from ABBs, because the RBB is where the framework captures structure, interactions, and decisions.
+RAs and SDMs are built from RBBs, not directly from ABBs, because the RBB is where the framework captures structure, interactions, and decisions.
 
 ## Host RBBs
 

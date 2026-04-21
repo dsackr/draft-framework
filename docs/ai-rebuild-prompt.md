@@ -1,6 +1,6 @@
 # DRAFT Rebuild Prompt
 
-Use this document as the canonical prompt for rebuilding DRAFT — Deployable Reference Architecture Framework Toolkit — in the `draft-framework` repository. It describes the framework, the catalog object model, the schema rules, the validation behavior, and the browser UI contract in enough detail that an engineer or coding agent can reconstruct the project without relying on the current implementation files. This document intentionally excludes concrete ABB, RBB, Reference Architecture, and Deployment Architecture instances. It does include the AAG definitions because those are framework rules rather than environment-specific examples.
+Use this document as the canonical prompt for rebuilding DRAFT — Deployable Reference Architecture Framework Toolkit — in the `draft-framework` repository. It describes the framework, the catalog object model, the schema rules, the validation behavior, and the browser UI contract in enough detail that an engineer or coding agent can reconstruct the project without relying on the current implementation files. This document intentionally excludes concrete ABB, RBB, Reference Architecture, and Software Distribution Manifest instances. It does include the AAG definitions because those are framework rules rather than environment-specific examples.
 
 ## What This Repository Is
 
@@ -24,7 +24,7 @@ The repository should contain these top-level folders:
 - `compliance-mappings/` for AAG requirement-to-control mappings
 - `product-services/` for Product Service objects
 - `reference-architectures/` for Reference Architecture objects
-- `deployment-architectures/` for Deployment Architecture objects
+- `sdms/` for Software Distribution Manifest objects
 - `schemas/` for schema notes and simple YAML schema artifacts
 - `tools/` for Python validation and browser generation
 - `docs/` for generated browser output and DRAFT documentation
@@ -61,7 +61,7 @@ ABBs carry vendor lifecycle metadata and framework lifecycle intent. ABB categor
 
 ### RBB
 
-An RBB, or Reusable Building Block, is a reusable architecture pattern that Reference Architectures and Deployment Architectures are assembled from. There are two categories: `host` and `service`.
+An RBB, or Reusable Building Block, is a reusable architecture pattern that Reference Architectures and Software Distribution Manifests are assembled from. There are two categories: `host` and `service`.
 
 A host RBB represents a compute platform configuration. It defines internal components such as an OS ABB, a hardware ABB, and installable agent ABBs, plus external interactions such as authentication, logging, monitoring, security, and patching platforms.
 
@@ -73,7 +73,7 @@ The distinction between ABB and RBB is important. An ABB is an individual vendor
 
 An AAG, or Architecture Analysis Guideline, is a first-class catalog object that defines the requirements an architecture object must satisfy before it is considered complete enough for approval. AAGs are not visual components in a deployment. They are governance rules.
 
-In the current DRAFT implementation, AAGs are written for host RBBs, service RBBs, DBMS service RBBs, reference architectures, deployment architectures, and product services.
+In the current DRAFT implementation, AAGs are written for host RBBs, service RBBs, DBMS service RBBs, reference architectures, software distribution manifests, and product services.
 
 ### Compliance Framework
 
@@ -89,7 +89,7 @@ An AAG Control Mapping is a first-class catalog object that maps one AAG's requi
 
 An ARD, or Architecture Risks and Decisions object, is a first-class catalog object for capturing either a known risk or a documented decision. It replaces the older tendency to bury architecture risks inside free-form notes. An ARD can describe an SPOF, a technical debt tradeoff, a security gap, or a design decision with rationale.
 
-ARDs can be linked from deployment architectures and rendered directly in the browser. AuditBoard or another controls platform may consume ARD relationships later, but the catalog itself remains the YAML source of truth.
+ARDs can be linked from software distribution manifests and rendered directly in the browser. AuditBoard or another controls platform may consume ARD relationships later, but the catalog itself remains the YAML source of truth.
 
 ### Reference Architecture
 
@@ -97,11 +97,11 @@ A Reference Architecture defines a pattern, not a deployment. It answers the que
 
 Reference Architectures point to required RBBs and define pattern-level decisions. They should be thought of as reusable blueprints for governance and discovery.
 
-### Deployment Architecture
+### Software Distribution Manifest
 
-A Deployment Architecture declares how a specific product is deployed. It references a Reference Architecture via `appliesPattern`, documents deployed Product Services and deployed RBBs, lists product-level external interactions, and links any architecture risks and decisions.
+A Software Distribution Manifest declares how a specific product is deployed. It references a Reference Architecture via `appliesPattern`, documents deployed Product Services and deployed RBBs, lists product-level external interactions, and links any architecture risks and decisions.
 
-The DA is where pattern intent becomes deployment reality. The DA can declare deviations from a pattern, and those deviations should be documented via ARDs rather than hidden in prose.
+The SDM is where pattern intent becomes deployment reality. The SDM can declare deviations from a pattern, and those deviations should be documented via ARDs rather than hidden in prose.
 
 ### Product Service
 
@@ -213,7 +213,7 @@ ARD objects include:
 - `mitigationPath` (optional)
 - `decisionRationale` (required for decision ARDs)
 - `relatedARDs` (optional)
-- `linkedDA` (optional)
+- `linkedSDM` (optional)
 
 ARD IDs must match `ard.<domain>.<sequence>`.
 
@@ -234,9 +234,9 @@ Each `requiredRBBs` entry includes:
 
 Reference Architectures are validated against `aag.ra`.
 
-### Deployment Architecture Schema
+### Software Distribution Manifest Schema
 
-Deployment Architecture objects include:
+Software Distribution Manifest objects include:
 
 - `appliesPattern`
 - `architecturalDecisions`
@@ -254,7 +254,7 @@ Each deployed Product Service and deployed RBB entry can include:
 - `notes`
 - `riskRef`
 
-Deployment Architectures are validated against `aag.da`. Risk references and ARD lists must resolve to actual ARD objects.
+Software Distribution Manifests are validated against `aag.sdm`. Risk references and ARD lists must resolve to actual ARD objects.
 
 ### Product Service Schema
 
@@ -291,9 +291,9 @@ The Reference Architecture AAG requires:
 - pattern-level `architecturalDecisions`
 - evidence that deployment variants are covered at the pattern level
 
-### aag.da
+### aag.sdm
 
-The Deployment Architecture AAG requires:
+The Software Distribution Manifest AAG requires:
 
 - a non-empty `appliesPattern`
 - variant selection on every deployed object
@@ -309,8 +309,8 @@ The Product Service AAG defines the minimum modeling contract for a first-party 
 - at least one named variant
 - a populated `product` field
 - explicit declaration that the object is first-party by virtue of being `type: product_service`
-- availability requirement, documented at the DA level
-- external integrations, documented at the DA level
+- availability requirement, documented at the SDM level
+- external integrations, documented at the SDM level
 
 ## Validation Behavior
 
@@ -337,7 +337,7 @@ IDs are lowercase, dot-separated, and use hyphens inside segments. The major obj
 - `ard.*` for ARDs
 - `ps.*` for Product Services
 - `ra.*` for Reference Architectures
-- `da.*` for Deployment Architectures
+- `sdm.*` for Software Distribution Manifests
 
 The naming system is meant to preserve both machine readability and human scanability. Version identifiers should stay in the ID when the object represents a versioned technology.
 
@@ -368,7 +368,7 @@ Expected renderers:
 - AAG detail: requirements document layout
 - ARD detail: structured risk/decision card
 - Product Service detail: product, `runsOn`, lifecycle, description, and variants
-- Deployment Architecture detail: details tab plus deployment topology tab
+- Software Distribution Manifest detail: details tab plus deployment topology tab
 - RBB and ABB detail: internal components, interactions, decisions, and any AAG or usage panels
 - unknown type: generic key-value fallback view
 
@@ -376,7 +376,7 @@ Detail views should also include a `Used By` panel sourced from the reverse cros
 
 ### Deployment Topology View
 
-The DA topology view is an HTML/CSS spatial layout, not a Cytoscape graph. It should be completely rebuildable from DA YAML plus resolved references.
+The SDM topology view is an HTML/CSS spatial layout, not a Cytoscape graph. It should be completely rebuildable from SDM YAML plus resolved references.
 
 Rendering rules:
 

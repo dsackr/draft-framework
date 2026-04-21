@@ -1,0 +1,15 @@
+schemaVersion: "1.0"
+type: software_distribution_manifest
+requiredFields:
+  - id            # format: sdm.<product-slug>
+  - name
+  - appliesPattern
+  - catalogStatus # stub | draft | approved
+  - lifecycleStatus
+optionalFields:
+  - description
+  - architecturalDecisions
+  - deployedProductServices
+  - deployedRBBs
+  - externalInteractions
+  - architectureRisksAndDecisions

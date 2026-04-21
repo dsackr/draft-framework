@@ -22,7 +22,7 @@ TYPE_PREFIX = {
     "aag_control_mapping": "aagmap.",
     "product_service": "ps.",
     "reference_architecture": "ra.",
-    "deployment_architecture": "da.",
+    "software_distribution_manifest": "sdm.",
 }
 BASE_REQUIRED = ["schemaVersion", "id", "type", "name", "lifecycleStatus", "catalogStatus"]
 VALID_ARD_CATEGORY = {"risk", "decision"}
@@ -285,9 +285,9 @@ def validate_ra(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]]
         )
 
 
-def validate_da(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]], failures: list[str]) -> None:
+def validate_sdm(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]], failures: list[str]) -> None:
     applicable = applicable_aag_ids(obj, aags)
-    if "aag.da" not in applicable:
+    if "aag.sdm" not in applicable:
         return
 
     object_id = obj.get("id", "unknown")
@@ -446,7 +446,7 @@ def validate_aag_control_mapping(
             failures.append(f"{path}: requirementMappings '{requirement_id}' must include a non-empty controls list")
 
 
-def validate_da_refs(
+def validate_sdm_refs(
     obj: dict[str, Any],
     path: Path,
     ard_ids: set[str],
@@ -526,9 +526,9 @@ def main() -> int:
             validate_rbb(obj, path, aags, catalog_ids, failures)
         if obj.get("type") == "reference_architecture":
             validate_ra(obj, path, aags, failures)
-        if obj.get("type") == "deployment_architecture":
-            validate_da(obj, path, aags, failures)
-            validate_da_refs(obj, path, ard_ids, product_service_ids, catalog_by_id, failures)
+        if obj.get("type") == "software_distribution_manifest":
+            validate_sdm(obj, path, aags, failures)
+            validate_sdm_refs(obj, path, ard_ids, product_service_ids, catalog_by_id, failures)
 
     failing_paths = {entry.split(":", 1)[0] for entry in failures}
     for path in files:

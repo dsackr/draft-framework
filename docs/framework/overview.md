@@ -12,9 +12,9 @@ The catalog contains six object types.
 
 - ABBs define discrete vendor products at specific versions.
 - RBBs define reusable architecture components built from ABBs.
-- AAGs define the requirements a catalog object must satisfy before it can be approved. In practice the current AAG set covers RBBs, RAs, and DAs.
+- AAGs define the requirements a catalog object must satisfy before it can be approved. In practice the current AAG set covers RBBs, RAs, and SDMs.
 - RAs define reusable patterns in terms of required RBBs and roles.
-- DAs define how a specific product is deployed using those RBBs.
+- SDMs define how a specific product is deployed using those RBBs.
 - External interactions define the black-box systems a component depends on, whether or not those systems exist elsewhere in the catalog.
 
 ## How The Objects Relate
@@ -25,10 +25,10 @@ The relationship model is deliberate.
 - Host RBBs are assembled from OS, hardware, and agent ABBs plus platform interactions.
 - Service RBBs compose a host RBB with one function ABB.
 - RAs say which RBBs, in which named variants, are required for a given pattern.
-- DAs say which RBBs are actually deployed for a specific product.
+- SDMs say which RBBs are actually deployed for a specific product.
 - AAGs define what must be addressed before a reusable architecture component or pattern declaration can be approved.
 
-A useful way to think about the catalog is this: ABBs define what a component is, RBBs define how it behaves architecturally, RAs define which components a pattern requires, DAs define what a product actually uses, and AAGs define what questions must be answered before the component can be trusted.
+A useful way to think about the catalog is this: ABBs define what a component is, RBBs define how it behaves architecturally, RAs define which components a pattern requires, SDMs define what a product actually uses, and AAGs define what questions must be answered before the component can be trusted.
 
 ## Lifecycle Status
 
@@ -72,7 +72,7 @@ The object has meaningful content and can be reviewed, but it has not yet satisf
 
 The object has passed the framework’s validation bar and is ready to be used as a reference point for engineering decisions.
 
-For RBBs, the most important gate is the relationship to AAGs. An RBB can only be considered truly complete when it satisfies the AAGs listed in `satisfiesAAG`. RAs and DAs are also validated against their applicable AAGs, even though those relationships are determined by `appliesTo` rather than an explicit `satisfiesAAG` list on the object.
+For RBBs, the most important gate is the relationship to AAGs. An RBB can only be considered truly complete when it satisfies the AAGs listed in `satisfiesAAG`. RAs and SDMs are also validated against their applicable AAGs, even though those relationships are determined by `appliesTo` rather than an explicit `satisfiesAAG` list on the object.
 
 ID immutability: once an object reaches `catalogStatus: approved`, its `id` field must never change. Downstream tooling, including future IaC pipelines, will reference objects by ID. Renaming an approved object is a breaking change.
 

@@ -6,7 +6,7 @@ This repository is the entry point for DRAFT — Deployable Reference Architectu
 
 If you are new to the repo, start with the framework documents below before editing any catalog objects.
 
-The current framework validates RBBs, RAs, and DAs against Architecture Analysis Guidelines. ABBs remain governed by their schema and lifecycle metadata rather than an AAG.
+The current framework validates RBBs, RAs, and SDMs against Architecture Analysis Guidelines. ABBs remain governed by their schema and lifecycle metadata rather than an AAG.
 
 Compliance mappings are plug-and-play. AAGs define architecture requirements, while separate compliance framework and mapping objects determine which controls are shown for a selected framework such as a baseline controls pack, NIST CSF, SOC 2, or an organization-specific overlay.
 
@@ -18,7 +18,7 @@ Compliance mappings are plug-and-play. AAGs define architecture requirements, wh
 - [RBBs](docs/framework/rbbs.md)
 - [AAGs](docs/framework/aags.md)
 - [Reference architectures](docs/framework/reference-architectures.md)
-- [Deployment architectures](docs/framework/deployment-architectures.md)
+- [Software distribution manifests](docs/framework/software-distribution-manifests.md)
 - [Naming conventions](docs/framework/naming-conventions.md)
 - [How to add objects](docs/framework/how-to-add-objects.md)
 - [Security and compliance controls](docs/framework/security-and-compliance-controls.md)
@@ -34,7 +34,7 @@ compliance-frameworks/      Selectable compliance frameworks
 compliance-mappings/        Requirement-to-control mappings per framework
 product-services/           first-party product services
 reference-architectures/    Pattern-level architecture definitions
-deployment-architectures/   Product-specific deployment declarations
+sdms/                       Product-specific software distribution manifests
 docs/                       Generated browser and framework documentation
 tools/                      Validator and browser generator
 schemas/                    Reserved for schema artifacts

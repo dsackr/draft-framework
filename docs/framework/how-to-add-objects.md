@@ -8,7 +8,7 @@ Are you documenting:
 
 - a vendor product
 - a reusable architecture pattern
-- a deployment declaration
+- a software distribution manifest
 - a governance rule
 
 Many mistakes happen because engineers skip that decision and start writing fields immediately.
@@ -52,7 +52,7 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 4. For each requirement, explain what concern must be addressed, why it exists, which mechanisms are allowed, and how many satisfactions are required.
 5. If the AAG extends another AAG, use `inherits`.
 
-An AAG can target more than RBBs. The current catalog includes AAGs for RBBs, reference architectures, and deployment architectures. The `appliesTo` block is what tells the validator which object type the AAG governs.
+An AAG can target more than RBBs. The current catalog includes AAGs for RBBs, reference architectures, and software distribution manifests. The `appliesTo` block is what tells the validator which object type the AAG governs.
 
 Keep the requirements focused on architecture outcomes rather than implementation trivia.
 
@@ -67,14 +67,14 @@ Keep the requirements focused on architecture outcomes rather than implementatio
 
 An RA should be generic enough to guide many products, not just one.
 
-## Add A Deployment Architecture
+## Add A Software Distribution Manifest
 
-1. Create the file in `deployment-architectures/`.
-2. Choose a product-focused `da.<product-slug>` ID.
+1. Create the file in `sdms/`.
+2. Choose a product-focused `sdm.<product-slug>` ID.
 3. Set `appliesPattern` if the product aligns with an existing RA.
 4. Declare `deployedRBBs` with the RBB references, variants, and product-specific instance names.
 5. Only add `externalInteractions` that are unique to the product and not already covered by the underlying RBBs.
-6. Add product-level `architecturalDecisions`, including availability requirement and data classification, so the DA satisfies `aag.da`.
+6. Add product-level `architecturalDecisions`, including availability requirement and data classification, so the SDM satisfies `aag.sdm`.
 
 ## Run The Tools
 
@@ -92,7 +92,7 @@ python3 tools/generate_browser.py
 
 ## What The GitHub Actions Workflows Do
 
-- `validate-catalog.yml` runs on pushes and pull requests to make sure the YAML parses, base fields are valid, RBBs satisfy their AAGs, and RA/DA objects satisfy their applicable AAG checks.
+- `validate-catalog.yml` runs on pushes and pull requests to make sure the YAML parses, base fields are valid, RBBs satisfy their AAGs, and RA/SDM objects satisfy their applicable AAG checks.
 - `generate-browser.yml` runs on pushes to `main` that change YAML content and regenerates `docs/index.html` so the published browser stays synchronized with the source data.
 
 ## How To Advance `catalogStatus`
