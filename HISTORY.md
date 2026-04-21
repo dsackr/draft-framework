@@ -23,5 +23,5 @@ reviewing, and evolving real deployments.
 Founding contributors:
 
 - Dale Sackrider
-- Glenn Haggard
 - Brandon Searles
+- Glenn Haggard
