@@ -8,7 +8,7 @@ catalogStatus: approved
 lifecycleStatus: invest
 owner:
   team: cloud-architecture
-  contact: cloud-architecture@frontlineed.com
+  contact: cloud-architecture@example.com
 tags:
   - da
   - analysis
@@ -20,7 +20,7 @@ requirements:
     description: The DA must reference a valid RA ID or explicitly document that no applicable RA exists yet.
     rationale: Connecting deployments to patterns enables governance discoverability and impact analysis.
     controlReferences:
-      - CC.Frontline.10.1.1
+      - CC.SecurityCompliance.10.1.1
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
         key: appliesPattern
@@ -30,7 +30,7 @@ requirements:
     description: Each deployed RBB must specify which variant is selected.
     rationale: Variant selection is the primary architectural decision in a DA — it drives availability cost and capacity.
     controlReferences:
-      - CC.Frontline.10.1.1
+      - CC.SecurityCompliance.10.1.1
     canBeSatisfiedBy:
       - mechanism: internalComponent
         criteria:
@@ -41,7 +41,7 @@ requirements:
     description: The product availability tier must be documented.
     rationale: Availability requirements justify variant selections and inform operational support models.
     controlReferences:
-      - CC.Frontline.10.1.1
+      - CC.SecurityCompliance.10.1.1
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
         key: availabilityRequirement
@@ -63,7 +63,7 @@ requirements:
     description: The type of data this product stores or processes must be documented.
     rationale: Data classification drives security posture requirements and compliance obligations.
     controlReferences:
-      - CC.Frontline.0.2.1
+      - CC.SecurityCompliance.0.2.1
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
         key: dataClassification

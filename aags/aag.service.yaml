@@ -8,7 +8,7 @@ catalogStatus: approved
 lifecycleStatus: maintain
 owner:
   team: cloud-architecture
-  contact: cloud-architecture@frontlineed.com
+  contact: cloud-architecture@example.com
 tags:
   - service
   - analysis
@@ -41,7 +41,7 @@ requirements:
     description: The service must document how credentials, certificates, or runtime secrets are managed.
     rationale: Secret handling is a core part of service operability and security posture.
     controlReferences:
-      - CC.Frontline.04.3.1
+      - CC.SecurityCompliance.04.3.1
     canBeSatisfiedBy:
       - mechanism: externalInteraction
         criteria:

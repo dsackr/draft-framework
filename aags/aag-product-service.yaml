@@ -13,7 +13,7 @@ catalogStatus: approved
 lifecycleStatus: invest
 owner:
   team: cloud-architecture
-  contact: cloud-architecture@frontlineed.com
+  contact: cloud-architecture@example.com
 tags:
   - product-service
   - analysis

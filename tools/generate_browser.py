@@ -1575,7 +1575,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                   <div class="requirement-rationale">${escapeHtml(requirement.rationale)}</div>
                 ` : ''}
                 ${(requirement.controlReferences || []).length ? `
-                  <div class="mechanism-label">Roper Controls</div>
+                  <div class="mechanism-label">Security and Compliance Controls</div>
                   <div class="control-badges">${controlBadges(requirement.controlReferences || [])}</div>
                 ` : ''}
                 <div class="mechanism-label">Can be satisfied by</div>

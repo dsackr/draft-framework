@@ -8,7 +8,7 @@ catalogStatus: approved
 lifecycleStatus: maintain
 owner:
   team: cloud-architecture
-  contact: cloud-architecture@frontlineed.com
+  contact: cloud-architecture@example.com
 tags:
   - service
   - dbms
@@ -24,7 +24,7 @@ requirements:
     description: The DBMS service must document backup strategy together with recovery time and recovery point expectations.
     rationale: A database platform is not governable unless durability expectations are explicit.
     controlReferences:
-      - CC.Frontline.10.2.1
+      - CC.SecurityCompliance.10.2.1
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
         key: backup.strategy
@@ -48,7 +48,7 @@ requirements:
     description: The DBMS service must document how data is encrypted at rest.
     rationale: Storage protection is a core control for regulated and business-critical data.
     controlReferences:
-      - CC.Frontline.0.2.1
+      - CC.SecurityCompliance.0.2.1
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
         key: encryption.atRest
@@ -58,7 +58,7 @@ requirements:
     description: The DBMS service must document its administrative and application access control model.
     rationale: Database access boundaries must be understandable to engineering, security, and operations teams.
     controlReferences:
-      - CC.Frontline.04.1.1
+      - CC.SecurityCompliance.04.1.1
     canBeSatisfiedBy:
       - mechanism: externalInteraction
         criteria:

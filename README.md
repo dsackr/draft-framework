@@ -19,7 +19,7 @@ The current framework validates RBBs, RAs, and DAs against Architecture Analysis
 - [Deployment architectures](docs/framework/deployment-architectures.md)
 - [Naming conventions](docs/framework/naming-conventions.md)
 - [How to add objects](docs/framework/how-to-add-objects.md)
-- [Roper controls](docs/framework/roper-controls.md)
+- [Security and compliance controls](docs/framework/security-and-compliance-controls.md)
 
 ## Repository Structure
 

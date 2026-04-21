@@ -96,7 +96,7 @@ Concrete example: a deployment architecture satisfies this AAG by pointing to a 
 
 ## Control References
 
-Each AAG requirement may carry one or more `controlReferences`, which are IDs from an external control framework that mandate the requirement. This creates a traceable line from a specific control to the architecture decision that satisfies it.
+Each AAG requirement may carry one or more `controlReferences`, which are IDs from the Security and Compliance Controls framework that mandate the requirement. This creates a traceable line from a specific control to the architecture decision that satisfies it.
 
 For example, a security-monitoring control is satisfied when a Host RBB includes the necessary monitoring agent or security interaction. The engineer does not need to read the control text in order to build a compliant RBB. Satisfying the AAG requirement is sufficient because the control mapping is already captured in the catalog.
 
