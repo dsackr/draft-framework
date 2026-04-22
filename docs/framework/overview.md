@@ -1,123 +1,63 @@
 # Framework Overview
 
-## What This Catalog Is
+This page is the object map for the framework. It groups the catalog object
+types by the role they play in the model.
 
-DRAFT — Deployable Reference Architecture Framework Toolkit — exists to make architecture decisions explicit, reviewable, and reusable. It is a Git-based catalog of YAML objects that describe the building blocks engineering teams are allowed to assemble, the patterns those building blocks support, the deployment declarations that map those patterns to real products, and the analysis rules that determine whether an architecture description is complete enough to be approved.
+## Architecture Content
 
-The point is not to create documentation for its own sake. The point is to give infrastructure, engineering, security, and architecture teams a shared source of truth that can be validated automatically and browsed consistently.
+### ABB
 
-## The Object Types
+An ABB is the smallest reusable vendor component in the catalog. ABBs define
+what a technology is, not how a full architecture pattern is assembled from it.
+This category also includes Appliance ABBs, which model blackbox
+vendor-managed components deployed inside the infrastructure boundary.
 
-The catalog contains a small set of first-class object types. Each exists because
-it answers a different architecture question.
+### RBB
 
-| Object Type | Purpose |
-|---|---|
-| ABB | Defines a vendor product that is installed on a managed host. |
-| Appliance ABB | Defines a blackbox vendor-managed component deployed inside the infrastructure boundary. |
-| SaaS Service | Defines a subscribed vendor-managed service where data may leave the infrastructure boundary. |
-| RBB | Defines a reusable host or service pattern. |
-| Product Service | Defines first-party code deployed on an RBB or blackbox host pattern. |
-| AAG | Defines the questions and requirements that must be satisfied before approval. |
-| ARD | Defines an explicit architecture risk or decision. |
-| Reference Architecture | Defines a reusable architecture pattern. |
-| Software Distribution Manifest | Defines how a specific product is actually distributed and deployed. |
-| Compliance Framework / AAG Control Mapping | Defines how architecture requirements map to selectable control catalogs. |
+An RBB is a reusable architecture pattern built from ABBs. Host RBBs describe
+the runtime foundation. Service RBBs describe a reusable service pattern that
+runs on that foundation.
 
-- ABBs define discrete vendor products at specific versions.
-- Appliance ABBs define blackbox vendor-managed components that still live inside the adopter's infrastructure boundary.
-- SaaS Services define subscribed vendor-managed services where data may leave the adopter's infrastructure boundary.
-- RBBs define reusable architecture components built from ABBs.
-- Product Services define first-party code deployed on an RBB or blackbox host pattern.
-- AAGs define the requirements a catalog object must satisfy before it can be approved.
-- ARDs define explicit architecture risks and documented decisions.
-- RAs define reusable patterns in terms of required RBBs and roles.
-- SDMs define how a specific product is deployed using service groups, scaling units, and deployable components.
-- Compliance Frameworks and AAG Control Mappings let the same architecture requirements be viewed through different control catalogs.
+### Reference Architecture
 
-## How The Objects Relate
+A Reference Architecture defines a reusable pattern in terms of required RBBs,
+roles, and expected deployment posture. It is the pattern-level contract that a
+Software Distribution Manifest may adopt or deviate from.
 
-The relationship model is deliberate.
+## Software Content
 
-- ABBs are the smallest reusable units when the technology is installed on a managed host.
-- Appliance ABBs model components that are deployed inside the infrastructure boundary but do not expose a separable host.
-- SaaS Services model subscribed services that may route data through vendor-managed infrastructure outside the boundary.
-- Host RBBs are assembled from OS, hardware, and agent ABBs plus platform interactions.
-- Service RBBs compose a host RBB with one function ABB.
-- Product Services declare where first-party code runs.
-- RAs say which RBBs, in which named variants, are required for a given pattern.
-- SDMs say which Product Services, RBBs, Appliance ABBs, and SaaS Services are actually present for a specific product.
-- AAGs define what must be addressed before a reusable architecture component or pattern declaration can be approved.
+### Software Service
 
-A useful way to think about the catalog is this: ABBs define what a component is, RBBs define how it behaves architecturally, RAs define which components a pattern requires, SDMs define what a product actually uses, and AAGs define what questions must be answered before the component can be trusted.
+A Software Service is first-party code deployed on an RBB or an equivalent
+blackbox host pattern. The underlying documentation and file path still use
+`product-services`, but the framework meaning is software content authored by
+the adopting organization.
 
-## Lifecycle Status
+### Software Distribution Manifest
 
-Lifecycle status describes the framework's strategic stance toward a technology or pattern.
+A Software Distribution Manifest describes how a real product is distributed and
+deployed. It assembles Software Services, RBBs, Appliance ABBs, SaaS Services,
+scaling units, service groups, and explicit external interactions into one
+deployable view.
 
-### `pre-invest`
+### Deployment Risks and Decisions
 
-The technology is being explored but is not yet a standard. Engineers can evaluate it, but should not assume it is ready for broad production adoption.
+Deployment Risks and Decisions capture explicit architectural risk and decision
+records attached to deployed software. The underlying object type remains `ard`,
+but the framework meaning is a deployment-scoped record of either a known risk
+or an accepted decision.
 
-### `invest`
+## Extensible Framework Content
 
-New work should move in this direction. If you are starting a new workload and an invest-status option fits, that is usually the default choice.
+### AAGs
 
-### `maintain`
+AAGs define the requirement sets that catalog objects must satisfy before they
+can be considered complete enough for approval. They are the framework’s
+analysis and governance layer.
 
-The technology is supported and acceptable for current use, but it is not the preferred destination for new strategic work.
+### Security and Compliance Controls
 
-### `disinvest`
-
-The technology is still supported for now, but engineers should plan migrations away from it and avoid creating new dependencies on it.
-
-### `exit`
-
-The technology is beyond its useful life in the framework and should be removed as quickly as practical.
-
-Concrete example: Windows Server 2012 R2 still appears in the catalog because it exists in the estate, but its lifecycle status makes the engineering direction unambiguous.
-
-## Catalog Status
-
-Catalog status describes documentation maturity rather than strategic direction.
-
-### `stub`
-
-The object exists only in skeletal form. It may reserve an ID or establish intent, but it is not complete enough to guide engineering decisions.
-
-### `draft`
-
-The object has meaningful content and can be reviewed, but it has not yet satisfied all governance expectations.
-
-### `approved`
-
-The object has passed the framework’s validation bar and is ready to be used as a reference point for engineering decisions.
-
-For RBBs, the most important gate is the relationship to AAGs. An RBB can only be considered truly complete when it satisfies the AAGs listed in `satisfiesAAG`. RAs and SDMs are also validated against their applicable AAGs, even though those relationships are determined by `appliesTo` rather than an explicit `satisfiesAAG` list on the object.
-
-ID immutability: once an object reaches `catalogStatus: approved`, its `id` field must never change. Downstream tooling, including future IaC pipelines, will reference objects by ID. Renaming an approved object is a breaking change.
-
-## Git As The Source Of Truth
-
-Git is the source of truth for this framework. That matters because architecture changes are not hidden in slide decks or wiki pages. They are versioned, reviewable, and diffable.
-
-When an engineer updates an ABB, adds a new RBB variant, or introduces a new AAG requirement, that change follows the same path as a code change:
-
-1. Edit files locally.
-2. Run validation.
-3. Open a pull request.
-4. Review the diff.
-5. Merge to `main`.
-6. Let automation regenerate the browser.
-
-The validator in `tools/validate.py` enforces schema and AAG satisfaction rules. The browser generator in `tools/generate_browser.py` reads the catalog objects and emits `docs/index.html`, which becomes the published browsing experience on GitHub Pages.
-
-## Why This Matters In Practice
-
-The browser and validator support engineering judgment. They do not replace it.
-
-- Validation catches missing requirements and broken references.
-- The browser improves discoverability and makes the catalog easier to inspect.
-- Git history preserves what changed, when it changed, and who changed it.
-
-Taken together, those pieces make the framework durable. An engineer joining a product team can read the docs, browse the current standards, inspect the YAML, and understand not just what the standard is, but how it should evolve.
+Security and Compliance Controls are the selectable control catalogs and
+requirement-to-control mappings that sit beside the architecture model. They
+let the same AAG requirement set be viewed through different compliance
+frameworks without changing the architecture objects themselves.
