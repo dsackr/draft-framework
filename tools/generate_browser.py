@@ -1112,32 +1112,32 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       color: #fdba74;
     }
     .topology-tier-column:has(.topology-tier-header.web) {
-      border-color: rgba(249,115,22,0.34);
-      background: linear-gradient(180deg, rgba(249,115,22,0.14) 0%, rgba(15,23,42,0.72) 22%, rgba(15,23,42,0.56) 100%);
+      border-color: rgba(249,115,22,0.52);
+      background: linear-gradient(180deg, rgba(249,115,22,0.24) 0%, rgba(249,115,22,0.12) 26%, rgba(15,23,42,0.68) 58%, rgba(15,23,42,0.54) 100%);
     }
     .topology-tier-header.app {
       border-color: rgba(20,184,166,0.45);
       color: #99f6e4;
     }
     .topology-tier-column:has(.topology-tier-header.app) {
-      border-color: rgba(20,184,166,0.34);
-      background: linear-gradient(180deg, rgba(20,184,166,0.14) 0%, rgba(15,23,42,0.72) 22%, rgba(15,23,42,0.56) 100%);
+      border-color: rgba(20,184,166,0.52);
+      background: linear-gradient(180deg, rgba(20,184,166,0.24) 0%, rgba(20,184,166,0.12) 26%, rgba(15,23,42,0.68) 58%, rgba(15,23,42,0.54) 100%);
     }
     .topology-tier-header.data {
       border-color: rgba(59,130,246,0.45);
       color: #bfdbfe;
     }
     .topology-tier-column:has(.topology-tier-header.data) {
-      border-color: rgba(59,130,246,0.34);
-      background: linear-gradient(180deg, rgba(59,130,246,0.14) 0%, rgba(15,23,42,0.72) 22%, rgba(15,23,42,0.56) 100%);
+      border-color: rgba(59,130,246,0.52);
+      background: linear-gradient(180deg, rgba(59,130,246,0.24) 0%, rgba(59,130,246,0.12) 26%, rgba(15,23,42,0.68) 58%, rgba(15,23,42,0.54) 100%);
     }
     .topology-tier-header.utility {
       border-color: rgba(168,85,247,0.45);
       color: #e9d5ff;
     }
     .topology-tier-column:has(.topology-tier-header.utility) {
-      border-color: rgba(168,85,247,0.34);
-      background: linear-gradient(180deg, rgba(168,85,247,0.14) 0%, rgba(15,23,42,0.72) 22%, rgba(15,23,42,0.56) 100%);
+      border-color: rgba(168,85,247,0.52);
+      background: linear-gradient(180deg, rgba(168,85,247,0.24) 0%, rgba(168,85,247,0.12) 26%, rgba(15,23,42,0.68) 58%, rgba(15,23,42,0.54) 100%);
     }
     .topology-column-stack {
       display: grid;
