@@ -939,6 +939,30 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       display: grid;
       gap: 18px;
     }
+    .topology-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .topology-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(100,116,139,0.5);
+      background: rgba(15,23,42,0.72);
+      color: var(--subtle);
+      font-size: 12px;
+    }
+    .topology-legend-line {
+      width: 28px;
+      border-top: 2px solid #64748b;
+    }
+    .topology-legend-line.shared {
+      border-top-style: dashed;
+    }
     .topology-strip,
     .scaling-unit-box,
     .service-group-box,
@@ -2536,25 +2560,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         }
       });
 
-      const externalInteractions = serviceGroups.flatMap(group =>
-        (group.externalInteractions || []).filter(interaction => (interaction.type || 'external') !== 'internal')
-      );
-
-      const externalMarkup = externalInteractions.length ? `
-        <section class="topology-strip">
-          <div class="legend-title">External Interactions</div>
-          <div class="topology-strip-grid">
-            ${externalInteractions.map(interaction => {
-              const icon = topologyInteractionIcon(interaction);
-              return `
-                <article class="topology-interaction">
-                  <span class="topology-interaction-icon ${icon.cls}">${icon.icon}</span>
-                  <div class="topology-node-label">${escapeHtml(interaction.name || 'External Interaction')}</div>
-                  <div class="topology-node-meta">${escapeHtml(interaction.capability || 'other')}</div>
-                </article>
-              `;
-            }).join('')}
-          </div>
+      const scalingLegendMarkup = scalingUnits.length ? `
+        <section class="topology-legend">
+          <span class="topology-legend-item"><span class="topology-legend-line"></span>Replicable scaling unit</span>
+          <span class="topology-legend-item"><span class="topology-legend-line shared"></span>Shared scaling unit</span>
         </section>
       ` : '';
 
@@ -2595,7 +2604,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
       return `
         <div class="topology-layout">
-          ${externalMarkup}
+          ${scalingLegendMarkup}
           <div class="topology-scaling-units">
             ${scalingUnitMarkup}
           </div>
