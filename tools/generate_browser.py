@@ -2564,48 +2564,53 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const serviceGroups = sdm.serviceGroups || [];
       const scalingUnits = sdm.scalingUnits || [];
       const scalingUnitMap = new Map(scalingUnits.map(unit => [unit.name, unit]));
-      const groupsByScalingUnit = new Map();
-      const unscopedGroups = [];
 
+      if (!serviceGroups.length) {
+        return `
+          <div class="topology-layout">
+            <div class="empty-card">No deployment topology data is available for this software distribution manifest.</div>
+          </div>
+        `;
+      }
+
+      const targets = new Map();
       serviceGroups.forEach(group => {
+        const target = group.deploymentTarget || 'Unspecified';
+        if (!targets.has(target)) {
+          targets.set(target, { scoped: new Map(), unscoped: [] });
+        }
+        const bucket = targets.get(target);
         if (group.scalingUnit && scalingUnitMap.has(group.scalingUnit)) {
-          if (!groupsByScalingUnit.has(group.scalingUnit)) groupsByScalingUnit.set(group.scalingUnit, []);
-          groupsByScalingUnit.get(group.scalingUnit).push(group);
+          if (!bucket.scoped.has(group.scalingUnit)) {
+            bucket.scoped.set(group.scalingUnit, []);
+          }
+          bucket.scoped.get(group.scalingUnit).push(group);
         } else {
-          unscopedGroups.push(group);
+          bucket.unscoped.push(group);
         }
       });
 
-      const scalingUnitMarkup = scalingUnits.map(unit => {
-        const groups = groupsByScalingUnit.get(unit.name) || [];
-        if (!groups.length) return '';
-        const targets = new Map();
-        groups.forEach(group => {
-          const target = group.deploymentTarget || 'Unspecified';
-          if (!targets.has(target)) targets.set(target, []);
-          targets.get(target).push(group);
-        });
+      const deploymentTargetMarkup = [...targets.entries()].map(([target, grouped]) => {
+        const meta = deploymentTargetPresentation(target);
         return `
-          <section class="scaling-unit-box">
-            <div class="scaling-unit-header">
-              <div class="scaling-unit-title">${escapeHtml(unit.name || 'Unnamed Scaling Unit')}</div>
-              <span class="scaling-unit-badge">${escapeHtml(unit.name || 'Unnamed Scaling Unit')}</span>
+          <section class="deployment-target-cluster">
+            <div class="deployment-target-header">
+              <div class="deployment-target-title">${escapeHtml(target)}</div>
+              <span class="location-badge ${escapeHtml(meta.cls)}">${meta.icon} ${escapeHtml(meta.badge)}</span>
             </div>
-            <div class="scaling-unit-content">
-              ${[...targets.entries()].map(([target, grouped]) => {
-                const meta = deploymentTargetPresentation(target);
-                return `
-                  <section class="deployment-target-cluster">
-                    <div class="deployment-target-header">
-                      <div class="deployment-target-title">${escapeHtml(target)}</div>
-                      <span class="location-badge ${escapeHtml(meta.cls)}">${meta.icon} ${escapeHtml(meta.badge)}</span>
-                    </div>
-                    <div class="deployment-target-content">
-                      ${grouped.map(group => serviceGroupTopologyMarkup(group)).join('')}
-                    </div>
-                  </section>
-                `;
-              }).join('')}
+            <div class="deployment-target-content">
+              ${[...grouped.scoped.entries()].map(([scalingUnitName, groups]) => `
+                <section class="scaling-unit-box">
+                  <div class="scaling-unit-header">
+                    <div class="scaling-unit-title">${escapeHtml(scalingUnitName)}</div>
+                    <span class="scaling-unit-badge">${escapeHtml(scalingUnitName)}</span>
+                  </div>
+                  <div class="scaling-unit-content">
+                    ${groups.map(group => serviceGroupTopologyMarkup(group)).join('')}
+                  </div>
+                </section>
+              `).join('')}
+              ${grouped.unscoped.map(group => serviceGroupTopologyMarkup(group)).join('')}
             </div>
           </section>
         `;
@@ -2614,12 +2619,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return `
         <div class="topology-layout">
           <div class="topology-scaling-units">
-            ${scalingUnitMarkup}
+            ${deploymentTargetMarkup}
           </div>
-          <div class="topology-unscoped-groups">
-            ${unscopedGroups.map(group => serviceGroupTopologyMarkup(group)).join('')}
-          </div>
-          ${!scalingUnitMarkup && !unscopedGroups.length ? '<div class="empty-card">No deployment topology data is available for this software distribution manifest.</div>' : ''}
         </div>
       `;
     }
