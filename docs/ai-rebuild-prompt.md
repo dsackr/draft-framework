@@ -22,7 +22,6 @@ The repository should contain these top-level folders:
 - `aags/` for Architecture Analysis Guidelines
 - `ards/` for Architecture Risks and Decisions
 - `compliance-frameworks/` for selectable compliance framework objects
-- `compliance-mappings/` for AAG requirement-to-control mappings
 - `product-services/` for Product Service objects
 - `reference-architectures/` for Reference Architecture objects
 - `sdms/` for Software Distribution Manifest objects
@@ -99,10 +98,6 @@ architectures, software distribution manifests, and product services.
 A Compliance Framework is a first-class catalog object that defines a selectable control catalog. It exists so the same architecture requirement model can be viewed under different compliance regimes without rewriting the AAGs themselves.
 
 Common examples include a baseline controls pack, NIST CSF, SOC 2, or an organization-specific overlay.
-
-### AAG Control Mapping
-
-An AAG Control Mapping is a first-class catalog object that maps one AAG's requirement IDs to the control IDs used by one selected compliance framework. It is the bridge between architecture requirements and compliance catalogs.
 
 ### ARD
 
@@ -205,23 +200,13 @@ Compliance framework objects include:
 - optional `controlIdNamespace`
 - optional `defaultSelection`
 - optional `extends`
+- optional `requirementMappings`
 
 These objects make compliance selection data-driven. A framework may extend another framework so an organization-specific overlay can inherit a baseline control pack and override only the differences.
 
-### AAG Control Mapping Schema
-
-AAG control mapping objects include:
-
-- `framework`
-- `aagId`
-- `requirementMappings`
-
-Each requirement mapping includes:
-
-- `requirementId`
-- `controls`
-
-This separation keeps AAGs architecture-focused while allowing control catalogs to be refreshed independently.
+When present, `requirementMappings` is a nested map of `aag-id ->
+requirement-id -> [control ids]`. This keeps AAGs architecture-focused while
+allowing control catalogs to be refreshed independently.
 
 ### ARD Schema
 
@@ -435,7 +420,7 @@ The browser generator should follow these rules:
 - load all YAML objects from the catalog folders
 - register each object in a single `id -> object` registry
 - build outbound and inbound reference indexes
-- build a compliance index from `compliance_framework` and `aag_control_mapping` objects
+- build a compliance index from `compliance_framework` objects
 - warn on unresolved references instead of crashing
 - generate list filters from data
 - generate lifecycle filters from data

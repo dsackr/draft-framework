@@ -3,8 +3,8 @@ id: framework.security-compliance-controls
 type: compliance_framework
 name: Security and Compliance Controls
 description: >
-  Baseline controls pack bundled with DRAFT. This framework carries the current
-  control mappings that were previously embedded directly in AAG requirements.
+  Baseline controls pack bundled with DRAFT. Requirement-to-control mappings
+  are defined inline and cover the host, service, DBMS service, and SDM AAGs.
 version: 1.0.0
 catalogStatus: approved
 lifecycleStatus: maintain
@@ -18,6 +18,34 @@ tags:
 frameworkKind: common
 controlIdNamespace: CC.SecurityCompliance
 defaultSelection: true
-notes: >
-  This is the default framework selected by the browser until another framework
-  is chosen.
+requirementMappings:
+  aag.host:
+    authentication:
+      - CC.SecurityCompliance.04.2.2
+      - CC.SecurityCompliance.04.4.1
+    logging:
+      - CC.SecurityCompliance.06.1.1
+    security-monitoring:
+      - CC.SecurityCompliance.06.3.1
+    patch-management:
+      - CC.SecurityCompliance.03.1.1
+      - CC.SecurityCompliance.03.2.1
+  aag.sdm:
+    ra-conformance:
+      - CC.SecurityCompliance.10.1.1
+    variant-selection:
+      - CC.SecurityCompliance.10.1.1
+    availability-requirement:
+      - CC.SecurityCompliance.10.1.1
+    data-classification:
+      - CC.SecurityCompliance.0.2.1
+  aag.service.dbms:
+    backup-strategy:
+      - CC.SecurityCompliance.10.2.1
+    encryption-at-rest:
+      - CC.SecurityCompliance.0.2.1
+    access-control-model:
+      - CC.SecurityCompliance.04.1.1
+  aag.service:
+    secrets-management:
+      - CC.SecurityCompliance.04.3.1

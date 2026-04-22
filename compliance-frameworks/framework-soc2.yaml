@@ -3,8 +3,8 @@ id: framework.soc2
 type: compliance_framework
 name: SOC 2
 description: >
-  Starter framework definition for SOC 2 mappings. Add or refresh control
-  mappings in compliance-mappings/ as your organization curates them.
+  Starter framework for SOC 2 mappings. Add requirement mappings inline
+  under requirementMappings as your organization curates them.
 version: 2017.0.0
 catalogStatus: stub
 lifecycleStatus: invest
@@ -16,3 +16,8 @@ tags:
   - soc2
   - starter-pack
 frameworkKind: common
+notes: >
+  To add mappings, populate requirementMappings using the same aag-id and
+  requirement-id keys used in the bundled Security and Compliance Controls
+  framework as a reference.
+requirementMappings: {}

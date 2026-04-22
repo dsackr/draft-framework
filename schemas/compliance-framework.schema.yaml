@@ -11,5 +11,16 @@ optionalFields:
   - version
   - controlIdNamespace
   - defaultSelection  # boolean
-  - extends           # list of framework ids
+  - extends           # list of framework ids this framework inherits mappings from
   - notes
+  - requirementMappings  # dict: aag-id -> requirement-id -> list of control ids
+
+requirementMappings structure:
+  aag.host:
+    authentication:
+      - CTRL-001
+    logging:
+      - CTRL-002
+  aag.service:
+    secrets-management:
+      - CTRL-003

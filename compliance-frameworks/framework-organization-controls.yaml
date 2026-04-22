@@ -3,8 +3,9 @@ id: framework.organization-controls
 type: compliance_framework
 name: Organization Controls Overlay
 description: >
-  Template framework for organization-specific controls. Implementers can clone
-  this framework, rename it, and add local mappings without modifying core AAGs.
+  Template framework for organization-specific controls. Clone this file,
+  rename the id and name, and populate requirementMappings with your internal
+  control identifiers. No other files need to change.
 version: 1.0.0
 catalogStatus: stub
 lifecycleStatus: invest
@@ -17,5 +18,6 @@ tags:
   - extensibility
 frameworkKind: organizational
 notes: >
-  Use this as the starting point for internal control catalogs, policy overlays,
-  or audit mappings that are specific to one organization.
+  Use extends to inherit all mappings from another framework and override only
+  what differs. Example: extends: [framework.security-compliance-controls]
+requirementMappings: {}

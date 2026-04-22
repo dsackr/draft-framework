@@ -25,7 +25,6 @@ CATALOG_FOLDERS = [
     "abbs",
     "ards",
     "compliance-frameworks",
-    "compliance-mappings",
     "saas-services",
     "sdms",
     "product-services",
@@ -53,9 +52,8 @@ REF_CONTAINER_KEYS = {
     "linkedSDM",
     "riskRef",
     "framework",
-    "aagId",
 }
-CATALOG_ID_PREFIXES = ("abb.", "rbb.", "aag.", "ard.", "ps.", "ra.", "sdm.", "framework.", "aagmap.", "saas.")
+CATALOG_ID_PREFIXES = ("abb.", "rbb.", "aag.", "ard.", "ps.", "ra.", "sdm.", "framework.", "saas.")
 
 
 def discover_yaml_files(root: Path) -> list[Path]:
@@ -124,8 +122,6 @@ def shape_for(obj: dict[str, Any]) -> str:
         return "barrel"
     if obj["type"] == "compliance_framework":
         return "hexagon"
-    if obj["type"] == "aag_control_mapping":
-        return "tag"
     if obj["type"] == "ard":
         return "round-rectangle"
     if obj["type"] == "product_service":
@@ -155,8 +151,6 @@ def type_label_for(obj: dict[str, Any]) -> str:
         return "AAG"
     if obj["type"] == "compliance_framework":
         return "Compliance Framework"
-    if obj["type"] == "aag_control_mapping":
-        return "AAG Control Mapping"
     if obj["type"] == "ard":
         return f"ARD / {obj.get('category', 'risk')}"
     if obj["type"] == "product_service":
@@ -203,22 +197,23 @@ def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, A
         [obj for obj in registry.values() if obj.get("type") == "compliance_framework"],
         key=lambda item: item.get("name", ""),
     )
-    mapping_objects = [obj for obj in registry.values() if obj.get("type") == "aag_control_mapping"]
-    local_mappings: dict[str, dict[str, dict[str, list[str]]]] = {}
     frameworks_by_id = {framework["id"]: framework for framework in frameworks}
-
-    for mapping in mapping_objects:
-        framework_id = str(mapping.get("framework", ""))
-        aag_id = str(mapping.get("aagId", ""))
-        if not framework_id or not aag_id:
+    local_mappings: dict[str, dict[str, dict[str, list[str]]]] = {}
+    for framework in frameworks:
+        framework_id = framework["id"]
+        raw = framework.get("requirementMappings") or {}
+        if not isinstance(raw, dict):
             continue
-        requirement_index = local_mappings.setdefault(framework_id, {}).setdefault(aag_id, {})
-        for requirement_mapping in mapping.get("requirementMappings", []):
-            if not isinstance(requirement_mapping, dict) or not requirement_mapping.get("requirementId"):
+        aag_map: dict[str, dict[str, list[str]]] = {}
+        for aag_id, req_map in raw.items():
+            if not isinstance(req_map, dict):
                 continue
-            requirement_index[str(requirement_mapping["requirementId"])] = [
-                str(control) for control in requirement_mapping.get("controls", []) if str(control).strip()
-            ]
+            aag_map[str(aag_id)] = {
+                str(req_id): [str(c) for c in controls if str(c).strip()]
+                for req_id, controls in req_map.items()
+                if isinstance(controls, list)
+            }
+        local_mappings[framework_id] = aag_map
 
     resolved_cache: dict[str, dict[str, dict[str, list[str]]]] = {}
 
@@ -342,10 +337,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "decisionRationale": obj.get("decisionRationale", ""),
                 "relatedARDs": obj.get("relatedARDs", []),
                 "linkedSDM": obj.get("linkedSDM", ""),
-                "framework": obj.get("framework", ""),
                 "frameworkKind": obj.get("frameworkKind", ""),
-                "aagId": obj.get("aagId", ""),
-                "requirementMappings": obj.get("requirementMappings", []),
                 "defaultSelection": obj.get("defaultSelection", False),
                 "hasRiskRef": obj.get("id") in risk_marked_rbb_ids or obj.get("id") in risk_marked_product_service_ids,
                 "outboundRefs": outbound_refs.get(object_id, []),
@@ -1660,13 +1652,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         id: 'framework',
         label: 'Framework Content',
         filters: [
-          { id: 'all', label: 'All', types: ['aag', 'compliance_framework', 'aag_control_mapping'] },
+          { id: 'all', label: 'All', types: ['aag', 'compliance_framework'] },
           { id: 'aag', label: 'AAGs', types: ['aag'] },
-          { id: 'scc', label: 'SCCs', types: ['compliance_framework', 'aag_control_mapping'] }
+          { id: 'compliance_framework', label: 'Compliance Frameworks', types: ['compliance_framework'] }
         ],
         rows: [
           { id: 'aag', label: 'AAGs', types: ['aag'] },
-          { id: 'scc', label: 'Security and Compliance Controls', types: ['compliance_framework', 'aag_control_mapping'] }
+          { id: 'compliance_framework', label: 'Compliance Frameworks', types: ['compliance_framework'] }
         ]
       }
     ];
@@ -1674,7 +1666,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     const complianceFrameworks = complianceData.frameworks || [];
     const deployableTypes = new Set(
       allObjects
-        .filter(object => !['aag', 'ard', 'compliance_framework', 'aag_control_mapping'].includes(object.type))
+        .filter(object => !['aag', 'ard', 'compliance_framework'].includes(object.type))
         .map(object => object.type)
     );
     const impactOrder = ['software_distribution_manifest', 'reference_architecture', 'product_service', 'rbb', 'abb', 'saas_service'];
@@ -1736,7 +1728,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (normalized === 'saas_service') return 'SaaS Service';
       if (normalized === 'product_service') return 'Product Service';
       if (normalized === 'software_distribution_manifest') return 'Software Distribution Manifest';
-      if (normalized === 'aag_control_mapping') return 'AAG Control Mapping';
       if (normalized === 'reference_architecture') return 'Reference Architecture';
       if (normalized === 'compliance_framework') return 'Compliance Framework';
       return formatTitleCase(normalized.replace(/[._-]/g, ' '));
@@ -2435,44 +2426,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
-    function complianceMappingDetailMarkup(object) {
-      const mappings = object.requirementMappings || [];
-      return `
-        <section class="section-card">
-          <h3>Framework Mapping</h3>
-          <div class="section-stack">
-            <div><strong>Framework:</strong> ${object.framework && objectLookup[object.framework]
-              ? `<span class="ard-link" data-object-link="${object.framework}">${escapeHtml(object.framework)}</span>`
-              : escapeHtml(object.framework || '')}</div>
-            <div><strong>AAG:</strong> ${object.aagId && objectLookup[object.aagId]
-              ? `<span class="ard-link" data-object-link="${object.aagId}">${escapeHtml(object.aagId)}</span>`
-              : escapeHtml(object.aagId || '')}</div>
-          </div>
-        </section>
-        <section class="section-card">
-          <h3>Requirement Mappings</h3>
-          ${mappings.length ? `
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Requirement</th>
-                  <th>Controls</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${mappings.map(entry => `
-                  <tr>
-                    <td>${escapeHtml(entry.requirementId || '')}</td>
-                    <td>${controlBadges(entry.controls || [])}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          ` : '<div class="empty-card">No requirement mappings are documented for this object.</div>'}
-        </section>
-      `;
-    }
-
     function instanceLabel(value) {
       return formatTitleCase(String(value || 'unnamed').replace(/\./g, ' ').replace(/_/g, ' '));
     }
@@ -2936,12 +2889,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           ${complianceFrameworkDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
-      } else if (object.type === 'aag_control_mapping') {
-        detailBody = `
-          ${headerMarkup}
-          ${complianceMappingDetailMarkup(object)}
-          ${usedByMarkup(object)}
-        `;
       } else if (object.type === 'ard') {
         detailBody = `
           ${ardDetailMarkup(object)}
@@ -3115,7 +3062,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         renderTopologyIntoCanvas();
       }
-      if (!['aag', 'ard', 'software_distribution_manifest', 'compliance_framework', 'aag_control_mapping', 'saas_service'].includes(object.type) && !(object.type === 'abb' && object.subtype === 'appliance')) {
+      if (!['aag', 'ard', 'software_distribution_manifest', 'compliance_framework', 'saas_service'].includes(object.type) && !(object.type === 'abb' && object.subtype === 'appliance')) {
         renderInternalDiagram(detailDiagramSource);
       }
     }

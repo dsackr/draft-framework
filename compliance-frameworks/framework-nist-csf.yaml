@@ -3,8 +3,8 @@ id: framework.nist-csf
 type: compliance_framework
 name: NIST Cybersecurity Framework
 description: >
-  Starter framework definition for NIST CSF mappings. Add or refresh control
-  mappings in compliance-mappings/ as your organization curates them.
+  Starter framework for NIST CSF mappings. Add requirement mappings inline
+  under requirementMappings as your organization curates them.
 version: 2.0.0
 catalogStatus: stub
 lifecycleStatus: invest
@@ -17,6 +17,7 @@ tags:
   - starter-pack
 frameworkKind: common
 notes: >
-  This object defines the framework for selection and extension. Requirement-to-
-  control mappings are supplied separately so they can be updated without
-  rewriting the AAGs themselves.
+  To add mappings, populate requirementMappings using the same aag-id and
+  requirement-id keys used in the bundled Security and Compliance Controls
+  framework as a reference.
+requirementMappings: {}
