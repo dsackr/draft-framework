@@ -939,30 +939,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       display: grid;
       gap: 18px;
     }
-    .topology-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-    .topology-legend-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(100,116,139,0.5);
-      background: rgba(15,23,42,0.72);
-      color: var(--subtle);
-      font-size: 12px;
-    }
-    .topology-legend-line {
-      width: 28px;
-      border-top: 2px solid #64748b;
-    }
-    .topology-legend-line.shared {
-      border-top-style: dashed;
-    }
     .topology-strip,
     .scaling-unit-box,
     .service-group-box,
@@ -1037,9 +1013,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border: 2px solid #64748b;
       background: rgba(30,41,59,0.9);
       min-width: 0;
-    }
-    .scaling-unit-box.shared {
-      border-style: dashed;
     }
     .scaling-unit-header,
     .deployment-target-header,
@@ -2560,13 +2533,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         }
       });
 
-      const scalingLegendMarkup = scalingUnits.length ? `
-        <section class="topology-legend">
-          <span class="topology-legend-item"><span class="topology-legend-line"></span>Replicable scaling unit</span>
-          <span class="topology-legend-item"><span class="topology-legend-line shared"></span>Shared scaling unit</span>
-        </section>
-      ` : '';
-
       const scalingUnitMarkup = scalingUnits.map(unit => {
         const groups = groupsByScalingUnit.get(unit.name) || [];
         if (!groups.length) return '';
@@ -2577,10 +2543,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           targets.get(target).push(group);
         });
         return `
-          <section class="scaling-unit-box ${escapeHtml(unit.type || '')}">
+          <section class="scaling-unit-box">
             <div class="scaling-unit-header">
               <div class="scaling-unit-title">${escapeHtml(unit.name || 'Unnamed Scaling Unit')}</div>
-              <span class="scaling-unit-badge">${escapeHtml(unit.type === 'replicable' ? `${unit.name} (×${unit.instanceCount || '?'})` : `${unit.name} (×1)`)}</span>
+              <span class="scaling-unit-badge">${escapeHtml(unit.name || 'Unnamed Scaling Unit')}</span>
             </div>
             <div class="scaling-unit-content">
               ${[...targets.entries()].map(([target, grouped]) => {
@@ -2604,7 +2570,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
       return `
         <div class="topology-layout">
-          ${scalingLegendMarkup}
           <div class="topology-scaling-units">
             ${scalingUnitMarkup}
           </div>
