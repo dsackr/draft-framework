@@ -2299,16 +2299,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function productServiceDetailMarkup(object) {
       const variants = Object.entries(object.variants || {});
+      const runsOnObject = object.runsOn ? objectLookup[object.runsOn] : null;
       return `
         <section class="section-card">
-          <h3>Product Service</h3>
+          <h3>Software Service</h3>
           <div class="section-stack">
             <div class="badges">
               ${productBadge(object.product)}
               ${lifecycleBadge(object.lifecycleStatus)}
+              ${catalogBadge(object.catalogStatus)}
             </div>
-            <div><strong>ID:</strong> <span class="object-id">${escapeHtml(object.id)}</span></div>
-            <div><strong>Runs On:</strong> ${object.runsOn && objectLookup[object.runsOn] ? `<span class="ard-link" data-object-link="${object.runsOn}">${escapeHtml(object.runsOn)}</span>` : escapeHtml(object.runsOn || '')}</div>
+            <dl class="definition-list">
+              <dt>ID</dt><dd><span class="object-id">${escapeHtml(object.id)}</span></dd>
+              <dt>Product</dt><dd>${escapeHtml(object.product || '')}</dd>
+              <dt>Runs On</dt><dd>${runsOnObject ? `<span class="ard-link" data-object-link="${object.runsOn}">${escapeHtml(runsOnObject.name)}</span>` : escapeHtml(object.runsOn || '')}</dd>
+              <dt>Underlying RBB</dt><dd>${escapeHtml(object.runsOn || 'Not documented')}</dd>
+            </dl>
             <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
           </div>
         </section>
@@ -2873,6 +2879,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
       syncHashForDetailView(object.id);
       renderSidebarContent(sidebarMarkup());
+      const softwareServiceRunsOn = object.type === 'product_service' && object.runsOn ? objectLookup[object.runsOn] : null;
+      const detailDiagramSource = softwareServiceRunsOn && softwareServiceRunsOn.type === 'rbb' ? softwareServiceRunsOn : object;
       const headerMarkup = `
         <section class="header-card">
           <div class="header-top">
@@ -2923,6 +2931,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         detailBody = `
           ${headerMarkup}
           ${productServiceDetailMarkup(object)}
+          <section class="middle-grid">
+            <div class="section-card">
+              <h3>Internal Components</h3>
+              <div id="detail-cy"></div>
+            </div>
+            <div class="section-card">
+              <h3>External Interactions</h3>
+              ${softwareServiceRunsOn ? interactionMarkup(softwareServiceRunsOn) : '<div class="empty-card">The underlying RBB is not available for this software service.</div>'}
+            </div>
+          </section>
+          <section class="decisions-card">
+            <h3>Architectural Decisions</h3>
+            ${softwareServiceRunsOn ? decisionMarkup(softwareServiceRunsOn) : '<div class="empty-card">No architectural decisions are available because the underlying RBB is not documented.</div>'}
+          </section>
           ${usedByMarkup(object)}
         `;
       } else if (object.type === 'saas_service') {
@@ -3073,8 +3095,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         renderTopologyIntoCanvas();
       }
-      if (!['aag', 'ard', 'software_distribution_manifest', 'product_service', 'compliance_framework', 'aag_control_mapping', 'saas_service'].includes(object.type) && !(object.type === 'abb' && object.subtype === 'appliance')) {
-        renderInternalDiagram(object);
+      if (!['aag', 'ard', 'software_distribution_manifest', 'compliance_framework', 'aag_control_mapping', 'saas_service'].includes(object.type) && !(object.type === 'abb' && object.subtype === 'appliance')) {
+        renderInternalDiagram(detailDiagramSource);
       }
     }
 
