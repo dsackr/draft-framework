@@ -28,4 +28,4 @@ linked below.
 
 The generated browser is published at:
 
-`https://dsackr.github.io/draft-framework/`
+[https://dsackr.github.io/draft-framework/](https://dsackr.github.io/draft-framework/)
