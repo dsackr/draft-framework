@@ -992,13 +992,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
     .topology-interaction-icon,
     .topology-node-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
+      width: 96px;
+      height: 96px;
+      border-radius: 18px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 26px;
+      font-size: 52px;
       background: rgba(249,115,22,0.18);
       color: #fdba74;
       border: 1px solid rgba(249,115,22,0.35);
