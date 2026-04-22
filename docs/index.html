@@ -676,6 +676,39 @@
       display: grid;
       gap: 14px;
     }
+    .deployment-target-columns {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+    .topology-tier-column {
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+    }
+    .topology-tier-header {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(71,85,105,0.8);
+      background: rgba(15,23,42,0.72);
+      font-size: 14px;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: 0.03em;
+    }
+    .topology-tier-header.web {
+      border-color: rgba(249,115,22,0.45);
+      color: #fdba74;
+    }
+    .topology-tier-header.app {
+      border-color: rgba(20,184,166,0.45);
+      color: #99f6e4;
+    }
+    .topology-tier-header.data {
+      border-color: rgba(59,130,246,0.45);
+      color: #bfdbfe;
+    }
     .deployment-target-cluster {
       padding: 14px;
       border: 1px solid rgba(51,65,85,0.9);
@@ -1084,6 +1117,7 @@
     }
     @media (max-width: 1200px) {
       .middle-grid { grid-template-columns: 1fr; }
+      .deployment-target-columns { grid-template-columns: 1fr; }
     }
     @media (max-width: 980px) {
       .app { grid-template-columns: 1fr; }
@@ -2183,6 +2217,53 @@
       `;
     }
 
+    function runsOnObjectForProductService(entry) {
+      const service = objectLookup[entry.ref];
+      return service?.runsOn ? objectLookup[service.runsOn] : null;
+    }
+
+    function inferServiceGroupTier(group) {
+      const scores = { web: 0, app: 0, data: 0 };
+      const addScore = tier => {
+        if (scores[tier] !== undefined) scores[tier] += 1;
+      };
+
+      (group.productServices || []).forEach(entry => {
+        const runsOn = runsOnObjectForProductService(entry);
+        const category = runsOn?.serviceCategory || '';
+        if (category === 'web') addScore('web');
+        else if (category === 'dbms') addScore('data');
+        else addScore('app');
+      });
+
+      (group.rbbs || []).forEach(entry => {
+        const ref = String(entry.ref || '');
+        const rbb = objectLookup[ref];
+        const category = rbb?.serviceCategory || '';
+        if (category === 'web' || ref.startsWith('rbb.service.web.')) addScore('web');
+        else if (category === 'dbms' || ref.startsWith('rbb.service.dbms.')) addScore('data');
+        else addScore('app');
+      });
+
+      (group.applianceAbbs || []).forEach(entry => {
+        const appliance = objectLookup[entry.ref];
+        const capability = appliance?.capability || '';
+        if (capability === 'load-balancing') addScore('web');
+        if (['file-storage', 'data-persistence', 'storage'].includes(capability)) addScore('data');
+      });
+
+      (group.saasServices || []).forEach(entry => {
+        const saas = objectLookup[entry.ref];
+        const capability = saas?.capability || '';
+        if (['waf', 'identity'].includes(capability)) addScore('web');
+        else if (['storage', 'analytics'].includes(capability)) addScore('data');
+        else addScore('app');
+      });
+
+      const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+      return ranked[0][1] > 0 ? ranked[0][0] : 'app';
+    }
+
     function renderDeploymentTopology(sdm) {
       const serviceGroups = sdm.serviceGroups || [];
       const scalingUnits = sdm.scalingUnits || [];
@@ -2215,25 +2296,50 @@
 
       const deploymentTargetMarkup = [...targets.entries()].map(([target, grouped]) => {
         const meta = deploymentTargetPresentation(target);
+        const tierBuckets = { web: [], app: [], data: [] };
+        const pushToTier = (tier, markup) => {
+          const resolved = tierBuckets[tier] ? tier : 'app';
+          tierBuckets[resolved].push(markup);
+        };
+
+        [...grouped.scoped.entries()].forEach(([scalingUnitName, groups]) => {
+          const firstTier = inferServiceGroupTier(groups[0] || {});
+          pushToTier(firstTier, `
+            <section class="scaling-unit-box">
+              <div class="scaling-unit-header">
+                <div class="scaling-unit-title">${escapeHtml(scalingUnitName)}</div>
+                <span class="scaling-unit-badge">${escapeHtml(scalingUnitName)}</span>
+              </div>
+              <div class="scaling-unit-content">
+                ${groups.map(group => serviceGroupTopologyMarkup(group)).join('')}
+              </div>
+            </section>
+          `);
+        });
+
+        grouped.unscoped.forEach(group => {
+          pushToTier(inferServiceGroupTier(group), serviceGroupTopologyMarkup(group));
+        });
+
         return `
           <section class="deployment-target-cluster">
             <div class="deployment-target-header">
               <div class="deployment-target-title">${escapeHtml(target)}</div>
               <span class="location-badge ${escapeHtml(meta.cls)}">${meta.icon} ${escapeHtml(meta.badge)}</span>
             </div>
-            <div class="deployment-target-content">
-              ${[...grouped.scoped.entries()].map(([scalingUnitName, groups]) => `
-                <section class="scaling-unit-box">
-                  <div class="scaling-unit-header">
-                    <div class="scaling-unit-title">${escapeHtml(scalingUnitName)}</div>
-                    <span class="scaling-unit-badge">${escapeHtml(scalingUnitName)}</span>
-                  </div>
-                  <div class="scaling-unit-content">
-                    ${groups.map(group => serviceGroupTopologyMarkup(group)).join('')}
-                  </div>
-                </section>
-              `).join('')}
-              ${grouped.unscoped.map(group => serviceGroupTopologyMarkup(group)).join('')}
+            <div class="deployment-target-columns">
+              <section class="topology-tier-column">
+                <div class="topology-tier-header web">Web Services</div>
+                ${tierBuckets.web.join('') || '<div class="empty-card">No web-tier service groups.</div>'}
+              </section>
+              <section class="topology-tier-column">
+                <div class="topology-tier-header app">App Services</div>
+                ${tierBuckets.app.join('') || '<div class="empty-card">No app-tier service groups.</div>'}
+              </section>
+              <section class="topology-tier-column">
+                <div class="topology-tier-header data">Data Services</div>
+                ${tierBuckets.data.join('') || '<div class="empty-card">No data-tier service groups.</div>'}
+              </section>
             </div>
           </section>
         `;
