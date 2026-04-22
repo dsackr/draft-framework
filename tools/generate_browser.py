@@ -1481,6 +1481,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function formatTypeLabel(typeValue) {
       const normalized = String(typeValue || '');
+      if (normalized === 'abb') return 'ABB';
+      if (normalized === 'rbb') return 'RBB';
+      if (normalized === 'aag') return 'AAG';
+      if (normalized === 'ard') return 'ARD';
       if (normalized === 'saas_service') return 'SaaS Service';
       if (normalized === 'product_service') return 'Product Service';
       if (normalized === 'software_distribution_manifest') return 'Software Distribution Manifest';
