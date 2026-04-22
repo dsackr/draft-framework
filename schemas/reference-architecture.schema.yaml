@@ -1,22 +1,23 @@
 schemaVersion: "1.0"
-type: product_service
+type: reference_architecture
 requiredFields:
   - schemaVersion
   - id
   - type
   - name
-  - product
-  - runsOn
   - catalogStatus
   - lifecycleStatus
+  - requiredRBBs
 optionalFields:
   - description
   - version
   - owner
   - tags
-  - variants
-  - notes
-idPattern: "^ps\\.[a-z0-9-]+\\.[a-z0-9-]+$"
+  - patternType
+  - architecturalDecisions
+  - applicableAAG
+  - variantCoverage
+idPattern: "^ra\\.[a-z0-9.-]+$"
 enumFields:
   catalogStatus:
     - stub
@@ -31,4 +32,15 @@ enumFields:
 fieldTypes:
   owner: dict
   tags: list
-  variants: dict
+  requiredRBBs: list
+  architecturalDecisions: dict
+  variantCoverage: list
+collectionSchemas:
+  requiredRBBs: requiredRBB
+requiredRBB:
+  requiredFields:
+    - ref
+    - variant
+    - role
+  optionalFields:
+    - notes

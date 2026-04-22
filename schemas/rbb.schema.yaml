@@ -1,0 +1,64 @@
+schemaVersion: "1.0"
+type: rbb
+requiredFields:
+  - schemaVersion
+  - id
+  - type
+  - name
+  - catalogStatus
+  - lifecycleStatus
+  - internalComponents
+  - variants
+optionalFields:
+  - description
+  - version
+  - owner
+  - tags
+  - category
+  - subtype
+  - serviceCategory
+  - satisfiesAAG
+  - osAbb
+  - hardwareAbb
+  - hostRbb
+  - functionAbb
+  - externalInteractions
+idPattern: "^rbb\\.[a-z0-9.-]+$"
+enumFields:
+  catalogStatus:
+    - stub
+    - draft
+    - approved
+  lifecycleStatus:
+    - pre-invest
+    - invest
+    - maintain
+    - disinvest
+    - exit
+  category:
+    - host
+    - service
+fieldTypes:
+  tags: list
+  owner: dict
+  satisfiesAAG: list
+  internalComponents: list
+  externalInteractions: list
+  variants: dict
+collectionSchemas:
+  internalComponents: internalComponent
+  externalInteractions: externalInteraction
+internalComponent:
+  requiredFields:
+    - ref
+  optionalFields:
+    - role
+    - notes
+externalInteraction:
+  requiredFields:
+    - capability
+  optionalFields:
+    - name
+    - ref
+    - notes
+    - enabledBy

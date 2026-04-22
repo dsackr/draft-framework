@@ -1,17 +1,48 @@
 schemaVersion: "1.0"
 type: software_distribution_manifest
 requiredFields:
+  - schemaVersion
   - id            # format: sdm.<product>
+  - type
   - name
   - catalogStatus # stub | draft | approved
   - lifecycleStatus
 optionalFields:
   - description
+  - version
+  - owner
+  - tags
   - appliesPattern
   - architecturalDecisions
   - scalingUnits
   - serviceGroups
+  - externalInteractions
   - architectureRisksAndDecisions
+idPattern: "^sdm\\.[a-z0-9-]+$"
+enumFields:
+  catalogStatus:
+    - stub
+    - draft
+    - approved
+  lifecycleStatus:
+    - pre-invest
+    - invest
+    - maintain
+    - disinvest
+    - exit
+fieldTypes:
+  owner: dict
+  tags: list
+  architecturalDecisions: dict
+  scalingUnits: list
+  serviceGroups: list
+  externalInteractions: list
+  architectureRisksAndDecisions: list
+collectionSchemas:
+  scalingUnits: scalingUnit
+  serviceGroups: serviceGroup
+  externalInteractions: externalInteraction
+  architectureRisksAndDecisions: ardRef
 
 scalingUnit:
   requiredFields:
@@ -20,6 +51,10 @@ scalingUnit:
   optionalFields:
     - instanceCount
     - notes
+  enumFields:
+    type:
+      - replicable
+      - shared
 
 serviceGroup:
   requiredFields:
@@ -32,6 +67,18 @@ serviceGroup:
     - applianceAbbs
     - saasServices
     - externalInteractions
+  fieldTypes:
+    productServices: list
+    rbbs: list
+    applianceAbbs: list
+    saasServices: list
+    externalInteractions: list
+  collectionSchemas:
+    productServices: productServiceEntry
+    rbbs: rbbEntry
+    applianceAbbs: applianceAbbEntry
+    saasServices: saasServiceEntry
+    externalInteractions: externalInteraction
 
 productServiceEntry:
   requiredFields:
@@ -41,6 +88,15 @@ productServiceEntry:
     - intent
     - riskRef
     - notes
+  enumFields:
+    diagramTier:
+      - presentation
+      - application
+      - data
+      - utility
+    intent:
+      - ha
+      - sa
 
 rbbEntry:
   requiredFields:
@@ -51,6 +107,15 @@ rbbEntry:
     - instance
     - riskRef
     - notes
+  enumFields:
+    diagramTier:
+      - presentation
+      - application
+      - data
+      - utility
+    intent:
+      - ha
+      - sa
 
 applianceAbbEntry:
   requiredFields:
@@ -72,3 +137,11 @@ externalInteraction:
     - ref
     - capability
     - notes
+  enumFields:
+    type:
+      - internal
+      - external
+
+ardRef:
+  requiredFields:
+    - ref

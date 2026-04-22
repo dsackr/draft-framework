@@ -1,7 +1,9 @@
 schemaVersion: "1.0"
 type: saas_service
 requiredFields:
+  - schemaVersion
   - id          # format: saas.<vendor>-<product>
+  - type
   - name
   - vendor
   - capability
@@ -10,6 +12,9 @@ requiredFields:
   - dataLeavesInfrastructure
 optionalFields:
   - description
+  - version
+  - owner
+  - tags
   - dataResidencyCommitment
   - dpaNotes
   - vendorSLA
@@ -18,3 +23,37 @@ optionalFields:
   - incidentNotificationProcess
   - notes
   - controlReferences
+idPattern: "^saas\\.[a-z0-9-]+$"
+enumFields:
+  catalogStatus:
+    - stub
+    - draft
+    - approved
+  lifecycleStatus:
+    - pre-invest
+    - invest
+    - maintain
+    - disinvest
+    - exit
+  capability:
+    - waf
+    - identity
+    - messaging
+    - analytics
+    - monitoring
+    - storage
+    - security
+    - integration
+    - other
+  authenticationModel:
+    - api-key
+    - oauth
+    - saml
+    - other
+    - TBD
+fieldTypes:
+  owner: dict
+  tags: list
+  dataLeavesInfrastructure: bool
+  complianceCerts: list
+  controlReferences: list

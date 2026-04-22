@@ -3,13 +3,15 @@
 This page is the quickest way to understand how to build a valid YAML object in
 DRAFT.
 
-The framework uses two sources of truth for YAML shape:
+The framework uses two sources of truth for YAML validation:
 
-- `schemas/` for object types that have dedicated schema notes
-- `tools/validate.py` for executable validation rules and cross-reference checks
+- `schemas/` for the authoritative object contract of every first-class type
+- `tools/validate.py` for executable cross-reference, inheritance, and
+  relationship checks
 
 If an engineer wants to add a new object, start here, then open the referenced
-schema file or object guide before writing YAML.
+schema file or object guide before writing YAML. The schema file is the
+authoritative source for object shape.
 
 ## Object Families
 
@@ -97,4 +99,5 @@ If you are unsure how to build a YAML object correctly:
 2. Open the matching file in `schemas/` if one exists.
 3. Run `python3 tools/validate.py`.
 
-The validator is the final authority on whether the YAML is structurally valid.
+The validator reads the schema files to enforce object shape, then applies the
+higher-order relationship checks that schemas alone cannot express.

@@ -10,56 +10,20 @@ import yaml
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+SCHEMA_ROOT = REPO_ROOT / "schemas"
 SKIP_DIRS = {"tools", "schemas", "docs", "adrs", ".github", ".git"}
-VALID_LIFECYCLE = {"pre-invest", "invest", "maintain", "disinvest", "exit"}
-VALID_CATALOG_STATUS = {"stub", "draft", "approved"}
-TYPE_PREFIX = {
-    "abb": "abb.",
-    "rbb": "rbb.",
-    "aag": "aag.",
-    "ard": "ard.",
-    "saas_service": "saas.",
-    "compliance_framework": "framework.",
-    "product_service": "ps.",
-    "reference_architecture": "ra.",
-    "software_distribution_manifest": "sdm.",
-}
-BASE_REQUIRED = ["schemaVersion", "id", "type", "name", "lifecycleStatus", "catalogStatus"]
-VALID_ARD_CATEGORY = {"risk", "decision"}
-VALID_ARD_STATUS = {"open", "accepted", "mitigated", "resolved"}
-VALID_FRAMEWORK_KIND = {"common", "organizational"}
-ARD_ID_PATTERN = re.compile(r"^ard\.[a-z0-9-]+\.[0-9]+$")
-PS_ID_PATTERN = re.compile(r"^ps\.[a-z0-9-]+\.[a-z0-9-]+$")
-APPLIANCE_ABB_ID_PATTERN = re.compile(r"^abb\.appliance\.[a-z0-9-]+$")
-SAAS_ID_PATTERN = re.compile(r"^saas\.[a-z0-9-]+$")
-FRAMEWORK_ID_PATTERN = re.compile(r"^framework\.[a-z0-9-]+$")
-VALID_APPLIANCE_CAPABILITIES = {
-    "load-balancing",
-    "file-storage",
-    "data-persistence",
-    "compute",
-    "container-orchestration",
-    "security",
-    "other",
-}
-VALID_SAAS_CAPABILITIES = {
-    "waf",
-    "identity",
-    "messaging",
-    "analytics",
-    "monitoring",
-    "storage",
-    "security",
-    "integration",
-    "other",
-}
-VALID_NETWORK_PLACEMENT = {"public-facing", "internal", "vpc-private"}
-VALID_PATCHING_OWNER = {"aws-managed", "organization-scheduled", "vendor-managed"}
-VALID_SCALING_UNIT_TYPES = {"replicable", "shared"}
 VALID_DIAGRAM_TIERS = {"presentation", "application", "data", "utility"}
 DECISION_ENUMS = {
     "autoscaling": {"required", "optional", "none"},
     "loadBalancer": {"required", "optional", "none"},
+}
+
+TYPE_CHECKERS = {
+    "bool": bool,
+    "list": list,
+    "dict": dict,
+    "str": str,
+    "int": int,
 }
 
 
@@ -80,6 +44,15 @@ def load_yaml(path: Path) -> dict[str, Any]:
     return data
 
 
+def load_schemas(root: Path) -> list[dict[str, Any]]:
+    schemas: list[dict[str, Any]] = []
+    for path in sorted(root.glob("*.yaml")):
+        data = load_yaml(path)
+        data["_schema_path"] = path
+        schemas.append(data)
+    return schemas
+
+
 def is_non_empty(value: Any) -> bool:
     if value is None:
         return False
@@ -97,6 +70,87 @@ def get_nested_value(node: Any, dotted_key: str) -> Any:
             return None
         current = current[part]
     return current
+
+
+def schema_specificity(schema: dict[str, Any]) -> int:
+    return sum(1 for key in ("subtype", "category", "serviceCategory") if is_non_empty(schema.get(key)))
+
+
+def select_schema(obj: dict[str, Any], schemas: list[dict[str, Any]]) -> dict[str, Any] | None:
+    candidates: list[dict[str, Any]] = []
+    for schema in schemas:
+        if schema.get("type") != obj.get("type"):
+            continue
+        if is_non_empty(schema.get("subtype")) and schema.get("subtype") != obj.get("subtype"):
+            continue
+        if is_non_empty(schema.get("category")) and schema.get("category") != obj.get("category"):
+            continue
+        if is_non_empty(schema.get("serviceCategory")) and schema.get("serviceCategory") != obj.get("serviceCategory"):
+            continue
+        candidates.append(schema)
+    if not candidates:
+        return None
+    return sorted(candidates, key=schema_specificity, reverse=True)[0]
+
+
+def matches_conditions(obj: dict[str, Any], conditions: dict[str, Any]) -> bool:
+    for key, expected in conditions.items():
+        if obj.get(key) != expected:
+            return False
+    return True
+
+
+def validate_schema_section(
+    node: dict[str, Any],
+    schema: dict[str, Any],
+    context: str,
+    failures: list[str],
+) -> None:
+    for field in schema.get("requiredFields", []):
+        if not is_non_empty(node.get(field)):
+            failures.append(f"{context}: missing required field '{field}'")
+
+    id_pattern = schema.get("idPattern")
+    if id_pattern and is_non_empty(node.get("id")) and not re.match(str(id_pattern), str(node.get("id"))):
+        failures.append(f"{context}: invalid id '{node.get('id')}'")
+
+    for field, allowed_values in (schema.get("enumFields") or {}).items():
+        value = node.get(field)
+        if value is None or value == "":
+            continue
+        if value not in allowed_values:
+            failures.append(f"{context}: invalid {field} '{value}'")
+
+    for field, expected_type in (schema.get("fieldTypes") or {}).items():
+        if field not in node or node.get(field) is None:
+            continue
+        checker = TYPE_CHECKERS.get(str(expected_type))
+        if checker and not isinstance(node.get(field), checker):
+            failures.append(f"{context}: field '{field}' must be of type {expected_type}")
+
+    for conditional in schema.get("conditionalRequired", []) or []:
+        when = conditional.get("when", {})
+        required = conditional.get("require", [])
+        if isinstance(when, dict) and matches_conditions(node, when):
+            for field in required:
+                if not is_non_empty(node.get(field)):
+                    failures.append(f"{context}: missing required field '{field}'")
+
+    for field, section_name in (schema.get("collectionSchemas") or {}).items():
+        if field not in node or node.get(field) is None:
+            continue
+        value = node.get(field)
+        if not isinstance(value, list):
+            failures.append(f"{context}: field '{field}' must be a list")
+            continue
+        child_schema = schema.get(section_name)
+        if not isinstance(child_schema, dict):
+            continue
+        for index, item in enumerate(value):
+            if not isinstance(item, dict):
+                failures.append(f"{context}: field '{field}[{index}]' must be a mapping")
+                continue
+            validate_schema_section(item, child_schema, f"{context}: {field}[{index}]", failures)
 
 
 def resolve_aag_requirements(aag_id: str, aags: dict[str, dict[str, Any]], stack: set[str] | None = None) -> list[dict[str, Any]]:
@@ -196,22 +250,12 @@ def validate_aag_requirement(obj: dict[str, Any], requirement: dict[str, Any]) -
     )
 
 
-def validate_base_fields(obj: dict[str, Any], path: Path, failures: list[str]) -> None:
-    for field in BASE_REQUIRED:
-        if not is_non_empty(obj.get(field)):
-            failures.append(f"{path}: missing required field '{field}'")
-
-    object_type = obj.get("type")
-    object_id = obj.get("id", "")
-    if object_type in TYPE_PREFIX and not str(object_id).startswith(TYPE_PREFIX[object_type]):
-        failures.append(
-            f"{path}: id '{object_id}' does not match expected prefix '{TYPE_PREFIX[object_type]}' for type '{object_type}'"
-        )
-
-    if obj.get("lifecycleStatus") not in VALID_LIFECYCLE:
-        failures.append(f"{path}: invalid lifecycleStatus '{obj.get('lifecycleStatus')}'")
-    if obj.get("catalogStatus") not in VALID_CATALOG_STATUS:
-        failures.append(f"{path}: invalid catalogStatus '{obj.get('catalogStatus')}'")
+def validate_against_schema(obj: dict[str, Any], path: Path, schemas: list[dict[str, Any]], failures: list[str]) -> None:
+    schema = select_schema(obj, schemas)
+    if schema is None:
+        failures.append(f"{path}: no schema found for type '{obj.get('type')}'")
+        return
+    validate_schema_section(obj, schema, str(path), failures)
 
 
 def validate_architectural_decisions(obj: dict[str, Any], path: Path, failures: list[str]) -> None:
@@ -376,59 +420,11 @@ def validate_sdm(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]
 
 
 def validate_ard(obj: dict[str, Any], path: Path, failures: list[str], warnings: list[str]) -> None:
-    for field in ("id", "name", "category", "status", "description", "affectedComponent", "impact"):
-        if not is_non_empty(obj.get(field)):
-            failures.append(f"{path}: missing required ARD field '{field}'")
-
-    object_id = obj.get("id", "")
-    if object_id and not ARD_ID_PATTERN.match(str(object_id)):
-        failures.append(f"{path}: invalid ARD id '{object_id}' (expected format ard.<domain>.<sequence>)")
-
-    category = obj.get("category")
-    if category not in VALID_ARD_CATEGORY:
-        failures.append(f"{path}: invalid ARD category '{category}'")
-
-    status = obj.get("status")
-    if status not in VALID_ARD_STATUS:
-        failures.append(f"{path}: invalid ARD status '{status}'")
-
-    if category == "decision" and not is_non_empty(obj.get("decisionRationale")):
+    if obj.get("category") == "decision" and not is_non_empty(obj.get("decisionRationale")):
         warnings.append(f"{path}: decision ARDs should include decisionRationale")
 
 
-def validate_appliance_abb(obj: dict[str, Any], path: Path, warnings: list[str], failures: list[str]) -> None:
-    for field in ("id", "name", "vendor", "capability", "catalogStatus", "lifecycleStatus"):
-        if not is_non_empty(obj.get(field)):
-            failures.append(f"{path}: missing required Appliance ABB field '{field}'")
-
-    object_id = obj.get("id", "")
-    if object_id and not APPLIANCE_ABB_ID_PATTERN.match(str(object_id)):
-        failures.append(f"{path}: invalid Appliance ABB id '{object_id}' (expected format abb.appliance.<vendor>-<product>)")
-
-    if obj.get("capability") and obj.get("capability") not in VALID_APPLIANCE_CAPABILITIES:
-        failures.append(f"{path}: invalid Appliance ABB capability '{obj.get('capability')}'")
-
-    network_placement = obj.get("networkPlacement")
-    if network_placement and network_placement not in VALID_NETWORK_PLACEMENT:
-        failures.append(f"{path}: invalid networkPlacement '{network_placement}'")
-
-    patching_owner = obj.get("patchingOwner")
-    if patching_owner and patching_owner not in VALID_PATCHING_OWNER:
-        failures.append(f"{path}: invalid patchingOwner '{patching_owner}'")
-
-
 def validate_saas_service(obj: dict[str, Any], path: Path, warnings: list[str], failures: list[str]) -> None:
-    for field in ("id", "name", "vendor", "capability", "catalogStatus", "lifecycleStatus", "dataLeavesInfrastructure"):
-        if field not in obj or not is_non_empty(obj.get(field)):
-            failures.append(f"{path}: missing required SaaS Service field '{field}'")
-
-    object_id = obj.get("id", "")
-    if object_id and not SAAS_ID_PATTERN.match(str(object_id)):
-        failures.append(f"{path}: invalid SaaS Service id '{object_id}' (expected format saas.<vendor>-<product>)")
-
-    if obj.get("capability") and obj.get("capability") not in VALID_SAAS_CAPABILITIES:
-        failures.append(f"{path}: invalid SaaS Service capability '{obj.get('capability')}'")
-
     if "dataLeavesInfrastructure" in obj and not isinstance(obj.get("dataLeavesInfrastructure"), bool):
         failures.append(f"{path}: dataLeavesInfrastructure must be true or false")
 
@@ -437,14 +433,6 @@ def validate_saas_service(obj: dict[str, Any], path: Path, warnings: list[str], 
 
 
 def validate_product_service(obj: dict[str, Any], path: Path, catalog_by_id: dict[str, dict[str, Any]], failures: list[str]) -> None:
-    for field in ("id", "name", "product", "runsOn", "catalogStatus", "lifecycleStatus"):
-        if not is_non_empty(obj.get(field)):
-            failures.append(f"{path}: missing required Product Service field '{field}'")
-
-    object_id = obj.get("id", "")
-    if object_id and not PS_ID_PATTERN.match(str(object_id)):
-        failures.append(f"{path}: invalid Product Service id '{object_id}' (expected format ps.<product>.<service-name>)")
-
     runs_on = obj.get("runsOn")
     target = catalog_by_id.get(runs_on) if runs_on else None
     if runs_on and (not target or target.get("type") != "rbb"):
@@ -452,7 +440,7 @@ def validate_product_service(obj: dict[str, Any], path: Path, catalog_by_id: dic
 
     variants = obj.get("variants", {})
     if not isinstance(variants, dict) or not variants:
-        failures.append(f"{path}: [{object_id or 'unknown'}] at least one named variant must be present")
+        failures.append(f"{path}: [{obj.get('id', 'unknown')}] at least one named variant must be present")
 
 
 def validate_compliance_framework(
@@ -462,16 +450,6 @@ def validate_compliance_framework(
     aags: dict[str, dict[str, Any]],
     failures: list[str],
 ) -> None:
-    object_id = obj.get("id", "")
-    if object_id and not FRAMEWORK_ID_PATTERN.match(str(object_id)):
-        failures.append(
-            f"{path}: invalid compliance framework id '{object_id}' (expected format framework.<slug>)"
-        )
-
-    framework_kind = obj.get("frameworkKind")
-    if framework_kind not in VALID_FRAMEWORK_KIND:
-        failures.append(f"{path}: invalid frameworkKind '{framework_kind}'")
-
     extends = obj.get("extends", [])
     if extends and not isinstance(extends, list):
         failures.append(f"{path}: extends must be a list of framework ids")
@@ -555,8 +533,6 @@ def validate_service_group_structure(
             continue
         scaling_unit_names.add(str(name))
         unit_type = scaling_unit.get("type")
-        if unit_type not in VALID_SCALING_UNIT_TYPES:
-            failures.append(f"{path}: scalingUnit '{name}' has invalid type '{unit_type}'")
         if unit_type == "replicable" and not isinstance(scaling_unit.get("instanceCount"), int):
             failures.append(f"{path}: scalingUnit '{name}' type replicable requires integer instanceCount")
 
@@ -675,6 +651,7 @@ def validate_sdm_refs(
 
 def main() -> int:
     files = discover_yaml_files(REPO_ROOT)
+    schemas = load_schemas(SCHEMA_ROOT)
     objects: dict[Path, dict[str, Any]] = {}
     failures: list[str] = []
     warnings: list[str] = []
@@ -700,11 +677,9 @@ def main() -> int:
     catalog_ids = set(catalog_by_id.keys())
 
     for path, obj in objects.items():
-        validate_base_fields(obj, path, failures)
+        validate_against_schema(obj, path, schemas, failures)
         if obj.get("type") == "ard":
             validate_ard(obj, path, failures, warnings)
-        if obj.get("type") == "abb" and obj.get("subtype") == "appliance":
-            validate_appliance_abb(obj, path, warnings, failures)
         if obj.get("type") == "saas_service":
             validate_saas_service(obj, path, warnings, failures)
         if obj.get("type") == "product_service":

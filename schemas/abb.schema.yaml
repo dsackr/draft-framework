@@ -1,13 +1,10 @@
 schemaVersion: "1.0"
 type: abb
-subtype: appliance
 requiredFields:
   - schemaVersion
-  - id          # format: abb.appliance.<vendor>-<product>
+  - id
   - type
   - name
-  - vendor
-  - capability
   - catalogStatus
   - lifecycleStatus
 optionalFields:
@@ -15,12 +12,20 @@ optionalFields:
   - version
   - owner
   - tags
+  - category
+  - subtype
+  - vendor
+  - product
+  - productVersion
   - notes
+  - vendorLifecycle
+  - platformDependency
+  - capability
   - networkPlacement
   - patchingOwner
   - complianceCerts
   - controlReferences
-idPattern: "^abb\\.appliance\\.[a-z0-9-]+$"
+idPattern: "^abb\\.[a-z0-9-]+(?:\\.[a-z0-9-]+)+$"
 enumFields:
   catalogStatus:
     - stub
@@ -32,24 +37,14 @@ enumFields:
     - maintain
     - disinvest
     - exit
-  capability:
-    - load-balancing
-    - file-storage
-    - data-persistence
-    - compute
-    - container-orchestration
-    - security
-    - other
-  networkPlacement:
-    - public-facing
-    - internal
-    - vpc-private
-  patchingOwner:
-    - aws-managed
-    - organization-scheduled
-    - vendor-managed
+  category:
+    - os
+    - hardware
+    - software
+    - agent
 fieldTypes:
-  owner: dict
   tags: list
+  owner: dict
+  vendorLifecycle: dict
   complianceCerts: list
   controlReferences: list

@@ -1,7 +1,9 @@
 schemaVersion: "1.0"
 type: compliance_framework
 requiredFields:
+  - schemaVersion
   - id                # format: framework.<slug>
+  - type
   - name
   - frameworkKind     # common | organizational
   - catalogStatus     # stub | draft | approved
@@ -9,11 +11,34 @@ requiredFields:
 optionalFields:
   - description
   - version
+  - owner
+  - tags
   - controlIdNamespace
   - defaultSelection  # boolean
   - extends           # list of framework ids this framework inherits mappings from
   - notes
   - requirementMappings  # dict: aag-id -> requirement-id -> list of control ids
+idPattern: "^framework\\.[a-z0-9-]+$"
+enumFields:
+  catalogStatus:
+    - stub
+    - draft
+    - approved
+  lifecycleStatus:
+    - pre-invest
+    - invest
+    - maintain
+    - disinvest
+    - exit
+  frameworkKind:
+    - common
+    - organizational
+fieldTypes:
+  owner: dict
+  tags: list
+  defaultSelection: bool
+  extends: list
+  requirementMappings: dict
 
 requirementMappings structure:
   aag.host:
