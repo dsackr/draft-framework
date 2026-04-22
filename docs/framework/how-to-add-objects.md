@@ -73,9 +73,10 @@ An RA should be generic enough to guide many products, not just one.
 2. Choose a product-focused `sdm.<product-slug>` ID.
 3. Set `appliesPattern` if the product aligns with an existing RA.
 4. Define any `scalingUnits` needed to express replicable or shared deployment boundaries.
-5. Build the manifest out through `serviceGroups`, then place Product Services, RBBs, Appliance ABBs, and SaaS Services into the appropriate groups.
-6. Use `intent` only when the architect is explicitly deviating from the Reference Architecture or when no Reference Architecture exists.
-7. Add product-level `architecturalDecisions`, including availability requirement and data classification, so the SDM satisfies `aag.sdm`.
+5. Build the manifest out through `serviceGroups`, then place Software Services, RBBs, Appliance ABBs, and SaaS Services into the appropriate groups.
+6. Set `diagramTier` on every Software Service and RBB entry using one of `presentation`, `application`, `data`, or `utility`.
+7. Use `intent` only when the architect is explicitly deviating from the Reference Architecture or when no Reference Architecture exists.
+8. Add product-level `architecturalDecisions`, including availability requirement and data classification, so the SDM satisfies `aag.sdm`.
 
 ## Run The Tools
 

@@ -58,6 +58,7 @@ VALID_SAAS_CAPABILITIES = {
 VALID_NETWORK_PLACEMENT = {"public-facing", "internal", "vpc-private"}
 VALID_PATCHING_OWNER = {"aws-managed", "organization-scheduled", "vendor-managed"}
 VALID_SCALING_UNIT_TYPES = {"replicable", "shared"}
+VALID_DIAGRAM_TIERS = {"presentation", "application", "data", "utility"}
 DECISION_ENUMS = {
     "autoscaling": {"required", "optional", "none"},
     "loadBalancer": {"required", "optional", "none"},
@@ -590,6 +591,11 @@ def validate_service_group_structure(
             ref = entry.get("ref")
             if ref and ref not in product_service_ids:
                 failures.append(f"{path}: serviceGroup '{group_name}' references unknown Product Service '{ref}'")
+            diagram_tier = entry.get("diagramTier")
+            if diagram_tier not in VALID_DIAGRAM_TIERS:
+                failures.append(
+                    f"{path}: serviceGroup '{group_name}' Product Service '{ref}' must set diagramTier to one of {sorted(VALID_DIAGRAM_TIERS)}"
+                )
             risk_ref = entry.get("riskRef")
             if risk_ref and risk_ref not in ard_ids:
                 failures.append(f"{path}: serviceGroup '{group_name}' Product Service '{ref}' references unknown ARD '{risk_ref}'")
@@ -604,6 +610,11 @@ def validate_service_group_structure(
             target = catalog_by_id.get(ref) if ref else None
             if ref and (not target or target.get("type") != "rbb"):
                 failures.append(f"{path}: serviceGroup '{group_name}' references unknown RBB '{ref}'")
+            diagram_tier = entry.get("diagramTier")
+            if diagram_tier not in VALID_DIAGRAM_TIERS:
+                failures.append(
+                    f"{path}: serviceGroup '{group_name}' RBB '{ref}' must set diagramTier to one of {sorted(VALID_DIAGRAM_TIERS)}"
+                )
             risk_ref = entry.get("riskRef")
             if risk_ref and risk_ref not in ard_ids:
                 failures.append(f"{path}: serviceGroup '{group_name}' RBB '{ref}' references unknown ARD '{risk_ref}'")

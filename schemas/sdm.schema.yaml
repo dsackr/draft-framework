@@ -37,6 +37,7 @@ productServiceEntry:
   requiredFields:
     - ref
   optionalFields:
+    - diagramTier  # presentation | application | data | utility
     - intent
     - riskRef
     - notes
@@ -45,6 +46,7 @@ rbbEntry:
   requiredFields:
     - ref
   optionalFields:
+    - diagramTier  # presentation | application | data | utility
     - intent
     - instance
     - riskRef

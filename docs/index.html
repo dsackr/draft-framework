@@ -629,17 +629,45 @@
       gap: 18px;
       align-items: start;
     }
-    .scaling-unit-box {
-      padding: 16px;
-      display: grid;
-      gap: 14px;
-      border: 2px solid #64748b;
-      background: rgba(30,41,59,0.9);
-      min-width: 0;
+    .topology-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid rgba(51,65,85,0.85);
+      border-radius: 14px;
+      background: rgba(15,23,42,0.72);
+    }
+    .topology-filter-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .topology-filter-button {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(71,85,105,0.8);
+      background: rgba(30,41,59,0.94);
+      color: #e2e8f0;
+      font-size: 14px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+    .topology-filter-button.active {
+      border-color: rgba(14,165,233,0.65);
+      background: rgba(14,165,233,0.16);
+      color: #bae6fd;
+    }
+    .topology-filter-help {
+      color: var(--muted);
+      font-size: 14px;
     }
     .scaling-unit-header,
     .deployment-target-header,
-    .service-group-header {
+    .service-group-header,
+    .service-group-section-header {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -648,7 +676,8 @@
     }
     .scaling-unit-title,
     .deployment-target-title,
-    .service-group-title {
+    .service-group-title,
+    .service-group-section-title {
       font-size: 15px;
       font-weight: 700;
       color: #f8fafc;
@@ -678,13 +707,7 @@
     }
     .deployment-target-columns {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      align-items: start;
-    }
-    .scaling-unit-columns {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 14px;
       align-items: start;
     }
@@ -715,11 +738,47 @@
       border-color: rgba(59,130,246,0.45);
       color: #bfdbfe;
     }
+    .topology-tier-header.utility {
+      border-color: rgba(168,85,247,0.45);
+      color: #e9d5ff;
+    }
+    .topology-column-stack {
+      display: grid;
+      gap: 12px;
+    }
     .deployment-target-cluster {
       padding: 14px;
       border: 1px solid rgba(51,65,85,0.9);
       display: grid;
       gap: 12px;
+    }
+    .service-group-section {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(71,85,105,0.85);
+      border-left: 6px solid var(--scaling-accent, rgba(71,85,105,0.9));
+      background: rgba(30,41,59,0.96);
+      transition: opacity 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .service-group-section-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .service-group-section.dimmed {
+      opacity: 0.22;
+    }
+    .service-group-section.highlighted {
+      box-shadow: 0 0 0 1px rgba(14,165,233,0.35);
+    }
+    .service-group-support {
+      display: grid;
+      gap: 10px;
     }
     .service-group-box {
       padding: 14px;
@@ -782,12 +841,19 @@
       min-width: 180px;
       min-height: 100px;
       cursor: pointer;
-      transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+      transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
     }
     .topology-node:hover {
       border-color: rgba(56,189,248,0.45);
       transform: translateY(-1px);
       box-shadow: 0 10px 18px rgba(2,6,23,0.2);
+    }
+    .topology-node.dimmed {
+      opacity: 0.2;
+    }
+    .topology-node.highlighted {
+      border-color: rgba(56,189,248,0.75);
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.35);
     }
     .topology-node.ps-node {
       background: rgba(45,66,74,0.95);
@@ -842,6 +908,7 @@
     .topology-node-meta {
       font-size: 11px;
       color: var(--muted);
+      line-height: 1.45;
     }
     .topology-risk {
       position: absolute;
@@ -1224,6 +1291,7 @@
     let impactCy = null;
     let impactSelectedId = null;
     let impactSearchTerm = '';
+    let currentSdmScalingFilter = 'all';
     let suppressHashSync = false;
     let selectedFrameworkId = (() => {
       try {
@@ -2016,16 +2084,13 @@
         .replace(/\s+RBB$/i, '');
     }
 
-    function topologyInteractionIcon(interaction) {
-      const capability = interaction.capability || '';
-      const name = String(interaction.name || '').toLowerCase();
-      if (capability === 'load-balancing') return { icon: '🟢', cls: 'network' };
-      if (name.includes('sftp')) return { icon: '📥', cls: 'storage' };
-      if (capability === 'data-persistence') return { icon: '💾', cls: 'storage' };
-      if (name.includes('lambda') || capability === 'compute') return { icon: 'λ', cls: 'compute' };
-      if (name.includes('eks') || capability === 'container-orchestration') return { icon: '⬢', cls: 'compute' };
-      return { icon: '☁', cls: 'cloud' };
-    }
+    const SDM_TIERS = ['presentation', 'application', 'data', 'utility'];
+    const SDM_TIER_LABELS = {
+      presentation: 'Presentation Services',
+      application: 'Application Services',
+      data: 'Data Services',
+      utility: 'Utility Services'
+    };
 
     function isContainerHostObject(object) {
       return !!object && object.type === 'rbb' && object.category === 'host' && String(object.id || '').startsWith('rbb.host.container.');
@@ -2062,6 +2127,43 @@
       return { cls: 'generic', badge: 'Host', icon: '🖧' };
     }
 
+    function colorForToken(value) {
+      const palette = ['#38bdf8', '#22c55e', '#f59e0b', '#a855f7', '#ef4444', '#14b8a6', '#e879f9', '#64748b'];
+      const token = String(value || '');
+      let hash = 0;
+      for (let index = 0; index < token.length; index += 1) {
+        hash = ((hash << 5) - hash) + token.charCodeAt(index);
+        hash |= 0;
+      }
+      return palette[Math.abs(hash) % palette.length];
+    }
+
+    function entryDiagramTier(entry) {
+      return SDM_TIERS.includes(entry?.diagramTier) ? entry.diagramTier : 'application';
+    }
+
+    function supportEntryTier(entry, objectType) {
+      const object = objectLookup[entry?.ref];
+      const capability = object?.capability || '';
+      if (objectType === 'appliance') {
+        if (capability === 'load-balancing') return 'presentation';
+        if (['file-storage', 'data-persistence'].includes(capability)) return 'data';
+        return 'utility';
+      }
+      if (objectType === 'saas_service') {
+        if (['waf', 'identity'].includes(capability)) return 'presentation';
+        if (['storage', 'analytics'].includes(capability)) return 'data';
+        return 'utility';
+      }
+      return 'utility';
+    }
+
+    function entryLabel(entry) {
+      if (entry?.instance) return instanceLabel(entry.instance);
+      const object = objectLookup[entry?.ref];
+      return object?.name || instanceLabel(entry?.ref);
+    }
+
     function topologyBadgeMarkup(entry) {
       if (!entry) return '';
       const ard = entry.riskRef ? objectLookup[entry.riskRef] : null;
@@ -2086,213 +2188,139 @@
         overrideLabel = null,
         meta = '',
         variant = entry.intent || '',
-        psLabel = false,
         badgeLabel = '',
+        scalingUnit = '',
       } = options;
       const icon = topologyNodeIcon(entry, objectType);
       const targetId = entry.ref || '';
       const classes = ['topology-node'];
-      if (psLabel) classes.push('ps-node');
+      if (objectType === 'product_service') classes.push('ps-node');
       if (objectType === 'rbb') classes.push('rbb-node');
       if (objectType === 'appliance') classes.push('appliance-node');
       if (objectType === 'saas_service') classes.push('saas-node');
       if (icon.cls) classes.push(icon.cls);
       return `
-        <article class="${classes.join(' ')}" ${targetId && objectLookup[targetId] ? `data-object-link="${escapeHtml(targetId)}"` : ''}>
+        <article class="${classes.join(' ')}" ${targetId && objectLookup[targetId] ? `data-object-link="${escapeHtml(targetId)}"` : ''} ${scalingUnit ? `data-scaling-unit="${escapeHtml(scalingUnit)}"` : ''}>
           ${topologyBadgeMarkup(entry)}
           <div class="topology-node-flags">
             ${badgeLabel ? `<span class="ps-corner">${escapeHtml(badgeLabel)}</span>` : '<span></span>'}
             ${variant ? variantBadge(variant) : '<span></span>'}
           </div>
           <span class="topology-node-icon ${icon.cls}">${icon.icon}</span>
-          <div class="topology-node-label">${escapeHtml(overrideLabel || instanceLabel(entry.instance || entry.ref))}</div>
+          <div class="topology-node-label">${escapeHtml(overrideLabel || entryLabel(entry))}</div>
           ${meta ? `<div class="topology-node-meta">${escapeHtml(meta)}</div>` : ''}
         </article>
       `;
     }
 
-    function clusterMarkup(ref, entries, options = {}) {
-      const { objectType = 'rbb', badgeLabel = '', labelOverride = null } = options;
-      const service = objectLookup[ref];
-      const labelBase = shortRefLabel(ref);
-      const clusterLabel = labelOverride || `${labelBase} Cluster`;
+    function serviceGroupSectionMarkup(group, tier) {
+      const scalingUnit = group.scalingUnit || '';
+      const accent = colorForToken(scalingUnit || group.name || tier);
+      const groupMeta = [
+        group.deploymentTarget || 'Unspecified deployment target',
+        scalingUnit || 'No scaling unit'
+      ].join(' • ');
       const cards = [];
-      entries.forEach(entry => cards.push(topologyNodeMarkup(entry, {
-        objectType,
-        psLabel: objectType === 'product_service',
-        badgeLabel: badgeLabel || (objectType === 'product_service' ? 'PS' : objectType === 'rbb' ? 'RBB' : '')
-      })));
+
+      (group.productServices || [])
+        .filter(entry => entryDiagramTier(entry) === tier)
+        .forEach(entry => {
+          cards.push(topologyNodeMarkup(entry, {
+            objectType: 'product_service',
+            badgeLabel: 'SS',
+            scalingUnit,
+            meta: `${group.name} • ${groupMeta}`
+          }));
+        });
+
+      (group.rbbs || [])
+        .filter(entry => entryDiagramTier(entry) === tier)
+        .forEach(entry => {
+          cards.push(topologyNodeMarkup(entry, {
+            objectType: 'rbb',
+            badgeLabel: 'RBB',
+            scalingUnit,
+            meta: `${group.name} • ${groupMeta}`
+          }));
+        });
+
+      (group.applianceAbbs || [])
+        .filter(entry => supportEntryTier(entry, 'appliance') === tier)
+        .forEach(entry => {
+          cards.push(topologyNodeMarkup(entry, {
+            objectType: 'appliance',
+            badgeLabel: 'APPL',
+            scalingUnit,
+            meta: `${group.name} • ${groupMeta}`
+          }));
+        });
+
+      (group.saasServices || [])
+        .filter(entry => supportEntryTier(entry, 'saas_service') === tier)
+        .forEach(entry => {
+          cards.push(topologyNodeMarkup(entry, {
+            objectType: 'saas_service',
+            badgeLabel: 'SaaS',
+            scalingUnit,
+            meta: `${group.name} • ${groupMeta}`
+          }));
+        });
+
+      if (!cards.length) {
+        return '';
+      }
+
+      const internalInteractions = (group.externalInteractions || []).filter(item => (item.type || 'external') === 'internal');
+      const externalInteractions = (group.externalInteractions || []).filter(item => (item.type || 'external') !== 'internal');
+
       return `
-        <section class="cluster-box">
-          <div class="cluster-label">${escapeHtml(clusterLabel)}</div>
+        <section class="service-group-section" style="--scaling-accent:${accent}" ${scalingUnit ? `data-scaling-unit-group="${escapeHtml(scalingUnit)}"` : ''}>
+          <div class="service-group-section-header">
+            <div class="service-group-section-title">${escapeHtml(group.name || 'Unnamed Service Group')}</div>
+            <div class="service-group-section-meta">
+              <span class="location-badge">${escapeHtml(tier)}</span>
+              ${scalingUnit ? `<span class="scaling-unit-badge">${escapeHtml(scalingUnit)}</span>` : '<span class="scaling-unit-badge">unscoped</span>'}
+            </div>
+          </div>
           <div class="node-grid">
             ${cards.join('')}
           </div>
-        </section>
-      `;
-    }
-
-    function serviceGroupTopologyMarkup(group) {
-      const psEntries = group.productServices || [];
-      const rbbEntries = group.rbbs || [];
-      const applianceEntries = group.applianceAbbs || [];
-      const saasEntries = group.saasServices || [];
-      const psContainerEntries = psEntries.filter(entry => isContainerHostObject(objectLookup[objectLookup[entry.ref]?.runsOn]));
-      const psStandardEntries = psEntries.filter(entry => !isContainerHostObject(objectLookup[objectLookup[entry.ref]?.runsOn]));
-      const psClusters = new Map();
-      const psSingles = [];
-      psStandardEntries.forEach(entry => {
-        const key = `${entry.ref}::${entry.intent || ''}`;
-        if ((entry.intent || '').toLowerCase() === 'ha') {
-          if (!psClusters.has(key)) psClusters.set(key, []);
-          psClusters.get(key).push(entry);
-        } else {
-          psSingles.push(entry);
-        }
-      });
-      const rbbClusters = new Map();
-      const rbbSingles = [];
-      rbbEntries.forEach(entry => {
-        const key = `${entry.ref}::${entry.intent || ''}`;
-        if ((entry.intent || '').toLowerCase() === 'ha') {
-          if (!rbbClusters.has(key)) rbbClusters.set(key, []);
-          rbbClusters.get(key).push(entry);
-        } else {
-          rbbSingles.push(entry);
-        }
-      });
-      const internalInteractions = (group.externalInteractions || []).filter(item => (item.type || 'external') === 'internal');
-      const targetMeta = deploymentTargetPresentation(group.deploymentTarget);
-      return `
-        <section class="service-group-box">
-          <div class="service-group-header">
-            <div class="service-group-title">${escapeHtml(group.name || 'Unnamed Service Group')}</div>
-            <span class="location-badge ${escapeHtml(targetMeta.cls)}">${targetMeta.icon} ${escapeHtml(group.deploymentTarget || 'Unspecified')}</span>
-          </div>
-          <div class="service-group-content">
-            <div class="service-group-lanes">
-              ${psEntries.length ? `
-                <section class="service-group-lane">
-                  <span class="lane-label ps">Product Services</span>
-                  ${[...psClusters.entries()].map(([key, entries]) => entries.length > 1
-                    ? clusterMarkup(key.split('::')[0], entries, { objectType: 'product_service', badgeLabel: 'PS', labelOverride: `${shortRefLabel(key.split('::')[0])} Cluster` })
-                    : `<div class="node-grid">${entries.map(entry => topologyNodeMarkup(entry, { objectType: 'product_service', badgeLabel: 'PS', psLabel: true })).join('')}</div>`
-                  ).join('')}
-                  ${psSingles.length ? `<div class="node-grid">${psSingles.map(entry => topologyNodeMarkup(entry, { objectType: 'product_service', badgeLabel: 'PS', psLabel: true })).join('')}</div>` : ''}
-                  ${psContainerEntries.length ? `
-                    <section class="eks-box">
-                      <div class="eks-label">EKS</div>
-                      <div class="node-grid">
-                        ${psContainerEntries.map(entry => topologyNodeMarkup(entry, { objectType: 'product_service', badgeLabel: 'PS', psLabel: true })).join('')}
-                      </div>
-                    </section>
-                  ` : ''}
-                </section>
-              ` : ''}
-              ${rbbEntries.length ? `
-                <section class="service-group-lane">
-                  <span class="lane-label rbb">RBB Infrastructure</span>
-                  ${[...rbbClusters.entries()].map(([key, entries]) => clusterMarkup(key.split('::')[0], entries, { objectType: 'rbb', badgeLabel: 'RBB', labelOverride: `${shortRefLabel(key.split('::')[0])} Cluster` })).join('')}
-                  ${rbbSingles.length ? `<div class="node-grid">${rbbSingles.map(entry => topologyNodeMarkup(entry, { objectType: 'rbb', badgeLabel: 'RBB' })).join('')}</div>` : ''}
-                </section>
-              ` : ''}
-              ${applianceEntries.length ? `
-                <section class="service-group-lane">
-                  <span class="lane-label appliance">Appliance ABBs</span>
-                  <div class="node-grid">
-                    ${applianceEntries.map(entry => topologyNodeMarkup(entry, { objectType: 'appliance', badgeLabel: 'APPL' })).join('')}
-                  </div>
-                </section>
-              ` : ''}
-              ${saasEntries.length ? `
-                <section class="service-group-lane">
-                  <span class="lane-label saas">SaaS Services</span>
-                  <div class="node-grid">
-                    ${saasEntries.map(entry => topologyNodeMarkup(entry, { objectType: 'saas_service', badgeLabel: 'SaaS' })).join('')}
-                  </div>
-                </section>
-              ` : ''}
+          ${(internalInteractions.length || externalInteractions.length) ? `
+            <div class="service-group-support">
+              ${internalInteractions.map(interaction => `<div class="topology-internal-link">${escapeHtml(interaction.name || 'Internal interaction')} → ${escapeHtml(interaction.ref || 'unknown')}</div>`).join('')}
+              ${externalInteractions.map(interaction => `<div class="topology-internal-link">${escapeHtml(interaction.name || 'External interaction')} • ${escapeHtml(interaction.capability || 'other')}</div>`).join('')}
             </div>
-            ${internalInteractions.length ? `
-              <section class="topology-internal-interactions">
-                ${internalInteractions.map(interaction => `<div class="topology-internal-link">${escapeHtml(interaction.name || 'Internal interaction')} → ${escapeHtml(interaction.ref || 'unknown')}</div>`).join('')}
-              </section>
-            ` : ''}
-          </div>
+          ` : ''}
         </section>
       `;
     }
 
-    function runsOnObjectForProductService(entry) {
-      const service = objectLookup[entry.ref];
-      return service?.runsOn ? objectLookup[service.runsOn] : null;
-    }
-
-    function inferServiceGroupTier(group) {
-      const scores = { web: 0, app: 0, data: 0 };
-      const addScore = tier => {
-        if (scores[tier] !== undefined) scores[tier] += 1;
-      };
-
-      (group.productServices || []).forEach(entry => {
-        const runsOn = runsOnObjectForProductService(entry);
-        const category = runsOn?.serviceCategory || '';
-        if (category === 'web') addScore('web');
-        else if (category === 'dbms') addScore('data');
-        else addScore('app');
+    function tierColumnsMarkup(groups) {
+      const columns = Object.fromEntries(SDM_TIERS.map(tier => [tier, []]));
+      groups.forEach(group => {
+        SDM_TIERS.forEach(tier => {
+          const markup = serviceGroupSectionMarkup(group, tier);
+          if (markup) {
+            columns[tier].push(markup);
+          }
+        });
       });
-
-      (group.rbbs || []).forEach(entry => {
-        const ref = String(entry.ref || '');
-        const rbb = objectLookup[ref];
-        const category = rbb?.serviceCategory || '';
-        if (category === 'web' || ref.startsWith('rbb.service.web.')) addScore('web');
-        else if (category === 'dbms' || ref.startsWith('rbb.service.dbms.')) addScore('data');
-        else addScore('app');
-      });
-
-      (group.applianceAbbs || []).forEach(entry => {
-        const appliance = objectLookup[entry.ref];
-        const capability = appliance?.capability || '';
-        if (capability === 'load-balancing') addScore('web');
-        if (['file-storage', 'data-persistence', 'storage'].includes(capability)) addScore('data');
-      });
-
-      (group.saasServices || []).forEach(entry => {
-        const saas = objectLookup[entry.ref];
-        const capability = saas?.capability || '';
-        if (['waf', 'identity'].includes(capability)) addScore('web');
-        else if (['storage', 'analytics'].includes(capability)) addScore('data');
-        else addScore('app');
-      });
-
-      const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-      return ranked[0][1] > 0 ? ranked[0][0] : 'app';
-    }
-
-    function tierColumnsMarkup(tierBuckets) {
       return `
         <div class="deployment-target-columns">
-          <section class="topology-tier-column">
-            <div class="topology-tier-header web">Web Services</div>
-            ${tierBuckets.web.join('') || '<div class="empty-card">No web-tier service groups.</div>'}
-          </section>
-          <section class="topology-tier-column">
-            <div class="topology-tier-header app">App Services</div>
-            ${tierBuckets.app.join('') || '<div class="empty-card">No app-tier service groups.</div>'}
-          </section>
-          <section class="topology-tier-column">
-            <div class="topology-tier-header data">Data Services</div>
-            ${tierBuckets.data.join('') || '<div class="empty-card">No data-tier service groups.</div>'}
-          </section>
+          ${SDM_TIERS.map(tier => `
+            <section class="topology-tier-column">
+              <div class="topology-tier-header ${escapeHtml(tier)}">${escapeHtml(SDM_TIER_LABELS[tier])}</div>
+              <div class="topology-column-stack">
+                ${columns[tier].join('') || `<div class="empty-card">No ${escapeHtml(tier)} services.</div>`}
+              </div>
+            </section>
+          `).join('')}
         </div>
       `;
     }
 
     function renderDeploymentTopology(sdm) {
       const serviceGroups = sdm.serviceGroups || [];
-      const scalingUnits = sdm.scalingUnits || [];
-      const scalingUnitMap = new Map(scalingUnits.map(unit => [unit.name, unit]));
 
       if (!serviceGroups.length) {
         return `
@@ -2306,49 +2334,24 @@
       serviceGroups.forEach(group => {
         const target = group.deploymentTarget || 'Unspecified';
         if (!targets.has(target)) {
-          targets.set(target, { scoped: new Map(), unscoped: [] });
+          targets.set(target, []);
         }
-        const bucket = targets.get(target);
-        if (group.scalingUnit && scalingUnitMap.has(group.scalingUnit)) {
-          if (!bucket.scoped.has(group.scalingUnit)) {
-            bucket.scoped.set(group.scalingUnit, []);
-          }
-          bucket.scoped.get(group.scalingUnit).push(group);
-        } else {
-          bucket.unscoped.push(group);
-        }
+        targets.get(target).push(group);
       });
+
+      const scalingUnits = [...new Set(serviceGroups.map(group => group.scalingUnit).filter(Boolean))];
+      const topologyToolbar = `
+        <div class="topology-toolbar">
+          <div class="topology-filter-buttons">
+            <button class="topology-filter-button ${currentSdmScalingFilter === 'all' ? 'active' : ''}" data-scaling-filter="all">All scaling units</button>
+            ${scalingUnits.map(unit => `<button class="topology-filter-button ${currentSdmScalingFilter === unit ? 'active' : ''}" data-scaling-filter="${escapeHtml(unit)}">${escapeHtml(unit)}</button>`).join('')}
+          </div>
+          <div class="topology-filter-help">Select a scaling unit to highlight participating services.</div>
+        </div>
+      `;
 
       const deploymentTargetMarkup = [...targets.entries()].map(([target, grouped]) => {
         const meta = deploymentTargetPresentation(target);
-        const unscopedTierBuckets = { web: [], app: [], data: [] };
-        const pushToTier = (bucket, tier, markup) => {
-          const resolved = bucket[tier] ? tier : 'app';
-          bucket[resolved].push(markup);
-        };
-
-        const scalingUnitMarkup = [...grouped.scoped.entries()].map(([scalingUnitName, groups]) => {
-          const scalingTierBuckets = { web: [], app: [], data: [] };
-          groups.forEach(group => {
-            pushToTier(scalingTierBuckets, inferServiceGroupTier(group), serviceGroupTopologyMarkup(group));
-          });
-          return `
-            <section class="scaling-unit-box">
-              <div class="scaling-unit-header">
-                <div class="scaling-unit-title">${escapeHtml(scalingUnitName)}</div>
-                <span class="scaling-unit-badge">${escapeHtml(scalingUnitName)}</span>
-              </div>
-              <div class="scaling-unit-content">
-                ${tierColumnsMarkup(scalingTierBuckets)}
-              </div>
-            </section>
-          `;
-        }).join('');
-
-        grouped.unscoped.forEach(group => {
-          pushToTier(unscopedTierBuckets, inferServiceGroupTier(group), serviceGroupTopologyMarkup(group));
-        });
-
         return `
           <section class="deployment-target-cluster">
             <div class="deployment-target-header">
@@ -2356,8 +2359,7 @@
               <span class="location-badge ${escapeHtml(meta.cls)}">${meta.icon} ${escapeHtml(meta.badge)}</span>
             </div>
             <div class="deployment-target-content">
-              ${scalingUnitMarkup}
-              ${grouped.unscoped.length ? tierColumnsMarkup(unscopedTierBuckets) : ''}
+              ${tierColumnsMarkup(grouped)}
             </div>
           </section>
         `;
@@ -2365,6 +2367,7 @@
 
       return `
         <div class="topology-layout">
+          ${topologyToolbar}
           <div class="topology-scaling-units">
             ${deploymentTargetMarkup}
           </div>
@@ -2641,12 +2644,39 @@
       attachSidebarHandlers();
       attachObjectLinkHandlers(appRoot);
       if (object.type === 'software_distribution_manifest') {
+        currentSdmScalingFilter = 'all';
+        const applySdmScalingFilter = () => {
+          const topologyCanvas = document.getElementById('topology-canvas');
+          if (!topologyCanvas) return;
+          const filter = currentSdmScalingFilter;
+          topologyCanvas.querySelectorAll('.topology-filter-button').forEach(button => {
+            button.classList.toggle('active', button.dataset.scalingFilter === filter);
+          });
+          topologyCanvas.querySelectorAll('.topology-node').forEach(node => {
+            const participates = filter === 'all' || node.dataset.scalingUnit === filter;
+            node.classList.toggle('dimmed', filter !== 'all' && !participates);
+            node.classList.toggle('highlighted', filter !== 'all' && participates);
+          });
+          topologyCanvas.querySelectorAll('.service-group-section').forEach(section => {
+            const participates = filter === 'all' || section.dataset.scalingUnitGroup === filter;
+            section.classList.toggle('dimmed', filter !== 'all' && !participates);
+            section.classList.toggle('highlighted', filter !== 'all' && participates);
+          });
+        };
+
         const renderTopologyIntoCanvas = () => {
           const topologyCanvas = document.getElementById('topology-canvas');
           if (topologyCanvas && !topologyCanvas.dataset.rendered) {
             topologyCanvas.innerHTML = renderDeploymentTopology(object);
             topologyCanvas.dataset.rendered = 'true';
             attachObjectLinkHandlers(topologyCanvas);
+            topologyCanvas.querySelectorAll('[data-scaling-filter]').forEach(button => {
+              button.addEventListener('click', () => {
+                currentSdmScalingFilter = button.dataset.scalingFilter || 'all';
+                applySdmScalingFilter();
+              });
+            });
+            applySdmScalingFilter();
           }
         };
 

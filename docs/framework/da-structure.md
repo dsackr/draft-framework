@@ -30,8 +30,9 @@ with other groups, leave `scalingUnit` unset.
 
 ## Service Groups
 
-A service group is the primary structure inside an SDM. It captures a logical
-group of deployed components that belong together and share a deployment target.
+A service group is the primary structural construct inside an SDM. It captures
+a logical set of deployed components that belong together and share a
+deployment target.
 
 Each service group has:
 
@@ -47,6 +48,24 @@ Each service group has:
 The goal is to let the architect describe the deployment in terms of meaningful
 operational groupings rather than forcing everything into one flat table.
 
+## Diagram Tier
+
+The primary visual objects in an SDM topology are the deployed services:
+
+- `productServices`
+- `rbbs`
+
+Each of those entries must declare `diagramTier`:
+
+- `presentation`
+- `application`
+- `data`
+- `utility`
+
+`diagramTier` is what determines where a service card renders in the topology.
+This is intentional. The YAML should declare the intended architecture directly
+rather than relying on renderer inference.
+
 ## Deployment Target
 
 `deploymentTarget` is free text. It should describe where the service group
@@ -60,13 +79,15 @@ visually. The YAML remains the source of truth.
 The framework should be read in this order:
 
 1. `deploymentTarget`
-2. optional `scalingUnit`
-3. `serviceGroup`
+2. `diagramTier`
+3. deployed service entry
+4. optional `scalingUnit` as highlight metadata
+5. `serviceGroup` as structural grouping
 
-If two service groups share a deployment target but not a scaling unit, they
-should still render together under that deployment target. If two service groups
-share a scaling-unit name but live in different deployment targets, they should
-render in separate deployment-target containers.
+If two services share a deployment target but declare different `diagramTier`
+values, they should render in different columns. If two services share a
+scaling-unit name but live in different deployment targets, they should still
+render in separate deployment-target containers because placement is primary.
 
 ## Intent Field Rules
 
