@@ -28,6 +28,25 @@ An IIS web tier is an RBB. A specific web application deployed on that IIS tier
 is a Software Service. An AWS Lambda serverless host is an RBB. A specific
 function package deployed to that Lambda host is a Software Service.
 
+## YAML Shape
+
+Software Services use the
+[ps.schema.yaml](../../schemas/ps.schema.yaml) schema because the underlying
+object type remains `product_service`.
+
+At minimum, a Software Service YAML should include:
+
+- `id`
+- `type: product_service`
+- `name`
+- `product`
+- `runsOn`
+- `catalogStatus`
+- `lifecycleStatus`
+
+Most Software Services also include `description` and a non-empty `variants`
+map.
+
 ## What A Software Service Documents
 
 A Software Service captures:

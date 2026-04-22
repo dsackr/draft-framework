@@ -40,6 +40,22 @@ vendor-managed services:
 These are not optional concerns. They are the minimum information needed before
 the service can be treated as an understood architecture dependency.
 
+## YAML Shape
+
+SaaS Services use the dedicated
+[saas-service.schema.yaml](../../schemas/saas-service.schema.yaml) schema.
+
+At minimum, a SaaS Service YAML should include:
+
+- `id`
+- `type: saas_service`
+- `name`
+- `vendor`
+- `capability`
+- `catalogStatus`
+- `lifecycleStatus`
+- `dataLeavesInfrastructure`
+
 ## Typical Examples
 
 Typical SaaS Service examples include:

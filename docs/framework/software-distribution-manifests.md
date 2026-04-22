@@ -42,6 +42,52 @@ can state the intended architecture directly.
 shares a scaling boundary. If a service group does not participate in a scaling
 unit, model it directly rather than forcing it into a placeholder group.
 
+## YAML Shape
+
+The canonical schema notes for SDMs live in [sdm.schema.yaml](../../schemas/sdm.schema.yaml).
+
+At minimum, an SDM includes:
+
+- `id`
+- `type: software_distribution_manifest`
+- `name`
+- `catalogStatus`
+- `lifecycleStatus`
+
+The main SDM structure is:
+
+- optional `appliesPattern`
+- optional `architecturalDecisions`
+- optional `scalingUnits`
+- optional `serviceGroups`
+- optional `architectureRisksAndDecisions`
+
+Each scaling unit includes:
+
+- `name`
+- `type`
+- optional `instanceCount`
+- optional `notes`
+
+Each service group includes:
+
+- `name`
+- `deploymentTarget`
+- optional `scalingUnit`
+- optional `productServices`
+- optional `rbbs`
+- optional `applianceAbbs`
+- optional `saasServices`
+- optional `externalInteractions`
+
+Each deployed Software Service or RBB entry should declare:
+
+- `ref`
+- optional `diagramTier`
+- optional `intent`
+- optional `riskRef`
+- optional `notes`
+
 ## What `appliesPattern` Means
 
 The `appliesPattern` field tells the reader which RA the deployment claims to follow.
@@ -57,6 +103,38 @@ exists.
 
 It should not be used as a shorthand way to restate current production state.
 Current state concerns belong in ARDs and notes.
+
+## Structure Rules
+
+`deploymentTarget` is the primary placement container. It answers where a
+service runs.
+
+`diagramTier` places Software Services and RBBs into one of four columns:
+
+- `presentation`
+- `application`
+- `data`
+- `utility`
+
+`serviceGroup` remains a structural construct in YAML, but it is not the
+dominant visual object in the topology.
+
+`scalingUnit` is secondary and optional. It should be used only when a set of
+service groups truly scales together. It is not a generic visual container.
+
+If two services share a deployment target but declare different `diagramTier`
+values, they render in different columns. If two services share a scaling-unit
+name but live in different deployment targets, they still render in separate
+deployment-target containers because placement is primary.
+
+Internal and external interactions remain attached to the owning service group:
+
+- `type: internal` means another service group in the same SDM
+- `type: external` means a system outside the SDM boundary
+
+Internal interactions must reference another service-group name in the same
+SDM. External interactions stay attached to the service group that owns them;
+they should not be hoisted to the SDM top level.
 
 ## How The Topology Should Read
 

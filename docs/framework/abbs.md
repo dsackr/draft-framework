@@ -8,6 +8,24 @@ That definition matters. An ABB is not “Windows Server” in the abstract. It 
 
 The framework uses that level of specificity because architecture standards become misleading very quickly if version and vendor lifecycle are left implicit.
 
+## YAML Shape
+
+ABBs do not currently have one single schema file for every subtype. The
+minimum contract is enforced by [`tools/validate.py`](../../tools/validate.py),
+and Appliance ABBs additionally follow
+[abb-appliance.schema.yaml](../../schemas/abb-appliance.schema.yaml).
+
+At minimum, an ABB YAML should include:
+
+- `id`
+- `type: abb`
+- `name`
+- `vendor`
+- `catalogStatus`
+- `lifecycleStatus`
+
+Common ABBs also include product/version fields and vendor lifecycle metadata.
+
 ## What Goes In An ABB
 
 An ABB records the information engineers need in order to make technology choices responsibly. It includes:

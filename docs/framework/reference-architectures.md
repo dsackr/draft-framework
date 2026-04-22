@@ -6,6 +6,23 @@ A Reference Architecture, or RA, is a pattern specification. It describes the ar
 
 If an engineer asks, “what does a resilient .NET application stack look like here,” the answer belongs in an RA. If the engineer asks, “what does a specific product actually deploy today,” the answer belongs in an SDM.
 
+## YAML Shape
+
+Reference Architectures are validated by
+[`tools/validate.py`](../../tools/validate.py) and `aag.ra`.
+
+At minimum, an RA YAML should include:
+
+- `id`
+- `type: reference_architecture`
+- `name`
+- `catalogStatus`
+- `lifecycleStatus`
+- `requiredRBBs`
+
+Most RAs also include `description`, `patternType`, and
+`architecturalDecisions`.
+
 ## What `requiredRBBs` Means
 
 The core field in an RA is `requiredRBBs`. Each entry names:

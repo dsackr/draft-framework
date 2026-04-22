@@ -13,6 +13,7 @@ linked below.
 ### Framework Basics
 
 - [Framework overview](docs/framework/overview.md)
+- [YAML schema reference](docs/framework/yaml-schema-reference.md)
 - [Naming conventions](docs/framework/naming-conventions.md)
 - [How to add objects](docs/framework/how-to-add-objects.md)
 - [AI rebuild prompt](docs/ai-rebuild-prompt.md)
@@ -28,7 +29,6 @@ linked below.
 - [Software Services (SSs)](docs/framework/product-services.md)
 - [Software as a Service (SaaS) Services](docs/framework/saas-services.md)
 - [Software Distribution Manifests (SDMs)](docs/framework/software-distribution-manifests.md)
-- [Software Distribution Manifest structure](docs/framework/da-structure.md)
 
 ### Extensible Framework Content
 

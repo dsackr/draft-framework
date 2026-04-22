@@ -6,6 +6,24 @@ An RA Building Block, or RBB, is a reusable architecture component. This is the 
 
 RAs and SDMs are built from RBBs, not directly from ABBs, because the RBB is where the framework captures structure, interactions, and decisions.
 
+## YAML Shape
+
+RBBs are validated by [`tools/validate.py`](../../tools/validate.py). There is
+not currently a separate standalone RBB schema file.
+
+At minimum, an RBB YAML should include:
+
+- `id`
+- `type: rbb`
+- `name`
+- `catalogStatus`
+- `lifecycleStatus`
+- `internalComponents`
+- `variants`
+
+Service RBBs additionally declare the host/function relationship that makes the
+pattern reusable.
+
 ## Host RBBs
 
 A host RBB represents a standardized host platform. It includes:

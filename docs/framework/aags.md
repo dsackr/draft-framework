@@ -6,6 +6,22 @@ An Architecture Analysis Guideline, or AAG, is the governance layer for catalog 
 
 That distinction matters. The catalog object says what the component or pattern is, what it includes, and what it interacts with. The AAG says what questions that object must answer before the framework should trust it as a reusable standard.
 
+## YAML Shape
+
+AAGs are validated by [`tools/validate.py`](../../tools/validate.py). There is
+not currently a separate standalone AAG schema file.
+
+At minimum, an AAG YAML should include:
+
+- `id`
+- `type: aag`
+- `name`
+- `description`
+- `requirements`
+
+Most AAGs also include `version`, `catalogStatus`, `lifecycleStatus`, and
+`appliesTo`.
+
 ## How The Model Works
 
 The framework models AAGs in terms of requirements and satisfaction mechanisms rather than raw field-path checks. Each requirement has:
