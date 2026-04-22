@@ -10,19 +10,30 @@ linked below.
 
 ## Start Here
 
+### Framework Basics
+
 - [Framework overview](docs/framework/overview.md)
-- [ABBs](docs/framework/abbs.md)
-- [Software services](docs/framework/product-services.md)
-- [SaaS services](docs/framework/saas-services.md)
-- [RBBs](docs/framework/rbbs.md)
-- [AAGs](docs/framework/aags.md)
-- [Reference architectures](docs/framework/reference-architectures.md)
-- [Software distribution manifests](docs/framework/software-distribution-manifests.md)
-- [SDM structure](docs/framework/da-structure.md)
 - [Naming conventions](docs/framework/naming-conventions.md)
 - [How to add objects](docs/framework/how-to-add-objects.md)
-- [Security and compliance controls](docs/framework/security-and-compliance-controls.md)
 - [AI rebuild prompt](docs/ai-rebuild-prompt.md)
+
+### Architecture Content
+
+- [Architecture Building Blocks (ABBs)](docs/framework/abbs.md)
+- [Reference Building Blocks (RBBs)](docs/framework/rbbs.md)
+- [Reference Architectures (RAs)](docs/framework/reference-architectures.md)
+
+### Software Content
+
+- [Software Services (SSs)](docs/framework/product-services.md)
+- [Software as a Service (SaaS) Services](docs/framework/saas-services.md)
+- [Software Distribution Manifests (SDMs)](docs/framework/software-distribution-manifests.md)
+- [Software Distribution Manifest structure](docs/framework/da-structure.md)
+
+### Extensible Framework Content
+
+- [Architecture Analysis Guidelines (AAGs)](docs/framework/aags.md)
+- [Security and Compliance Controls (SCCs)](docs/framework/security-and-compliance-controls.md)
 
 ## Browser
 
