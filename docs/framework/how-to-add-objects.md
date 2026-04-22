@@ -17,7 +17,7 @@ Many mistakes happen because engineers skip that decision and start writing fiel
 
 1. Decide whether the object is an OS, hardware, software, or agent ABB.
 2. Choose the correct ID pattern.
-3. Create the YAML file in the matching `abbs/` subfolder.
+3. Create the YAML file in `abbs/`.
 4. Fill in the shared base fields.
 5. Fill in the ABB-specific metadata such as vendor lifecycle, product version, and optional platform dependency.
 6. Run validation.
@@ -26,7 +26,7 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 
 ## Add A Host RBB
 
-1. Create the file in `rbbs/host/`.
+1. Create the file in `rbbs/`.
 2. Reference the OS and hardware ABBs explicitly.
 3. Add any agent ABBs or other internal components that physically live on the host.
 4. Document `externalInteractions` for identity, logging, security, monitoring, patching, or other platforms.
@@ -36,7 +36,7 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 
 ## Add A Service RBB
 
-1. Create the file in the appropriate `rbbs/service/` subfolder.
+1. Create the file in `rbbs/`.
 2. Reference exactly one `hostRbb` and one `functionAbb`.
 3. Add service-level external interactions that go beyond the host baseline.
 4. Add the named variants that describe the service meaningfully. `ha` and `sa` are common examples, but keys such as `hp`, `sp`, `geo-redundant`, or `single-region` are also valid.
@@ -105,3 +105,7 @@ python3 tools/generate_browser.py
 - `approved` means the object is complete enough to be trusted by other engineers.
 
 For RBBs, approved means the applicable AAG requirements are satisfied. For every object type, it also means the description, ownership, lifecycle, and relationships are clear enough that another engineer could use the object without guessing what it means.
+
+The catalog uses flat folders by object family. Do not create nested taxonomy
+folders under `abbs/` or `rbbs/`; the YAML content already carries the object
+classification.

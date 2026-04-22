@@ -32,6 +32,11 @@ The repository should contain these top-level folders:
 
 The browser generator should discover YAML files by walking the catalog folders listed above, not by hardcoded filenames. Every YAML file under those folders is part of the catalog.
 
+Each object family folder should remain flat. Do not create nested taxonomy
+folders such as `abbs/os/` or `rbbs/service/web/`. The object's YAML fields and
+ID encode its type and category already, so nested directories would only
+duplicate metadata.
+
 ## Shared Object Contract
 
 All first-class catalog objects share a common base model. Every object should include:

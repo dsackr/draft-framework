@@ -44,6 +44,11 @@ tools/                      Validator and browser generator
 schemas/                    Reserved for schema artifacts
 ```
 
+Each object family uses a flat folder. The file path is organizational only. The
+authoritative object identity and semantics come from the YAML fields such as
+`id`, `type`, `subtype`, `category`, and `serviceCategory`, not from nested
+directory placement.
+
 ## Running The Tools
 
 Install the only Python dependency:
