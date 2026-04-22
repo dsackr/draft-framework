@@ -123,11 +123,13 @@
       opacity: 0.45;
       transform: none;
     }
+    .tab-row,
     .filter-row {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
     }
+    .tab-button,
     .filter-button,
     .back-button {
       border: 1px solid var(--border);
@@ -139,15 +141,48 @@
       cursor: pointer;
       transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
     }
+    .tab-button {
+      padding: 12px 18px;
+      background: rgba(15,23,42,0.82);
+      font-weight: 600;
+    }
+    .tab-button:hover,
     .filter-button:hover,
     .back-button:hover {
       border-color: rgba(56,189,248,0.55);
       transform: translateY(-1px);
     }
+    .tab-button.active,
     .filter-button.active {
       background: rgba(56,189,248,0.18);
       border-color: rgba(56,189,248,0.6);
       color: #dff7ff;
+    }
+    .content-rows {
+      display: grid;
+      gap: 24px;
+    }
+    .content-row {
+      display: grid;
+      gap: 14px;
+    }
+    .content-row-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(51,65,85,0.72);
+    }
+    .content-row-title {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: 0.02em;
+    }
+    .content-row-count {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
     }
     .cards-grid {
       display: grid;
@@ -1046,7 +1081,51 @@
     const appRoot = document.getElementById('app-root');
     const sidebarContent = document.getElementById('sidebar-content');
     const legend = document.getElementById('legend');
-    const typeFilters = ['All', ...browserData.filterValues];
+    const CATEGORY_CONFIG = [
+      {
+        id: 'software',
+        label: 'Software Content',
+        filters: [
+          { id: 'all', label: 'All', types: ['software_distribution_manifest', 'product_service', 'ard'] },
+          { id: 'software_distribution_manifest', label: 'SDMs', types: ['software_distribution_manifest'] },
+          { id: 'product_service', label: 'SS', types: ['product_service'] },
+          { id: 'ard', label: 'DRDs', types: ['ard'] }
+        ],
+        rows: [
+          { id: 'software_distribution_manifest', label: 'Software Distribution Manifests', types: ['software_distribution_manifest'] },
+          { id: 'product_service', label: 'Software Services', types: ['product_service'] },
+          { id: 'ard', label: 'Deployment Risks and Decisions', types: ['ard'] }
+        ]
+      },
+      {
+        id: 'architecture',
+        label: 'Architecture Content',
+        filters: [
+          { id: 'all', label: 'All', types: ['reference_architecture', 'rbb', 'abb'] },
+          { id: 'reference_architecture', label: 'RAs', types: ['reference_architecture'] },
+          { id: 'rbb', label: 'RBBs', types: ['rbb'] },
+          { id: 'abb', label: 'ABBs', types: ['abb'] }
+        ],
+        rows: [
+          { id: 'reference_architecture', label: 'Reference Architectures', types: ['reference_architecture'] },
+          { id: 'rbb', label: 'RBBs', types: ['rbb'] },
+          { id: 'abb', label: 'ABBs', types: ['abb'] }
+        ]
+      },
+      {
+        id: 'framework',
+        label: 'Framework Content',
+        filters: [
+          { id: 'all', label: 'All', types: ['aag', 'compliance_framework', 'aag_control_mapping'] },
+          { id: 'aag', label: 'AAGs', types: ['aag'] },
+          { id: 'scc', label: 'SCCs', types: ['compliance_framework', 'aag_control_mapping'] }
+        ],
+        rows: [
+          { id: 'aag', label: 'AAGs', types: ['aag'] },
+          { id: 'scc', label: 'Security and Compliance Controls', types: ['compliance_framework', 'aag_control_mapping'] }
+        ]
+      }
+    ];
     const lifecycleValues = browserData.lifecycleValues || [];
     const complianceFrameworks = complianceData.frameworks || [];
     const deployableTypes = new Set(
@@ -1056,7 +1135,8 @@
     );
     const impactOrder = ['software_distribution_manifest', 'reference_architecture', 'product_service', 'rbb', 'abb', 'saas_service'];
     const impactLifecycleOrder = lifecycleValues;
-    let activeFilter = 'All';
+    let activeCategory = 'software';
+    let activeFilter = 'all';
     let currentDetailId = null;
     let currentMode = 'list';
     const navHistory = [];
@@ -1201,8 +1281,27 @@
       }, 0);
     }
 
+    function categoryConfig(categoryId = activeCategory) {
+      return CATEGORY_CONFIG.find(category => category.id === categoryId) || CATEGORY_CONFIG[0];
+    }
+
+    function activeFilterConfig() {
+      const category = categoryConfig();
+      return category.filters.find(filter => filter.id === activeFilter) || category.filters[0];
+    }
+
+    function formatListFilterLabel(filterId) {
+      const category = categoryConfig();
+      const filter = category.filters.find(item => item.id === filterId);
+      return filter?.label || 'All';
+    }
+
     function syncHashForListView() {
-      setHashState({ view: 'list', filter: activeFilter !== 'All' ? activeFilter : null });
+      setHashState({
+        view: 'list',
+        category: activeCategory !== 'software' ? activeCategory : null,
+        filter: activeFilter !== 'all' ? activeFilter : null
+      });
     }
 
     function syncHashForDetailView(id) {
@@ -1233,8 +1332,15 @@
         renderImpactView();
         return;
       }
-      const filter = params.get('filter');
-      activeFilter = typeFilters.includes(filter) ? filter : 'All';
+      const category = params.get('category');
+      activeCategory = CATEGORY_CONFIG.some(item => item.id === category) ? category : 'software';
+      const requestedFilter = params.get('filter');
+      const categoryFilters = categoryConfig(activeCategory).filters;
+      activeFilter = categoryFilters.some(item => item.id === requestedFilter)
+        ? requestedFilter
+        : requestedFilter && categoryFilters.some(item => item.types.includes(requestedFilter))
+          ? requestedFilter
+          : 'all';
       currentDetailId = null;
       renderListView();
     }
@@ -1287,7 +1393,7 @@
       return `
         <div class="sidebar-block">
           <div class="legend-title">Current Filter</div>
-          <div class="current-filter"><span class="dot" style="background:#38bdf8"></span><span>${escapeHtml(activeFilter === 'All' ? 'All' : formatTypeLabel(activeFilter))}</span></div>
+          <div class="current-filter"><span class="dot" style="background:#38bdf8"></span><span>${escapeHtml(categoryConfig().label)} / ${escapeHtml(formatListFilterLabel(activeFilter))}</span></div>
         </div>
       `;
     }
@@ -1354,11 +1460,54 @@
       }
     }
 
+    function filterObjectsByTypes(types) {
+      const allowed = new Set(types);
+      return allObjects.filter(object => allowed.has(object.type));
+    }
+
     function filterObjects() {
-      if (activeFilter === 'All') {
-        return allObjects;
+      return filterObjectsByTypes(activeFilterConfig().types);
+    }
+
+    function listRowMarkup(row, objects) {
+      if (!objects.length) {
+        return '';
       }
-      return allObjects.filter(object => object.filterType === activeFilter);
+      return `
+        <section class="content-row">
+          <div class="content-row-header">
+            <h2 class="content-row-title">${escapeHtml(row.label)}</h2>
+            <span class="content-row-count">${objects.length} objects</span>
+          </div>
+          <div class="cards-grid">
+            ${objects.map(object => objectCardMarkup(object)).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function objectCardMarkup(object) {
+      return `
+        <article class="object-card" data-object-id="${object.id}">
+          <div>
+            <h3>${escapeHtml(object.name)}</h3>
+            <div class="object-id">${escapeHtml(object.id)}</div>
+          </div>
+          <div class="badges">
+            ${lifecycleBadge(object.lifecycleStatus)}
+            ${catalogBadge(object.catalogStatus)}
+            ${object.type === 'ard' ? ardCategoryBadge(object.ardCategory) : ''}
+            ${object.type === 'ard' ? ardStatusBadge(object.status) : ''}
+            ${object.type === 'product_service' ? productBadge(object.product) : ''}
+            ${object.type === 'saas_service' ? saasBadge() : ''}
+          </div>
+          <div class="badges">
+            <div class="badge">${escapeHtml(object.typeLabel)}</div>
+            ${object.type === 'product_service' ? `<div class="object-id">${escapeHtml(object.product)}</div>` : ''}
+            ${object.type === 'abb' && object.subtype === 'appliance' ? applianceBadge() : ''}
+          </div>
+        </article>
+      `;
     }
 
     function renderListView() {
@@ -1366,44 +1515,44 @@
       currentDetailId = null;
       destroyDetailCy();
       destroyImpactCy();
+      const category = categoryConfig();
       const filtered = filterObjects();
+      const rows = activeFilter === 'all'
+        ? category.rows.map(row => ({ row, objects: filterObjectsByTypes(row.types) })).filter(section => section.objects.length)
+        : (() => {
+            const filter = activeFilterConfig();
+            const row = category.rows.find(item => item.id === activeFilter)
+              || { id: filter.id, label: filter.label, types: filter.types };
+            return [{ row, objects: filtered }];
+          })();
       syncHashForListView();
       renderSidebarContent(sidebarMarkup());
       appRoot.innerHTML = `
         <div class="view-shell">
           ${topNavMarkup()}
+          <div class="tab-row">
+            ${CATEGORY_CONFIG.map(categoryItem => `<button class="tab-button ${categoryItem.id === activeCategory ? 'active' : ''}" data-category-tab="${categoryItem.id}">${escapeHtml(categoryItem.label)}</button>`).join('')}
+          </div>
           <div class="filter-row">
-            ${typeFilters.map(filter => `<button class="filter-button ${filter === activeFilter ? 'active' : ''}" data-filter="${filter}">${filter === 'All' ? 'All' : escapeHtml(formatTypeLabel(filter))}</button>`).join('')}
+            ${category.filters.map(filter => `<button class="filter-button ${filter.id === activeFilter ? 'active' : ''}" data-filter="${filter.id}">${escapeHtml(filter.label)}</button>`).join('')}
           </div>
           <div class="view-title">
             <span>${filtered.length} objects</span>
-            <span>Showing ${activeFilter === 'All' ? 'the full catalog' : activeFilter + ' objects'}</span>
+            <span>Showing ${escapeHtml(category.label)}${activeFilter === 'all' ? '' : ` / ${escapeHtml(formatListFilterLabel(activeFilter))}`}</span>
           </div>
-          <div class="cards-grid">
-            ${filtered.map(object => `
-              <article class="object-card" data-object-id="${object.id}">
-                <div>
-                  <h3>${escapeHtml(object.name)}</h3>
-                  <div class="object-id">${escapeHtml(object.id)}</div>
-                </div>
-                <div class="badges">
-                  ${lifecycleBadge(object.lifecycleStatus)}
-                  ${catalogBadge(object.catalogStatus)}
-                  ${object.type === 'ard' ? ardCategoryBadge(object.ardCategory) : ''}
-                  ${object.type === 'ard' ? ardStatusBadge(object.status) : ''}
-                  ${object.type === 'product_service' ? productBadge(object.product) : ''}
-                  ${object.type === 'saas_service' ? saasBadge() : ''}
-                </div>
-                <div class="badges">
-                  <div class="badge">${escapeHtml(object.typeLabel)}</div>
-                  ${object.type === 'product_service' ? `<div class="object-id">${escapeHtml(object.product)}</div>` : ''}
-                  ${object.type === 'abb' && object.subtype === 'appliance' ? applianceBadge() : ''}
-                </div>
-              </article>
-            `).join('')}
+          <div class="content-rows">
+            ${rows.map(section => listRowMarkup(section.row, section.objects)).join('') || `<div class="empty-card" style="padding:24px;">No objects in this view.</div>`}
           </div>
         </div>
       `;
+
+      appRoot.querySelectorAll('[data-category-tab]').forEach(button => {
+        button.addEventListener('click', () => {
+          activeCategory = button.dataset.categoryTab;
+          activeFilter = 'all';
+          renderListView();
+        });
+      });
 
       appRoot.querySelectorAll('[data-filter]').forEach(button => {
         button.addEventListener('click', () => {
