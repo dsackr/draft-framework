@@ -682,6 +682,12 @@
       gap: 14px;
       align-items: start;
     }
+    .scaling-unit-columns {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
     .topology-tier-column {
       display: grid;
       gap: 12px;
@@ -2264,6 +2270,25 @@
       return ranked[0][1] > 0 ? ranked[0][0] : 'app';
     }
 
+    function tierColumnsMarkup(tierBuckets) {
+      return `
+        <div class="deployment-target-columns">
+          <section class="topology-tier-column">
+            <div class="topology-tier-header web">Web Services</div>
+            ${tierBuckets.web.join('') || '<div class="empty-card">No web-tier service groups.</div>'}
+          </section>
+          <section class="topology-tier-column">
+            <div class="topology-tier-header app">App Services</div>
+            ${tierBuckets.app.join('') || '<div class="empty-card">No app-tier service groups.</div>'}
+          </section>
+          <section class="topology-tier-column">
+            <div class="topology-tier-header data">Data Services</div>
+            ${tierBuckets.data.join('') || '<div class="empty-card">No data-tier service groups.</div>'}
+          </section>
+        </div>
+      `;
+    }
+
     function renderDeploymentTopology(sdm) {
       const serviceGroups = sdm.serviceGroups || [];
       const scalingUnits = sdm.scalingUnits || [];
@@ -2296,29 +2321,32 @@
 
       const deploymentTargetMarkup = [...targets.entries()].map(([target, grouped]) => {
         const meta = deploymentTargetPresentation(target);
-        const tierBuckets = { web: [], app: [], data: [] };
-        const pushToTier = (tier, markup) => {
-          const resolved = tierBuckets[tier] ? tier : 'app';
-          tierBuckets[resolved].push(markup);
+        const unscopedTierBuckets = { web: [], app: [], data: [] };
+        const pushToTier = (bucket, tier, markup) => {
+          const resolved = bucket[tier] ? tier : 'app';
+          bucket[resolved].push(markup);
         };
 
-        [...grouped.scoped.entries()].forEach(([scalingUnitName, groups]) => {
-          const firstTier = inferServiceGroupTier(groups[0] || {});
-          pushToTier(firstTier, `
+        const scalingUnitMarkup = [...grouped.scoped.entries()].map(([scalingUnitName, groups]) => {
+          const scalingTierBuckets = { web: [], app: [], data: [] };
+          groups.forEach(group => {
+            pushToTier(scalingTierBuckets, inferServiceGroupTier(group), serviceGroupTopologyMarkup(group));
+          });
+          return `
             <section class="scaling-unit-box">
               <div class="scaling-unit-header">
                 <div class="scaling-unit-title">${escapeHtml(scalingUnitName)}</div>
                 <span class="scaling-unit-badge">${escapeHtml(scalingUnitName)}</span>
               </div>
               <div class="scaling-unit-content">
-                ${groups.map(group => serviceGroupTopologyMarkup(group)).join('')}
+                ${tierColumnsMarkup(scalingTierBuckets)}
               </div>
             </section>
-          `);
-        });
+          `;
+        }).join('');
 
         grouped.unscoped.forEach(group => {
-          pushToTier(inferServiceGroupTier(group), serviceGroupTopologyMarkup(group));
+          pushToTier(unscopedTierBuckets, inferServiceGroupTier(group), serviceGroupTopologyMarkup(group));
         });
 
         return `
@@ -2327,19 +2355,9 @@
               <div class="deployment-target-title">${escapeHtml(target)}</div>
               <span class="location-badge ${escapeHtml(meta.cls)}">${meta.icon} ${escapeHtml(meta.badge)}</span>
             </div>
-            <div class="deployment-target-columns">
-              <section class="topology-tier-column">
-                <div class="topology-tier-header web">Web Services</div>
-                ${tierBuckets.web.join('') || '<div class="empty-card">No web-tier service groups.</div>'}
-              </section>
-              <section class="topology-tier-column">
-                <div class="topology-tier-header app">App Services</div>
-                ${tierBuckets.app.join('') || '<div class="empty-card">No app-tier service groups.</div>'}
-              </section>
-              <section class="topology-tier-column">
-                <div class="topology-tier-header data">Data Services</div>
-                ${tierBuckets.data.join('') || '<div class="empty-card">No data-tier service groups.</div>'}
-              </section>
+            <div class="deployment-target-content">
+              ${scalingUnitMarkup}
+              ${grouped.unscoped.length ? tierColumnsMarkup(unscopedTierBuckets) : ''}
             </div>
           </section>
         `;
