@@ -12,7 +12,6 @@ Compliance mappings are plug-and-play. AAGs define architecture requirements, wh
 
 ## Start Here
 
-- [AI rebuild prompt](docs/ai-rebuild-prompt.md)
 - [Framework overview](docs/framework/overview.md)
 - [ABBs](docs/framework/abbs.md)
 - [Product services](docs/framework/product-services.md)
