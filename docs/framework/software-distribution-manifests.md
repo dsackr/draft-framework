@@ -16,10 +16,14 @@ organized around:
 - `architecturalDecisions`
 - `architectureRisksAndDecisions`
 
-Each service group can contain Product Services, RBBs, Appliance ABBs, SaaS
+Each service group can contain Software Services, RBBs, Appliance ABBs, SaaS
 Services, and group-local external interactions. This is a better fit for real
 architecture interview data because it preserves operational grouping and
 deployment intent.
+
+`scalingUnits` is optional. Use it only when a set of service groups truly
+shares a scaling boundary. If a service group does not participate in a scaling
+unit, model it directly rather than forcing it into a placeholder group.
 
 ## What `appliesPattern` Means
 
@@ -29,13 +33,29 @@ This field is metadata only. It is useful because it says whether the product is
 
 ## Intent Versus Current State
 
-The `intent` field on Product Service and RBB entries exists only for explicit
+The `intent` field on Software Service and RBB entries exists only for explicit
 architecture choice. It should be populated when the architect is intentionally
 deviating from the Reference Architecture, or when no Reference Architecture
 exists.
 
 It should not be used as a shorthand way to restate current production state.
 Current state concerns belong in ARDs and notes.
+
+## How The Topology Should Read
+
+The SDM topology is first a placement view, then a scaling view.
+
+- `deploymentTarget` is the primary container because it answers where a service
+  group runs.
+- `scalingUnit` is secondary and optional. It is used only when multiple
+  service groups genuinely scale together as one unit.
+- Service groups with no `scalingUnit` render directly under their deployment
+  target.
+
+That means two service groups in the same deployment target can sit side by side
+even when only one participates in a scaling unit. It also means the same
+scaling-unit name can appear under different deployment targets if the model
+requires that, without implying co-location.
 
 ## Long-Term Placement
 

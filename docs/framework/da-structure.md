@@ -9,13 +9,13 @@ platforms during interviews.
 
 Instead of saying only that a product deploys a set of RBBs, the framework can
 now express which components belong together, where they are deployed, which
-scaling boundary they share, and which integrations are external versus
-internal within the same manifest.
+scaling boundary they share when one exists, and which integrations are
+external versus internal within the same manifest.
 
 ## Scaling Units
 
-A scaling unit is the outer deployment boundary. It answers the question: which
-sets of services scale together as one operational unit?
+A scaling unit is an optional shared scaling boundary. It answers the question:
+which sets of services scale together as one operational unit?
 
 Each scaling unit has:
 
@@ -24,9 +24,9 @@ Each scaling unit has:
 - optional `instanceCount`
 - optional notes
 
-Replicable scaling units are the right model for sub-environments or other
-repeatable slices of deployment. Shared scaling units represent components that
-are common across the whole product.
+A scaling unit should be present only when the grouping is architecturally real.
+It is not a generic visual container. If a service group does not scale together
+with other groups, leave `scalingUnit` unset.
 
 ## Service Groups
 
@@ -51,12 +51,26 @@ operational groupings rather than forcing everything into one flat table.
 
 `deploymentTarget` is free text. It should describe where the service group
 lives, such as an AWS account, datacenter, or other meaningful deployment
-boundary. The browser uses string heuristics only to decorate the target
+boundary. In the topology view, deployment target is the primary placement
+container. The browser uses string heuristics only to decorate the target
 visually. The YAML remains the source of truth.
+
+## Placement And Scaling Hierarchy
+
+The framework should be read in this order:
+
+1. `deploymentTarget`
+2. optional `scalingUnit`
+3. `serviceGroup`
+
+If two service groups share a deployment target but not a scaling unit, they
+should still render together under that deployment target. If two service groups
+share a scaling-unit name but live in different deployment targets, they should
+render in separate deployment-target containers.
 
 ## Intent Field Rules
 
-The `intent` field on Product Service and RBB entries is deliberately narrow.
+The `intent` field on Software Service and RBB entries is deliberately narrow.
 
 It is only set when the architect is making an explicit architectural decision
 that deviates from the Reference Architecture default, or when there is no
@@ -84,4 +98,6 @@ Service-group interactions now distinguish between:
 
 Internal interactions must reference another service-group name in the same SDM.
 This gives the topology view enough structure to show inter-group relationships
-without inventing new deployment objects.
+without inventing new deployment objects. External interactions remain attached
+to the service group that owns them; they should not be hoisted to the SDM as a
+top-level strip.
