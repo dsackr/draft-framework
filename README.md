@@ -16,7 +16,6 @@ linked below.
 - [YAML schema reference](docs/framework/yaml-schema-reference.md)
 - [Naming conventions](docs/framework/naming-conventions.md)
 - [How to add objects](docs/framework/how-to-add-objects.md)
-- [AI rebuild prompt](docs/ai-rebuild-prompt.md)
 
 ### Architecture Content
 
