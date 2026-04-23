@@ -33,4 +33,4 @@ types by the role they play in the model.
 | Object Type | Purpose |
 |---|---|
 | ODCs | Structured checklists of required questions and answers used to define a complete and correct architecture object. They help build the object once the object taxonomy has been chosen. |
-| Security and Compliance Controls | The selectable control catalogs and requirement-to-control mappings that sit beside the architecture model. They let the same ODC requirement set be viewed through different compliance frameworks without changing the architecture objects themselves. |
+| Security and Compliance Controls | The selectable control catalogs that sit beside the architecture model. They let the same ODC concern set be extended with framework-specific required controls without changing the architecture objects themselves. |

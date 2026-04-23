@@ -105,6 +105,8 @@ def extract_refs(node: Any, path: str = "") -> list[tuple[str, str]]:
             else:
                 refs.extend(extract_refs(value, child_path))
     elif isinstance(node, list):
+        if path.endswith(".appliesTo"):
+            return refs
         for index, item in enumerate(node):
             if isinstance(item, str) and item.startswith(CATALOG_ID_PREFIXES):
                 refs.append((item, f"{path}[{index}]"))
@@ -219,43 +221,54 @@ def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, A
         key=lambda item: item.get("name", ""),
     )
     frameworks_by_id = {framework["id"]: framework for framework in frameworks}
-    local_mappings: dict[str, dict[str, dict[str, list[str]]]] = {}
+    local_controls: dict[str, list[dict[str, Any]]] = {}
     for framework in frameworks:
         framework_id = framework["id"]
-        raw = framework.get("requirementMappings") or {}
-        if not isinstance(raw, dict):
+        raw = framework.get("controls") or []
+        if not isinstance(raw, list):
             continue
-        odc_map: dict[str, dict[str, list[str]]] = {}
-        for odc_id, req_map in raw.items():
-            if not isinstance(req_map, dict):
+        normalized_controls: list[dict[str, Any]] = []
+        for control in raw:
+            if not isinstance(control, dict):
                 continue
-            odc_map[str(odc_id)] = {
-                str(req_id): [str(c) for c in controls if str(c).strip()]
-                for req_id, controls in req_map.items()
-                if isinstance(controls, list)
-            }
-        local_mappings[framework_id] = odc_map
+            normalized_controls.append(
+                {
+                    "controlId": str(control.get("controlId", "")),
+                    "name": str(control.get("name", "")),
+                    "description": str(control.get("description", "")),
+                    "externalReference": str(control.get("externalReference", "")),
+                    "appliesTo": [str(scope) for scope in control.get("appliesTo", []) if str(scope).strip()],
+                    "relatedConcern": str(control.get("relatedConcern", "")),
+                    "validAnswerTypes": [str(value) for value in control.get("validAnswerTypes", []) if str(value).strip()],
+                    "notes": str(control.get("notes", "")),
+                }
+            )
+        local_controls[framework_id] = normalized_controls
 
-    resolved_cache: dict[str, dict[str, dict[str, list[str]]]] = {}
+    resolved_cache: dict[str, list[dict[str, Any]]] = {}
 
-    def resolve_framework_mappings(framework_id: str, stack: set[str] | None = None) -> dict[str, dict[str, list[str]]]:
+    def control_key(control: dict[str, Any]) -> str:
+        applies_to = ",".join(sorted(control.get("appliesTo", [])))
+        return f"{control.get('controlId', '')}|{control.get('relatedConcern', '')}|{applies_to}"
+
+    def resolve_framework_controls(framework_id: str, stack: set[str] | None = None) -> list[dict[str, Any]]:
         if framework_id in resolved_cache:
             return resolved_cache[framework_id]
         stack = stack or set()
         if framework_id in stack:
-            return {}
+            return []
         stack.add(framework_id)
         framework = frameworks_by_id.get(framework_id, {})
-        merged: dict[str, dict[str, list[str]]] = {}
+        merged: dict[str, dict[str, Any]] = {}
         for parent_id in framework.get("extends", []) if isinstance(framework.get("extends"), list) else []:
-            parent_mappings = resolve_framework_mappings(str(parent_id), stack)
-            for odc_id, requirement_map in parent_mappings.items():
-                merged.setdefault(odc_id, {}).update(requirement_map)
-        for odc_id, requirement_map in local_mappings.get(framework_id, {}).items():
-            merged.setdefault(odc_id, {}).update(requirement_map)
-        resolved_cache[framework_id] = merged
+            parent_controls = resolve_framework_controls(str(parent_id), stack)
+            for control in parent_controls:
+                merged[control_key(control)] = control
+        for control in local_controls.get(framework_id, []):
+            merged[control_key(control)] = control
+        resolved_cache[framework_id] = list(merged.values())
         stack.remove(framework_id)
-        return merged
+        return resolved_cache[framework_id]
 
     default_framework_id = next(
         (framework["id"] for framework in frameworks if framework.get("defaultSelection") is True),
@@ -273,11 +286,12 @@ def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, A
                 "defaultSelection": framework.get("defaultSelection", False),
                 "extends": framework.get("extends", []),
                 "description": framework.get("description", ""),
+                "controlCount": len(resolve_framework_controls(framework["id"])),
             }
             for framework in frameworks
         ],
         "defaultFrameworkId": default_framework_id,
-        "mappingsByFramework": {framework["id"]: resolve_framework_mappings(framework["id"]) for framework in frameworks},
+        "controlsByFramework": {framework["id"]: resolve_framework_controls(framework["id"]) for framework in frameworks},
     }
 
 
@@ -342,6 +356,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "architecturalDecisions": obj.get("architecturalDecisions", {}),
                 "requirements": obj.get("requirements", []),
                 "satisfiesODC": obj.get("satisfiesODC", []),
+                "appliesTo": obj.get("appliesTo", {}),
                 "inherits": obj.get("inherits", ""),
                 "requiredRBBs": obj.get("requiredRBBs", []),
                 "scalingUnits": obj.get("scalingUnits", []),
@@ -356,6 +371,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "linkedSDM": obj.get("linkedSDM", ""),
                 "frameworkKind": obj.get("frameworkKind", ""),
                 "defaultSelection": obj.get("defaultSelection", False),
+                "controlCount": len(obj.get("controls", [])) if obj.get("type") == "compliance_framework" and isinstance(obj.get("controls"), list) else 0,
                 "hasRiskRef": obj.get("id") in risk_marked_rbb_ids,
                 "outboundRefs": outbound_refs.get(object_id, []),
                 "referencedBy": referenced_by.get(object_id, []),
@@ -1912,12 +1928,55 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return (selectedFrameworkId && objectLookup[selectedFrameworkId]) || complianceFrameworks[0] || null;
     }
 
-    function selectedFrameworkMappings() {
-      return complianceData.mappingsByFramework?.[selectedFrameworkId] || {};
+    function selectedFrameworkControls() {
+      return complianceData.controlsByFramework?.[selectedFrameworkId] || [];
     }
 
-    function controlsForRequirement(odcId, requirementId) {
-      return selectedFrameworkMappings()?.[odcId]?.[requirementId] || [];
+    function scopeForObject(object) {
+      if (!object) return null;
+      if (object.type === 'odc') {
+        const appliesTo = object.appliesTo || {};
+        if (appliesTo.type === 'rbb') {
+          if (appliesTo.category === 'host') return 'rbb.host';
+          if (appliesTo.category === 'service' && appliesTo.serviceCategory === 'general') return 'rbb.service.general';
+          if (appliesTo.category === 'service' && appliesTo.serviceCategory === 'database') return 'rbb.service.database';
+          if (appliesTo.category === 'service' && appliesTo.serviceCategory === 'product') return 'rbb.service.product';
+          if (appliesTo.category === 'service' && appliesTo.serviceCategory === 'saas') return 'rbb.service.saas';
+        }
+        if (appliesTo.type === 'reference_architecture') return 'ra';
+        if (appliesTo.type === 'software_distribution_manifest') return 'sdm';
+        if (appliesTo.type === 'abb' && appliesTo.subtype === 'appliance') return 'abb.appliance';
+        return null;
+      }
+      if (object.type === 'rbb') {
+        if (object.category === 'host') return 'rbb.host';
+        if (object.category === 'service' && object.serviceCategory === 'general') return 'rbb.service.general';
+        if (object.category === 'service' && object.serviceCategory === 'database') return 'rbb.service.database';
+        if (object.category === 'service' && object.serviceCategory === 'product') return 'rbb.service.product';
+        if (object.category === 'service' && object.serviceCategory === 'saas') return 'rbb.service.saas';
+      }
+      if (object.type === 'reference_architecture') return 'ra';
+      if (object.type === 'software_distribution_manifest') return 'sdm';
+      if (object.type === 'abb' && object.subtype === 'appliance') return 'abb.appliance';
+      return null;
+    }
+
+    function controlsForRequirement(object, requirementId) {
+      const scope = scopeForObject(object);
+      if (!scope || !requirementId) return [];
+      return selectedFrameworkControls().filter(control =>
+        (control.appliesTo || []).includes(scope) &&
+        (control.relatedConcern || '') === requirementId
+      );
+    }
+
+    function additionalControlsForObject(object) {
+      const scope = scopeForObject(object);
+      if (!scope) return [];
+      return selectedFrameworkControls().filter(control =>
+        (control.appliesTo || []).includes(scope) &&
+        !(control.relatedConcern || '').trim()
+      );
     }
 
     function complianceFrameworkMarkup() {
@@ -1933,7 +1992,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <option value="${framework.id}" ${framework.id === current?.id ? 'selected' : ''}>${escapeHtml(framework.name)}</option>
             `).join('')}
           </select>
-          <div class="sidebar-help">${escapeHtml(current?.description || 'Select the control framework used to render ODC mappings.')}</div>
+          <div class="sidebar-help">${escapeHtml(current?.description || 'Select the security and compliance controls used to extend the effective ODC checklist.')}</div>
         </div>
       `;
     }
@@ -2201,14 +2260,19 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function controlBadges(controls) {
       if (!controls || !controls.length) {
-        return '<span class="interaction-notes">No controls mapped for the selected framework.</span>';
+        return '<span class="interaction-notes">No required controls added by the selected framework.</span>';
       }
-      return controls.map(control => `<span class="control-badge">${escapeHtml(control)}</span>`).join('');
+      return controls.map(control => `
+        <span class="control-badge">
+          ${escapeHtml(control.controlId || '')}${control.name ? ` - ${escapeHtml(control.name)}` : ''}
+        </span>
+      `).join('');
     }
 
     function odcRequirementsMarkup(object) {
       const requirements = object.requirements || [];
       const framework = selectedFramework();
+      const extraControls = additionalControlsForObject(object);
       if (!requirements.length) {
         return '<div class="empty-card">No requirements are documented for this ODC.</div>';
       }
@@ -2224,8 +2288,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                   <div class="requirement-rationale-label">Rationale</div>
                   <div class="requirement-rationale">${escapeHtml(requirement.rationale)}</div>
                 ` : ''}
-                <div class="mechanism-label">Mapped Controls${framework ? ` / ${escapeHtml(framework.name)}` : ''}</div>
-                <div class="control-badges">${controlBadges(controlsForRequirement(object.id, requirement.id || ''))}</div>
+                <div class="mechanism-label">Required Controls${framework ? ` / ${escapeHtml(framework.name)}` : ''}</div>
+                <div class="control-badges">${controlBadges(controlsForRequirement(object, requirement.id || ''))}</div>
                 <div class="mechanism-label">Can be satisfied by</div>
                 <div class="mechanism-list">
                   ${(requirement.canBeSatisfiedBy || []).map(mechanism => `
@@ -2238,6 +2302,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               </article>
             `).join('')}
           </div>
+          ${extraControls.length ? `
+            <div class="mechanism-label" style="margin-top:16px;">Additional Framework Controls</div>
+            <div class="control-badges">${controlBadges(extraControls)}</div>
+          ` : ''}
         </section>
       `;
     }
@@ -2259,7 +2327,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 <article class="odc-card">
                   <div class="odc-name">Satisfies: ${escapeHtml(odcId)}</div>
                   ${requirements.length ? requirements.map(requirement => `
-                    <div class="odc-control-line">└─ ${escapeHtml(requirement.id || 'requirement')} → ${escapeHtml(controlsForRequirement(odcId, requirement.id || '').join(', ') || 'No controls mapped')}</div>
+                    <div class="odc-control-line">└─ ${escapeHtml(requirement.id || 'requirement')} → ${escapeHtml(controlsForRequirement(odc, requirement.id || '').map(control => control.controlId).join(', ') || 'No required controls')}</div>
                   `).join('') : '<div class="interaction-notes">No requirements found on referenced ODC.</div>'}
                 </article>
               `;
@@ -2430,6 +2498,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function complianceFrameworkDetailMarkup(object) {
       const parents = Array.isArray(object.extends) ? object.extends : [];
+      const frameworkSummary = complianceFrameworks.find(item => item.id === object.id);
       return `
         <section class="section-card">
           <h3>Compliance Framework</h3>
@@ -2437,6 +2506,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <div class="badges">
               <div class="badge">${escapeHtml(object.frameworkKind || 'common')}</div>
               ${object.defaultSelection ? '<div class="badge">Default Selection</div>' : ''}
+              <div class="badge">${escapeHtml(String(frameworkSummary?.controlCount || object.controlCount || 0))} Controls</div>
               ${lifecycleBadge(object.lifecycleStatus)}
             </div>
             <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>

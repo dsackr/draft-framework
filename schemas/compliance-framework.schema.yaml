@@ -15,9 +15,9 @@ optionalFields:
   - tags
   - controlIdNamespace
   - defaultSelection  # boolean
-  - extends           # list of framework ids this framework inherits mappings from
+  - extends           # list of framework ids this framework inherits controls from
   - notes
-  - requirementMappings  # dict: odc-id -> requirement-id -> list of control ids
+  - controls          # list of required control definitions
 idPattern: "^framework\\.[a-z0-9-]+$"
 enumFields:
   catalogStatus:
@@ -38,14 +38,51 @@ fieldTypes:
   tags: list
   defaultSelection: bool
   extends: list
-  requirementMappings: dict
+  controls: list
+collectionSchemas:
+  controls: control
 
-requirementMappings structure:
-  odc.host:
-    authentication:
-      - CTRL-001
-    logging:
-      - CTRL-002
-  odc.service:
-    secrets-management:
-      - CTRL-003
+control:
+  requiredFields:
+    - controlId
+    - name
+    - description
+    - appliesTo
+    - validAnswerTypes
+  optionalFields:
+    - externalReference
+    - relatedConcern
+    - notes
+  enumListFields:
+    appliesTo:
+      - rbb.host
+      - rbb.service.general
+      - rbb.service.database
+      - rbb.service.product
+      - rbb.service.saas
+      - ra
+      - sdm
+      - abb.appliance
+    validAnswerTypes:
+      - abb
+      - abbConfiguration
+      - externalInteraction
+      - architecturalDecision
+      - field
+  fieldTypes:
+    appliesTo: list
+    validAnswerTypes: list
+
+controls structure:
+  - controlId: CTRL-001
+    name: Password Policy
+    description: Administrative identities must comply with the approved password policy.
+    externalReference: https://example.com/security/controls/password-policy
+    appliesTo:
+      - rbb.host
+      - rbb.service.database
+    relatedConcern: authentication
+    validAnswerTypes:
+      - abbConfiguration
+      - externalInteraction
+      - architecturalDecision

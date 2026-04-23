@@ -200,13 +200,15 @@ Compliance framework objects include:
 - optional `controlIdNamespace`
 - optional `defaultSelection`
 - optional `extends`
-- optional `requirementMappings`
+- optional `controls`
 
 These objects make compliance selection data-driven. A framework may extend another framework so an organization-specific overlay can inherit a baseline control pack and override only the differences.
 
-When present, `requirementMappings` is a nested map of `odc-id ->
-requirement-id -> [control ids]`. This keeps ODCs architecture-focused while
-allowing control catalogs to be refreshed independently.
+When present, `controls` is a list of required control definitions. Each
+control declares `controlId`, `name`, `description`, `externalReference`,
+`appliesTo`, optional `relatedConcern`, and `validAnswerTypes`. This keeps
+ODCs architecture-focused while allowing control catalogs to be refreshed
+independently.
 
 ### ARD Schema
 

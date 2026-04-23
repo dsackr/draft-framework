@@ -34,6 +34,25 @@ TYPE_CHECKERS = {
     "int": int,
 }
 
+VALID_CONTROL_SCOPES = {
+    "rbb.host",
+    "rbb.service.general",
+    "rbb.service.database",
+    "rbb.service.product",
+    "rbb.service.saas",
+    "ra",
+    "sdm",
+    "abb.appliance",
+}
+
+VALID_CONTROL_ANSWER_TYPES = {
+    "abb",
+    "abbConfiguration",
+    "externalInteraction",
+    "architecturalDecision",
+    "field",
+}
+
 
 def discover_yaml_files(root: Path) -> list[Path]:
     files: list[Path] = []
@@ -136,6 +155,17 @@ def validate_schema_section(
         if checker and not isinstance(node.get(field), checker):
             failures.append(f"{context}: field '{field}' must be of type {expected_type}")
 
+    for field, allowed_values in (schema.get("enumListFields") or {}).items():
+        value = node.get(field)
+        if value is None:
+            continue
+        if not isinstance(value, list):
+            failures.append(f"{context}: field '{field}' must be a list")
+            continue
+        invalid = [item for item in value if item not in allowed_values]
+        if invalid:
+            failures.append(f"{context}: invalid {field} values {invalid}")
+
     for conditional in schema.get("conditionalRequired", []) or []:
         when = conditional.get("when", {})
         required = conditional.get("require", [])
@@ -176,6 +206,19 @@ def resolve_odc_requirements(odc_id: str, odcs: dict[str, dict[str, Any]], stack
     requirements.extend(odc.get("requirements", []))
     stack.remove(odc_id)
     return requirements
+
+
+def scope_to_odc_id(scope: str) -> str | None:
+    return {
+        "rbb.host": "odc.host",
+        "rbb.service.general": "odc.service",
+        "rbb.service.database": "odc.service.dbms",
+        "rbb.service.product": "odc.product-service",
+        "rbb.service.saas": "odc.saas-service",
+        "ra": "odc.ra",
+        "sdm": "odc.sdm",
+        "abb.appliance": "odc.appliance-abb",
+    }.get(scope)
 
 
 def applicable_odc_ids(obj: dict[str, Any], odcs: dict[str, dict[str, Any]]) -> list[str]:
@@ -624,44 +667,61 @@ def validate_compliance_framework(
                     f"{path}: extends references unknown compliance framework '{parent_id}'"
                 )
 
-    requirement_mappings = obj.get("requirementMappings")
-    if requirement_mappings is None:
+    controls = obj.get("controls")
+    if controls is None:
         return
-    if not isinstance(requirement_mappings, dict):
-        failures.append(f"{path}: requirementMappings must be a mapping of odc-id to requirement mappings")
+    if not isinstance(controls, list):
+        failures.append(f"{path}: controls must be a list of control definitions")
         return
+    for index, control in enumerate(controls):
+        context = f"{path}: controls[{index}]"
+        if not isinstance(control, dict):
+            failures.append(f"{context}: control entry must be a mapping")
+            continue
+        control_id = control.get("controlId")
+        if not is_non_empty(control_id):
+            failures.append(f"{context}: missing required field 'controlId'")
+        for field in ("name", "description"):
+            if not is_non_empty(control.get(field)):
+                failures.append(f"{context}: missing required field '{field}'")
+        applies_to = control.get("appliesTo")
+        if not isinstance(applies_to, list) or not applies_to:
+            failures.append(f"{context}: appliesTo must be a non-empty list")
+            continue
+        invalid_scopes = [scope for scope in applies_to if scope not in VALID_CONTROL_SCOPES]
+        if invalid_scopes:
+            failures.append(f"{context}: invalid appliesTo values {invalid_scopes}")
+        valid_answer_types = control.get("validAnswerTypes")
+        if not isinstance(valid_answer_types, list) or not valid_answer_types:
+            failures.append(f"{context}: validAnswerTypes must be a non-empty list")
+        else:
+            invalid_answer_types = [value for value in valid_answer_types if value not in VALID_CONTROL_ANSWER_TYPES]
+            if invalid_answer_types:
+                failures.append(f"{context}: invalid validAnswerTypes values {invalid_answer_types}")
 
-    for odc_id, req_map in requirement_mappings.items():
-        if not req_map:
+        related_concern = control.get("relatedConcern")
+        if not is_non_empty(related_concern):
             continue
-        if odc_id not in odcs:
-            failures.append(
-                f"{path}: requirementMappings references unknown ODC '{odc_id}'"
-            )
-            continue
-        if not isinstance(req_map, dict):
-            failures.append(
-                f"{path}: requirementMappings['{odc_id}'] must be a mapping of requirement-id to controls"
-            )
-            continue
-        try:
-            resolved = resolve_odc_requirements(odc_id, odcs)
-        except (KeyError, ValueError) as exc:
-            failures.append(f"{path}: could not resolve ODC '{odc_id}': {exc}")
-            continue
-        valid_requirement_ids = {
-            r.get("id") for r in resolved if isinstance(r, dict) and is_non_empty(r.get("id"))
-        }
-        for requirement_id, controls in req_map.items():
-            if requirement_id not in valid_requirement_ids:
+        for scope in applies_to:
+            odc_id = scope_to_odc_id(str(scope))
+            if not odc_id:
+                continue
+            if odc_id not in odcs:
+                failures.append(f"{context}: appliesTo scope '{scope}' resolves to unknown ODC '{odc_id}'")
+                continue
+            try:
+                resolved = resolve_odc_requirements(odc_id, odcs)
+            except (KeyError, ValueError) as exc:
+                failures.append(f"{context}: could not resolve ODC '{odc_id}': {exc}")
+                continue
+            valid_requirement_ids = {
+                requirement.get("id")
+                for requirement in resolved
+                if isinstance(requirement, dict) and is_non_empty(requirement.get("id"))
+            }
+            if related_concern not in valid_requirement_ids:
                 failures.append(
-                    f"{path}: requirementMappings['{odc_id}'] references unknown requirement '{requirement_id}'"
-                )
-            if not isinstance(controls, list) or not controls or not all(
-                is_non_empty(c) for c in controls
-            ):
-                failures.append(
-                    f"{path}: requirementMappings['{odc_id}']['{requirement_id}'] must be a non-empty list of control ids"
+                    f"{context}: relatedConcern '{related_concern}' is not defined on ODC '{odc_id}'"
                 )
 
 

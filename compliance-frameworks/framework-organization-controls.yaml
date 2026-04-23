@@ -4,7 +4,7 @@ type: compliance_framework
 name: Organization Controls Overlay
 description: >
   Template framework for organization-specific controls. Clone this file,
-  rename the id and name, and populate requirementMappings with your internal
+  rename the id and name, and populate controls with your internal
   control identifiers. No other files need to change.
 version: 1.0.0
 catalogStatus: stub
@@ -18,6 +18,6 @@ tags:
   - extensibility
 frameworkKind: organizational
 notes: >
-  Use extends to inherit all mappings from another framework and override only
+  Use extends to inherit all controls from another framework and override only
   what differs. Example: extends: [framework.security-compliance-controls]
-requirementMappings: {}
+controls: []

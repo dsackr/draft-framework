@@ -121,7 +121,7 @@ address:
 Backup is intentionally not a host-baseline requirement. Recovery and
 protection concerns belong to the service or data layer unless a selected
 security or compliance framework adds stricter expectations through control
-mappings.
+requirements.
 
 For managed hosts, Operating System and Compute Platform are expected to be
 answered by selecting the correct ABBs. The other concerns may be answered
@@ -203,21 +203,21 @@ An Architecture Decision should reference the thing that triggered it:
 - the compliance control ID
 - or the specific added component or interaction
 
-## Compliance Framework Mappings
+## Security And Compliance Controls
 
-Control mappings do not live inside the ODC files themselves. DRAFT models
-compliance as a separate framework layer with inline mappings on each
-compliance framework object.
+Required controls do not live inside the ODC files themselves. DRAFT models
+security and compliance as a separate framework layer. A selected framework can
+add required controls to an ODC at runtime without modifying the ODC YAML.
 
 That separation matters because the same ODC can be viewed under multiple
-control catalogs. One organization might want to see the baseline Security and
-Compliance Controls pack. Another might want to view the same ODC through a
-NIST CSF mapping, a SOC 2 mapping, or an internal controls overlay. The
-requirement does not change. Only the mapped controls do.
+control catalogs. One organization might want to use the baseline Security and
+Compliance Controls pack. Another might want to extend the same ODC with NIST
+CSF, SOC 2, or an internal controls overlay. The concern does not change. The
+selected framework adds the required controls that apply.
 
 In practice, the browser lets the architect select a compliance framework. The
-framework selector then drives which controls are displayed under each
-requirement and in each RBB ODC-satisfaction panel.
+framework selector then drives which required controls are displayed under each
+concern and in each RBB ODC-satisfaction panel.
 
 ## Inheritance
 
