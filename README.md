@@ -43,3 +43,7 @@ linked below.
 The generated browser is published at:
 
 [https://dsackr.github.io/draft-framework/](https://dsackr.github.io/draft-framework/)
+
+The browser includes an in-page editor for existing objects. It is static and
+cannot write back to GitHub Pages directly, but it can generate, copy, and
+download updated YAML so changes can be committed or proposed through GitHub.

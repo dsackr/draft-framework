@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,7 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_PATH = REPO_ROOT / "docs" / "index.html"
+SCHEMA_ROOT = REPO_ROOT / "schemas"
 CATALOG_FOLDERS = [
     "odcs",
     "abbs",
@@ -89,6 +91,63 @@ def load_objects() -> dict[str, dict[str, Any]]:
             data["_source"] = str(path.relative_to(REPO_ROOT))
             objects[str(data["id"])] = data
     return objects
+
+
+def load_schemas(root: Path) -> list[dict[str, Any]]:
+    schemas: list[dict[str, Any]] = []
+    for path in sorted(root.glob("*.yaml")):
+        with path.open("r", encoding="utf-8") as handle:
+            data = yaml.safe_load(handle) or {}
+        if isinstance(data, dict):
+            data["_schema_path"] = str(path.relative_to(REPO_ROOT))
+            schemas.append(data)
+    return schemas
+
+
+def is_non_empty(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return bool(value.strip())
+    if isinstance(value, (list, dict, tuple, set)):
+        return len(value) > 0
+    return True
+
+
+def schema_specificity(schema: dict[str, Any]) -> int:
+    return sum(1 for key in ("subtype", "category", "serviceCategory") if is_non_empty(schema.get(key)))
+
+
+def select_schema(obj: dict[str, Any], schemas: list[dict[str, Any]]) -> dict[str, Any] | None:
+    candidates: list[dict[str, Any]] = []
+    for schema in schemas:
+        if schema.get("type") != obj.get("type"):
+            continue
+        if is_non_empty(schema.get("subtype")) and schema.get("subtype") != obj.get("subtype"):
+            continue
+        if is_non_empty(schema.get("category")) and schema.get("category") != obj.get("category"):
+            continue
+        if is_non_empty(schema.get("serviceCategory")) and schema.get("serviceCategory") != obj.get("serviceCategory"):
+            continue
+        candidates.append(schema)
+    if not candidates:
+        return None
+    return sorted(candidates, key=schema_specificity, reverse=True)[0]
+
+
+def repository_web_url(root: Path) -> str:
+    try:
+        remote = subprocess.check_output(
+            ["git", "-C", str(root), "config", "--get", "remote.origin.url"],
+            text=True,
+        ).strip()
+    except Exception:  # noqa: BLE001
+        return ""
+    if remote.startswith("git@github.com:"):
+        remote = "https://github.com/" + remote[len("git@github.com:"):]
+    if remote.endswith(".git"):
+        remote = remote[:-4]
+    return remote if remote.startswith("https://github.com/") else ""
 
 
 def extract_refs(node: Any, path: str = "") -> list[tuple[str, str]]:
@@ -300,6 +359,7 @@ def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, A
 
 def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]:
     objects = list(registry.values())
+    schemas = load_schemas(SCHEMA_ROOT)
     outbound_refs, referenced_by, warnings = build_reference_index(registry)
     risk_marked_rbb_ids = {
         deployed.get("ref")
@@ -314,6 +374,16 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
 
     for obj in objects:
         object_id = obj["id"]
+        schema = select_schema(obj, schemas) or {}
+        schema_meta = {
+            "requiredFields": schema.get("requiredFields", []),
+            "optionalFields": schema.get("optionalFields", []),
+            "fieldTypes": schema.get("fieldTypes", {}),
+            "enumFields": schema.get("enumFields", {}),
+            "enumListFields": schema.get("enumListFields", {}),
+            "collectionSchemas": schema.get("collectionSchemas", {}),
+            "schemaPath": schema.get("_schema_path", ""),
+        }
         browser_objects.append(
             {
                 "id": object_id,
@@ -378,6 +448,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "hasRiskRef": obj.get("id") in risk_marked_rbb_ids,
                 "outboundRefs": outbound_refs.get(object_id, []),
                 "referencedBy": referenced_by.get(object_id, []),
+                "editorSchema": schema_meta,
                 "detail": to_json(obj),
                 "existsInCatalog": True,
             }
@@ -400,6 +471,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
         "referencedBy": referenced_by,
         "warnings": warnings,
         "compliance": build_compliance_payload(registry),
+        "repoUrl": repository_web_url(REPO_ROOT),
     }
 
 
@@ -410,6 +482,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>DRAFT Framework Toolkit</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.29.2/cytoscape.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
   <style>
     :root {
       color-scheme: dark;
@@ -824,6 +897,30 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       color: var(--subtle);
       line-height: 1.6;
       font-size: 14px;
+    }
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .action-button {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(15,23,42,0.82);
+      color: var(--text);
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+      transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+      text-decoration: none;
+    }
+    .action-button:hover {
+      border-color: rgba(56,189,248,0.55);
+      transform: translateY(-1px);
+    }
+    .action-button.secondary {
+      background: rgba(30,41,59,0.82);
     }
     .owner-line {
       display: flex;
@@ -1535,6 +1632,135 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       font-size: 12px;
       line-height: 1.5;
     }
+    .editor-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      align-items: stretch;
+      justify-content: flex-end;
+      background: rgba(2,6,23,0.72);
+      backdrop-filter: blur(2px);
+    }
+    .editor-overlay.open {
+      display: flex;
+    }
+    .editor-panel {
+      width: min(960px, 100vw);
+      height: 100vh;
+      overflow: auto;
+      background: linear-gradient(180deg, rgba(15,23,42,0.99), rgba(17,24,39,0.99));
+      border-left: 1px solid rgba(51,65,85,0.85);
+      padding: 26px;
+      display: grid;
+      gap: 18px;
+    }
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .editor-title h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .editor-title p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .editor-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .editor-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .editor-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+    .editor-card h4 {
+      margin: 0;
+      font-size: 14px;
+    }
+    .editor-form {
+      display: grid;
+      gap: 14px;
+    }
+    .editor-field {
+      display: grid;
+      gap: 8px;
+    }
+    .editor-field label {
+      font-size: 14px;
+      color: var(--subtle);
+    }
+    .editor-required {
+      color: #fda4af;
+      margin-left: 6px;
+    }
+    .editor-field input,
+    .editor-field textarea,
+    .editor-field select {
+      width: 100%;
+      border: 1px solid rgba(51,65,85,0.9);
+      border-radius: 12px;
+      background: rgba(15,23,42,0.86);
+      color: var(--text);
+      font: inherit;
+      padding: 12px 14px;
+    }
+    .editor-field textarea {
+      min-height: 120px;
+      resize: vertical;
+      font-family: "SF Mono", Menlo, monospace;
+      line-height: 1.55;
+    }
+    .editor-field input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      padding: 0;
+    }
+    .editor-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .editor-help,
+    .editor-meta,
+    .editor-error {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .editor-help,
+    .editor-meta {
+      color: var(--muted);
+    }
+    .editor-error {
+      color: #fca5a5;
+      min-height: 22px;
+    }
+    .yaml-preview {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: "SF Mono", Menlo, monospace;
+      font-size: 13px;
+      line-height: 1.65;
+      margin: 0;
+      color: #dbeafe;
+    }
     .decisions-card {
       background: rgba(30,41,59,0.92);
       border: 1px solid var(--border);
@@ -1659,6 +1885,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       <div id="app-root"></div>
     </main>
   </div>
+  <div id="editor-overlay" class="editor-overlay"></div>
   <script>
     const browserData = __BROWSER_DATA__;
     const lifecycleColors = browserData.lifecycleColors;
@@ -1666,9 +1893,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     const objectLookup = browserData.lookup;
     const referencedByIndex = browserData.referencedBy || {};
     const complianceData = browserData.compliance || {};
+    const repoUrl = browserData.repoUrl || '';
     const appRoot = document.getElementById('app-root');
     const sidebarContent = document.getElementById('sidebar-content');
     const legend = document.getElementById('legend');
+    const editorOverlay = document.getElementById('editor-overlay');
+    let editorState = null;
     const CATEGORY_CONFIG = [
       {
         id: 'architecture',
@@ -2970,6 +3200,241 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       });
     }
 
+    function sanitizeDetailObject(object) {
+      const raw = JSON.parse(object.detail || '{}');
+      const cleaned = {};
+      Object.entries(raw).forEach(([key, value]) => {
+        if (!key.startsWith('_')) {
+          cleaned[key] = value;
+        }
+      });
+      return cleaned;
+    }
+
+    function repoSourceUrl(object) {
+      return repoUrl && object.source ? `${repoUrl}/blob/main/${object.source}` : '';
+    }
+
+    function orderedEditorFields(object) {
+      const schema = object.editorSchema || {};
+      const required = schema.requiredFields || [];
+      const optional = schema.optionalFields || [];
+      const priority = ['schemaVersion', 'id', 'type', 'name', 'description', 'version', 'catalogStatus', 'lifecycleStatus', 'owner', 'tags'];
+      const ordered = [];
+      const seen = new Set();
+      [...priority, ...required, ...optional, ...Object.keys(sanitizeDetailObject(object))].forEach(field => {
+        if (!field || field.startsWith('_') || seen.has(field)) return;
+        seen.add(field);
+        ordered.push(field);
+      });
+      return ordered;
+    }
+
+    function yamlFieldValue(value) {
+      if (value === undefined || value === null) return '';
+      if (typeof value === 'string') return value;
+      return jsyaml.dump(value, { lineWidth: 100 }).trim();
+    }
+
+    function fieldInputMarkup(object, field, value) {
+      const schema = object.editorSchema || {};
+      const required = new Set(schema.requiredFields || []);
+      const fieldTypes = schema.fieldTypes || {};
+      const enumFields = schema.enumFields || {};
+      const enumListFields = schema.enumListFields || {};
+      const expectedType = fieldTypes[field] || '';
+      const label = formatKeyLabel(field);
+      const requiredText = required.has(field) ? '<span class="editor-required">*</span>' : '';
+
+      if (expectedType === 'bool' || typeof value === 'boolean') {
+        return `
+          <div class="editor-field">
+            <label>${escapeHtml(label)}${requiredText}</label>
+            <label class="editor-checkbox">
+              <input type="checkbox" data-editor-field="${escapeHtml(field)}" ${value ? 'checked' : ''}>
+              <span>${escapeHtml(label)}</span>
+            </label>
+          </div>
+        `;
+      }
+
+      if (enumFields[field]) {
+        const options = ['<option value=""></option>']
+          .concat(enumFields[field].map(option => `<option value="${escapeHtml(option)}" ${value === option ? 'selected' : ''}>${escapeHtml(option)}</option>`));
+        return `
+          <div class="editor-field">
+            <label for="editor-${escapeHtml(field)}">${escapeHtml(label)}${requiredText}</label>
+            <select id="editor-${escapeHtml(field)}" data-editor-field="${escapeHtml(field)}">
+              ${options.join('')}
+            </select>
+          </div>
+        `;
+      }
+
+      if (expectedType === 'dict' || expectedType === 'list' || enumListFields[field] || Array.isArray(value) || (value && typeof value === 'object')) {
+        return `
+          <div class="editor-field">
+            <label for="editor-${escapeHtml(field)}">${escapeHtml(label)}${requiredText}</label>
+            <textarea id="editor-${escapeHtml(field)}" data-editor-field="${escapeHtml(field)}" data-editor-complex="true">${escapeHtml(yamlFieldValue(value))}</textarea>
+            <div class="editor-help">Edit as YAML for structured data.</div>
+          </div>
+        `;
+      }
+
+      const stringValue = value === undefined || value === null ? '' : String(value);
+      const multiline = stringValue.length > 120 || stringValue.includes('\n') || field === 'description' || field === 'notes';
+      return multiline ? `
+        <div class="editor-field">
+          <label for="editor-${escapeHtml(field)}">${escapeHtml(label)}${requiredText}</label>
+          <textarea id="editor-${escapeHtml(field)}" data-editor-field="${escapeHtml(field)}">${escapeHtml(stringValue)}</textarea>
+        </div>
+      ` : `
+        <div class="editor-field">
+          <label for="editor-${escapeHtml(field)}">${escapeHtml(label)}${requiredText}</label>
+          <input id="editor-${escapeHtml(field)}" type="text" value="${escapeHtml(stringValue)}" data-editor-field="${escapeHtml(field)}">
+        </div>
+      `;
+    }
+
+    function serializeEditorObject(object, fieldValues) {
+      const schema = object.editorSchema || {};
+      const fieldTypes = schema.fieldTypes || {};
+      const enumListFields = schema.enumListFields || {};
+      const result = {};
+      orderedEditorFields(object).forEach(field => {
+        let value = fieldValues[field];
+        const expectedType = fieldTypes[field] || '';
+        if (value === undefined) return;
+        if (typeof value === 'string') {
+          if (expectedType === 'dict' || expectedType === 'list' || enumListFields[field]) {
+            const trimmed = value.trim();
+            if (!trimmed) return;
+            result[field] = jsyaml.load(trimmed);
+            return;
+          }
+          const trimmed = value.trim();
+          if (!trimmed && field !== 'description') return;
+          result[field] = value;
+          return;
+        }
+        if (value === null) return;
+        result[field] = value;
+      });
+      return result;
+    }
+
+    function updateEditorPreview(object) {
+      const errorNode = editorOverlay.querySelector('#editor-error');
+      const previewNode = editorOverlay.querySelector('#editor-yaml-preview');
+      if (!editorState || !errorNode || !previewNode) return;
+      try {
+        const serialized = serializeEditorObject(object, editorState.fieldValues);
+        editorState.serialized = serialized;
+        previewNode.textContent = jsyaml.dump(serialized, { lineWidth: 100, noRefs: true });
+        errorNode.textContent = '';
+      } catch (error) {
+        editorState.serialized = null;
+        previewNode.textContent = '';
+        errorNode.textContent = error instanceof Error ? error.message : String(error);
+      }
+    }
+
+    function closeEditor() {
+      editorOverlay.classList.remove('open');
+      editorOverlay.innerHTML = '';
+      editorState = null;
+    }
+
+    function openEditor(object) {
+      const sourceObject = sanitizeDetailObject(object);
+      const fields = orderedEditorFields(object);
+      editorState = {
+        objectId: object.id,
+        fieldValues: { ...sourceObject },
+        originalValues: JSON.parse(JSON.stringify(sourceObject)),
+        serialized: null,
+      };
+      editorOverlay.innerHTML = `
+        <div class="editor-panel">
+          <div class="editor-header">
+            <div class="editor-title">
+              <h3>Edit ${escapeHtml(object.name)}</h3>
+              <p>Static GitHub Pages cannot write back to the repo directly. Use this editor to adjust the object, preview the YAML, and then copy or download the result.</p>
+            </div>
+            <div class="editor-actions">
+              ${repoSourceUrl(object) ? `<a class="action-button secondary" href="${escapeHtml(repoSourceUrl(object))}" target="_blank" rel="noreferrer">Open Source On GitHub</a>` : ''}
+              <button class="action-button secondary" id="editor-reset">Reset</button>
+              <button class="action-button secondary" id="editor-close">Close</button>
+            </div>
+          </div>
+          <div class="editor-grid">
+            <section class="editor-card">
+              <h4>Editable Fields</h4>
+              <div class="editor-meta">Schema: ${escapeHtml(object.editorSchema?.schemaPath || 'No matching schema found')}</div>
+              <div class="editor-form">
+                ${fields.map(field => fieldInputMarkup(object, field, sourceObject[field])).join('')}
+              </div>
+            </section>
+            <section class="editor-card">
+              <h4>YAML Preview</h4>
+              <div class="editor-help">This preview updates as you edit. Complex fields use YAML textareas so lists and maps stay structured.</div>
+              <div id="editor-error" class="editor-error"></div>
+              <pre id="editor-yaml-preview" class="yaml-preview"></pre>
+              <div class="editor-actions">
+                <button class="action-button" id="editor-copy">Copy YAML</button>
+                <button class="action-button" id="editor-download">Download YAML</button>
+              </div>
+            </section>
+          </div>
+        </div>
+      `;
+      editorOverlay.classList.add('open');
+
+      editorOverlay.querySelectorAll('[data-editor-field]').forEach(input => {
+        input.addEventListener('input', () => {
+          const field = input.dataset.editorField;
+          editorState.fieldValues[field] = input.type === 'checkbox' ? input.checked : input.value;
+          updateEditorPreview(object);
+        });
+        if (input.type === 'checkbox') {
+          input.addEventListener('change', () => {
+            const field = input.dataset.editorField;
+            editorState.fieldValues[field] = input.checked;
+            updateEditorPreview(object);
+          });
+        }
+      });
+
+      editorOverlay.querySelector('#editor-close').addEventListener('click', closeEditor);
+      editorOverlay.querySelector('#editor-reset').addEventListener('click', () => {
+        openEditor(object);
+      });
+      editorOverlay.querySelector('#editor-copy').addEventListener('click', async () => {
+        if (!editorState?.serialized) return;
+        const yamlText = jsyaml.dump(editorState.serialized, { lineWidth: 100, noRefs: true });
+        await navigator.clipboard.writeText(yamlText);
+      });
+      editorOverlay.querySelector('#editor-download').addEventListener('click', () => {
+        if (!editorState?.serialized) return;
+        const yamlText = jsyaml.dump(editorState.serialized, { lineWidth: 100, noRefs: true });
+        const blob = new Blob([yamlText], { type: 'text/yaml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = (object.source || `${object.id}.yaml`).split('/').pop();
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      });
+      editorOverlay.addEventListener('click', event => {
+        if (event.target === editorOverlay) {
+          closeEditor();
+        }
+      }, { once: true });
+      updateEditorPreview(object);
+    }
+
     function showDetailView(id, pushHistory = true) {
       if (pushHistory && currentDetailId) {
         navHistory.push(currentDetailId);
@@ -3008,6 +3473,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <span><strong>Owner:</strong> ${escapeHtml(object.owner?.team || 'Unknown')}</span>
             <span><strong>Contact:</strong> ${escapeHtml(object.owner?.contact || 'Unknown')}</span>
             <span><strong>Source:</strong> ${escapeHtml(object.source || 'Generated')}</span>
+          </div>
+          <div class="header-actions">
+            <button class="action-button" id="open-editor-button">Edit In Browser</button>
+            ${repoSourceUrl(object) ? `<a class="action-button secondary" href="${escapeHtml(repoSourceUrl(object))}" target="_blank" rel="noreferrer">View Source</a>` : ''}
           </div>
         </section>
       `;
@@ -3168,6 +3637,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         currentDetailId = null;
         renderListView();
       });
+      const openEditorButton = document.getElementById('open-editor-button');
+      if (openEditorButton) {
+        openEditorButton.addEventListener('click', () => openEditor(object));
+      }
 
       attachTopNavHandlers();
       attachSidebarHandlers();
