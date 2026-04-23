@@ -28,6 +28,7 @@ controls:
     appliesTo:
       - rbb.host
     relatedConcern: authentication
+    requirementMode: mandatory
     validAnswerTypes:
       - externalInteraction
       - abbConfiguration
@@ -39,6 +40,7 @@ controls:
     appliesTo:
       - rbb.host
     relatedConcern: log-management
+    requirementMode: mandatory
     validAnswerTypes:
       - abb
       - abbConfiguration
@@ -51,6 +53,7 @@ controls:
     appliesTo:
       - rbb.host
     relatedConcern: health-welfare-monitoring
+    requirementMode: mandatory
     validAnswerTypes:
       - abb
       - abbConfiguration
@@ -63,6 +66,7 @@ controls:
     appliesTo:
       - rbb.host
     relatedConcern: security-monitoring
+    requirementMode: mandatory
     validAnswerTypes:
       - abb
       - abbConfiguration
@@ -75,6 +79,7 @@ controls:
     appliesTo:
       - rbb.host
     relatedConcern: patch-management
+    requirementMode: mandatory
     validAnswerTypes:
       - abb
       - externalInteraction
@@ -86,6 +91,7 @@ controls:
     appliesTo:
       - rbb.service.database
     relatedConcern: access-control-model
+    requirementMode: mandatory
     validAnswerTypes:
       - externalInteraction
       - abbConfiguration
@@ -97,6 +103,7 @@ controls:
     appliesTo:
       - rbb.service.database
     relatedConcern: encryption-at-rest
+    requirementMode: mandatory
     validAnswerTypes:
       - field
       - abbConfiguration
@@ -108,6 +115,7 @@ controls:
     appliesTo:
       - rbb.service.database
     relatedConcern: backup-strategy
+    requirementMode: mandatory
     validAnswerTypes:
       - field
       - architecturalDecision
@@ -118,6 +126,7 @@ controls:
     appliesTo:
       - rbb.service.general
     relatedConcern: secrets-management
+    requirementMode: mandatory
     validAnswerTypes:
       - externalInteraction
       - abbConfiguration
@@ -128,6 +137,7 @@ controls:
     description: NIST CSF 2.0 Protect category PR.AA applied to product-service access and secrets handling.
     appliesTo:
       - rbb.service.product
+    requirementMode: mandatory
     validAnswerTypes:
       - externalInteraction
       - abbConfiguration
@@ -139,6 +149,7 @@ controls:
     appliesTo:
       - sdm
     relatedConcern: data-classification
+    requirementMode: mandatory
     validAnswerTypes:
       - field
       - architecturalDecision
@@ -149,6 +160,7 @@ controls:
     appliesTo:
       - sdm
     relatedConcern: availability-requirement
+    requirementMode: mandatory
     validAnswerTypes:
       - field
       - architecturalDecision

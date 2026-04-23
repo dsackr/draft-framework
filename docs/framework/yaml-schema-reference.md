@@ -25,7 +25,7 @@ authoritative source for object shape.
 | Deployment Risk or Decision | `ards/` | [ard.schema.yaml](../../schemas/ard.schema.yaml) | Object type remains `ard`. |
 | SaaS Service | `rbbs/` | [saas-service.schema.yaml](../../schemas/saas-service.schema.yaml) | SaaS Services are RBBs with `category: service` and `serviceCategory: saas`. |
 | ODC | `odcs/` | [odc.schema.yaml](../../schemas/odc.schema.yaml) | ODCs are checklist objects. Their shape is enforced by schema and their satisfaction logic by the validator. |
-| Compliance Framework | `compliance-frameworks/` | [compliance-framework.schema.yaml](../../schemas/compliance-framework.schema.yaml) | Required controls live inline in `controls`. |
+| Compliance Framework | `compliance-frameworks/` | [compliance-framework.schema.yaml](../../schemas/compliance-framework.schema.yaml) | Required controls live inline in `controls` and are shaped by `odc.compliance-framework`. |
 
 ## Minimum Guidance By Type
 
@@ -83,7 +83,10 @@ SDMs use the dedicated schema file and the SDM guide.
 Compliance frameworks are single-file objects. They carry both metadata and
 inline `controls`. Controls can be `mandatory` or `conditional`. Conditional
 controls can explicitly allow `N/A` responses and may carry `applicability`
-metadata for future scope evaluation.
+metadata for future scope evaluation. Every control entry is expected to answer
+the `odc.compliance-framework` checklist: identity, authoritative source,
+DRAFT applicability, valid answer types, requirement mode, and conditional
+scope metadata when relevant.
 
 - Guide: [security-and-compliance-controls.md](security-and-compliance-controls.md)
 - Schema: [compliance-framework.schema.yaml](../../schemas/compliance-framework.schema.yaml)

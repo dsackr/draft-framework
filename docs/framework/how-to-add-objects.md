@@ -83,6 +83,26 @@ An RA should be generic enough to guide many products, not just one.
 7. Use `intent` only when the architect is explicitly deviating from the Reference Architecture or when no Reference Architecture exists.
 8. Add product-level `architecturalDecisions`, including availability requirement and data classification, so the SDM satisfies `odc.sdm`.
 
+## Add A Compliance Framework
+
+1. Create the file in `compliance-frameworks/`.
+2. Define the framework metadata such as `id`, `name`, `frameworkKind`, and lifecycle fields.
+3. Add controls inline under `controls`.
+4. For each control, answer the `odc.compliance-framework` checklist:
+   - control identity
+   - authoritative source link
+   - requirement mode
+   - DRAFT applicability
+   - valid DRAFT answer types
+   - conditional applicability when relevant
+   - optional related concern
+5. Use `requirementMode: conditional` only when the framework is not always in scope and explicitly allow `N/A`.
+6. Run validation.
+
+An AI should be able to translate a source control catalog into this shape as
+long as the source provides control facts and the framework docs provide the
+DRAFT applicability rules.
+
 ## Run The Tools
 
 Validate locally:

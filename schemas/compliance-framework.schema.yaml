@@ -46,13 +46,13 @@ control:
   requiredFields:
     - controlId
     - name
-    - description
+    - externalReference
     - appliesTo
+    - requirementMode
     - validAnswerTypes
   optionalFields:
-    - externalReference
+    - description
     - relatedConcern
-    - requirementMode
     - naAllowed
     - applicability
     - notes
@@ -73,6 +73,7 @@ control:
     validAnswerTypes:
       - abb
       - abbConfiguration
+      - deploymentConfiguration
       - externalInteraction
       - architecturalDecision
       - field
@@ -85,7 +86,6 @@ control:
 controls structure:
   - controlId: CTRL-001
     name: Password Policy
-    description: Administrative identities must comply with the approved password policy.
     externalReference: https://example.com/security/controls/password-policy
     appliesTo:
       - rbb.host

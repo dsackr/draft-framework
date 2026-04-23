@@ -50,6 +50,7 @@ VALID_CONTROL_SCOPES = {
 VALID_CONTROL_ANSWER_TYPES = {
     "abb",
     "abbConfiguration",
+    "deploymentConfiguration",
     "externalInteraction",
     "architecturalDecision",
     "field",
@@ -727,6 +728,10 @@ def validate_compliance_framework(
     odcs: dict[str, dict[str, Any]],
     failures: list[str],
 ) -> None:
+    applicable = applicable_odc_ids(obj, odcs)
+    if "odc.compliance-framework" not in applicable:
+        failures.append(f"{path}: compliance framework is missing applicable ODC 'odc.compliance-framework'")
+
     extends = obj.get("extends", [])
     if extends and not isinstance(extends, list):
         failures.append(f"{path}: extends must be a list of framework ids")
@@ -750,68 +755,107 @@ def validate_compliance_framework(
             failures.append(f"{context}: control entry must be a mapping")
             continue
         control_id = control.get("controlId")
-        if not is_non_empty(control_id):
-            failures.append(f"{context}: missing required field 'controlId'")
-        for field in ("name", "description"):
-            if not is_non_empty(control.get(field)):
-                failures.append(f"{context}: missing required field '{field}'")
+        if not is_non_empty(control_id) or not is_non_empty(control.get("name")):
+            failures.append(
+                f"{context}: ODC requirement 'control-identity' not satisfied — every control must declare controlId and name"
+            )
+        if not is_non_empty(control.get("externalReference")):
+            failures.append(
+                f"{context}: ODC requirement 'authoritative-source' not satisfied — every control must declare externalReference"
+            )
         applies_to = control.get("appliesTo")
         if not isinstance(applies_to, list) or not applies_to:
-            failures.append(f"{context}: appliesTo must be a non-empty list")
+            failures.append(
+                f"{context}: ODC requirement 'draft-applicability' not satisfied — appliesTo must be a non-empty list"
+            )
             continue
         invalid_scopes = [scope for scope in applies_to if scope not in VALID_CONTROL_SCOPES]
         if invalid_scopes:
-            failures.append(f"{context}: invalid appliesTo values {invalid_scopes}")
+            failures.append(
+                f"{context}: ODC requirement 'draft-applicability' not satisfied — invalid appliesTo values {invalid_scopes}"
+            )
         valid_answer_types = control.get("validAnswerTypes")
         if not isinstance(valid_answer_types, list) or not valid_answer_types:
-            failures.append(f"{context}: validAnswerTypes must be a non-empty list")
+            failures.append(
+                f"{context}: ODC requirement 'valid-answer-types' not satisfied — validAnswerTypes must be a non-empty list"
+            )
         else:
             invalid_answer_types = [value for value in valid_answer_types if value not in VALID_CONTROL_ANSWER_TYPES]
             if invalid_answer_types:
-                failures.append(f"{context}: invalid validAnswerTypes values {invalid_answer_types}")
+                failures.append(
+                    f"{context}: ODC requirement 'valid-answer-types' not satisfied — invalid validAnswerTypes values {invalid_answer_types}"
+                )
 
-        requirement_mode = control.get("requirementMode", "mandatory")
+        requirement_mode = control.get("requirementMode")
         if requirement_mode not in VALID_CONTROL_REQUIREMENT_MODES:
             failures.append(
-                f"{context}: requirementMode must be one of {sorted(VALID_CONTROL_REQUIREMENT_MODES)}"
+                f"{context}: ODC requirement 'requirement-mode' not satisfied — requirementMode must be one of {sorted(VALID_CONTROL_REQUIREMENT_MODES)}"
             )
 
         na_allowed = control.get("naAllowed")
         if na_allowed is not None and not isinstance(na_allowed, bool):
-            failures.append(f"{context}: naAllowed must be true or false")
+            failures.append(
+                f"{context}: ODC requirement 'conditional-applicability' not satisfied — naAllowed must be true or false"
+            )
         if requirement_mode == "mandatory" and na_allowed is True:
-            failures.append(f"{context}: mandatory controls cannot allow N/A responses")
+            failures.append(
+                f"{context}: ODC requirement 'conditional-applicability' not satisfied — mandatory controls cannot allow N/A responses"
+            )
         if requirement_mode == "conditional" and na_allowed is False:
-            failures.append(f"{context}: conditional controls must allow N/A responses")
+            failures.append(
+                f"{context}: ODC requirement 'conditional-applicability' not satisfied — conditional controls must allow N/A responses"
+            )
 
         applicability = control.get("applicability")
         if applicability is not None:
             if not isinstance(applicability, dict):
-                failures.append(f"{context}: applicability must be a mapping")
+                failures.append(
+                    f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability must be a mapping"
+                )
             else:
                 groups = [key for key in ("anyOf", "allOf") if key in applicability]
                 if not groups:
-                    failures.append(f"{context}: applicability must declare anyOf or allOf")
+                    failures.append(
+                        f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability must declare anyOf or allOf"
+                    )
                 for group in groups:
                     clauses = applicability.get(group)
                     if not isinstance(clauses, list) or not clauses:
-                        failures.append(f"{context}: applicability.{group} must be a non-empty list")
+                        failures.append(
+                            f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability.{group} must be a non-empty list"
+                        )
                         continue
                     for clause_index, clause in enumerate(clauses):
                         if not isinstance(clause, dict):
-                            failures.append(f"{context}: applicability.{group}[{clause_index}] must be a mapping")
+                            failures.append(
+                                f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}] must be a mapping"
+                            )
                             continue
                         if not is_non_empty(clause.get("field")):
-                            failures.append(f"{context}: applicability.{group}[{clause_index}] must declare field")
+                            failures.append(
+                                f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}] must declare field"
+                            )
                         predicates = [key for key in ("equals", "in", "contains", "truthy") if key in clause]
                         if not predicates:
                             failures.append(
-                                f"{context}: applicability.{group}[{clause_index}] must declare equals, in, contains, or truthy"
+                                f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}] must declare equals, in, contains, or truthy"
                             )
                         if "truthy" in clause and not isinstance(clause.get("truthy"), bool):
-                            failures.append(f"{context}: applicability.{group}[{clause_index}].truthy must be true or false")
+                            failures.append(
+                                f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}].truthy must be true or false"
+                            )
                         if "in" in clause and not isinstance(clause.get("in"), list):
-                            failures.append(f"{context}: applicability.{group}[{clause_index}].in must be a list")
+                            failures.append(
+                                f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}].in must be a list"
+                            )
+        elif requirement_mode == "conditional":
+            failures.append(
+                f"{context}: ODC requirement 'conditional-applicability' not satisfied — conditional controls must declare applicability"
+            )
+        if requirement_mode == "conditional" and na_allowed is not True:
+            failures.append(
+                f"{context}: ODC requirement 'conditional-applicability' not satisfied — conditional controls must set naAllowed: true"
+            )
 
         related_concern = control.get("relatedConcern")
         if is_non_empty(related_concern):
@@ -834,7 +878,7 @@ def validate_compliance_framework(
                 }
                 if related_concern not in valid_requirement_ids:
                     failures.append(
-                        f"{context}: relatedConcern '{related_concern}' is not defined on ODC '{odc_id}'"
+                        f"{context}: ODC requirement 'related-concern' not satisfied — relatedConcern '{related_concern}' is not defined on ODC '{odc_id}'"
                     )
 
 

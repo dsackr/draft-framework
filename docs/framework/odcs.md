@@ -15,6 +15,11 @@ supportable, and reusable.
 That means ODCs are not primarily post-hoc governance artifacts. They are the
 framework's machine-readable object-definition contract.
 
+ODCs are also meant to be AI-friendly interview checklists. An AI assistant
+should be able to use an ODC to gather answers from user dialogue, uploaded
+documents, spreadsheets, diagrams, screenshots, or architecture notes and
+translate those answers into the correct DRAFT YAML.
+
 ## YAML Shape
 
 ODCs follow the authoritative
@@ -55,8 +60,7 @@ There are five satisfaction mechanisms.
 
 The requirement is satisfied directly by a field on the object itself.
 
-Example: a Product Service satisfies product ownership by populating `product`,
-and a SaaS Service satisfies data-boundary by setting
+Example: a SaaS Service satisfies data-boundary by setting
 `dataLeavesInfrastructure`.
 
 ### `internalComponent`
@@ -128,6 +132,12 @@ answered by selecting the correct ABBs. The other concerns may be answered
 through Agent ABBs, Software ABBs, ABB configurations, external interactions,
 or architectural decisions.
 
+In interview form, ask:
+
+- Which Operating System ABB defines this host?
+- Which Compute Platform ABB defines this host?
+- How are authentication, logging, monitoring, and patching addressed?
+
 ### `odc.service`
 
 This is the generic service baseline. In plain language, it requires a service
@@ -156,6 +166,13 @@ direct Architecture Decisions or through a named `deploymentConfiguration`
 defined on the RBB. Failure domain is always treated as an explicit
 architectural answer.
 
+In interview form, ask:
+
+- Which host RBB runs this service?
+- Which function ABB defines the service software?
+- How are authentication, secrets, service logging, and health monitoring addressed?
+- What are the service's availability, scalability, recoverability, and failure-domain answers?
+
 ### `odc.service.dbms`
 
 This extends the service baseline for database services. In plain language, it
@@ -167,6 +184,12 @@ requires a DBMS service RBB to document:
 - HA / replication mechanism
 - encryption at rest
 - access-control model
+
+In interview form, ask:
+
+- How are backup and recovery objectives defined?
+- What HA or replication mechanism exists?
+- How are encryption at rest and database access control handled?
 
 ### `odc.appliance-abb`
 
@@ -181,6 +204,12 @@ to document:
 - what configuration surface the adopter actually controls
 - what failure domain it creates
 - what compliance posture it carries
+
+In interview form, ask:
+
+- What capability does the appliance provide?
+- Where is it placed, who patches it, and what can the adopter configure?
+- How resilient is it, what failure domain does it create, and what compliance posture is known?
 
 ### `odc.saas-service`
 
@@ -198,6 +227,36 @@ blackbox and requires the architect to document:
 - what failure domain the dependency creates
 - what SLA the vendor offers
 
+In interview form, ask:
+
+- What capability is being consumed from the vendor?
+- What data, residency, authentication, audit visibility, and health visibility commitments are known?
+- What failure domain and SLA does the dependency create?
+
+### `odc.compliance-framework`
+
+This ODC applies to Security and Compliance Control catalogs. It requires a
+framework author to translate each source control into DRAFT-specific control
+metadata:
+
+- source control identity
+- authoritative source link
+- mandatory vs conditional scope
+- DRAFT object applicability
+- valid DRAFT answer types
+- optional related ODC concern
+- conditional applicability metadata when the control is not always in scope
+
+In interview form, ask:
+
+- What is the control ID and friendly name?
+- Where is the authoritative source for the control?
+- Is the control mandatory or conditional?
+- Which DRAFT object scopes does it apply to?
+- What answer types are valid in DRAFT?
+- If conditional, when is it in scope and is `N/A` allowed?
+- If it refines an existing ODC concern, which one?
+
 ### `odc.ra`
 
 This ODC applies to reference architectures. It requires an RA to declare:
@@ -206,6 +265,12 @@ This ODC applies to reference architectures. It requires an RA to declare:
 - the service groups and tiered RBBs required to realize that pattern
 - the pattern-level decisions that deliver the intended non-functional
   qualities
+
+In interview form, ask:
+
+- What deployment pattern does this RA define?
+- What service groups and tiered RBBs make up the pattern?
+- Which deployment qualities does the pattern intentionally deliver?
 
 ### `odc.sdm`
 
@@ -221,6 +286,13 @@ declare:
 - what data classification it handles
 - what deployment-level failure domain it creates
 - what intentional deviations from the selected RA exist
+
+In interview form, ask:
+
+- Which RA does this product follow, or why is no RA applicable?
+- What service groups and deployment targets make up the real deployment?
+- What availability target, data classification, and failure domain does the deployment have?
+- What additional interactions or intentional pattern deviations exist?
 
 ## Architecture Decision Trigger Rules
 
@@ -270,11 +342,12 @@ DBMS-specific requirements.
 
 ## How Validation Works
 
-`tools/validate.py` evaluates ODC satisfaction in two ways. For RBBs, it loads
-every ODC referenced in the object's `satisfiesODC` list, resolves
-inheritance, and then tests each requirement's permitted mechanisms. For RAs
-and SDMs, it applies the ODC identified by `appliesTo.type` and checks the
-explicit validation rules for those object types.
+`tools/validate.py` evaluates ODC satisfaction in three ways. For RBBs, it
+loads every ODC referenced in the object's `satisfiesODC` list, resolves
+inheritance, and then tests each requirement's permitted mechanisms. For RAs,
+SDMs, Appliance ABBs, and compliance frameworks, it applies the ODC identified
+by `appliesTo.type` and checks the explicit validation rules for those object
+types.
 
 - An `externalInteraction` mechanism is satisfied when the object has an
   `externalInteractions` entry whose capability matches the requirement

@@ -14,12 +14,16 @@ That split exists so the same architecture model can be reused under multiple co
 
 Each compliance framework is a single YAML file in `compliance-frameworks/`.
 The framework object contains both its definition metadata and a `controls`
-list. Each control defines:
+list. Compliance frameworks are governed by `odc.compliance-framework`, which
+means a valid control catalog in DRAFT is not just a copied spreadsheet. It is
+a translated control catalog with DRAFT semantics.
+
+Each control defines:
 
 - `controlId`
 - `name`
-- `description`
 - `externalReference`
+- optional `description`
 - `appliesTo`
 - `relatedConcern` when the control refines an existing ODC concern
 - `requirementMode` as `mandatory` or `conditional`
@@ -29,6 +33,15 @@ list. Each control defines:
 
 To add a new framework or extend an existing one, only that single file needs
 to change. No ODC files are modified.
+
+This is intentionally AI-friendly. A security specialist or uploaded source
+document may give the AI the control ID, friendly name, and source link. The
+ODC then tells the AI what DRAFT-specific metadata it still has to derive:
+
+- which DRAFT object scopes the control applies to
+- which DRAFT answer types are valid
+- whether the control is mandatory or conditional
+- whether the control refines an existing ODC concern
 
 ## What Ships In The Repo
 
