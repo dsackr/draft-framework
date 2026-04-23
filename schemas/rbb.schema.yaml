@@ -7,8 +7,7 @@ requiredFields:
   - name
   - catalogStatus
   - lifecycleStatus
-  - internalComponents
-  - variants
+  - category
 optionalFields:
   - description
   - version
@@ -38,6 +37,11 @@ enumFields:
   category:
     - host
     - service
+  serviceCategory:
+    - general
+    - database
+    - product
+    - saas
 fieldTypes:
   tags: list
   owner: dict
@@ -45,6 +49,28 @@ fieldTypes:
   internalComponents: list
   externalInteractions: list
   variants: dict
+conditionalRequired:
+  - when:
+      category: host
+    require:
+      - internalComponents
+      - variants
+  - when:
+      category: service
+      serviceCategory: general
+    require:
+      - hostRbb
+      - functionAbb
+      - internalComponents
+      - variants
+  - when:
+      category: service
+      serviceCategory: database
+    require:
+      - hostRbb
+      - functionAbb
+      - internalComponents
+      - variants
 collectionSchemas:
   internalComponents: internalComponent
   externalInteractions: externalInteraction

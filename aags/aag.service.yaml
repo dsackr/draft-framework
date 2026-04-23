@@ -16,6 +16,7 @@ tags:
 appliesTo:
   type: rbb
   category: service
+  serviceCategory: general
 requirements:
   - id: scaling-approach
     description: The service must document how capacity is scaled for its declared variants.

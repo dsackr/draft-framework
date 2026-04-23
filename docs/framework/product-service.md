@@ -32,13 +32,15 @@ function package deployed to that Lambda host is a Product Service.
 ## YAML Shape
 
 Product Services use the
-[ps.schema.yaml](../../schemas/ps.schema.yaml) schema because the underlying
-object type remains `product_service`.
+[ps.schema.yaml](../../schemas/ps.schema.yaml) schema and are modeled as a
+specialized RBB classification.
 
 At minimum, a Product Service YAML should include:
 
 - `id`
-- `type: product_service`
+- `type: rbb`
+- `category: service`
+- `serviceCategory: product`
 - `name`
 - `product`
 - `runsOn`
@@ -83,6 +85,5 @@ valid. Product Service variants typically capture operational notes, expected
 deployment posture, or service-level distinctions rather than infrastructure
 implementation details.
 
-The underlying file path and object type still use `product-services` and
-`product_service`. The framework term presented to engineers is Product
-Service.
+Machine-readably, a Product Service is an RBB classification with product
+ownership and `runsOn` metadata layered onto the base RBB contract.

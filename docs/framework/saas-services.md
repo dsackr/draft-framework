@@ -5,7 +5,8 @@
 A SaaS Service is a vendor-managed service that the adopting organization
 subscribes to. Unlike an Appliance ABB, a SaaS Service may route data through
 vendor infrastructure outside the adopter's own boundary. That data-boundary
-distinction is the reason SaaS Services need their own first-class object type.
+distinction is the reason SaaS Services need their own distinct RBB
+classification.
 
 The framework treats SaaS Services as architecture objects because they affect
 data governance, authentication models, compliance posture, and operational
@@ -43,12 +44,15 @@ the service can be treated as an understood architecture dependency.
 ## YAML Shape
 
 SaaS Services use the dedicated
-[saas-service.schema.yaml](../../schemas/saas-service.schema.yaml) schema.
+[saas-service.schema.yaml](../../schemas/saas-service.schema.yaml) schema and
+are modeled as an RBB classification.
 
 At minimum, a SaaS Service YAML should include:
 
 - `id`
-- `type: saas_service`
+- `type: rbb`
+- `category: service`
+- `serviceCategory: saas`
 - `name`
 - `vendor`
 - `capability`

@@ -45,7 +45,16 @@ addressed.
 
 ## Satisfaction Mechanisms
 
-There are three satisfaction mechanisms.
+There are four satisfaction mechanisms.
+
+### `field`
+
+This means the requirement is satisfied directly by a field on the object
+itself.
+
+Example: a Product Service satisfies product ownership by populating `product`,
+and a SaaS Service satisfies data-boundary by setting
+`dataLeavesInfrastructure`.
 
 ### `internalComponent`
 
@@ -129,6 +138,13 @@ residency commitments the vendor makes, whether a DPA is in place, how the
 organization authenticates to the service, what compliance certifications the
 vendor carries, and what SLA the vendor offers.
 
+### `aag.product-service`
+
+This AAG applies to Product Service RBB classifications. In plain language, it
+requires the object to document which RBB pattern it runs on, what product owns
+it, what variants exist, and that it is explicitly classified as a Product
+Service.
+
 ### `aag.ra`
 
 This AAG applies to reference architectures. In plain language, it requires an RA to declare a clear pattern type, a complete list of required RBBs with roles, and pattern-level decisions that explain why the pattern exists in its current form.
@@ -164,6 +180,7 @@ Inheritance works the same way in AAGs as it does in many programming models.
 - An `externalInteraction` mechanism is satisfied when the RBB has an `externalInteractions` entry whose capability matches the requirement criteria.
 - An `internalComponent` mechanism is satisfied when the RBB has an `internalComponents` entry whose role matches the requirement criteria.
 - An `architecturalDecision` mechanism is satisfied when the required key exists and is non-empty in any variant’s `architecturalDecisions` map.
+- A `field` mechanism is satisfied when the specified object field is populated, or equals the expected value when the mechanism declares `equals`.
 
 If the number of satisfied mechanisms is less than `minimumSatisfactions`, the validator emits a failure. RA and SDM failures use the same style of message, but the validator checks their rules directly because those objects do not expose the same RBB-specific structures.
 

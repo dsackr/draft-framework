@@ -62,41 +62,17 @@ serviceGroup:
     - deploymentTarget
   optionalFields:
     - scalingUnit
-    - productServices
     - rbbs
     - applianceAbbs
-    - saasServices
     - externalInteractions
   fieldTypes:
-    productServices: list
     rbbs: list
     applianceAbbs: list
-    saasServices: list
     externalInteractions: list
   collectionSchemas:
-    productServices: productServiceEntry
     rbbs: rbbEntry
     applianceAbbs: applianceAbbEntry
-    saasServices: saasServiceEntry
     externalInteractions: externalInteraction
-
-productServiceEntry:
-  requiredFields:
-    - ref
-  optionalFields:
-    - diagramTier  # presentation | application | data | utility
-    - intent
-    - riskRef
-    - notes
-  enumFields:
-    diagramTier:
-      - presentation
-      - application
-      - data
-      - utility
-    intent:
-      - ha
-      - sa
 
 rbbEntry:
   requiredFields:
@@ -118,12 +94,6 @@ rbbEntry:
       - sa
 
 applianceAbbEntry:
-  requiredFields:
-    - ref
-  optionalFields:
-    - notes
-
-saasServiceEntry:
   requiredFields:
     - ref
   optionalFields:

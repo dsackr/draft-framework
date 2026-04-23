@@ -16,16 +16,15 @@ organized around:
 - `architecturalDecisions`
 - `architectureRisksAndDecisions`
 
-Each service group can contain Product Services, RBBs, Appliance ABBs, SaaS
-Services, and group-local external interactions. This is a better fit for real
+Each service group can contain deployed RBB entries, Appliance ABBs, and
+group-local external interactions. Product Services and SaaS Services are both
+RBB classifications, so they appear inside the same `rbbs` collection. This is
+a better fit for real
 architecture interview data because it preserves operational grouping and
 deployment intent.
 
 Within those service groups, the primary visual objects in the topology are the
-deployed services themselves:
-
-- Product Services
-- RBBs
+deployed RBB entries themselves.
 
 Each of those entries must declare `diagramTier` as one of:
 
@@ -74,13 +73,11 @@ Each service group includes:
 - `name`
 - `deploymentTarget`
 - optional `scalingUnit`
-- optional `productServices`
 - optional `rbbs`
 - optional `applianceAbbs`
-- optional `saasServices`
 - optional `externalInteractions`
 
-Each deployed Product Service or RBB entry should declare:
+Each deployed RBB entry should declare:
 
 - `ref`
 - optional `diagramTier`
@@ -96,7 +93,7 @@ This field is metadata only. It is useful because it says whether the product is
 
 ## Intent Versus Current State
 
-The `intent` field on Product Service and RBB entries exists only for explicit
+The `intent` field on deployed RBB entries exists only for explicit
 architecture choice. It should be populated when the architect is intentionally
 deviating from the Reference Architecture, or when no Reference Architecture
 exists.
@@ -109,7 +106,7 @@ Current state concerns belong in ARDs and notes.
 `deploymentTarget` is the primary placement container. It answers where a
 service runs.
 
-`diagramTier` places Product Services and RBBs into one of four columns:
+`diagramTier` places deployed RBBs into one of four columns:
 
 - `presentation`
 - `application`
@@ -142,7 +139,7 @@ The SDM topology is a service-first placement view.
 
 - `deploymentTarget` is the primary container because it answers where a
   service runs.
-- `diagramTier` places Product Services and RBBs into the
+- `diagramTier` places deployed RBBs into the
   `presentation`, `application`, `data`, or `utility` column.
 - `serviceGroup` remains a structural construct in YAML, but it is not the
   dominant visual object in the topology.

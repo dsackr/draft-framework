@@ -17,7 +17,7 @@ tags:
 appliesTo:
   type: rbb
   category: service
-  serviceCategory: dbms
+  serviceCategory: database
 inherits: aag.service
 requirements:
   - id: backup-strategy

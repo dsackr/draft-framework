@@ -34,14 +34,13 @@ these classifications:
 | Host | The runtime substrate on which services run. |
 | General Service | A reusable non-database service pattern that runs on a host or managed substrate. |
 | Database Service | A reusable data-platform service pattern with durability, recovery, and access-control concerns. |
-| SaaS Service | A vendor-managed service classification used when traffic or data may leave the infrastructure boundary. The current machine-readable object type remains `saas_service` because it carries vendor and data-governance metadata. |
-| Product Service | A first-party service classification used when organization-authored code runs on an RBB or blackbox host pattern. The current machine-readable object type remains `product_service` because it carries product ownership and deployment metadata. |
+| SaaS Service | A vendor-managed service classification used when traffic or data may leave the infrastructure boundary. It is modeled as an RBB with `category: service` and `serviceCategory: saas`. |
+| Product Service | A first-party service classification used when organization-authored code runs on an RBB or blackbox host pattern. It is modeled as an RBB with `category: service` and `serviceCategory: product`. |
 
-The current machine-readable repo represents Host, General Service, and Database
-Service directly as `rbb` objects. SaaS Service and Product Service are modeled
-as adjacent first-class objects because they need additional metadata, but they
-still belong to the same service taxonomy discussion when architects choose how
-to model a deployed service.
+Machine-readably, all five classifications are represented as `rbb` objects.
+Host, General Service, and Database Service use the shared RBB schema directly.
+Product Service and SaaS Service also use RBB-based schemas, adding the extra
+metadata needed for product ownership, `runsOn`, or vendor governance concerns.
 
 ## Host Classification
 

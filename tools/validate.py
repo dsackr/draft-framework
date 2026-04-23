@@ -194,6 +194,10 @@ def applicable_aag_ids(obj: dict[str, Any], aags: dict[str, dict[str, Any]]) -> 
 
 def mechanism_description(mechanism: dict[str, Any]) -> str:
     mechanism_type = mechanism.get("mechanism")
+    if mechanism_type == "field":
+        field = mechanism.get("key", "unknown")
+        equals = mechanism.get("equals")
+        return f"field({field}={equals})" if equals is not None else f"field({field})"
     if mechanism_type == "externalInteraction":
         capability = mechanism.get("criteria", {}).get("capability", "unknown")
         return f"externalInteraction(capability={capability})"
@@ -207,6 +211,16 @@ def mechanism_description(mechanism: dict[str, Any]) -> str:
 
 def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any]) -> bool:
     mechanism_type = mechanism.get("mechanism")
+    if mechanism_type == "field":
+        key = mechanism.get("key", "")
+        if key not in obj:
+            return False
+        value = obj.get(key)
+        if "equals" in mechanism:
+            return value == mechanism.get("equals")
+        if mechanism.get("allowEmpty") is True:
+            return value is not None
+        return is_non_empty(value)
     if mechanism_type == "externalInteraction":
         capability = mechanism.get("criteria", {}).get("capability")
         return any(
@@ -285,19 +299,32 @@ def validate_architectural_decisions(obj: dict[str, Any], path: Path, failures: 
             )
 
 
-def validate_rbb(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]], catalog_ids: set[str], failures: list[str]) -> None:
+def validate_rbb(
+    obj: dict[str, Any],
+    path: Path,
+    aags: dict[str, dict[str, Any]],
+    catalog_by_id: dict[str, dict[str, Any]],
+    catalog_ids: set[str],
+    failures: list[str],
+    warnings: list[str],
+) -> None:
     satisfies = obj.get("satisfiesAAG", [])
     if not isinstance(satisfies, list):
         failures.append(f"{path}: satisfiesAAG must be a list")
         return
 
+    category = obj.get("category")
+    service_category = obj.get("serviceCategory")
     variants = obj.get("variants", {})
-    if not isinstance(variants, dict) or len(variants) == 0:
-        failures.append(
-            f"{path}: [{obj.get('id', 'unknown')}] at least one named variant must be present with architecturalDecisions documented"
-        )
 
-    for aag_id in satisfies:
+    if category == "host" or (category == "service" and service_category in {"general", "database", "product"}):
+        if not isinstance(variants, dict) or len(variants) == 0:
+            failures.append(
+                f"{path}: [{obj.get('id', 'unknown')}] at least one named variant must be present with architecturalDecisions documented"
+            )
+
+    applicable = sorted(set(satisfies) | set(applicable_aag_ids(obj, aags)))
+    for aag_id in applicable:
         if aag_id not in aags:
             failures.append(f"{path}: referenced AAG '{aag_id}' does not exist")
             continue
@@ -306,16 +333,28 @@ def validate_rbb(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]
             if not valid:
                 failures.append(f"{path}: {message}")
 
-    if obj.get("category") == "host":
-        for field in ("osAbb", "hardwareAbb"):
+    if category == "host":
+        host_id = str(obj.get("id", ""))
+        required_host_fields = () if host_id.startswith("rbb.host.serverless.") else ("osAbb", "hardwareAbb")
+        for field in required_host_fields:
             ref = obj.get(field)
             if ref and ref not in catalog_ids:
                 failures.append(f"{path}: {field} references unknown object '{ref}'")
-    if obj.get("category") == "service":
+    if category == "service" and service_category in {"general", "database"}:
         for field in ("hostRbb", "functionAbb"):
             ref = obj.get(field)
             if ref and ref not in catalog_ids:
                 failures.append(f"{path}: {field} references unknown object '{ref}'")
+    if category == "service" and service_category == "product":
+        runs_on = obj.get("runsOn")
+        target = catalog_by_id.get(runs_on) if runs_on else None
+        if runs_on and (not target or target.get("type") != "rbb"):
+            failures.append(f"{path}: runsOn references unknown RBB '{runs_on}'")
+    if category == "service" and service_category == "saas":
+        if "dataLeavesInfrastructure" in obj and not isinstance(obj.get("dataLeavesInfrastructure"), bool):
+            failures.append(f"{path}: dataLeavesInfrastructure must be true or false")
+        if obj.get("dataLeavesInfrastructure") is True and not is_non_empty(obj.get("dpaNotes")):
+            warnings.append(f"{path}: SaaS Services with dataLeavesInfrastructure=true should document dpaNotes")
 
     validate_architectural_decisions(obj, path, failures)
 
@@ -375,7 +414,7 @@ def validate_sdm(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]
     for group in service_groups:
         if not isinstance(group, dict):
             continue
-        for key in ("productServices", "rbbs"):
+        for key in ("rbbs",):
             entries = group.get(key, [])
             if isinstance(entries, list):
                 all_intents.extend(
@@ -422,25 +461,6 @@ def validate_sdm(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]
 def validate_ard(obj: dict[str, Any], path: Path, failures: list[str], warnings: list[str]) -> None:
     if obj.get("category") == "decision" and not is_non_empty(obj.get("decisionRationale")):
         warnings.append(f"{path}: decision ARDs should include decisionRationale")
-
-
-def validate_saas_service(obj: dict[str, Any], path: Path, warnings: list[str], failures: list[str]) -> None:
-    if "dataLeavesInfrastructure" in obj and not isinstance(obj.get("dataLeavesInfrastructure"), bool):
-        failures.append(f"{path}: dataLeavesInfrastructure must be true or false")
-
-    if obj.get("dataLeavesInfrastructure") is True and not is_non_empty(obj.get("dpaNotes")):
-        warnings.append(f"{path}: SaaS Services with dataLeavesInfrastructure=true should document dpaNotes")
-
-
-def validate_product_service(obj: dict[str, Any], path: Path, catalog_by_id: dict[str, dict[str, Any]], failures: list[str]) -> None:
-    runs_on = obj.get("runsOn")
-    target = catalog_by_id.get(runs_on) if runs_on else None
-    if runs_on and (not target or target.get("type") != "rbb"):
-        failures.append(f"{path}: runsOn references unknown RBB '{runs_on}'")
-
-    variants = obj.get("variants", {})
-    if not isinstance(variants, dict) or not variants:
-        failures.append(f"{path}: [{obj.get('id', 'unknown')}] at least one named variant must be present")
 
 
 def validate_compliance_framework(
@@ -506,9 +526,7 @@ def validate_service_group_structure(
     obj: dict[str, Any],
     path: Path,
     ard_ids: set[str],
-    product_service_ids: set[str],
     appliance_abb_ids: set[str],
-    saas_service_ids: set[str],
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
 ) -> None:
@@ -558,24 +576,6 @@ def validate_service_group_structure(
         if scaling_unit_name and scaling_unit_name not in scaling_unit_names:
             failures.append(f"{path}: serviceGroup '{group_name}' references unknown scalingUnit '{scaling_unit_name}'")
 
-        for entry in group.get("productServices", []) or []:
-            if not isinstance(entry, dict):
-                continue
-            ref = entry.get("ref")
-            if ref and ref not in product_service_ids:
-                failures.append(f"{path}: serviceGroup '{group_name}' references unknown Product Service '{ref}'")
-            diagram_tier = entry.get("diagramTier")
-            if diagram_tier not in VALID_DIAGRAM_TIERS:
-                failures.append(
-                    f"{path}: serviceGroup '{group_name}' Product Service '{ref}' must set diagramTier to one of {sorted(VALID_DIAGRAM_TIERS)}"
-                )
-            risk_ref = entry.get("riskRef")
-            if risk_ref and risk_ref not in ard_ids:
-                failures.append(f"{path}: serviceGroup '{group_name}' Product Service '{ref}' references unknown ARD '{risk_ref}'")
-            intent = entry.get("intent")
-            if intent and intent not in {"ha", "sa"}:
-                failures.append(f"{path}: serviceGroup '{group_name}' Product Service '{ref}' has invalid intent '{intent}'")
-
         for entry in group.get("rbbs", []) or []:
             if not isinstance(entry, dict):
                 continue
@@ -602,13 +602,6 @@ def validate_service_group_structure(
             if ref and ref not in appliance_abb_ids:
                 failures.append(f"{path}: serviceGroup '{group_name}' references unknown Appliance ABB '{ref}'")
 
-        for entry in group.get("saasServices", []) or []:
-            if not isinstance(entry, dict):
-                continue
-            ref = entry.get("ref")
-            if ref and ref not in saas_service_ids:
-                failures.append(f"{path}: serviceGroup '{group_name}' references unknown SaaS Service '{ref}'")
-
         for interaction in group.get("externalInteractions", []) or []:
             if not isinstance(interaction, dict):
                 continue
@@ -624,9 +617,7 @@ def validate_sdm_refs(
     obj: dict[str, Any],
     path: Path,
     ard_ids: set[str],
-    product_service_ids: set[str],
     appliance_abb_ids: set[str],
-    saas_service_ids: set[str],
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
 ) -> None:
@@ -641,9 +632,7 @@ def validate_sdm_refs(
         obj,
         path,
         ard_ids,
-        product_service_ids,
         appliance_abb_ids,
-        saas_service_ids,
         catalog_by_id,
         failures,
     )
@@ -669,30 +658,24 @@ def main() -> int:
     }
     aags = {object_id: obj for object_id, obj in catalog_by_id.items() if obj.get("type") == "aag"}
     ard_ids = {object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "ard"}
-    product_service_ids = {object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "product_service"}
     appliance_abb_ids = {
         object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "abb" and obj.get("subtype") == "appliance"
     }
-    saas_service_ids = {object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "saas_service"}
     catalog_ids = set(catalog_by_id.keys())
 
     for path, obj in objects.items():
         validate_against_schema(obj, path, schemas, failures)
         if obj.get("type") == "ard":
             validate_ard(obj, path, failures, warnings)
-        if obj.get("type") == "saas_service":
-            validate_saas_service(obj, path, warnings, failures)
-        if obj.get("type") == "product_service":
-            validate_product_service(obj, path, catalog_by_id, failures)
         if obj.get("type") == "compliance_framework":
             validate_compliance_framework(obj, path, catalog_by_id, aags, failures)
         if obj.get("type") == "rbb":
-            validate_rbb(obj, path, aags, catalog_ids, failures)
+            validate_rbb(obj, path, aags, catalog_by_id, catalog_ids, failures, warnings)
         if obj.get("type") == "reference_architecture":
             validate_ra(obj, path, aags, failures)
         if obj.get("type") == "software_distribution_manifest":
             validate_sdm(obj, path, aags, failures)
-            validate_sdm_refs(obj, path, ard_ids, product_service_ids, appliance_abb_ids, saas_service_ids, catalog_by_id, failures)
+            validate_sdm_refs(obj, path, ard_ids, appliance_abb_ids, catalog_by_id, failures)
 
     failing_paths = {entry.split(":", 1)[0] for entry in failures}
     for path in files:

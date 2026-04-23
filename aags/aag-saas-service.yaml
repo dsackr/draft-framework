@@ -18,49 +18,52 @@ tags:
   - analysis
   - governance
 appliesTo:
-  type: saas_service
+  type: rbb
+  category: service
+  serviceCategory: saas
 requirements:
   - id: function
     description: What capability does this SaaS service provide?
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: capability field is populated
+      - mechanism: field
+        key: capability
         example: "capability: waf"
   - id: data-boundary
     description: Does data leave the infrastructure boundary through this service?
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: dataLeavesInfrastructure field is explicitly set
+      - mechanism: field
+        key: dataLeavesInfrastructure
         example: "dataLeavesInfrastructure: true"
   - id: data-residency
     description: >
       What are the vendor's data residency commitments?
       Critical for FERPA, HIPAA-adjacent, and PII data.
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: dataResidencyCommitment is documented
+      - mechanism: field
+        key: dataResidencyCommitment
         example: "dataResidencyCommitment: US-only, AWS us-east-1"
   - id: data-processing-agreement
     description: Is a Data Processing Agreement in place with this vendor?
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: dpaNotes field is populated
+      - mechanism: field
+        key: dpaNotes
         example: "dpaNotes: DPA signed 2024-03, covers FERPA and COPPA"
   - id: compliance-certifications
     description: What compliance certifications does the vendor carry?
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: complianceCerts field is populated
+      - mechanism: field
+        key: complianceCerts
+        allowEmpty: true
         example: "complianceCerts: [SOC2 Type II, ISO27001]"
   - id: authentication-model
     description: How does the organization authenticate to this service?
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: authenticationModel field is populated
+      - mechanism: field
+        key: authenticationModel
         example: "authenticationModel: saml"
   - id: vendor-sla
     description: What is the vendor's SLA commitment?
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: vendorSLA is documented
+      - mechanism: field
+        key: vendorSLA
         example: "vendorSLA: 99.99% uptime, 24x7 support"

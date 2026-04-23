@@ -19,48 +19,35 @@ tags:
   - analysis
   - governance
 appliesTo:
-  type: product_service
+  type: rbb
+  category: service
+  serviceCategory: product
 requirements:
   - id: rbb-selection
     description: What RBB pattern does this Product Service run on?
     canBeSatisfiedBy:
-      - mechanism: internalComponent
-        criteria: runsOn field references a valid RBB id
+      - mechanism: field
+        key: runsOn
         example: "runsOn: rbb.service.web.iis-standard"
   - id: variant-coverage
     description: >
       What deployment variants are defined for this Product Service?
       At least one named variant must exist.
     canBeSatisfiedBy:
-      - mechanism: internalComponent
-        criteria: variants map contains at least one named variant
+      - mechanism: field
+        key: variants
         example: "variants: { ha: { ... }, sa: { ... } }"
   - id: product-ownership
     description: What product does this PS belong to?
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: product field is populated
+      - mechanism: field
+        key: product
         example: "product: student-health"
   - id: firstparty-code
     description: >
       Does this service contain organization-authored code?
       (This is the defining characteristic of a Product Service vs an RBB.)
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: >
-          The object type is product_service — this requirement is satisfied
-          by declaration. No further enumeration of code packages is required
-          in version 1 of this framework.
-  - id: availability-requirement
-    description: What availability tier does this PS require?
-    canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: Declared in the SDM that deploys this PS via availabilityRequirement
-        example: "availabilityRequirement: 24x7"
-  - id: external-integrations
-    description: >
-      What external systems, services, or APIs does this PS integrate with?
-      Documented at the SDM level via externalInteractions.
-    canBeSatisfiedBy:
-      - mechanism: externalInteraction
-        criteria: SDM externalInteractions list documents integrations relevant to this PS
+      - mechanism: field
+        key: serviceCategory
+        equals: product

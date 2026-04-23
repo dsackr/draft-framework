@@ -25,9 +25,7 @@ CATALOG_FOLDERS = [
     "abbs",
     "ards",
     "compliance-frameworks",
-    "saas-services",
     "sdms",
-    "product-services",
     "rbbs",
     "reference-architectures",
 ]
@@ -54,6 +52,22 @@ REF_CONTAINER_KEYS = {
     "framework",
 }
 CATALOG_ID_PREFIXES = ("abb.", "rbb.", "aag.", "ard.", "ps.", "ra.", "sdm.", "framework.", "saas.")
+
+
+def is_product_service(obj: dict[str, Any]) -> bool:
+    return obj.get("type") == "rbb" and obj.get("category") == "service" and obj.get("serviceCategory") == "product"
+
+
+def is_saas_service(obj: dict[str, Any]) -> bool:
+    return obj.get("type") == "rbb" and obj.get("category") == "service" and obj.get("serviceCategory") == "saas"
+
+
+def is_database_service(obj: dict[str, Any]) -> bool:
+    return obj.get("type") == "rbb" and obj.get("category") == "service" and obj.get("serviceCategory") == "database"
+
+
+def is_general_service(obj: dict[str, Any]) -> bool:
+    return obj.get("type") == "rbb" and obj.get("category") == "service" and obj.get("serviceCategory") == "general"
 
 
 def discover_yaml_files(root: Path) -> list[Path]:
@@ -124,13 +138,11 @@ def shape_for(obj: dict[str, Any]) -> str:
         return "hexagon"
     if obj["type"] == "ard":
         return "round-rectangle"
-    if obj["type"] == "product_service":
-        return "round-rectangle"
-    if obj["type"] == "saas_service":
-        return "round-rectangle"
     if obj["type"] == "abb":
         return "ellipse"
     if obj["type"] == "rbb":
+        if is_product_service(obj) or is_saas_service(obj):
+            return "round-rectangle"
         return "round-rectangle" if obj.get("category") == "host" else "diamond"
     return "round-rectangle"
 
@@ -153,17 +165,21 @@ def type_label_for(obj: dict[str, Any]) -> str:
         return "Compliance Framework"
     if obj["type"] == "ard":
         return f"ARD / {obj.get('category', 'risk')}"
-    if obj["type"] == "product_service":
-        return "Product Service"
-    if obj["type"] == "saas_service":
-        return "SaaS Service"
     if obj["type"] == "reference_architecture":
         return "Reference Architecture"
     if obj["type"] == "software_distribution_manifest":
         return "Software Distribution Manifest"
     if obj["type"] == "rbb":
-        if obj.get("category") == "service":
-            return f"Service RBB / {obj.get('serviceCategory', 'service')}"
+        if obj.get("category") == "host":
+            return "Host RBB"
+        if is_product_service(obj):
+            return "Product Service"
+        if is_saas_service(obj):
+            return "SaaS Service"
+        if is_database_service(obj):
+            return "Database Service RBB"
+        if is_general_service(obj):
+            return "General Service RBB"
         return "Host RBB"
     return obj.get("type", "Unknown")
 
@@ -272,15 +288,6 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
         for deployed in group.get("rbbs", [])
         if isinstance(deployed, dict) and deployed.get("riskRef")
     }
-    risk_marked_product_service_ids = {
-        deployed.get("ref")
-        for obj in objects
-        if obj.get("type") == "software_distribution_manifest"
-        for group in obj.get("serviceGroups", [])
-        if isinstance(group, dict)
-        for deployed in group.get("productServices", [])
-        if isinstance(deployed, dict) and deployed.get("riskRef")
-    }
     browser_objects: list[dict[str, Any]] = []
 
     for obj in objects:
@@ -339,7 +346,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "linkedSDM": obj.get("linkedSDM", ""),
                 "frameworkKind": obj.get("frameworkKind", ""),
                 "defaultSelection": obj.get("defaultSelection", False),
-                "hasRiskRef": obj.get("id") in risk_marked_rbb_ids or obj.get("id") in risk_marked_product_service_ids,
+                "hasRiskRef": obj.get("id") in risk_marked_rbb_ids,
                 "outboundRefs": outbound_refs.get(object_id, []),
                 "referencedBy": referenced_by.get(object_id, []),
                 "detail": to_json(obj),
@@ -1619,33 +1626,31 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     const legend = document.getElementById('legend');
     const CATEGORY_CONFIG = [
       {
-        id: 'software',
-        label: 'Software Content',
-        filters: [
-          { id: 'all', label: 'All', types: ['software_distribution_manifest', 'product_service', 'ard'] },
-          { id: 'software_distribution_manifest', label: 'SDMs', types: ['software_distribution_manifest'] },
-          { id: 'product_service', label: 'PS', types: ['product_service'] },
-          { id: 'ard', label: 'DRDs', types: ['ard'] }
-        ],
-        rows: [
-          { id: 'software_distribution_manifest', label: 'Software Distribution Manifests', types: ['software_distribution_manifest'] },
-          { id: 'product_service', label: 'Product Services', types: ['product_service'] },
-          { id: 'ard', label: 'Deployment Risks and Decisions', types: ['ard'] }
-        ]
-      },
-      {
         id: 'architecture',
         label: 'Architecture Content',
         filters: [
-          { id: 'all', label: 'All', types: ['reference_architecture', 'rbb', 'abb'] },
+          { id: 'all', label: 'All', types: ['software_distribution_manifest', 'reference_architecture', 'rbb'] },
+          { id: 'software_distribution_manifest', label: 'SDMs', types: ['software_distribution_manifest'] },
           { id: 'reference_architecture', label: 'RAs', types: ['reference_architecture'] },
-          { id: 'rbb', label: 'RBBs', types: ['rbb'] },
-          { id: 'abb', label: 'ABBs', types: ['abb'] }
+          { id: 'rbb', label: 'RBBs', types: ['rbb'] }
         ],
         rows: [
+          { id: 'software_distribution_manifest', label: 'Software Distribution Manifests', types: ['software_distribution_manifest'] },
           { id: 'reference_architecture', label: 'Reference Architectures', types: ['reference_architecture'] },
-          { id: 'rbb', label: 'RBBs', types: ['rbb'] },
-          { id: 'abb', label: 'ABBs', types: ['abb'] }
+          { id: 'rbb', label: 'RBBs', types: ['rbb'] }
+        ]
+      },
+      {
+        id: 'supporting',
+        label: 'Supporting Content',
+        filters: [
+          { id: 'all', label: 'All', types: ['abb', 'ard'] },
+          { id: 'abb', label: 'ABBs', types: ['abb'] },
+          { id: 'ard', label: 'DRDs', types: ['ard'] }
+        ],
+        rows: [
+          { id: 'abb', label: 'ABBs', types: ['abb'] },
+          { id: 'ard', label: 'Deployment Risks and Decisions', types: ['ard'] }
         ]
       },
       {
@@ -1669,9 +1674,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .filter(object => !['aag', 'ard', 'compliance_framework'].includes(object.type))
         .map(object => object.type)
     );
-    const impactOrder = ['software_distribution_manifest', 'reference_architecture', 'product_service', 'rbb', 'abb', 'saas_service'];
+    const impactOrder = ['software_distribution_manifest', 'reference_architecture', 'rbb', 'abb'];
     const impactLifecycleOrder = lifecycleValues;
-    let activeCategory = 'software';
+    let activeCategory = 'architecture';
     let activeFilter = 'all';
     let currentDetailId = null;
     let currentMode = 'list';
@@ -1725,8 +1730,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (normalized === 'rbb') return 'RBB';
       if (normalized === 'aag') return 'AAG';
       if (normalized === 'ard') return 'ARD';
-      if (normalized === 'saas_service') return 'SaaS Service';
-      if (normalized === 'product_service') return 'Product Service';
       if (normalized === 'software_distribution_manifest') return 'Software Distribution Manifest';
       if (normalized === 'reference_architecture') return 'Reference Architecture';
       if (normalized === 'compliance_framework') return 'Compliance Framework';
@@ -2045,12 +2048,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${catalogBadge(object.catalogStatus)}
             ${object.type === 'ard' ? ardCategoryBadge(object.ardCategory) : ''}
             ${object.type === 'ard' ? ardStatusBadge(object.status) : ''}
-            ${object.type === 'product_service' ? productBadge(object.product) : ''}
-            ${object.type === 'saas_service' ? saasBadge() : ''}
+            ${object.type === 'rbb' && object.serviceCategory === 'product' ? productBadge(object.product) : ''}
+            ${object.type === 'rbb' && object.serviceCategory === 'saas' ? saasBadge() : ''}
           </div>
           <div class="badges">
             <div class="badge">${escapeHtml(object.typeLabel)}</div>
-            ${object.type === 'product_service' ? `<div class="object-id">${escapeHtml(object.product)}</div>` : ''}
+            ${object.type === 'rbb' && object.serviceCategory === 'product' ? `<div class="object-id">${escapeHtml(object.product)}</div>` : ''}
             ${object.type === 'abb' && object.subtype === 'appliance' ? applianceBadge() : ''}
           </div>
         </article>
@@ -2297,6 +2300,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               const scalingUnit = group.scalingUnit ? scalingUnits.get(group.scalingUnit) : null;
               const externalInteractions = (group.externalInteractions || []).filter(item => (item.type || 'external') !== 'internal');
               const internalInteractions = (group.externalInteractions || []).filter(item => (item.type || 'external') === 'internal');
+              const rbbEntries = group.rbbs || [];
+              const productCount = rbbEntries.filter(entry => objectLookup[entry.ref]?.serviceCategory === 'product').length;
+              const saasCount = rbbEntries.filter(entry => objectLookup[entry.ref]?.serviceCategory === 'saas').length;
+              const reusableCount = rbbEntries.filter(entry => {
+                const serviceCategory = objectLookup[entry.ref]?.serviceCategory;
+                return !['product', 'saas'].includes(serviceCategory || '');
+              }).length;
               return `
                 <article class="aag-card">
                   <div class="aag-name">${escapeHtml(group.name || 'Unnamed Service Group')}</div>
@@ -2304,10 +2314,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                   <div class="badges">
                     ${group.scalingUnit ? `<span class="badge">${escapeHtml(group.scalingUnit)}</span>` : '<span class="badge">unscoped</span>'}
                     ${scalingUnit?.type ? `<span class="badge">${escapeHtml(scalingUnit.type)}</span>` : ''}
-                    ${(group.productServices || []).length ? `<span class="badge ps-badge">${(group.productServices || []).length} PS</span>` : ''}
-                    ${(group.rbbs || []).length ? `<span class="badge">${(group.rbbs || []).length} RBB</span>` : ''}
+                    ${productCount ? `<span class="badge ps-badge">${productCount} PS</span>` : ''}
+                    ${reusableCount ? `<span class="badge">${reusableCount} RBB</span>` : ''}
                     ${(group.applianceAbbs || []).length ? applianceBadge() : ''}
-                    ${(group.saasServices || []).length ? saasBadge() : ''}
+                    ${saasCount ? saasBadge() : ''}
                   </div>
                   ${externalInteractions.length ? `<div class="interaction-notes"><strong>External:</strong> ${escapeHtml(externalInteractions.map(item => item.name).join(', '))}</div>` : ''}
                   ${internalInteractions.length ? `<div class="interaction-notes"><strong>Internal:</strong> ${escapeHtml(internalInteractions.map(item => `${item.name} → ${item.ref || 'unknown'}`).join(', '))}</div>` : ''}
@@ -2466,20 +2476,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     function topologyNodeIcon(entry, objectType = 'rbb') {
       const ref = entry.ref || '';
       const object = objectLookup[ref];
-      const serviceObject = objectType === 'product_service' && object?.runsOn ? objectLookup[object.runsOn] : object;
+      const serviceObject = object?.serviceCategory === 'product' && object?.runsOn ? objectLookup[object.runsOn] : object;
       if (objectType === 'appliance') return { icon: '🔧', cls: '' };
-      if (objectType === 'saas_service') return { icon: '☁', cls: 'cloud' };
-      if (objectType === 'product_service' && isContainerHostObject(objectLookup[object?.runsOn])) {
+      if (object?.serviceCategory === 'saas') return { icon: '☁', cls: 'cloud' };
+      if (object?.serviceCategory === 'product' && isContainerHostObject(objectLookup[object?.runsOn])) {
         return { icon: '⬢', cls: 'pod' };
       }
       if (ref.startsWith('rbb.service.web.')) return { icon: '🖥', cls: '' };
       if (ref.startsWith('rbb.service.app.')) return { icon: '🗂', cls: '' };
       if (ref.startsWith('rbb.service.dbms.')) return { icon: '🛢', cls: '' };
       if (ref.startsWith('rbb.service.messaging.')) return { icon: '📬', cls: '' };
-      if (serviceObject?.serviceCategory === 'web') return { icon: '🖥', cls: '' };
-      if (serviceObject?.serviceCategory === 'app') return { icon: '🗂', cls: '' };
-      if (serviceObject?.serviceCategory === 'dbms') return { icon: '🛢', cls: '' };
-      if (serviceObject?.serviceCategory === 'messaging') return { icon: '📬', cls: '' };
+      if (serviceObject?.serviceCategory === 'database') return { icon: '🛢', cls: '' };
       return { icon: '🖧', cls: '' };
     }
 
@@ -2515,11 +2522,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (objectType === 'appliance') {
         if (capability === 'load-balancing') return 'presentation';
         if (['file-storage', 'data-persistence'].includes(capability)) return 'data';
-        return 'utility';
-      }
-      if (objectType === 'saas_service') {
-        if (['waf', 'identity'].includes(capability)) return 'presentation';
-        if (['storage', 'analytics'].includes(capability)) return 'data';
         return 'utility';
       }
       return 'utility';
@@ -2561,10 +2563,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const icon = topologyNodeIcon(entry, objectType);
       const targetId = entry.ref || '';
       const classes = ['topology-node'];
-      if (objectType === 'product_service') classes.push('ps-node');
+      if (objectType === 'product') classes.push('ps-node');
       if (objectType === 'rbb') classes.push('rbb-node');
       if (objectType === 'appliance') classes.push('appliance-node');
-      if (objectType === 'saas_service') classes.push('saas-node');
+      if (objectType === 'saas') classes.push('saas-node');
       if (icon.cls) classes.push(icon.cls);
       return `
         <article class="${classes.join(' ')}" ${targetId && objectLookup[targetId] ? `data-object-link="${escapeHtml(targetId)}"` : ''} ${scalingUnit ? `data-scaling-unit="${escapeHtml(scalingUnit)}"` : ''}>
@@ -2589,23 +2591,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       ].join(' • ');
       const cards = [];
 
-      (group.productServices || [])
-        .filter(entry => entryDiagramTier(entry) === tier)
-        .forEach(entry => {
-          cards.push(topologyNodeMarkup(entry, {
-            objectType: 'product_service',
-            badgeLabel: 'PS',
-            scalingUnit,
-            meta: `${group.name} • ${groupMeta}`
-          }));
-        });
-
       (group.rbbs || [])
         .filter(entry => entryDiagramTier(entry) === tier)
         .forEach(entry => {
+          const target = objectLookup[entry.ref] || {};
+          const serviceCategory = target.serviceCategory || '';
+          const objectType = serviceCategory === 'product'
+            ? 'product'
+            : (serviceCategory === 'saas' ? 'saas' : 'rbb');
+          const badgeLabel = serviceCategory === 'product'
+            ? 'PS'
+            : (serviceCategory === 'saas' ? 'SaaS' : 'RBB');
           cards.push(topologyNodeMarkup(entry, {
-            objectType: 'rbb',
-            badgeLabel: 'RBB',
+            objectType,
+            badgeLabel,
             scalingUnit,
             meta: `${group.name} • ${groupMeta}`
           }));
@@ -2617,17 +2616,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           cards.push(topologyNodeMarkup(entry, {
             objectType: 'appliance',
             badgeLabel: 'APPL',
-            scalingUnit,
-            meta: `${group.name} • ${groupMeta}`
-          }));
-        });
-
-      (group.saasServices || [])
-        .filter(entry => supportEntryTier(entry, 'saas_service') === tier)
-        .forEach(entry => {
-          cards.push(topologyNodeMarkup(entry, {
-            objectType: 'saas_service',
-            badgeLabel: 'SaaS',
             scalingUnit,
             meta: `${group.name} • ${groupMeta}`
           }));
@@ -2863,7 +2851,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
       syncHashForDetailView(object.id);
       renderSidebarContent(sidebarMarkup());
-      const softwareServiceRunsOn = object.type === 'product_service' && object.runsOn ? objectLookup[object.runsOn] : null;
+      const softwareServiceRunsOn = object.type === 'rbb' && object.serviceCategory === 'product' && object.runsOn ? objectLookup[object.runsOn] : null;
       const detailDiagramSource = softwareServiceRunsOn && softwareServiceRunsOn.type === 'rbb' ? softwareServiceRunsOn : object;
       const headerMarkup = `
         <section class="header-card">
@@ -2905,7 +2893,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           ${ardDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
-      } else if (object.type === 'product_service') {
+      } else if (object.type === 'rbb' && object.serviceCategory === 'product') {
         detailBody = `
           ${headerMarkup}
           ${productServiceDetailMarkup(object)}
@@ -2925,7 +2913,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           </section>
           ${usedByMarkup(object)}
         `;
-      } else if (object.type === 'saas_service') {
+      } else if (object.type === 'rbb' && object.serviceCategory === 'saas') {
         detailBody = `
           ${headerMarkup}
           ${saasServiceDetailMarkup(object)}
@@ -3073,7 +3061,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         renderTopologyIntoCanvas();
       }
-      if (!['aag', 'ard', 'software_distribution_manifest', 'compliance_framework', 'saas_service'].includes(object.type) && !(object.type === 'abb' && object.subtype === 'appliance')) {
+      if (!['aag', 'ard', 'software_distribution_manifest', 'compliance_framework'].includes(object.type) && !(object.type === 'abb' && object.subtype === 'appliance') && !(object.type === 'rbb' && object.serviceCategory === 'saas')) {
         renderInternalDiagram(detailDiagramSource);
       }
     }
@@ -3407,14 +3395,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function serviceRbbNodesSorted(nodes) {
-      const order = ['web', 'app', 'file', 'messaging', 'cache', 'dbms'];
+      const order = ['product', 'general', 'saas', 'database'];
       return nodes
         .filter(node => node.data('type') === 'rbb' && node.data('category') === 'service')
         .sort((a, b) => {
           const aCategory = a.data('serviceCategory') || 'other';
           const bCategory = b.data('serviceCategory') || 'other';
-          const aIndex = order.includes(aCategory) ? order.indexOf(aCategory) : order.indexOf('cache');
-          const bIndex = order.includes(bCategory) ? order.indexOf(bCategory) : order.indexOf('cache');
+          const aIndex = order.includes(aCategory) ? order.indexOf(aCategory) : order.length;
+          const bIndex = order.includes(bCategory) ? order.indexOf(bCategory) : order.length;
           if (aIndex !== bIndex) return aIndex - bIndex;
           return String(a.data('label') || '').localeCompare(String(b.data('label') || ''));
         });
@@ -3434,8 +3422,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const tiers = [
         addTier(nodeList.filter(node => node.data('type') === 'software_distribution_manifest')),
         addTier(nodeList.filter(node => node.data('type') === 'reference_architecture')),
-        addTier(nodeList.filter(node => node.data('type') === 'product_service')
-          .sort((a, b) => String(a.data('label') || '').localeCompare(String(b.data('label') || '')))),
         addTier(serviceRbbNodesSorted(nodes)),
         addTier(nodeList.filter(node => node.data('type') === 'rbb' && node.data('category') === 'host')
           .sort((a, b) => String(a.data('label') || '').localeCompare(String(b.data('label') || '')))),

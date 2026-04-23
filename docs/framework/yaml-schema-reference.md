@@ -20,10 +20,10 @@ authoritative source for object shape.
 | ABB | `abbs/` | [abb.schema.yaml](../../schemas/abb.schema.yaml) | ABBs use typed IDs such as `abb.os.*`, `abb.software.*`, and `abb.agent.*`. Appliance ABBs also follow [abb-appliance.schema.yaml](../../schemas/abb-appliance.schema.yaml). |
 | RBB | `rbbs/` | [rbb.schema.yaml](../../schemas/rbb.schema.yaml) | RBB is the reusable building-block type. The schema defines the shared contract; the validator applies relationship checks. |
 | Reference Architecture | `reference-architectures/` | [reference-architecture.schema.yaml](../../schemas/reference-architecture.schema.yaml) | RA validation is enforced in `tools/validate.py` and `aag.ra`. |
-| Product Service | `product-services/` | [ps.schema.yaml](../../schemas/ps.schema.yaml) | Framework term is Product Service; object type remains `product_service`. |
+| Product Service | `rbbs/` | [ps.schema.yaml](../../schemas/ps.schema.yaml) | Product Services are RBBs with `category: service` and `serviceCategory: product`. |
 | Software Distribution Manifest | `sdms/` | [sdm.schema.yaml](../../schemas/sdm.schema.yaml) | Includes `serviceGroups`, optional `scalingUnits`, and service-first topology metadata. |
 | Deployment Risk or Decision | `ards/` | [ard.schema.yaml](../../schemas/ard.schema.yaml) | Object type remains `ard`. |
-| SaaS Service | `saas-services/` | [saas-service.schema.yaml](../../schemas/saas-service.schema.yaml) | Use when vendor-managed traffic or data leaves the infrastructure boundary. |
+| SaaS Service | `rbbs/` | [saas-service.schema.yaml](../../schemas/saas-service.schema.yaml) | SaaS Services are RBBs with `category: service` and `serviceCategory: saas`. |
 | AAG | `aags/` | [aag.schema.yaml](../../schemas/aag.schema.yaml) | AAGs are checklist objects. Their shape is enforced by schema and their satisfaction logic by the validator. |
 | Compliance Framework | `compliance-frameworks/` | [compliance-framework.schema.yaml](../../schemas/compliance-framework.schema.yaml) | Requirement-to-control mappings live inline in `requirementMappings`. |
 
@@ -51,10 +51,10 @@ Reference Architectures are validated against their structure and `aag.ra`.
 
 ### Product Service
 
-Product Services follow the Product Service schema file, because the
-underlying object type remains `product_service`.
+Product Services follow the Product Service schema file as an RBB
+classification with product metadata.
 
-- Guide: [product-services.md](product-services.md)
+- Guide: [product-service.md](product-service.md)
 - Schema: [ps.schema.yaml](../../schemas/ps.schema.yaml)
 
 ### Software Distribution Manifest

@@ -17,12 +17,12 @@ DRAFT is built around a few strict principles. First, Git is the system of recor
 The repository should contain these top-level folders:
 
 - `abbs/` for Architecture Building Blocks
-- `saas-services/` for SaaS Service objects
+- `rbbs/` for SaaS Service RBB classifications
 - `rbbs/` for Reusable Building Blocks
 - `aags/` for Architecture Analysis Guidelines
 - `ards/` for Architecture Risks and Decisions
 - `compliance-frameworks/` for selectable compliance framework objects
-- `product-services/` for Product Service objects
+- `rbbs/` for Product Service RBB classifications
 - `reference-architectures/` for Reference Architecture objects
 - `sdms/` for Software Distribution Manifest objects
 - `schemas/` for schema notes and simple YAML schema artifacts
@@ -253,13 +253,11 @@ Software Distribution Manifest objects include:
 
 Each service group can include:
 
-- `productServices`
 - `rbbs`
 - `applianceAbbs`
-- `saasServices`
 - `externalInteractions`
 
-Product Service and RBB entries can use `intent` only when the architect is
+Deployed RBB entries can use `intent` only when the architect is
 making an explicit design decision that deviates from the Reference Architecture
 default, or when no Reference Architecture exists.
 
@@ -317,9 +315,7 @@ The Product Service AAG defines the minimum modeling contract for a first-party 
 - selection of the RBB pattern via `runsOn`
 - at least one named variant
 - a populated `product` field
-- explicit declaration that the object is first-party by virtue of being `type: product_service`
-- availability requirement, documented at the SDM level
-- external integrations, documented at the SDM level
+- explicit declaration that the object is first-party by virtue of being an RBB with `serviceCategory: product`
 
 ## Validation Behavior
 
@@ -332,7 +328,7 @@ Validation performs these categories of checks:
 - valid lifecycle and catalog status enums
 - machine-readable decision enforcement for `autoscaling`, `loadBalancer`, and `minNodes`
 - AAG satisfaction checks for applicable object types
-- reference resolution checks, such as `runsOn`, `hostRbb`, `functionAbb`, `osAbb`, `hardwareAbb`, ARD references, and deployed Product Service variant selection
+- reference resolution checks, such as `runsOn`, `hostRbb`, `functionAbb`, `osAbb`, `hardwareAbb`, ARD references, and deployed RBB variant selection
 
 The validator exits non-zero on failure and prints pass or fail per file. This output is designed for both local use and CI.
 

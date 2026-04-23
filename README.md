@@ -27,7 +27,7 @@ linked below.
 ### Supporting Object Guides
 
 - [Architecture Building Block (ABB)](docs/framework/abbs.md)
-- [Product Service (PS)](docs/framework/product-services.md)
+- [Product Service (PS)](docs/framework/product-service.md)
 - [Software as a Service (SaaS) Service](docs/framework/saas-services.md)
 
 ### Extensible Framework Content

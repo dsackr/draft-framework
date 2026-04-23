@@ -18,8 +18,8 @@ types by the role they play in the model.
 | Host | The runtime substrate on which reusable or product-specific services run. |
 | General Service | A reusable non-database service pattern that runs on a host or equivalent managed substrate. |
 | Database Service | A reusable data-platform service pattern with durability, recovery, and access-control concerns. |
-| SaaS Service | A vendor-managed service classification used when traffic or data may leave the infrastructure boundary. The current machine-readable object type remains `saas_service`. |
-| Product Service | A first-party service classification used when organization-authored code runs on an RBB or blackbox host pattern. The current machine-readable object type remains `product_service`. |
+| SaaS Service | A vendor-managed service classification used when traffic or data may leave the infrastructure boundary. It is modeled as an RBB with `category: service` and `serviceCategory: saas`. |
+| Product Service | A first-party service classification used when organization-authored code runs on an RBB or blackbox host pattern. It is modeled as an RBB with `category: service` and `serviceCategory: product`. |
 
 ## Supporting Model Objects
 
