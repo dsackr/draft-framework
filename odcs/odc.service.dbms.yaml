@@ -3,7 +3,7 @@ id: odc.service.dbms
 type: odc
 name: DBMS Service Object Definition Checklist
 description: Additional DBMS service checklist items extending the generic service ODC for data durability, protection, and control.
-version: 2.0.0
+version: 3.0.0
 catalogStatus: approved
 lifecycleStatus: maintain
 owner:
@@ -21,21 +21,31 @@ appliesTo:
 inherits: odc.service
 requirements:
   - id: backup-strategy
-    description: The DBMS service must document backup strategy together with recovery time and recovery point expectations.
-    rationale: A database platform is not governable unless durability expectations are explicit.
+    description: The DBMS service must document its backup strategy.
+    rationale: A database platform is not governable unless its backup model is explicit.
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
         key: backup.strategy
         example: Daily full plus hourly log backup or daily full backup.
+    minimumSatisfactions: 1
+  - id: recovery-time-objective
+    description: The DBMS service must document its recovery time objective.
+    rationale: Recovery time must be explicit so operators and product teams understand the recovery expectation.
+    canBeSatisfiedBy:
       - mechanism: architecturalDecision
         key: backup.rto
         example: A one-hour or four-hour recovery time objective.
+    minimumSatisfactions: 1
+  - id: recovery-point-objective
+    description: The DBMS service must document its recovery point objective.
+    rationale: Recovery point must be explicit so durability expectations are clear.
+    canBeSatisfiedBy:
       - mechanism: architecturalDecision
         key: backup.rpo
         example: A one-hour or twenty-four-hour recovery point objective.
-    minimumSatisfactions: 3
-  - id: ha-mechanism
-    description: The DBMS service must document its database-level availability mechanism.
+    minimumSatisfactions: 1
+  - id: ha-replication-mechanism
+    description: The DBMS service must document its high-availability or replication mechanism.
     rationale: Database resilience depends on an explicit clustering, replication, or standalone posture.
     canBeSatisfiedBy:
       - mechanism: architecturalDecision

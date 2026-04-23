@@ -161,8 +161,10 @@ architectural answer.
 This extends the service baseline for database services. In plain language, it
 requires a DBMS service RBB to document:
 
-- backup strategy, including RTO and RPO
-- HA mechanism
+- backup strategy
+- recovery time objective
+- recovery point objective
+- HA / replication mechanism
 - encryption at rest
 - access-control model
 

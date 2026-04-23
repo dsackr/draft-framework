@@ -291,7 +291,7 @@ The general service ODC applies to reusable non-database service RBBs. The struc
 
 ### odc.service.dbms
 
-The DBMS service ODC inherits `odc.service` and adds DBMS-specific durability and control requirements. It requires backup strategy, recovery time, recovery point, high-availability mechanism, encryption at rest, and access control model.
+The DBMS service ODC inherits `odc.service` and adds DBMS-specific durability and control requirements. It requires backup strategy, recovery time objective, recovery point objective, high-availability or replication mechanism, encryption at rest, and access control model.
 
 ### odc.ra
 
