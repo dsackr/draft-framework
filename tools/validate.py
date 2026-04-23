@@ -216,7 +216,6 @@ def scope_to_odc_id(scope: str) -> str | None:
         "rbb.host": "odc.host",
         "rbb.service.general": "odc.service",
         "rbb.service.database": "odc.service.dbms",
-        "rbb.service.product": "odc.product-service",
         "rbb.service.saas": "odc.saas-service",
         "ra": "odc.ra",
         "sdm": "odc.sdm",

@@ -78,6 +78,7 @@ An RA should be generic enough to guide many products, not just one.
 3. Set `appliesPattern` if the product aligns with an existing RA.
 4. Define any `scalingUnits` needed to express replicable or shared deployment boundaries.
 5. Build the manifest out through `serviceGroups`, then place Product Services, RBBs, Appliance ABBs, and SaaS Services into the appropriate groups.
+   Product Service is not a starting-point ODC object; use it here only when the SDM needs to express a distinct first-party runtime-behavior component deployed on a substrate.
 6. Set `diagramTier` on every Product Service and RBB entry using one of `presentation`, `application`, `data`, or `utility`.
 7. Use `intent` only when the architect is explicitly deviating from the Reference Architecture or when no Reference Architecture exists.
 8. Add product-level `architecturalDecisions`, including availability requirement and data classification, so the SDM satisfies `odc.sdm`.

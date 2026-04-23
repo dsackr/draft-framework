@@ -19,7 +19,7 @@ types by the role they play in the model.
 | General Service | A reusable non-database service pattern that runs on a host or equivalent managed substrate. |
 | Database Service | A reusable data-platform service pattern with durability, recovery, and access-control concerns. |
 | SaaS Service | A vendor-managed service classification used when traffic or data may leave the infrastructure boundary. It is modeled as an RBB with `category: service` and `serviceCategory: saas`. |
-| Product Service | A first-party service classification used when organization-authored code runs on an RBB or blackbox host pattern. It is modeled as an RBB with `category: service` and `serviceCategory: product`. |
+| Product Service | A first-party service classification used when an SDM needs to express a distinct runtime-behavior component deployed on an RBB or blackbox host pattern. It is modeled as an RBB with `category: service` and `serviceCategory: product`. |
 
 ## Supporting Model Objects
 

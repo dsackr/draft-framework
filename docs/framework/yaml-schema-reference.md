@@ -20,7 +20,7 @@ authoritative source for object shape.
 | ABB | `abbs/` | [abb.schema.yaml](../../schemas/abb.schema.yaml) | ABBs are discrete third-party product objects with required `vendor`, `productName`, `productVersion`, and `classification`. Appliance ABBs also follow [abb-appliance.schema.yaml](../../schemas/abb-appliance.schema.yaml). |
 | RBB | `rbbs/` | [rbb.schema.yaml](../../schemas/rbb.schema.yaml) | RBB is the reusable building-block type. The schema defines the shared contract, including optional `deploymentConfigurations`; the validator applies relationship checks. |
 | Reference Architecture | `reference-architectures/` | [reference-architecture.schema.yaml](../../schemas/reference-architecture.schema.yaml) | RA validation is enforced in `tools/validate.py` and `odc.ra`. |
-| Product Service | `rbbs/` | [ps.schema.yaml](../../schemas/ps.schema.yaml) | Product Services are RBBs with `category: service` and `serviceCategory: product`. |
+| Product Service | `rbbs/` | [ps.schema.yaml](../../schemas/ps.schema.yaml) | Product Services are RBBs with `category: service` and `serviceCategory: product`. They emerge in an SDM rather than as starting-point ODC objects. |
 | Software Distribution Manifest | `sdms/` | [sdm.schema.yaml](../../schemas/sdm.schema.yaml) | Includes `serviceGroups`, optional `scalingUnits`, and service-first topology metadata. |
 | Deployment Risk or Decision | `ards/` | [ard.schema.yaml](../../schemas/ard.schema.yaml) | Object type remains `ard`. |
 | SaaS Service | `rbbs/` | [saas-service.schema.yaml](../../schemas/saas-service.schema.yaml) | SaaS Services are RBBs with `category: service` and `serviceCategory: saas`. |
@@ -52,7 +52,7 @@ Reference Architectures are validated against their structure and `odc.ra`.
 ### Product Service
 
 Product Services follow the Product Service schema file as an RBB
-classification with product metadata.
+classification with product metadata. They do not have a dedicated ODC.
 
 - Guide: [product-service.md](product-service.md)
 - Schema: [ps.schema.yaml](../../schemas/ps.schema.yaml)
