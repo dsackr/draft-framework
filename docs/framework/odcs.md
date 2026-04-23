@@ -49,7 +49,7 @@ being defined.
 
 ## Satisfaction Mechanisms
 
-There are four satisfaction mechanisms.
+There are five satisfaction mechanisms.
 
 ### `field`
 
@@ -65,6 +65,14 @@ The requirement is satisfied by something deployed inside the RBB.
 
 Example: a host RBB that includes a security or patching agent ABB as an
 internal component.
+
+### `abbConfiguration`
+
+The requirement is satisfied by a named configuration carried on one of the
+referenced ABBs.
+
+Example: a Windows or Linux ABB configuration that defines where host logs are
+written and how they are handled operationally.
 
 ### `externalInteraction`
 
@@ -90,9 +98,10 @@ forcing one implementation pattern.
 
 An ODC should not say that authentication must always be modeled as an external
 platform dependency. In some cases that is the right representation. In others,
-a clear architectural decision is enough. The ODC's job is to say that the
-concern must be addressed. It is not the ODC's job to prescribe the only
-acceptable shape of the answer.
+the answer may come from a local ABB, a named ABB configuration, or a clear
+architectural decision. The ODC's job is to say that the concern must be
+addressed. It is not the ODC's job to prescribe the only acceptable shape of
+the answer.
 
 ## The Current ODC Set
 
@@ -101,8 +110,11 @@ acceptable shape of the answer.
 This is the host baseline. In plain language, it requires a host RBB to
 address:
 
+- operating system
+- compute platform
 - authentication
-- logging
+- log management
+- health and welfare monitoring
 - security monitoring
 - patch management
 
@@ -110,6 +122,11 @@ Backup is intentionally not a host-baseline requirement. Recovery and
 protection concerns belong to the service or data layer unless a selected
 security or compliance framework adds stricter expectations through control
 mappings.
+
+For managed hosts, Operating System and Compute Platform are expected to be
+answered by selecting the correct ABBs. The other concerns may be answered
+through Agent ABBs, Software ABBs, ABB configurations, external interactions,
+or architectural decisions.
 
 ### `odc.service`
 
@@ -221,8 +238,12 @@ explicit validation rules for those object types.
 - An `externalInteraction` mechanism is satisfied when the object has an
   `externalInteractions` entry whose capability matches the requirement
   criteria.
-- An `internalComponent` mechanism is satisfied when the object has an
-  `internalComponents` entry whose role matches the requirement criteria.
+- An `internalComponent` mechanism is satisfied when the object has a
+  referenced ABB whose concern metadata matches the requirement criteria, or an
+  `internalComponents` entry whose role matches the requirement criteria when
+  the ODC uses role-based matching.
+- An `abbConfiguration` mechanism is satisfied when a referenced ABB has a
+  named configuration whose concern metadata matches the requirement criteria.
 - An `architecturalDecision` mechanism is satisfied when the required key
   exists and is non-empty in the object's `architecturalDecisions` map.
 - A `field` mechanism is satisfied when the specified object field is

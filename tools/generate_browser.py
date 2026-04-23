@@ -319,6 +319,8 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "productVersion": obj.get("productVersion", ""),
                 "classification": obj.get("classification", ""),
                 "platformDependency": obj.get("platformDependency", ""),
+                "addressesConcerns": obj.get("addressesConcerns", []),
+                "configurations": obj.get("configurations", []),
                 "capability": obj.get("capability", ""),
                 "networkPlacement": obj.get("networkPlacement", ""),
                 "patchingOwner": obj.get("patchingOwner", ""),
@@ -2374,12 +2376,25 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <dt>Product Name</dt><dd>${escapeHtml(object.productName || '')}</dd>
               <dt>Product Version</dt><dd>${escapeHtml(object.productVersion || '')}</dd>
               <dt>Classification</dt><dd>${escapeHtml(abbClassificationLabel(object.classification))}</dd>
+              ${object.addressesConcerns?.length ? `<dt>Addresses Concerns</dt><dd>${escapeHtml(object.addressesConcerns.map(abbClassificationLabel).join(', '))}</dd>` : ''}
               ${object.platformDependency ? `<dt>Platform Dependency</dt><dd>${escapeHtml(object.platformDependency)}</dd>` : ''}
               ${object.capability ? `<dt>Capability</dt><dd>${escapeHtml(object.capability || '')}</dd>` : ''}
               ${object.networkPlacement ? `<dt>Network Placement</dt><dd>${escapeHtml(object.networkPlacement || '')}</dd>` : ''}
               ${object.patchingOwner ? `<dt>Patching Owner</dt><dd>${escapeHtml(object.patchingOwner || '')}</dd>` : ''}
               <dt>Compliance Certs</dt><dd>${escapeHtml((object.complianceCerts || []).join(', ') || 'None documented')}</dd>
             </dl>
+            ${object.configurations?.length ? `
+              <div class="interaction-notes"><strong>Configurations:</strong></div>
+              <div class="section-stack">
+                ${object.configurations.map(configuration => `
+                  <article class="odc-card">
+                    <div class="odc-name">${escapeHtml(configuration.name || configuration.id || 'Configuration')}</div>
+                    <div class="interaction-notes">${escapeHtml(configuration.description || '')}</div>
+                    <div class="object-id">${escapeHtml((configuration.addressesConcerns || []).map(abbClassificationLabel).join(', '))}</div>
+                  </article>
+                `).join('')}
+              </div>
+            ` : ''}
           </div>
         </section>
         ${object.subtype === 'appliance' && objectLookup['odc.appliance-abb'] ? odcRequirementsMarkup(objectLookup['odc.appliance-abb']) : ''}

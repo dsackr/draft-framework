@@ -18,3 +18,11 @@ vendor: Canonical
 productName: Ubuntu Server
 productVersion: "22.04 LTS"
 classification: operating-system
+configurations:
+  - id: centralized-log-forwarding
+    name: Centralized Log Forwarding
+    description: >
+      Standard operating system logging configuration that forwards host logs
+      to the centralized logging destination.
+    addressesConcerns:
+      - log-management

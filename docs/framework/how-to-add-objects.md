@@ -20,9 +20,11 @@ Many mistakes happen because engineers skip that decision and start writing fiel
 3. Create the YAML file in `abbs/`.
 4. Fill in the shared base fields.
 5. Fill in the required ABB fields: `vendor`, `productName`, `productVersion`, and `classification`.
-6. Fill in any remaining ABB-specific metadata such as vendor lifecycle and optional platform dependency.
-7. If the ABB is classified as `agent`, make sure any RBB that uses it also documents the corresponding external interaction or an Architecture Decision exception under `architecturalDecisions.agentInteractionExceptions`.
-6. Run validation.
+6. Add `addressesConcerns` if the ABB itself satisfies reusable host concerns.
+7. Add `configurations` if a named ABB configuration satisfies reusable host concerns.
+8. Fill in any remaining ABB-specific metadata such as vendor lifecycle and optional platform dependency.
+9. If the ABB is classified as `agent`, make sure any RBB that uses it also documents the corresponding external interaction or an Architecture Decision exception under `architecturalDecisions.agentInteractionExceptions`.
+10. Run validation.
 
 ABBs should be specific. If you cannot name the product version clearly, you probably are not ready to create the object yet.
 

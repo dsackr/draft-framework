@@ -18,4 +18,6 @@ vendor: CrowdStrike
 productName: Falcon Sensor
 productVersion: current
 classification: agent
+addressesConcerns:
+  - security-monitoring
 platformDependency: CrowdStrike Falcon Platform

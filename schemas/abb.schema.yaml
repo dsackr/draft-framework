@@ -23,6 +23,8 @@ optionalFields:
   - notes
   - vendorLifecycle
   - platformDependency
+  - addressesConcerns
+  - configurations
   - capability
   - networkPlacement
   - patchingOwner
@@ -49,5 +51,17 @@ fieldTypes:
   tags: list
   owner: dict
   vendorLifecycle: dict
+  addressesConcerns: list
+  configurations: list
   complianceCerts: list
   controlReferences: list
+collectionSchemas:
+  configurations: configuration
+configuration:
+  requiredFields:
+    - id
+    - name
+    - description
+    - addressesConcerns
+  fieldTypes:
+    addressesConcerns: list

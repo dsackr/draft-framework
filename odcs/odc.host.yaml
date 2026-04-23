@@ -3,7 +3,7 @@ id: odc.host
 type: odc
 name: Host Object Definition Checklist
 description: Structured checklist of required questions and answers used to define a complete and correct host RBB.
-version: 2.1.0
+version: 3.0.0
 catalogStatus: approved
 lifecycleStatus: maintain
 owner:
@@ -17,6 +17,22 @@ appliesTo:
   type: rbb
   category: host
 requirements:
+  - id: operating-system
+    description: The host must declare the Operating System ABB that defines the operating system baseline.
+    rationale: A host is not complete until the operating system product baseline is explicit.
+    canBeSatisfiedBy:
+      - mechanism: field
+        key: osAbb
+        example: "osAbb: abb.os.microsoft-windowsserver-2022"
+    minimumSatisfactions: 1
+  - id: compute-platform
+    description: The host must declare the Compute Platform ABB that defines the physical or virtual compute substrate.
+    rationale: A host is not complete until the compute substrate is explicit.
+    canBeSatisfiedBy:
+      - mechanism: field
+        key: hardwareAbb
+        example: "hardwareAbb: abb.hardware.amazon-ec2-standard"
+    minimumSatisfactions: 1
   - id: authentication
     description: The host must address how administrators and services authenticate to the platform.
     rationale: Identity control is a baseline host requirement because unmanaged access breaks supportability and auditability.
@@ -25,11 +41,19 @@ requirements:
         criteria:
           capability: authentication
         example: Active Directory or another enterprise identity platform.
+      - mechanism: internalComponent
+        criteria:
+          concern: authentication
+        example: An ABB installed locally that provides host authentication behavior.
+      - mechanism: abbConfiguration
+        criteria:
+          concern: authentication
+        example: An Operating System ABB configuration that defines the authentication model.
       - mechanism: architecturalDecision
         key: authenticationApproach
         example: A documented local or federated authentication model when the dependency is not expressed as a platform interaction.
     minimumSatisfactions: 1
-  - id: logging
+  - id: log-management
     description: The host must address how logs leave the host and reach an operationally supported logging destination.
     rationale: Logging is required for troubleshooting, security response, and evidentiary review.
     canBeSatisfiedBy:
@@ -37,9 +61,37 @@ requirements:
         criteria:
           capability: logging
         example: Centralized Logging or a managed SIEM pipeline.
+      - mechanism: internalComponent
+        criteria:
+          concern: log-management
+        example: A locally installed ABB that implements host log management.
+      - mechanism: abbConfiguration
+        criteria:
+          concern: log-management
+        example: An Operating System ABB configuration that redirects logs to a dedicated volume or forwarding path.
       - mechanism: architecturalDecision
         key: loggingApproach
         example: A documented log shipping design for cases where the platform is described indirectly.
+    minimumSatisfactions: 1
+  - id: health-welfare-monitoring
+    description: The host must address health and welfare monitoring for performance, availability, and operational telemetry.
+    rationale: Hosts must show how operators know whether the platform is healthy and supportable.
+    canBeSatisfiedBy:
+      - mechanism: externalInteraction
+        criteria:
+          capability: monitoring
+        example: Dynatrace, Nagios, or another host monitoring platform.
+      - mechanism: internalComponent
+        criteria:
+          concern: health-welfare-monitoring
+        example: A locally installed ABB that exports host health telemetry.
+      - mechanism: abbConfiguration
+        criteria:
+          concern: health-welfare-monitoring
+        example: An ABB configuration that enables local health telemetry or metrics export.
+      - mechanism: architecturalDecision
+        key: healthWelfareMonitoringApproach
+        example: A documented explanation of the host monitoring pattern when the implementation is not captured directly.
     minimumSatisfactions: 1
   - id: security-monitoring
     description: The host must address endpoint security or runtime security monitoring.
@@ -51,8 +103,12 @@ requirements:
         example: CrowdStrike Falcon Platform or Wiz Cloud Security.
       - mechanism: internalComponent
         criteria:
-          role: agent
-        example: An installed security agent ABB that enables the platform interaction.
+          concern: security-monitoring
+        example: An installed ABB that provides endpoint or runtime security monitoring.
+      - mechanism: abbConfiguration
+        criteria:
+          concern: security-monitoring
+        example: An ABB configuration that enables local security telemetry or runtime protection behavior.
       - mechanism: architecturalDecision
         key: securityMonitoringApproach
         example: A documented statement of the host security monitoring pattern.
@@ -67,8 +123,12 @@ requirements:
         example: Automox Patch Management.
       - mechanism: internalComponent
         criteria:
-          role: agent
-        example: An endpoint agent ABB that performs or coordinates patch execution.
+          concern: patch-management
+        example: An installed ABB that performs or coordinates patch execution.
+      - mechanism: abbConfiguration
+        criteria:
+          concern: patch-management
+        example: An ABB configuration that defines how the platform is patched without a separate external orchestrator.
       - mechanism: architecturalDecision
         key: patchManagementApproach
         example: A documented patch orchestration model when a platform interaction is not explicitly modeled.

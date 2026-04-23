@@ -64,6 +64,12 @@ These classifications are machine-readable semantics, not just documentation
 labels. The validator can use them when checking whether an RBB is built from
 the right kinds of ABBs.
 
+ABBs may also carry reusable host-control metadata:
+
+- `addressesConcerns` when the ABB itself satisfies one or more host concerns
+- `configurations` when a named ABB configuration satisfies one or more host
+  concerns
+
 A good example is the CrowdStrike Falcon agent. The ABB captures the fact that
 the agent is installed locally on a host, but it also acknowledges that the
 agent exists to connect the host to the CrowdStrike platform.
@@ -115,6 +121,11 @@ corresponding `externalInteractions` that the agent depends on, unless an
 Architecture Decision explains why the interaction is intentionally omitted.
 That requirement does not apply to Software ABBs.
 
+When a concern is satisfied by configuration rather than by a separate product,
+the configuration should be named on the ABB itself. For example, an Operating
+System ABB may declare a log-management configuration that redirects system
+generated logs to a dedicated log volume.
+
 ## Appliance ABBs
 
 An Appliance ABB is a special ABB subtype for a vendor-managed component whose
@@ -148,8 +159,10 @@ not actually control.
 3. Create the YAML file in the correct folder.
 4. Fill in the shared base fields: schema version, ID, type, name, description, version, catalog status, lifecycle status, owner, and tags.
 5. Fill in the ABB-specific fields: `classification`, `vendor`, `productName`, `productVersion`, optional `platformDependency`, and vendor lifecycle.
-6. If the vendor publishes lifecycle dates, include them. If the vendor does not publish them, say so explicitly in `vendorLifecycle.notes` and leave the dates null rather than guessing.
-7. Run `python3 tools/validate.py`.
+6. Add `addressesConcerns` if the ABB itself satisfies reusable host concerns.
+7. Add `configurations` if a named ABB configuration satisfies reusable host concerns.
+8. If the vendor publishes lifecycle dates, include them. If the vendor does not publish them, say so explicitly in `vendorLifecycle.notes` and leave the dates null rather than guessing.
+9. Run `python3 tools/validate.py`.
 
 ## FAQ
 

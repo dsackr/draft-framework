@@ -19,6 +19,8 @@ optionalFields:
   - owner
   - tags
   - notes
+  - addressesConcerns
+  - configurations
   - networkPlacement
   - patchingOwner
   - complianceCerts
@@ -59,5 +61,17 @@ enumFields:
 fieldTypes:
   owner: dict
   tags: list
+  addressesConcerns: list
+  configurations: list
   complianceCerts: list
   controlReferences: list
+collectionSchemas:
+  configurations: configuration
+configuration:
+  requiredFields:
+    - id
+    - name
+    - description
+    - addressesConcerns
+  fieldTypes:
+    addressesConcerns: list

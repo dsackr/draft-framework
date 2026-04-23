@@ -110,6 +110,10 @@ records the exception. The machine-readable exception path is
 `architecturalDecisions.agentInteractionExceptions`. Software ABBs do not carry
 that requirement.
 
+Required host concerns such as logging, monitoring, security monitoring, and
+patch management may be satisfied through an Agent ABB, a Software ABB, a
+named ABB configuration, an external interaction, or an architectural decision.
+
 Host ODCs should define the host itself and its baseline controls. They should
 not force service or data concerns such as backup strategy onto the host object.
 

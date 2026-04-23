@@ -14,6 +14,13 @@ SCHEMA_ROOT = REPO_ROOT / "schemas"
 SKIP_DIRS = {"tools", "schemas", "docs", "adrs", ".github", ".git"}
 VALID_DIAGRAM_TIERS = {"presentation", "application", "data", "utility"}
 VALID_ABB_CLASSIFICATIONS = {"operating-system", "compute-platform", "software", "agent"}
+VALID_HOST_CONCERNS = {
+    "authentication",
+    "log-management",
+    "health-welfare-monitoring",
+    "security-monitoring",
+    "patch-management",
+}
 DECISION_ENUMS = {
     "autoscaling": {"required", "optional", "none"},
     "loadBalancer": {"required", "optional", "none"},
@@ -189,6 +196,10 @@ def applicable_odc_ids(obj: dict[str, Any], odcs: dict[str, dict[str, Any]]) -> 
                 continue
             if service_category and obj.get("serviceCategory") != service_category:
                 continue
+            if odc_id == "odc.host":
+                object_id = str(obj.get("id", ""))
+                if object_id.startswith("rbb.host.serverless.") or object_id.startswith("rbb.host.container."):
+                    continue
         applicable.append(odc_id)
     return sorted(applicable)
 
@@ -203,14 +214,43 @@ def mechanism_description(mechanism: dict[str, Any]) -> str:
         capability = mechanism.get("criteria", {}).get("capability", "unknown")
         return f"externalInteraction(capability={capability})"
     if mechanism_type == "internalComponent":
-        role = mechanism.get("criteria", {}).get("role", "unknown")
-        return f"internalComponent(role={role})"
+        criteria = mechanism.get("criteria", {})
+        concern = criteria.get("concern")
+        role = criteria.get("role")
+        if concern:
+            return f"internalComponent(concern={concern})"
+        return f"internalComponent(role={role or 'unknown'})"
+    if mechanism_type == "abbConfiguration":
+        concern = mechanism.get("criteria", {}).get("concern", "unknown")
+        return f"abbConfiguration(concern={concern})"
     if mechanism_type == "architecturalDecision":
         return f"architecturalDecision({mechanism.get('key', 'unknown')})"
     return str(mechanism_type)
 
 
-def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any]) -> bool:
+def referenced_abbs(obj: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    refs: list[str] = []
+    for field in ("osAbb", "hardwareAbb", "functionAbb"):
+        ref = obj.get(field)
+        if is_non_empty(ref):
+            refs.append(str(ref))
+    for component in obj.get("internalComponents", []) or []:
+        if isinstance(component, dict) and is_non_empty(component.get("ref")):
+            refs.append(str(component["ref"]))
+
+    resolved: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for ref in refs:
+        if ref in seen:
+            continue
+        seen.add(ref)
+        target = catalog_by_id.get(ref)
+        if target and target.get("type") == "abb":
+            resolved.append(target)
+    return resolved
+
+
+def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]]) -> bool:
     mechanism_type = mechanism.get("mechanism")
     if mechanism_type == "field":
         key = mechanism.get("key", "")
@@ -229,11 +269,38 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any]) -> bool:
             for interaction in obj.get("externalInteractions", [])
         )
     if mechanism_type == "internalComponent":
-        role = mechanism.get("criteria", {}).get("role")
+        criteria = mechanism.get("criteria", {})
+        concern = criteria.get("concern")
+        role = criteria.get("role")
+        classification = criteria.get("classification")
+        if concern:
+            for abb in referenced_abbs(obj, catalog_by_id):
+                if classification and abb.get("classification") != classification:
+                    continue
+                concerns = abb.get("addressesConcerns", [])
+                if isinstance(concerns, list) and concern in concerns:
+                    return True
+            return False
         return any(
             isinstance(component, dict) and component.get("role") == role
             for component in obj.get("internalComponents", [])
         )
+    if mechanism_type == "abbConfiguration":
+        concern = mechanism.get("criteria", {}).get("concern")
+        classification = mechanism.get("criteria", {}).get("classification")
+        for abb in referenced_abbs(obj, catalog_by_id):
+            if classification and abb.get("classification") != classification:
+                continue
+            configurations = abb.get("configurations", [])
+            if not isinstance(configurations, list):
+                continue
+            for configuration in configurations:
+                if not isinstance(configuration, dict):
+                    continue
+                concerns = configuration.get("addressesConcerns", [])
+                if isinstance(concerns, list) and concern in concerns:
+                    return True
+        return False
     if mechanism_type == "architecturalDecision":
         key = mechanism.get("key", "")
         decisions = obj.get("architecturalDecisions", {})
@@ -245,10 +312,14 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any]) -> bool:
     return False
 
 
-def validate_odc_requirement(obj: dict[str, Any], requirement: dict[str, Any]) -> tuple[bool, str]:
+def validate_odc_requirement(
+    obj: dict[str, Any],
+    requirement: dict[str, Any],
+    catalog_by_id: dict[str, dict[str, Any]],
+) -> tuple[bool, str]:
     mechanisms = requirement.get("canBeSatisfiedBy", [])
     minimum = int(requirement.get("minimumSatisfactions", 1))
-    satisfied = [mechanism for mechanism in mechanisms if mechanism_satisfied(obj, mechanism)]
+    satisfied = [mechanism for mechanism in mechanisms if mechanism_satisfied(obj, mechanism, catalog_by_id)]
     if len(satisfied) >= minimum:
         return True, ""
 
@@ -298,6 +369,34 @@ def validate_abb(obj: dict[str, Any], path: Path, failures: list[str]) -> None:
         failures.append(
             f"{path}: ABB classification must be one of {sorted(VALID_ABB_CLASSIFICATIONS)}"
         )
+    concerns = obj.get("addressesConcerns", [])
+    if concerns is not None:
+        if not isinstance(concerns, list):
+            failures.append(f"{path}: addressesConcerns must be a list")
+        else:
+            invalid = [concern for concern in concerns if concern not in VALID_HOST_CONCERNS]
+            if invalid:
+                failures.append(
+                    f"{path}: addressesConcerns contains invalid concern ids {invalid} — expected values from {sorted(VALID_HOST_CONCERNS)}"
+                )
+    configurations = obj.get("configurations", [])
+    if configurations is not None:
+        if not isinstance(configurations, list):
+            failures.append(f"{path}: configurations must be a list")
+        else:
+            for index, configuration in enumerate(configurations):
+                if not isinstance(configuration, dict):
+                    failures.append(f"{path}: configurations[{index}] must be a mapping")
+                    continue
+                config_concerns = configuration.get("addressesConcerns", [])
+                if not isinstance(config_concerns, list):
+                    failures.append(f"{path}: configurations[{index}].addressesConcerns must be a list")
+                    continue
+                invalid = [concern for concern in config_concerns if concern not in VALID_HOST_CONCERNS]
+                if invalid:
+                    failures.append(
+                        f"{path}: configurations[{index}].addressesConcerns contains invalid concern ids {invalid} — expected values from {sorted(VALID_HOST_CONCERNS)}"
+                    )
 
 
 def agent_interaction_exception(obj: dict[str, Any], abb_id: str) -> bool:
@@ -396,7 +495,7 @@ def validate_rbb(
             failures.append(f"{path}: referenced ODC '{odc_id}' does not exist")
             continue
         for requirement in resolve_odc_requirements(odc_id, odcs):
-            valid, message = validate_odc_requirement(obj, requirement)
+            valid, message = validate_odc_requirement(obj, requirement, catalog_by_id)
             if not valid:
                 failures.append(f"{path}: {message}")
 
