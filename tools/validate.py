@@ -631,7 +631,7 @@ def validate_ra(obj: dict[str, Any], path: Path, odcs: dict[str, dict[str, Any]]
 
     if not is_non_empty(obj.get("architecturalDecisions")):
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'pattern-decisions' not satisfied — needs architecturalDecision(architecturalDecisions)"
+            f"{path}: [{object_id}] ODC requirement 'deployment-qualities' not satisfied — needs architecturalDecision(architecturalDecisions)"
         )
 
 

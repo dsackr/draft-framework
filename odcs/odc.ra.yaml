@@ -17,25 +17,25 @@ appliesTo:
   type: reference_architecture
 requirements:
   - id: pattern-type
-    description: The RA must have a descriptive unique name that allows an engineering leader to identify whether their application fits the pattern.
-    rationale: An ambiguous pattern name leads to misapplication and inconsistent deployments.
+    description: What supported deployment pattern does this Reference Architecture define for application teams?
+    rationale: The RA must clearly signal when an application should adopt this deployment pattern to achieve the intended non-functional outcomes.
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
         key: patternType
-        example: 3-Tier .NET High Availability, 2-Tier Java Standard Performance
+        example: multi-tier
     minimumSatisfactions: 1
   - id: required-rbbs
-    description: Every RBB required by this pattern must be listed with a role that describes its function in the architecture.
-    rationale: Without roles engineers cannot understand how to assemble the pattern correctly.
+    description: Which RBBs, in which roles, are required to realize this deployment pattern?
+    rationale: The RA is the mechanism that tells downstream SDMs and application teams which reusable components they must assemble to achieve the intended posture.
     canBeSatisfiedBy:
       - mechanism: internalComponent
         criteria:
           role: web-tier | app-tier | data-tier | cache-tier | messaging-tier
         example: "rbb.service.web.iis-standard with role: web-tier"
     minimumSatisfactions: 1
-  - id: pattern-decisions
-    description: At least one architectural decision must be documented at the pattern level independent of any specific deployment.
-    rationale: Pattern-level decisions capture the why behind the pattern design.
+  - id: deployment-qualities
+    description: What non-functional deployment qualities is this Reference Architecture intended to deliver, and what pattern-level decisions make that possible?
+    rationale: An RA exists to guide application teams toward supported deployment choices that meet availability, recoverability, security, and similar non-functional requirements.
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
         key: architecturalDecisions

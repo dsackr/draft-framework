@@ -64,10 +64,10 @@ Keep the requirements focused on architecture outcomes rather than implementatio
 
 1. Create the file in `reference-architectures/`.
 2. Choose a stable `ra.<pattern-slug>` ID.
-3. Populate `requiredRBBs` with the reusable building blocks that define the pattern.
+3. Populate `requiredRBBs` with the reusable building blocks that define the deployment pattern.
 4. Include the required roles.
-5. Add `architecturalDecisions` that explain what the pattern assumes.
-6. Make sure the file satisfies `odc.ra` by documenting `patternType`, required RBB roles, and pattern-level decisions.
+5. Add `architecturalDecisions` that explain what non-functional qualities the pattern is meant to deliver and how.
+6. Make sure the file satisfies `odc.ra` by documenting `patternType`, required RBB roles, and deployment-quality decisions.
 
 An RA should be generic enough to guide many products, not just one.
 

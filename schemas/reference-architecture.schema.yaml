@@ -16,7 +16,6 @@ optionalFields:
   - patternType
   - architecturalDecisions
   - applicableODC
-  - variantCoverage
 idPattern: "^ra\\.[a-z0-9.-]+$"
 enumFields:
   catalogStatus:
@@ -34,13 +33,11 @@ fieldTypes:
   tags: list
   requiredRBBs: list
   architecturalDecisions: dict
-  variantCoverage: list
 collectionSchemas:
   requiredRBBs: requiredRBB
 requiredRBB:
   requiredFields:
     - ref
-    - variant
     - role
   optionalFields:
     - notes

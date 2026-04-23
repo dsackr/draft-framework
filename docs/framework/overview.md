@@ -8,7 +8,7 @@ types by the role they play in the model.
 | Object Type | Purpose |
 |---|---|
 | RBB | The only reusable building-block architecture type in the framework. An RBB captures a reusable runtime or service pattern. |
-| Reference Architecture | A reusable pattern defined in terms of required RBBs, roles, and expected deployment posture. It is the pattern-level contract that a Software Distribution Manifest may adopt or deviate from. |
+| Reference Architecture | A deployment pattern defined in terms of required RBBs, roles, and pattern-level decisions. It is the contract an SDM may adopt to achieve supported non-functional outcomes such as availability, recoverability, and security posture. |
 | Software Distribution Manifest | The top-level declaration of how a real product is distributed and deployed. It assembles deployed services, reusable building blocks, and deployment-scoped risks or decisions into one product view. |
 
 ## RBB Classifications

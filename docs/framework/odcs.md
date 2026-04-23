@@ -202,10 +202,12 @@ specific answers:
 
 ### `odc.ra`
 
-This ODC applies to reference architectures. It requires an RA to declare a
-clear pattern type, a complete list of required RBBs with roles, and
-pattern-level decisions that explain why the pattern exists in its current
-form.
+This ODC applies to reference architectures. It requires an RA to declare:
+
+- the supported deployment pattern it represents
+- the RBBs and roles required to realize that pattern
+- the pattern-level decisions that deliver the intended non-functional
+  qualities
 
 ### `odc.sdm`
 

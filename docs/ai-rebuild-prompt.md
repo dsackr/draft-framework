@@ -109,9 +109,15 @@ ARDs can be linked from software distribution manifests and rendered directly in
 
 ### Reference Architecture
 
-A Reference Architecture defines a pattern, not a deployment. It answers the question: which reusable building blocks, in which roles, make up a supported architecture pattern? It never represents a specific product environment.
+A Reference Architecture defines a deployment pattern, not a deployment. It
+answers the question: which reusable building blocks, in which roles, should
+an application team adopt when they need the supported non-functional outcomes
+of that pattern? It never represents a specific product environment.
 
-Reference Architectures point to required RBBs and define pattern-level decisions. They should be thought of as reusable blueprints for governance and discovery.
+Reference Architectures point to required RBBs and define pattern-level
+decisions that deliver qualities such as availability, recoverability,
+scalability, or security posture. They should be thought of as reusable
+deployment guidance for application teams and SDMs.
 
 ### Software Distribution Manifest
 
@@ -299,11 +305,11 @@ The DBMS service ODC inherits `odc.service` and adds DBMS-specific durability an
 
 The Reference Architecture ODC requires:
 
-- a non-empty `patternType`
+- a non-empty `patternType` that identifies the supported deployment pattern
 - at least one `requiredRBBs` entry
 - a `role` on every required RBB
-- pattern-level `architecturalDecisions`
-- evidence that pattern-level architecture decisions are covered
+- `architecturalDecisions` that explain how the pattern delivers its intended
+  non-functional deployment qualities
 
 ### odc.sdm
 
