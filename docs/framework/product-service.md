@@ -36,6 +36,13 @@ Product Services use the
 [ps.schema.yaml](../../schemas/ps.schema.yaml) schema and are modeled as an RBB
 classification.
 
+The Product Service ODC inherits the full service baseline from
+`odc.service`. That means a Product Service must still answer service
+authentication, secrets management, service logging, health and welfare
+monitoring, availability, scalability, recoverability, and failure domain. The
+Product Service-specific checklist items add only the first-party concerns:
+`product`, `runsOn`, and explicit `serviceCategory: product`.
+
 At minimum, a Product Service YAML should include:
 
 - `id`

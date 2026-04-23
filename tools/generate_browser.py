@@ -2455,6 +2455,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
+    function preferredInteractionSource(object, fallbackObject) {
+      const ownInteractions = object?.externalInteractions || [];
+      if (ownInteractions.length) {
+        return object;
+      }
+      return fallbackObject;
+    }
+
+    function preferredDecisionSource(object, fallbackObject) {
+      const ownDecisions = object?.architecturalDecisions || {};
+      if (Object.keys(ownDecisions).length) {
+        return object;
+      }
+      return fallbackObject;
+    }
+
     function abbDetailMarkup(object) {
       const title = object.subtype === 'appliance' ? 'Appliance ABB' : 'Architecture Building Block';
       return `
@@ -3016,6 +3032,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           ${usedByMarkup(object)}
         `;
       } else if (object.type === 'rbb' && object.serviceCategory === 'product') {
+        const interactionSource = preferredInteractionSource(object, softwareServiceRunsOn);
+        const decisionSource = preferredDecisionSource(object, softwareServiceRunsOn);
         detailBody = `
           ${headerMarkup}
           ${productServiceDetailMarkup(object)}
@@ -3026,12 +3044,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </div>
             <div class="section-card">
               <h3>External Interactions</h3>
-              ${softwareServiceRunsOn ? interactionMarkup(softwareServiceRunsOn) : '<div class="empty-card">The underlying RBB is not available for this software service.</div>'}
+              ${interactionSource ? interactionMarkup(interactionSource) : '<div class="empty-card">The underlying RBB is not available for this software service.</div>'}
             </div>
           </section>
           <section class="decisions-card">
             <h3>Architectural Decisions</h3>
-            ${softwareServiceRunsOn ? decisionMarkup(softwareServiceRunsOn) : '<div class="empty-card">No architectural decisions are available because the underlying RBB is not documented.</div>'}
+            ${decisionSource ? decisionMarkup(decisionSource) : '<div class="empty-card">No architectural decisions are available because the underlying RBB is not documented.</div>'}
           </section>
           ${usedByMarkup(object)}
         `;

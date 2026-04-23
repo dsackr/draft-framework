@@ -185,8 +185,12 @@ carries, and what SLA the vendor offers.
 ### `odc.product-service`
 
 This ODC applies to Product Service RBB classifications. It requires the object
-to document which RBB pattern it runs on, what product owns it, and that it is
-explicitly classified as a Product Service.
+to inherit the service baseline from `odc.service`, then add the first-party
+specific answers:
+
+- which RBB or host pattern it runs on
+- what product owns it
+- that it is explicitly classified as a Product Service
 
 ### `odc.ra`
 

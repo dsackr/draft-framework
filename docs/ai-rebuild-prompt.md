@@ -316,7 +316,8 @@ The Software Distribution Manifest ODC requires:
 
 The Product Service ODC defines the minimum modeling contract for a first-party service:
 
-- selection of the RBB pattern via `runsOn`
+- inheritance from `odc.service` so the first-party workload answers the service baseline
+- selection of the runtime pattern via `runsOn`
 - a populated `product` field
 - explicit declaration that the object is first-party by virtue of being an RBB with `serviceCategory: product`
 

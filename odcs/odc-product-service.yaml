@@ -9,7 +9,7 @@ description: >
   Version 1 of this framework does not enumerate individual code packages —
   it acknowledges that 1st party code is present and documents the deployment
   context, RBB dependency, and product ownership.
-version: 1.0.0
+version: 2.0.0
 catalogStatus: approved
 lifecycleStatus: invest
 owner:
@@ -23,15 +23,18 @@ appliesTo:
   type: rbb
   category: service
   serviceCategory: product
+inherits: odc.service
 requirements:
   - id: rbb-selection
     description: What RBB pattern does this Product Service run on?
+    rationale: A Product Service is incomplete until its runtime pattern is explicit.
     canBeSatisfiedBy:
       - mechanism: field
         key: runsOn
         example: "runsOn: rbb.service.web.iis-standard"
   - id: product-ownership
     description: What product does this PS belong to?
+    rationale: First-party services must be attributable to an owning product.
     canBeSatisfiedBy:
       - mechanism: field
         key: product
@@ -40,6 +43,7 @@ requirements:
     description: >
       Does this service contain organization-authored code?
       (This is the defining characteristic of a Product Service vs an RBB.)
+    rationale: Product Service is a first-party RBB classification and must remain explicit.
     canBeSatisfiedBy:
       - mechanism: field
         key: serviceCategory
