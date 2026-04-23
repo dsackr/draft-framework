@@ -225,16 +225,16 @@ def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, A
         raw = framework.get("requirementMappings") or {}
         if not isinstance(raw, dict):
             continue
-        aag_map: dict[str, dict[str, list[str]]] = {}
-        for aag_id, req_map in raw.items():
+        odc_map: dict[str, dict[str, list[str]]] = {}
+        for odc_id, req_map in raw.items():
             if not isinstance(req_map, dict):
                 continue
-            aag_map[str(aag_id)] = {
+            odc_map[str(odc_id)] = {
                 str(req_id): [str(c) for c in controls if str(c).strip()]
                 for req_id, controls in req_map.items()
                 if isinstance(controls, list)
             }
-        local_mappings[framework_id] = aag_map
+        local_mappings[framework_id] = odc_map
 
     resolved_cache: dict[str, dict[str, dict[str, list[str]]]] = {}
 
@@ -249,10 +249,10 @@ def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, A
         merged: dict[str, dict[str, list[str]]] = {}
         for parent_id in framework.get("extends", []) if isinstance(framework.get("extends"), list) else []:
             parent_mappings = resolve_framework_mappings(str(parent_id), stack)
-            for aag_id, requirement_map in parent_mappings.items():
-                merged.setdefault(aag_id, {}).update(requirement_map)
-        for aag_id, requirement_map in local_mappings.get(framework_id, {}).items():
-            merged.setdefault(aag_id, {}).update(requirement_map)
+            for odc_id, requirement_map in parent_mappings.items():
+                merged.setdefault(odc_id, {}).update(requirement_map)
+        for odc_id, requirement_map in local_mappings.get(framework_id, {}).items():
+            merged.setdefault(odc_id, {}).update(requirement_map)
         resolved_cache[framework_id] = merged
         stack.remove(framework_id)
         return merged
@@ -1914,8 +1914,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return complianceData.mappingsByFramework?.[selectedFrameworkId] || {};
     }
 
-    function controlsForRequirement(aagId, requirementId) {
-      return selectedFrameworkMappings()?.[aagId]?.[requirementId] || [];
+    function controlsForRequirement(odcId, requirementId) {
+      return selectedFrameworkMappings()?.[odcId]?.[requirementId] || [];
     }
 
     function complianceFrameworkMarkup() {

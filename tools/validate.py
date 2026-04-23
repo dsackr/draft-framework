@@ -532,23 +532,23 @@ def validate_compliance_framework(
         failures.append(f"{path}: requirementMappings must be a mapping of odc-id to requirement mappings")
         return
 
-    for aag_id, req_map in requirement_mappings.items():
+    for odc_id, req_map in requirement_mappings.items():
         if not req_map:
             continue
-        if aag_id not in odcs:
+        if odc_id not in odcs:
             failures.append(
-                f"{path}: requirementMappings references unknown ODC '{aag_id}'"
+                f"{path}: requirementMappings references unknown ODC '{odc_id}'"
             )
             continue
         if not isinstance(req_map, dict):
             failures.append(
-                f"{path}: requirementMappings['{aag_id}'] must be a mapping of requirement-id to controls"
+                f"{path}: requirementMappings['{odc_id}'] must be a mapping of requirement-id to controls"
             )
             continue
         try:
-            resolved = resolve_odc_requirements(aag_id, odcs)
+            resolved = resolve_odc_requirements(odc_id, odcs)
         except (KeyError, ValueError) as exc:
-            failures.append(f"{path}: could not resolve ODC '{aag_id}': {exc}")
+            failures.append(f"{path}: could not resolve ODC '{odc_id}': {exc}")
             continue
         valid_requirement_ids = {
             r.get("id") for r in resolved if isinstance(r, dict) and is_non_empty(r.get("id"))
@@ -556,13 +556,13 @@ def validate_compliance_framework(
         for requirement_id, controls in req_map.items():
             if requirement_id not in valid_requirement_ids:
                 failures.append(
-                    f"{path}: requirementMappings['{aag_id}'] references unknown requirement '{requirement_id}'"
+                    f"{path}: requirementMappings['{odc_id}'] references unknown requirement '{requirement_id}'"
                 )
             if not isinstance(controls, list) or not controls or not all(
                 is_non_empty(c) for c in controls
             ):
                 failures.append(
-                    f"{path}: requirementMappings['{aag_id}']['{requirement_id}'] must be a non-empty list of control ids"
+                    f"{path}: requirementMappings['{odc_id}']['{requirement_id}'] must be a non-empty list of control ids"
                 )
 
 

@@ -1530,8 +1530,8 @@
       return complianceData.mappingsByFramework?.[selectedFrameworkId] || {};
     }
 
-    function controlsForRequirement(aagId, requirementId) {
-      return selectedFrameworkMappings()?.[aagId]?.[requirementId] || [];
+    function controlsForRequirement(odcId, requirementId) {
+      return selectedFrameworkMappings()?.[odcId]?.[requirementId] || [];
     }
 
     function complianceFrameworkMarkup() {
