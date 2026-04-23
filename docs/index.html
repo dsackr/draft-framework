@@ -1958,7 +1958,7 @@
       const runsOnObject = object.runsOn ? objectLookup[object.runsOn] : null;
       return `
         <section class="section-card">
-          <h3>Product Service</h3>
+          <h3>Product Service Classification</h3>
           <div class="section-stack">
             <div class="badges">
               ${productBadge(object.product)}
@@ -1993,7 +1993,7 @@
                 `).join('')}
               </tbody>
             </table>
-          ` : '<div class="empty-card">No variants are documented for this product service.</div>'}
+          ` : '<div class="empty-card">No variants are documented for this product service classification.</div>'}
         </section>
       `;
     }
@@ -2024,7 +2024,7 @@
     function saasServiceDetailMarkup(object) {
       return `
         <section class="section-card">
-          <h3>SaaS Service</h3>
+          <h3>SaaS Service Classification</h3>
           <div class="section-stack">
             <div class="badges">
               ${saasBadge()}

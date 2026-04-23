@@ -54,11 +54,11 @@ REF_CONTAINER_KEYS = {
 CATALOG_ID_PREFIXES = ("abb.", "rbb.", "aag.", "ard.", "ps.", "ra.", "sdm.", "framework.", "saas.")
 
 
-def is_product_service(obj: dict[str, Any]) -> bool:
+def is_product_service_classification(obj: dict[str, Any]) -> bool:
     return obj.get("type") == "rbb" and obj.get("category") == "service" and obj.get("serviceCategory") == "product"
 
 
-def is_saas_service(obj: dict[str, Any]) -> bool:
+def is_saas_service_classification(obj: dict[str, Any]) -> bool:
     return obj.get("type") == "rbb" and obj.get("category") == "service" and obj.get("serviceCategory") == "saas"
 
 
@@ -141,7 +141,7 @@ def shape_for(obj: dict[str, Any]) -> str:
     if obj["type"] == "abb":
         return "ellipse"
     if obj["type"] == "rbb":
-        if is_product_service(obj) or is_saas_service(obj):
+        if is_product_service_classification(obj) or is_saas_service_classification(obj):
             return "round-rectangle"
         return "round-rectangle" if obj.get("category") == "host" else "diamond"
     return "round-rectangle"
@@ -172,9 +172,9 @@ def type_label_for(obj: dict[str, Any]) -> str:
     if obj["type"] == "rbb":
         if obj.get("category") == "host":
             return "Host RBB"
-        if is_product_service(obj):
+        if is_product_service_classification(obj):
             return "Product Service"
-        if is_saas_service(obj):
+        if is_saas_service_classification(obj):
             return "SaaS Service"
         if is_database_service(obj):
             return "Database Service RBB"
@@ -2334,7 +2334,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const runsOnObject = object.runsOn ? objectLookup[object.runsOn] : null;
       return `
         <section class="section-card">
-          <h3>Product Service</h3>
+          <h3>Product Service Classification</h3>
           <div class="section-stack">
             <div class="badges">
               ${productBadge(object.product)}
@@ -2369,7 +2369,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 `).join('')}
               </tbody>
             </table>
-          ` : '<div class="empty-card">No variants are documented for this product service.</div>'}
+          ` : '<div class="empty-card">No variants are documented for this product service classification.</div>'}
         </section>
       `;
     }
@@ -2400,7 +2400,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     function saasServiceDetailMarkup(object) {
       return `
         <section class="section-card">
-          <h3>SaaS Service</h3>
+          <h3>SaaS Service Classification</h3>
           <div class="section-stack">
             <div class="badges">
               ${saasBadge()}
