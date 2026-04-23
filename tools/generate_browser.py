@@ -1999,6 +1999,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .join(' ');
     }
 
+    function formatKeyLabel(value) {
+      return formatTitleCase(String(value || '').replace(/\./g, '-'));
+    }
+
     function formatTypeLabel(typeValue) {
       const normalized = String(typeValue || '');
       if (normalized === 'abb') return 'ABB';
@@ -3282,7 +3286,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
 
       const stringValue = value === undefined || value === null ? '' : String(value);
-      const multiline = stringValue.length > 120 || stringValue.includes('\n') || field === 'description' || field === 'notes';
+      const multiline = stringValue.length > 120 || stringValue.includes('\\\\n') || field === 'description' || field === 'notes';
       return multiline ? `
         <div class="editor-field">
           <label for="editor-${escapeHtml(field)}">${escapeHtml(label)}${requiredText}</label>
