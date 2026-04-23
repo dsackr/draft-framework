@@ -148,9 +148,10 @@ vendor's environment. That is a SaaS Service, not an Appliance ABB.
 
 Good examples of Appliance ABB concerns are load balancers, blackbox runtime
 hosts, managed file appliances, or vendor appliances with opaque host internals.
-The catalog captures capability, network placement, patching ownership, and
-compliance posture instead of trying to invent a host model the architect does
-not actually control.
+The catalog captures capability, network placement, patching ownership, the
+configuration surface the adopter controls, failure domain, and compliance
+posture instead of trying to invent a host model the architect does not
+actually control.
 
 ## How To Add A New ABB
 

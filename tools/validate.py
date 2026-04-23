@@ -423,7 +423,13 @@ def validate_architectural_decisions(obj: dict[str, Any], path: Path, failures: 
             )
 
 
-def validate_abb(obj: dict[str, Any], path: Path, failures: list[str]) -> None:
+def validate_abb(
+    obj: dict[str, Any],
+    path: Path,
+    odcs: dict[str, dict[str, Any]],
+    catalog_by_id: dict[str, dict[str, Any]],
+    failures: list[str],
+) -> None:
     classification = obj.get("classification")
     if classification not in VALID_ABB_CLASSIFICATIONS:
         failures.append(
@@ -457,6 +463,16 @@ def validate_abb(obj: dict[str, Any], path: Path, failures: list[str]) -> None:
                     failures.append(
                         f"{path}: configurations[{index}].addressesConcerns contains invalid concern ids {invalid} — expected values from {sorted(VALID_HOST_CONCERNS)}"
                     )
+
+    applicable = applicable_odc_ids(obj, odcs)
+    for odc_id in applicable:
+        if odc_id not in odcs:
+            failures.append(f"{path}: referenced ODC '{odc_id}' does not exist")
+            continue
+        for requirement in resolve_odc_requirements(odc_id, odcs):
+            valid, message = validate_odc_requirement(obj, requirement, catalog_by_id)
+            if not valid:
+                failures.append(f"{path}: {message}")
 
 
 def agent_interaction_exception(obj: dict[str, Any], abb_id: str) -> bool:
@@ -969,7 +985,7 @@ def main() -> int:
     for path, obj in objects.items():
         validate_against_schema(obj, path, schemas, failures)
         if obj.get("type") == "abb":
-            validate_abb(obj, path, failures)
+            validate_abb(obj, path, odcs, catalog_by_id, failures)
         if obj.get("type") == "ard":
             validate_ard(obj, path, failures, warnings)
         if obj.get("type") == "compliance_framework":

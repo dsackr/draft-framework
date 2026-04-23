@@ -170,9 +170,17 @@ requires a DBMS service RBB to document:
 
 ### `odc.appliance-abb`
 
-This ODC applies to appliance ABBs. It requires the object to document what
-capability the appliance provides, how resilient it is, where it sits in the
-network, who owns patching, and what compliance posture it carries.
+This ODC applies to appliance ABBs. It treats the appliance as a blackbox
+component inside the adopter's infrastructure boundary and requires the object
+to document:
+
+- what capability the appliance provides
+- how resilient it is
+- where it sits in the network
+- who owns patching
+- what configuration surface the adopter actually controls
+- what failure domain it creates
+- what compliance posture it carries
 
 ### `odc.saas-service`
 

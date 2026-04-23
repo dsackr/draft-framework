@@ -25,43 +25,54 @@ appliesTo:
 requirements:
   - id: function
     description: What capability does this appliance provide?
+    rationale: The capability is the reason the appliance exists in the architecture.
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: capability field is populated with a valid value
+      - mechanism: field
+        key: capability
         example: "capability: load-balancing"
   - id: resilience-model
     description: >
       What is the resilience model of this appliance — is it inherently
       highly available, single instance, or clustered?
+    rationale: A blackbox appliance still needs an explicit answer for the resilience posture the adopter is depending on.
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
-        criteria: >
-          lifecycleStatus and notes document the HA characteristics.
-          Some appliances are inherently HA by design. Others may be single instance.
+        key: resilienceModel
+        example: Inherently highly available within the managed service control plane
   - id: network-placement
     description: Where does this appliance sit in the network topology?
+    rationale: Placement defines exposure and traffic path.
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: networkPlacement field is populated
+      - mechanism: field
+        key: networkPlacement
         example: "networkPlacement: public-facing"
   - id: patching-ownership
     description: Who is responsible for firmware and software updates?
+    rationale: A blackbox component still needs clear update ownership.
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: patchingOwner field is populated
+      - mechanism: field
+        key: patchingOwner
         example: "patchingOwner: aws-managed"
-  - id: data-classification
+  - id: configurable-surface
     description: >
-      What classification of data passes through this appliance?
-      Required to assess compliance posture.
+      What configuration surface does the organization control on this appliance?
+    rationale: The object should capture what the adopter can actually configure rather than pretending the hidden host is visible.
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
-        criteria: >
-          Data classification is documented in the SDM that deploys
-          this appliance via architecturalDecisions.dataClassification
+        key: configurableSurface
+        example: Listener rules, target groups, and TLS certificates are customer-managed
+  - id: failure-domain
+    description: What failure domain does this appliance introduce?
+    rationale: Blackbox shared components can create broad impact boundaries that must be explicit.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: failureDomain
+        example: Shared dependency for all traffic entering the protected application path
   - id: compliance-posture
     description: What compliance certifications does this appliance carry?
+    rationale: Compliance posture must be explicit when the underlying implementation is opaque.
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        criteria: complianceCerts field is populated
+      - mechanism: field
+        key: complianceCerts
+        allowEmpty: true
         example: "complianceCerts: [SOC2, ISO27001]"
