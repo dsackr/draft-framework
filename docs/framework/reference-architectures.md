@@ -28,17 +28,17 @@ Most RAs also include `description`, `patternType`, and
 The core field in an RA is `requiredRBBs`. Each entry names:
 
 - the RBB that must exist
-- the variant that must be used
 - the role the RBB plays in the pattern
 
-This field does more than list ingredients. It says which reusable components must exist, which named variant the pattern expects for that component, and what role the component fills. The variant key is open-ended. `ha` and `sa` are common examples, but the framework does not treat them as the only valid values.
+This field does more than list ingredients. It says which reusable components
+must exist and what role the component fills in the pattern.
 
 ## Concrete Example
 
 A representative reference architecture says that a three-tier .NET high-availability pattern requires:
 
-- a web-tier service RBB using the HA variant of `rbb.service.web.iis-standard`
-- a data-tier service RBB using the HA variant of a SQL Server DBMS RBB
+- a web-tier service RBB based on `rbb.service.web.iis-standard`
+- a data-tier service RBB based on a SQL Server DBMS RBB
 
 The RA also carries architectural decisions that explain what the pattern assumes, such as web-tier autoscaling and AlwaysOn on the data tier.
 

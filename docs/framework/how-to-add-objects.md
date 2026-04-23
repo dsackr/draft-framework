@@ -30,7 +30,7 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 2. Reference the OS and hardware ABBs explicitly.
 3. Add any agent ABBs or other internal components that physically live on the host.
 4. Document `externalInteractions` for identity, logging, security, monitoring, patching, or other platforms.
-5. Add `variants` and make sure each supported variant documents the supported operating posture. The variant keys are open-ended. `ha` and `sa` are examples, not the only valid names.
+5. Add `architecturalDecisions` when the host must answer an AAG or compliance question that is not expressed directly in the object.
 6. Add `satisfiesAAG: [aag.host]`.
 7. Run validation.
 
@@ -39,8 +39,8 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 1. Create the file in `rbbs/`.
 2. Reference exactly one `hostRbb` and one `functionAbb`.
 3. Add service-level external interactions that go beyond the host baseline.
-4. Add the named variants that describe the service meaningfully. `ha` and `sa` are common examples, but keys such as `hp`, `sp`, `geo-redundant`, or `single-region` are also valid.
-5. Document the decisions that describe scaling, health, secrets handling, and, for DBMS services, durability and protection.
+4. Document the decisions that describe scaling, health, secrets handling, and, for DBMS services, durability and protection.
+5. Use `architecturalDecisions` whenever the service must answer an AAG or compliance question that is not expressed directly in the object.
 6. Set `satisfiesAAG` to the correct AAG list.
 7. Run validation.
 
@@ -61,7 +61,7 @@ Keep the requirements focused on architecture outcomes rather than implementatio
 1. Create the file in `reference-architectures/`.
 2. Choose a stable `ra.<pattern-slug>` ID.
 3. Populate `requiredRBBs` with the reusable building blocks that define the pattern.
-4. Include the required variants and roles.
+4. Include the required roles.
 5. Add `architecturalDecisions` that explain what the pattern assumes.
 6. Make sure the file satisfies `aag.ra` by documenting `patternType`, required RBB roles, and pattern-level decisions.
 

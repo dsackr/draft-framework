@@ -50,7 +50,6 @@ fieldTypes:
   architecturalDecisions: dict
   internalComponents: list
   externalInteractions: list
-  variants: dict
 conditionalRequired:
   - when:
       category: host

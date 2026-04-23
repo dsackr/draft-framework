@@ -328,7 +328,6 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "ardCategory": obj.get("category", "") if obj.get("type") == "ard" else "",
                 "internalComponents": internal_component_refs(obj),
                 "externalInteractions": obj.get("externalInteractions", []),
-                "variants": obj.get("variants", {}),
                 "architecturalDecisions": obj.get("architecturalDecisions", {}),
                 "requirements": obj.get("requirements", []),
                 "satisfiesAAG": obj.get("satisfiesAAG", []),
@@ -647,12 +646,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       color: #bfdbfe;
       width: fit-content;
     }
-    .variant-ha {
+    .intent-ha {
       border-color: rgba(16,185,129,0.45);
       color: #bbf7d0;
       background: rgba(16,185,129,0.14);
     }
-    .variant-sa {
+    .intent-sa {
       border-color: rgba(245,158,11,0.45);
       color: #fde68a;
       background: rgba(245,158,11,0.14);
@@ -1784,10 +1783,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return '<span class="badge appliance-badge">appliance</span>';
     }
 
-    function variantBadge(variant) {
-      const normalized = String(variant || '').toLowerCase();
-      const cls = normalized === 'ha' ? 'variant-ha' : normalized === 'sa' ? 'variant-sa' : '';
-      return `<span class="badge ${cls}">${escapeHtml((variant || '').toUpperCase())}</span>`;
+    function intentBadge(intent) {
+      const normalized = String(intent || '').toLowerCase();
+      const cls = normalized === 'ha' ? 'intent-ha' : normalized === 'sa' ? 'intent-sa' : '';
+      return `<span class="badge ${cls}">${escapeHtml((intent || '').toUpperCase())}</span>`;
     }
 
     function boolBadge(value, trueLabel = 'true', falseLabel = 'false') {
@@ -2133,26 +2132,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function decisionMarkup(object) {
-      const variants = object.variants || {};
-      const available = Object.entries(variants).filter(([, variant]) => variant && variant.architecturalDecisions);
-      if (!available.length) {
+      const decisions = object.architecturalDecisions || {};
+      const entries = [];
+      flattenDecisionEntries('', decisions, entries);
+      if (!entries.length) {
         return '<div class="empty-card">No architectural decisions are defined for this object.</div>';
       }
-      const singleClass = available.length === 1 ? ' single' : '';
       return `
-        <div class="decisions-grid${singleClass}">
-          ${available.map(([key, variant]) => {
-            const entries = [];
-            flattenDecisionEntries('', variant.architecturalDecisions || {}, entries);
-            return `
-              <section class="decision-card">
-                <h4>${escapeHtml((variant.name || key).replace('Availability', 'Availability'))}</h4>
-                <dl class="definition-list">
-                  ${entries.map(entry => `<dt>${escapeHtml(entry.key)}</dt><dd>${escapeHtml(entry.value)}</dd>`).join('')}
-                </dl>
-              </section>
-            `;
-          }).join('')}
+        <div class="decisions-grid single">
+          <section class="decision-card">
+            <h4>Architecture Decisions</h4>
+            <dl class="definition-list">
+              ${entries.map(entry => `<dt>${escapeHtml(entry.key)}</dt><dd>${escapeHtml(entry.value)}</dd>`).join('')}
+            </dl>
+          </section>
         </div>
       `;
     }
@@ -2330,7 +2323,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function productServiceDetailMarkup(object) {
-      const variants = Object.entries(object.variants || {});
       const runsOnObject = object.runsOn ? objectLookup[object.runsOn] : null;
       return `
         <section class="section-card">
@@ -2349,27 +2341,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </dl>
             <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
           </div>
-        </section>
-        <section class="section-card">
-          <h3>Variants</h3>
-          ${variants.length ? `
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Variant</th>
-                  <th>Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${variants.map(([variantName, variant]) => `
-                  <tr>
-                    <td>${variantBadge(variantName)}</td>
-                    <td>${escapeHtml(variant?.notes || '')}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          ` : '<div class="empty-card">No variants are documented for this product service classification.</div>'}
         </section>
       `;
     }
@@ -2556,7 +2527,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         objectType = 'rbb',
         overrideLabel = null,
         meta = '',
-        variant = entry.intent || '',
+        intent = entry.intent || '',
         badgeLabel = '',
         scalingUnit = '',
       } = options;
@@ -2573,7 +2544,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           ${topologyBadgeMarkup(entry)}
           <div class="topology-node-flags">
             ${badgeLabel ? `<span class="ps-corner">${escapeHtml(badgeLabel)}</span>` : '<span></span>'}
-            ${variant ? variantBadge(variant) : '<span></span>'}
+            ${intent ? intentBadge(intent) : '<span></span>'}
           </div>
           <span class="topology-node-icon ${icon.cls}">${icon.icon}</span>
           <div class="topology-node-label">${escapeHtml(overrideLabel || entryLabel(entry))}</div>

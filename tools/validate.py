@@ -240,13 +240,6 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any]) -> bool:
             value = get_nested_value(decisions, key)
             if is_non_empty(value):
                 return True
-        variants = obj.get("variants", {})
-        if isinstance(variants, dict):
-            for variant in variants.values():
-                variant_decisions = variant.get("architecturalDecisions", {}) if isinstance(variant, dict) else {}
-                value = get_nested_value(variant_decisions, key)
-                if is_non_empty(value):
-                    return True
         return False
     return False
 
@@ -279,16 +272,8 @@ def validate_against_schema(obj: dict[str, Any], path: Path, schemas: list[dict[
 def validate_architectural_decisions(obj: dict[str, Any], path: Path, failures: list[str]) -> None:
     decision_sets: list[dict[str, Any]] = []
     direct_decisions = obj.get("architecturalDecisions", {})
-    if isinstance(direct_decisions, dict):
+    if isinstance(direct_decisions, dict) and direct_decisions:
         decision_sets.append(direct_decisions)
-    variants = obj.get("variants", {})
-    if isinstance(variants, dict):
-        for variant in variants.values():
-            if not isinstance(variant, dict):
-                continue
-            decisions = variant.get("architecturalDecisions", {})
-            if isinstance(decisions, dict):
-                decision_sets.append(decisions)
 
     for decisions in decision_sets:
         for key, allowed_values in DECISION_ENUMS.items():
@@ -382,13 +367,6 @@ def validate_ra(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]]
             )
 
     if not is_non_empty(obj.get("architecturalDecisions")):
-        failures.append(
-            f"{path}: [{object_id}] AAG requirement 'variant-coverage' not satisfied — needs architecturalDecision(variants)"
-        )
-        failures.append(
-            f"{path}: [{object_id}] AAG requirement 'pattern-decisions' not satisfied — needs architecturalDecision(architecturalDecisions)"
-        )
-    elif not isinstance(obj.get("architecturalDecisions"), dict) or not obj["architecturalDecisions"]:
         failures.append(
             f"{path}: [{object_id}] AAG requirement 'pattern-decisions' not satisfied — needs architecturalDecision(architecturalDecisions)"
         )

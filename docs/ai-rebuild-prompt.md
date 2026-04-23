@@ -81,7 +81,7 @@ An RBB, or Reusable Building Block, is a reusable architecture pattern that Refe
 
 A host RBB represents a compute platform configuration. It defines internal components such as an OS ABB, a hardware ABB, and installable agent ABBs, plus external interactions such as authentication, logging, monitoring, security, and patching platforms.
 
-A service RBB represents a reusable service pattern. It composes a host RBB together with a function ABB, then adds any service-specific external interactions and variant decisions on top. Service RBBs are categorized further by `serviceCategory`, such as `web`, `app`, `dbms`, `messaging`, or `cache`.
+A service RBB represents a reusable service pattern. It composes a host RBB together with a function ABB, then adds any service-specific external interactions and architecture decisions on top. Service RBBs are categorized further by `serviceCategory`, such as `general`, `database`, `product`, or `saas`.
 
 The distinction between ABB and RBB is important. An ABB is an individual vendor technology definition. An RBB is a reusable architecture pattern that uses ABBs and possibly other RBBs.
 
@@ -107,7 +107,7 @@ ARDs can be linked from software distribution manifests and rendered directly in
 
 ### Reference Architecture
 
-A Reference Architecture defines a pattern, not a deployment. It answers the question: which reusable building blocks, in which roles and operating variants, make up a supported architecture pattern? It never represents a specific product environment.
+A Reference Architecture defines a pattern, not a deployment. It answers the question: which reusable building blocks, in which roles, make up a supported architecture pattern? It never represents a specific product environment.
 
 Reference Architectures point to required RBBs and define pattern-level decisions. They should be thought of as reusable blueprints for governance and discovery.
 
@@ -124,7 +124,7 @@ The SDM is where pattern intent becomes deployment reality. The SDM can declare 
 
 A Product Service, or PS, is a first-class catalog object for a first-party service. If a workload contains organization-authored code, it is a Product Service. If it is vendor software that could be reused across products, it is an RBB, even if only one product currently uses it.
 
-A Product Service does not enumerate code packages in version 1 of DRAFT. Instead, it declares the owning product, the reusable pattern it runs on via `runsOn`, and its deployment variants.
+A Product Service does not enumerate code packages in version 1 of DRAFT. Instead, it declares the owning product and the reusable pattern it runs on via `runsOn`.
 
 ## Schema-Specific Rules
 
@@ -152,7 +152,7 @@ RBB objects include:
 - `satisfiesAAG`
 - `internalComponents`
 - `externalInteractions`
-- `variants`
+- `architecturalDecisions`
 
 Host RBBs additionally include:
 
@@ -164,7 +164,7 @@ Service RBBs additionally include:
 - `hostRbb`
 - `functionAbb`
 
-The `variants` field is an open-ended map. `ha` and `sa` are common names, but they are examples, not the only valid keys. Other valid keys include names like `hp`, `sp`, `geo-redundant`, or `single-region`. The validator only requires that at least one named variant exists.
+`architecturalDecisions` is used when an object must answer an AAG or compliance question that is not otherwise expressed directly in the object.
 
 Known `architecturalDecisions` keys must remain machine-readable. When `autoscaling` or `loadBalancer` are present, they must use the enum values `required`, `optional`, or `none`. When `minNodes` is present, it must be an integer.
 
@@ -235,7 +235,6 @@ Reference Architecture objects include:
 Each `requiredRBBs` entry includes:
 
 - `ref`
-- `variant`
 - `role`
 - optional notes
 
@@ -269,7 +268,7 @@ Product Service objects include:
 
 - `product`
 - `runsOn`
-- `variants`
+- `architecturalDecisions`
 - optional `notes`
 
 `runsOn` must resolve to a known RBB ID. Product Service IDs must match `ps.<product>.<service-name>`.
@@ -296,14 +295,13 @@ The Reference Architecture AAG requires:
 - at least one `requiredRBBs` entry
 - a `role` on every required RBB
 - pattern-level `architecturalDecisions`
-- evidence that deployment variants are covered at the pattern level
+- evidence that pattern-level architecture decisions are covered
 
 ### aag.sdm
 
 The Software Distribution Manifest AAG requires:
 
 - a non-empty `appliesPattern`
-- variant selection on every deployed object
 - `architecturalDecisions.availabilityRequirement`
 - either product-level `externalInteractions` or an explicit `noAdditionalInteractions` decision
 - `architecturalDecisions.dataClassification`
@@ -313,7 +311,6 @@ The Software Distribution Manifest AAG requires:
 The Product Service AAG defines the minimum modeling contract for a first-party service:
 
 - selection of the RBB pattern via `runsOn`
-- at least one named variant
 - a populated `product` field
 - explicit declaration that the object is first-party by virtue of being an RBB with `serviceCategory: product`
 
@@ -328,7 +325,7 @@ Validation performs these categories of checks:
 - valid lifecycle and catalog status enums
 - machine-readable decision enforcement for `autoscaling`, `loadBalancer`, and `minNodes`
 - AAG satisfaction checks for applicable object types
-- reference resolution checks, such as `runsOn`, `hostRbb`, `functionAbb`, `osAbb`, `hardwareAbb`, ARD references, and deployed RBB variant selection
+- reference resolution checks, such as `runsOn`, `hostRbb`, `functionAbb`, `osAbb`, `hardwareAbb`, and ARD references
 
 The validator exits non-zero on failure and prints pass or fail per file. This output is designed for both local use and CI.
 
@@ -372,7 +369,7 @@ Expected renderers:
 
 - AAG detail: requirements document layout
 - ARD detail: structured risk/decision card
-- Product Service detail: product, `runsOn`, lifecycle, description, and variants
+- Product Service detail: product, `runsOn`, lifecycle, description, and Architecture Decisions
 - Software Distribution Manifest detail: details tab plus deployment topology tab
 - RBB and ABB detail: internal components, interactions, decisions, and any AAG or usage panels
 - unknown type: generic key-value fallback view
@@ -388,10 +385,10 @@ Rendering rules:
 - external interactions render as a horizontal strip across the top
 - every distinct `location` found in deployed Product Services and deployed RBBs creates a location box
 - unknown location patterns must still render with a generic badge and icon
-- Product Services render as topology cards with a `PS` badge, variant badge, and optional ARD warning badge
+- Product Services render as topology cards with a `PS` badge, optional intent badge, and optional ARD warning badge
 - topology cards are clickable and navigate via the shared ID-based navigation path
 - Product Services that run on a resolved host RBB whose ID starts with `rbb.host.container.` are grouped into an inner EKS-style container
-- HA cluster grouping is derived from data only: objects that share the same `ref` and `variant: ha` in the same location may be grouped
+- SDM topology layout is driven by `diagramTier`, with deployment targets as the primary containers and scaling units as optional grouping overlays
 - if a `riskRef` does not resolve, the view must show a broken or missing indicator rather than silently omitting it
 
 ### Impact Analysis

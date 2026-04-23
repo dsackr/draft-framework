@@ -33,14 +33,6 @@ requirements:
           role: web-tier | app-tier | data-tier | cache-tier | messaging-tier
         example: "rbb.service.web.iis-standard with role: web-tier"
     minimumSatisfactions: 1
-  - id: variant-coverage
-    description: At least one deployment variant must be defined with its architectural decisions documented.
-    rationale: A pattern without variant definitions cannot guide deployment decisions.
-    canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        key: variants
-        example: ha variant with minNodes, autoscaling, loadBalancer decisions
-    minimumSatisfactions: 1
   - id: pattern-decisions
     description: At least one architectural decision must be documented at the pattern level independent of any specific deployment.
     rationale: Pattern-level decisions capture the why behind the pattern design.

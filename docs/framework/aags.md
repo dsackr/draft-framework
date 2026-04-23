@@ -158,9 +158,9 @@ Concrete example: `ra.dotnet.three-tier.ha` satisfies this AAG by declaring `pat
 
 ### `aag.sdm`
 
-This AAG applies to software distribution manifests. In plain language, it requires an SDM to declare which RA it conforms to, which variant each deployed RBB uses, what availability target the product is built for, whether it has product-specific external interactions beyond its component RBBs, and what data classification it handles.
+This AAG applies to software distribution manifests. In plain language, it requires an SDM to declare which RA it conforms to, what availability target the product is built for, whether it has product-specific external interactions beyond its component RBBs, and what data classification it handles.
 
-Concrete example: a software distribution manifest satisfies this AAG by pointing to a reference architecture, selecting a variant for each deployed component, documenting an availability target, and identifying its data classification.
+Concrete example: a software distribution manifest satisfies this AAG by pointing to a reference architecture, documenting an availability target, and identifying its data classification.
 
 ## Architecture Decision Trigger Rules
 
@@ -206,7 +206,7 @@ Inheritance works the same way in AAGs as it does in many programming models.
 
 - An `externalInteraction` mechanism is satisfied when the RBB has an `externalInteractions` entry whose capability matches the requirement criteria.
 - An `internalComponent` mechanism is satisfied when the RBB has an `internalComponents` entry whose role matches the requirement criteria.
-- An `architecturalDecision` mechanism is satisfied when the required key exists and is non-empty in the object’s `architecturalDecisions` map. Legacy variant-level decisions are still recognized for backward compatibility.
+- An `architecturalDecision` mechanism is satisfied when the required key exists and is non-empty in the object’s `architecturalDecisions` map.
 - A `field` mechanism is satisfied when the specified object field is populated, or equals the expected value when the mechanism declares `equals`.
 
 If the number of satisfied mechanisms is less than `minimumSatisfactions`, the validator emits a failure. RA and SDM failures use the same style of message, but the validator checks their rules directly because those objects do not expose the same RBB-specific structures.
