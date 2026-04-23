@@ -20,15 +20,15 @@ linked below.
 
 ### Architecture Content
 
-- [Architecture Building Blocks (ABBs)](docs/framework/abbs.md)
 - [Reference Building Blocks (RBBs)](docs/framework/rbbs.md)
 - [Reference Architectures (RAs)](docs/framework/reference-architectures.md)
-
-### Software Content
-
-- [Software Services (SSs)](docs/framework/product-services.md)
-- [Software as a Service (SaaS) Services](docs/framework/saas-services.md)
 - [Software Distribution Manifests (SDMs)](docs/framework/software-distribution-manifests.md)
+
+### Supporting Object Guides
+
+- [Architecture Building Block (ABB)](docs/framework/abbs.md)
+- [Product Service (PS)](docs/framework/product-services.md)
+- [Software as a Service (SaaS) Service](docs/framework/saas-services.md)
 
 ### Extensible Framework Content
 

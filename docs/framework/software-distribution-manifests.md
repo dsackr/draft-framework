@@ -16,7 +16,7 @@ organized around:
 - `architecturalDecisions`
 - `architectureRisksAndDecisions`
 
-Each service group can contain Software Services, RBBs, Appliance ABBs, SaaS
+Each service group can contain Product Services, RBBs, Appliance ABBs, SaaS
 Services, and group-local external interactions. This is a better fit for real
 architecture interview data because it preserves operational grouping and
 deployment intent.
@@ -24,7 +24,7 @@ deployment intent.
 Within those service groups, the primary visual objects in the topology are the
 deployed services themselves:
 
-- Software Services
+- Product Services
 - RBBs
 
 Each of those entries must declare `diagramTier` as one of:
@@ -80,7 +80,7 @@ Each service group includes:
 - optional `saasServices`
 - optional `externalInteractions`
 
-Each deployed Software Service or RBB entry should declare:
+Each deployed Product Service or RBB entry should declare:
 
 - `ref`
 - optional `diagramTier`
@@ -96,7 +96,7 @@ This field is metadata only. It is useful because it says whether the product is
 
 ## Intent Versus Current State
 
-The `intent` field on Software Service and RBB entries exists only for explicit
+The `intent` field on Product Service and RBB entries exists only for explicit
 architecture choice. It should be populated when the architect is intentionally
 deviating from the Reference Architecture, or when no Reference Architecture
 exists.
@@ -109,7 +109,7 @@ Current state concerns belong in ARDs and notes.
 `deploymentTarget` is the primary placement container. It answers where a
 service runs.
 
-`diagramTier` places Software Services and RBBs into one of four columns:
+`diagramTier` places Product Services and RBBs into one of four columns:
 
 - `presentation`
 - `application`
@@ -142,7 +142,7 @@ The SDM topology is a service-first placement view.
 
 - `deploymentTarget` is the primary container because it answers where a
   service runs.
-- `diagramTier` places Software Services and RBBs into the
+- `diagramTier` places Product Services and RBBs into the
   `presentation`, `application`, `data`, or `utility` column.
 - `serviceGroup` remains a structural construct in YAML, but it is not the
   dominant visual object in the topology.

@@ -1624,12 +1624,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         filters: [
           { id: 'all', label: 'All', types: ['software_distribution_manifest', 'product_service', 'ard'] },
           { id: 'software_distribution_manifest', label: 'SDMs', types: ['software_distribution_manifest'] },
-          { id: 'product_service', label: 'SS', types: ['product_service'] },
+          { id: 'product_service', label: 'PS', types: ['product_service'] },
           { id: 'ard', label: 'DRDs', types: ['ard'] }
         ],
         rows: [
           { id: 'software_distribution_manifest', label: 'Software Distribution Manifests', types: ['software_distribution_manifest'] },
-          { id: 'product_service', label: 'Software Services', types: ['product_service'] },
+          { id: 'product_service', label: 'Product Services', types: ['product_service'] },
           { id: 'ard', label: 'Deployment Risks and Decisions', types: ['ard'] }
         ]
       },
@@ -2324,7 +2324,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const runsOnObject = object.runsOn ? objectLookup[object.runsOn] : null;
       return `
         <section class="section-card">
-          <h3>Software Service</h3>
+          <h3>Product Service</h3>
           <div class="section-stack">
             <div class="badges">
               ${productBadge(object.product)}
@@ -2594,7 +2594,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .forEach(entry => {
           cards.push(topologyNodeMarkup(entry, {
             objectType: 'product_service',
-            badgeLabel: 'SS',
+            badgeLabel: 'PS',
             scalingUnit,
             meta: `${group.name} • ${groupMeta}`
           }));

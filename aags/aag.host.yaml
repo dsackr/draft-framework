@@ -2,8 +2,8 @@ schemaVersion: "1.0"
 id: aag.host
 type: aag
 name: Host Architecture Analysis Guideline
-description: Requirement model for host RBB approval focused on platform integrations and variant readiness.
-version: 2.0.0
+description: Requirement model for host RBB approval focused on the host baseline and platform integrations.
+version: 2.1.0
 catalogStatus: approved
 lifecycleStatus: maintain
 owner:
@@ -73,14 +73,3 @@ requirements:
         key: patchManagementApproach
         example: A documented patch orchestration model when a platform interaction is not explicitly modeled.
     minimumSatisfactions: 1
-  - id: variant-defined
-    description: At least one host variant must exist and document its patching cadence and backup approach.
-    rationale: A host standard is incomplete unless at least one supported operating mode is documented with its maintenance and recovery posture.
-    canBeSatisfiedBy:
-      - mechanism: architecturalDecision
-        key: patchingCadence
-        example: The HA or SA variant defines monthly or emergency-only patching.
-      - mechanism: architecturalDecision
-        key: backupApproach
-        example: The HA or SA variant defines image backup, snapshot, or restore strategy.
-    minimumSatisfactions: 2

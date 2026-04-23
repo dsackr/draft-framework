@@ -280,7 +280,7 @@ Product Service objects include:
 
 ### aag.host
 
-The host AAG applies to host RBBs. It requires that the host address authentication, logging, security monitoring, patch management, and variant readiness. The variant readiness requirement is satisfied only when at least one variant documents both `patchingCadence` and `backupApproach`.
+The host AAG applies to host RBBs. It requires that the host address authentication, logging, security monitoring, and patch management. Host AAGs validate the host baseline itself; backup belongs to service and data concerns unless an attached compliance framework adds stricter expectations.
 
 ### aag.service
 

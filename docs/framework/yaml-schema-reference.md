@@ -17,33 +17,30 @@ authoritative source for object shape.
 
 | Object type | Folder | Schema source | Notes |
 |---|---|---|---|
-| ABB | `abbs/` | object guide + validator | ABBs use typed IDs such as `abb.os.*`, `abb.software.*`, and `abb.agent.*`. Appliance ABBs also follow [abb-appliance.schema.yaml](../../schemas/abb-appliance.schema.yaml). |
-| RBB | `rbbs/` | object guide + validator | RBB rules are enforced in `tools/validate.py`. Host and service RBBs have different required relationships. |
-| Reference Architecture | `reference-architectures/` | object guide + validator | RA validation is enforced in `tools/validate.py` and `aag.ra`. |
-| Software Service | `product-services/` | [ps.schema.yaml](../../schemas/ps.schema.yaml) | Framework term is Software Service; object type remains `product_service`. |
+| ABB | `abbs/` | [abb.schema.yaml](../../schemas/abb.schema.yaml) | ABBs use typed IDs such as `abb.os.*`, `abb.software.*`, and `abb.agent.*`. Appliance ABBs also follow [abb-appliance.schema.yaml](../../schemas/abb-appliance.schema.yaml). |
+| RBB | `rbbs/` | [rbb.schema.yaml](../../schemas/rbb.schema.yaml) | RBB is the reusable building-block type. The schema defines the shared contract; the validator applies relationship checks. |
+| Reference Architecture | `reference-architectures/` | [reference-architecture.schema.yaml](../../schemas/reference-architecture.schema.yaml) | RA validation is enforced in `tools/validate.py` and `aag.ra`. |
+| Product Service | `product-services/` | [ps.schema.yaml](../../schemas/ps.schema.yaml) | Framework term is Product Service; object type remains `product_service`. |
 | Software Distribution Manifest | `sdms/` | [sdm.schema.yaml](../../schemas/sdm.schema.yaml) | Includes `serviceGroups`, optional `scalingUnits`, and service-first topology metadata. |
 | Deployment Risk or Decision | `ards/` | [ard.schema.yaml](../../schemas/ard.schema.yaml) | Object type remains `ard`. |
 | SaaS Service | `saas-services/` | [saas-service.schema.yaml](../../schemas/saas-service.schema.yaml) | Use when vendor-managed traffic or data leaves the infrastructure boundary. |
-| AAG | `aags/` | object guide + validator | AAGs are rule objects. Their shape is validated in `tools/validate.py`. |
+| AAG | `aags/` | [aag.schema.yaml](../../schemas/aag.schema.yaml) | AAGs are checklist objects. Their shape is enforced by schema and their satisfaction logic by the validator. |
 | Compliance Framework | `compliance-frameworks/` | [compliance-framework.schema.yaml](../../schemas/compliance-framework.schema.yaml) | Requirement-to-control mappings live inline in `requirementMappings`. |
 
 ## Minimum Guidance By Type
 
 ### ABB
 
-Use the ABB guide for the conceptual model and the validator for exact field
-expectations. Appliance ABBs additionally follow the dedicated appliance schema.
+Use the ABB guide for the conceptual model. Appliance ABBs additionally follow
+the dedicated appliance schema.
 
 - Guide: [abbs.md](abbs.md)
 - Appliance schema: [abb-appliance.schema.yaml](../../schemas/abb-appliance.schema.yaml)
 
 ### RBB
 
-RBBs do not currently have a separate schema file. The executable contract
-lives in the validator and in the object guide.
-
 - Guide: [rbbs.md](rbbs.md)
-- Validation rules: [`tools/validate.py`](../../tools/validate.py)
+- Schema: [rbb.schema.yaml](../../schemas/rbb.schema.yaml)
 
 ### Reference Architecture
 
@@ -52,9 +49,9 @@ Reference Architectures are validated against their structure and `aag.ra`.
 - Guide: [reference-architectures.md](reference-architectures.md)
 - Validation rules: [`tools/validate.py`](../../tools/validate.py)
 
-### Software Service
+### Product Service
 
-Software Services follow the Product Service schema file, because the
+Product Services follow the Product Service schema file, because the
 underlying object type remains `product_service`.
 
 - Guide: [product-services.md](product-services.md)
@@ -78,10 +75,8 @@ SDMs use the dedicated schema file and the SDM guide.
 
 ### AAG
 
-AAGs are defined by the validator and the AAG guide.
-
 - Guide: [aags.md](aags.md)
-- Validation rules: [`tools/validate.py`](../../tools/validate.py)
+- Schema: [aag.schema.yaml](../../schemas/aag.schema.yaml)
 
 ### Compliance Framework
 

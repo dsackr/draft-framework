@@ -30,7 +30,7 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 2. Reference the OS and hardware ABBs explicitly.
 3. Add any agent ABBs or other internal components that physically live on the host.
 4. Document `externalInteractions` for identity, logging, security, monitoring, patching, or other platforms.
-5. Add `variants` and make sure each supported variant contains the architectural decisions needed to satisfy `aag.host`. The variant keys are open-ended. `ha` and `sa` are examples, not the only valid names.
+5. Add `variants` and make sure each supported variant documents the supported operating posture. The variant keys are open-ended. `ha` and `sa` are examples, not the only valid names.
 6. Add `satisfiesAAG: [aag.host]`.
 7. Run validation.
 
@@ -73,8 +73,8 @@ An RA should be generic enough to guide many products, not just one.
 2. Choose a product-focused `sdm.<product-slug>` ID.
 3. Set `appliesPattern` if the product aligns with an existing RA.
 4. Define any `scalingUnits` needed to express replicable or shared deployment boundaries.
-5. Build the manifest out through `serviceGroups`, then place Software Services, RBBs, Appliance ABBs, and SaaS Services into the appropriate groups.
-6. Set `diagramTier` on every Software Service and RBB entry using one of `presentation`, `application`, `data`, or `utility`.
+5. Build the manifest out through `serviceGroups`, then place Product Services, RBBs, Appliance ABBs, and SaaS Services into the appropriate groups.
+6. Set `diagramTier` on every Product Service and RBB entry using one of `presentation`, `application`, `data`, or `utility`.
 7. Use `intent` only when the architect is explicitly deviating from the Reference Architecture or when no Reference Architecture exists.
 8. Add product-level `architecturalDecisions`, including availability requirement and data classification, so the SDM satisfies `aag.sdm`.
 

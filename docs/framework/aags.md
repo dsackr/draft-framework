@@ -6,10 +6,16 @@ An Architecture Analysis Guideline, or AAG, is the governance layer for catalog 
 
 That distinction matters. The catalog object says what the component or pattern is, what it includes, and what it interacts with. The AAG says what questions that object must answer before the framework should trust it as a reusable standard.
 
+An AAG is therefore a checklist, not a taxonomy definition. Object type,
+classification, and structure come from the object schema and the object
+itself. The AAG validates that the object is complete and supportable once that
+taxonomy decision has already been made.
+
 ## YAML Shape
 
-AAGs are validated by [`tools/validate.py`](../../tools/validate.py). There is
-not currently a separate standalone AAG schema file.
+AAGs follow the authoritative
+[aag.schema.yaml](../../schemas/aag.schema.yaml) schema and are enforced by
+[`tools/validate.py`](../../tools/validate.py).
 
 At minimum, an AAG YAML should include:
 
@@ -19,8 +25,8 @@ At minimum, an AAG YAML should include:
 - `description`
 - `requirements`
 
-Most AAGs also include `version`, `catalogStatus`, `lifecycleStatus`, and
-`appliesTo`.
+Most AAGs also include `version`, `catalogStatus`, `lifecycleStatus`,
+`appliesTo`, and sometimes `inherits`.
 
 ## How The Model Works
 
@@ -32,7 +38,10 @@ The framework models AAGs in terms of requirements and satisfaction mechanisms r
 - a list of `canBeSatisfiedBy` mechanisms
 - a `minimumSatisfactions` count
 
-This is more useful than simple field existence because it captures intent. The framework does not care that a field exists for its own sake. It cares that authentication, logging, patching, backup, or access control has actually been addressed.
+This is more useful than simple field existence because it captures intent. The
+framework does not care that a field exists for its own sake. It cares that the
+relevant host, service, data, or deployment concern has actually been
+addressed.
 
 ## Satisfaction Mechanisms
 
@@ -66,15 +75,23 @@ An AAG should not say that authentication must always be modeled as an external 
 
 ### `aag.host`
 
-This is the host baseline. In plain language, it requires a host RBB to address:
+This is the host baseline. In plain language, it requires a host RBB to
+address:
 
 - authentication
 - logging
 - security monitoring
 - patch management
-- at least one supported named variant with both patching cadence and backup approach
 
-Concrete example: a Windows EC2 host satisfies authentication by declaring an external interaction with Active Directory. It satisfies logging by declaring centralized logging. It satisfies security monitoring by including security-related interactions and installed agents. It satisfies patch management by showing Automox and by documenting patching cadence in its variants.
+Concrete example: a Windows EC2 host satisfies authentication by declaring an
+external interaction with Active Directory. It satisfies logging by declaring
+centralized logging. It satisfies security monitoring by including
+security-related interactions and installed agents. It satisfies patch
+management by showing the orchestration mechanism that applies updates.
+
+Backup is intentionally not a host-baseline requirement. Recovery and protection
+concerns belong to the service or data layer unless a selected security or
+compliance framework adds stricter expectations through control mappings.
 
 ### `aag.service`
 
