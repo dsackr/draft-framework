@@ -20,13 +20,33 @@ requirements:
     description: The SDM must reference a valid RA ID or explicitly document that no applicable RA exists yet.
     rationale: Connecting deployments to patterns enables governance discoverability and impact analysis.
     canBeSatisfiedBy:
-      - mechanism: architecturalDecision
+      - mechanism: field
         key: appliesPattern
         example: ra.dotnet.three-tier.ha
+      - mechanism: architecturalDecision
+        key: noApplicablePattern
+        example: No applicable RA exists yet for this deployment shape
+    minimumSatisfactions: 1
+  - id: service-groups
+    description: The SDM must declare the service groups that make up the deployed product.
+    rationale: A deployment manifest is incomplete until the real deployed service group structure is explicit.
+    canBeSatisfiedBy:
+      - mechanism: internalComponent
+        criteria:
+          role: service-group
+        example: Frontend UI, Data Services, Shared Event Processing Services
+    minimumSatisfactions: 1
+  - id: deployment-targets
+    description: Every service group must declare where it runs.
+    rationale: Deployment reality is not complete until the execution boundary or target is explicit for each service group.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: deploymentTargets
+        example: Service groups are placed in AWS Account - Team_Accelify_Prod
     minimumSatisfactions: 1
   - id: availability-requirement
     description: The product availability tier must be documented.
-    rationale: Availability requirements justify variant selections and inform operational support models.
+    rationale: Availability requirements justify deployment posture and inform operational support models.
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
         key: availabilityRequirement
@@ -51,4 +71,23 @@ requirements:
       - mechanism: architecturalDecision
         key: dataClassification
         example: PII, student records, internal-only, public
+    minimumSatisfactions: 1
+  - id: failure-domain
+    description: The SDM must document the deployment-level failure domain of the product.
+    rationale: Product-level impact boundaries cannot be inferred from component selections alone.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: failureDomain
+        example: Shared services are cross-sub-environment dependencies; sub-environment failures are tenant-bounded
+    minimumSatisfactions: 1
+  - id: pattern-deviations
+    description: Any intentional deviation from the selected RA must be documented, or the SDM must explicitly state that no deviations exist.
+    rationale: The SDM is where pattern intent becomes product deployment reality, so departures from the RA must be visible.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: patternDeviations
+        example: Shared ingestion remains centralized rather than per-sub-environment
+      - mechanism: architecturalDecision
+        key: noPatternDeviations
+        example: No intentional deviations from the selected RA
     minimumSatisfactions: 1

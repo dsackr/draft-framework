@@ -645,9 +645,9 @@ def validate_sdm(obj: dict[str, Any], path: Path, odcs: dict[str, dict[str, Any]
         return
 
     object_id = obj.get("id", "unknown")
-    if not is_non_empty(obj.get("appliesPattern")):
+    if not is_non_empty(obj.get("appliesPattern")) and not is_non_empty(obj.get("architecturalDecisions", {}).get("noApplicablePattern") if isinstance(obj.get("architecturalDecisions"), dict) else None):
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'ra-conformance' not satisfied — needs architecturalDecision(appliesPattern)"
+            f"{path}: [{object_id}] ODC requirement 'ra-conformance' not satisfied — needs field(appliesPattern) or architecturalDecision(noApplicablePattern)"
         )
 
     service_groups = obj.get("serviceGroups", [])
@@ -656,12 +656,17 @@ def validate_sdm(obj: dict[str, Any], path: Path, odcs: dict[str, dict[str, Any]
 
     if not service_groups:
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'ra-conformance' not satisfied — serviceGroups cannot be empty"
+            f"{path}: [{object_id}] ODC requirement 'service-groups' not satisfied — serviceGroups cannot be empty"
         )
 
     architectural_decisions = obj.get("architecturalDecisions", {})
     if not isinstance(architectural_decisions, dict):
         architectural_decisions = {}
+
+    if not is_non_empty(architectural_decisions.get("deploymentTargets")):
+        failures.append(
+            f"{path}: [{object_id}] ODC requirement 'deployment-targets' not satisfied — needs architecturalDecision(deploymentTargets)"
+        )
 
     if not is_non_empty(architectural_decisions.get("availabilityRequirement")):
         failures.append(
@@ -673,7 +678,7 @@ def validate_sdm(obj: dict[str, Any], path: Path, odcs: dict[str, dict[str, Any]
         and isinstance(group.get("externalInteractions"), list)
         and len(group.get("externalInteractions", [])) > 0
         for group in service_groups
-    )
+    ) or (isinstance(obj.get("externalInteractions"), list) and len(obj.get("externalInteractions", [])) > 0)
     if not has_additional_interactions and not is_non_empty(architectural_decisions.get("noAdditionalInteractions")):
         failures.append(
             f"{path}: [{object_id}] ODC requirement 'additional-interactions' not satisfied — needs externalInteraction(capability=any) or architecturalDecision(noAdditionalInteractions)"
@@ -682,6 +687,16 @@ def validate_sdm(obj: dict[str, Any], path: Path, odcs: dict[str, dict[str, Any]
     if not is_non_empty(architectural_decisions.get("dataClassification")):
         failures.append(
             f"{path}: [{object_id}] ODC requirement 'data-classification' not satisfied — needs architecturalDecision(dataClassification)"
+        )
+
+    if not is_non_empty(architectural_decisions.get("failureDomain")):
+        failures.append(
+            f"{path}: [{object_id}] ODC requirement 'failure-domain' not satisfied — needs architecturalDecision(failureDomain)"
+        )
+
+    if not is_non_empty(architectural_decisions.get("patternDeviations")) and not is_non_empty(architectural_decisions.get("noPatternDeviations")):
+        failures.append(
+            f"{path}: [{object_id}] ODC requirement 'pattern-deviations' not satisfied — needs architecturalDecision(patternDeviations) or architecturalDecision(noPatternDeviations)"
         )
 
 

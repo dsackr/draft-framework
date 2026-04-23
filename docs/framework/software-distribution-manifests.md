@@ -91,6 +91,24 @@ The `appliesPattern` field tells the reader which RA the deployment claims to fo
 
 This field is metadata only. It is useful because it says whether the product is aligned to a recognized pattern, but it is not itself a deployed object and should not be rendered as a node in a deployment diagram.
 
+If no suitable RA exists yet, that gap should be made explicit through an
+architectural decision rather than hidden.
+
+## ODC Expectations
+
+The SDM ODC is the deployment-reality checklist. It requires the architect to
+document:
+
+- the selected RA, or why no applicable RA exists
+- the deployed service-group structure
+- the deployment targets used by those service groups
+- the product availability requirement
+- any product-specific interactions beyond the component RBB baseline
+- the governing data classification
+- the deployment-level failure domain
+- any intentional deviations from the selected RA, or an explicit statement
+  that none exist
+
 ## Intent Versus Current State
 
 The `intent` field on deployed RBB entries exists only for explicit

@@ -212,9 +212,17 @@ This ODC applies to reference architectures. It requires an RA to declare:
 ### `odc.sdm`
 
 This ODC applies to software distribution manifests. It requires an SDM to
-declare which RA it conforms to, what availability target the product is built
-for, whether it has product-specific external interactions beyond its component
-RBBs, and what data classification it handles.
+declare:
+
+- which RA it conforms to, or why no applicable RA exists
+- which service groups make up the deployed product
+- where those service groups run
+- what availability target the product is built for
+- whether it has product-specific external interactions beyond its component
+  RBBs
+- what data classification it handles
+- what deployment-level failure domain it creates
+- what intentional deviations from the selected RA exist
 
 ## Architecture Decision Trigger Rules
 
