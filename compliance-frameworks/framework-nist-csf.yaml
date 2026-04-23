@@ -3,8 +3,8 @@ id: framework.nist-csf
 type: compliance_framework
 name: NIST Cybersecurity Framework
 description: >
-  Starter framework for NIST CSF controls. Add control definitions inline
-  under controls as your organization curates them.
+  Initial NIST Cybersecurity Framework (CSF) 2.0 control pack scoped to the
+  outcomes that can be meaningfully answered by DRAFT objects.
 version: 2.0.0
 catalogStatus: stub
 lifecycleStatus: invest
@@ -17,7 +17,138 @@ tags:
   - starter-pack
 frameworkKind: common
 notes: >
-  To add controls, populate controls using the same appliesTo and
-  relatedConcern model used in the bundled Security and Compliance Controls
-  framework as a reference.
-controls: []
+  These entries are DRAFT applicability mappings for public NIST CSF 2.0
+  outcomes. They intentionally cover only the subset of CSF outcomes that can
+  be answered by RBBs, SDMs, and related architecture objects.
+controls:
+  - controlId: PR.AA
+    name: Identity Management, Authentication, and Access Control
+    externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+    description: NIST CSF 2.0 Protect category PR.AA.
+    appliesTo:
+      - rbb.host
+    relatedConcern: authentication
+    validAnswerTypes:
+      - externalInteraction
+      - abbConfiguration
+      - architecturalDecision
+  - controlId: DE.CM
+    name: Continuous Monitoring
+    externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+    description: NIST CSF 2.0 Detect category DE.CM.
+    appliesTo:
+      - rbb.host
+    relatedConcern: log-management
+    validAnswerTypes:
+      - abb
+      - abbConfiguration
+      - externalInteraction
+      - architecturalDecision
+  - controlId: DE.CM
+    name: Continuous Monitoring
+    externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+    description: NIST CSF 2.0 Detect category DE.CM.
+    appliesTo:
+      - rbb.host
+    relatedConcern: health-welfare-monitoring
+    validAnswerTypes:
+      - abb
+      - abbConfiguration
+      - externalInteraction
+      - architecturalDecision
+  - controlId: DE.CM
+    name: Continuous Monitoring
+    externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+    description: NIST CSF 2.0 Detect category DE.CM.
+    appliesTo:
+      - rbb.host
+    relatedConcern: security-monitoring
+    validAnswerTypes:
+      - abb
+      - abbConfiguration
+      - externalInteraction
+      - architecturalDecision
+  - controlId: PR.PS
+    name: Platform Security
+    externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+    description: NIST CSF 2.0 Protect category PR.PS.
+    appliesTo:
+      - rbb.host
+    relatedConcern: patch-management
+    validAnswerTypes:
+      - abb
+      - externalInteraction
+      - architecturalDecision
+  - controlId: PR.AA
+    name: Identity Management, Authentication, and Access Control
+    externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+    description: NIST CSF 2.0 Protect category PR.AA.
+    appliesTo:
+      - rbb.service.database
+    relatedConcern: access-control-model
+    validAnswerTypes:
+      - externalInteraction
+      - abbConfiguration
+      - architecturalDecision
+  - controlId: PR.DS
+    name: Data Security
+    externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+    description: NIST CSF 2.0 Protect category PR.DS.
+    appliesTo:
+      - rbb.service.database
+    relatedConcern: encryption-at-rest
+    validAnswerTypes:
+      - field
+      - abbConfiguration
+      - architecturalDecision
+  - controlId: RC.RP
+    name: Recovery Plan Execution
+    externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+    description: NIST CSF 2.0 Recover category RC.RP.
+    appliesTo:
+      - rbb.service.database
+    relatedConcern: backup-strategy
+    validAnswerTypes:
+      - field
+      - architecturalDecision
+  - controlId: PR.AA
+    name: Identity Management, Authentication, and Access Control
+    externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+    description: NIST CSF 2.0 Protect category PR.AA.
+    appliesTo:
+      - rbb.service.general
+    relatedConcern: secrets-management
+    validAnswerTypes:
+      - externalInteraction
+      - abbConfiguration
+      - architecturalDecision
+  - controlId: PR.AA
+    name: Identity Management, Authentication, and Access Control
+    externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+    description: NIST CSF 2.0 Protect category PR.AA applied to product-service access and secrets handling.
+    appliesTo:
+      - rbb.service.product
+    validAnswerTypes:
+      - externalInteraction
+      - abbConfiguration
+      - architecturalDecision
+  - controlId: PR.DS
+    name: Data Security
+    externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+    description: NIST CSF 2.0 Protect category PR.DS.
+    appliesTo:
+      - sdm
+    relatedConcern: data-classification
+    validAnswerTypes:
+      - field
+      - architecturalDecision
+  - controlId: RC.RP
+    name: Recovery Plan Execution
+    externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+    description: NIST CSF 2.0 Recover category RC.RP.
+    appliesTo:
+      - sdm
+    relatedConcern: availability-requirement
+    validAnswerTypes:
+      - field
+      - architecturalDecision
