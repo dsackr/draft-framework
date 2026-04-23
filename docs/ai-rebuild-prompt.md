@@ -73,7 +73,9 @@ infrastructure boundary.
 A SaaS Service is a vendor-managed subscribed service. It exists as a
 first-class object because it can move data through vendor-managed
 infrastructure outside the adopter's boundary, making data governance a primary
-architecture concern.
+architecture concern. Its underlying runtime and topology are treated as a
+blackbox; the framework models only the capability consumed plus the external
+assurances and integration characteristics visible to the adopter.
 
 ### RBB
 

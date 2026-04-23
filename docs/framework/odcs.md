@@ -176,11 +176,19 @@ network, who owns patching, and what compliance posture it carries.
 
 ### `odc.saas-service`
 
-This ODC applies to SaaS Service objects. It requires the architect to
-document whether data leaves the infrastructure boundary, what data residency
-commitments the vendor makes, whether a DPA is in place, how the organization
-authenticates to the service, what compliance certifications the vendor
-carries, and what SLA the vendor offers.
+This ODC applies to SaaS Service objects. It treats the vendor platform as a
+blackbox and requires the architect to document:
+
+- what capability the service provides
+- whether data leaves the infrastructure boundary
+- what data residency commitments the vendor makes
+- whether a DPA is in place
+- how the organization authenticates to the service
+- what compliance certifications the vendor carries
+- what audit or logging visibility the consumer has
+- how the consumer observes health, status, or incidents
+- what failure domain the dependency creates
+- what SLA the vendor offers
 
 ### `odc.product-service`
 

@@ -27,8 +27,10 @@ Service.
 
 ## ODC Expectations
 
-The SaaS Service ODC focuses on required definition questions that matter most for
-vendor-managed services:
+The SaaS Service ODC treats the vendor platform as a blackbox. It does not ask
+for host, runtime, internal components, or vendor implementation topology. It
+focuses only on the answers the consuming organization can know and must
+document:
 
 - what function the service provides
 - whether data leaves the infrastructure boundary
@@ -36,6 +38,9 @@ vendor-managed services:
 - whether a data processing agreement is in place
 - what compliance certifications the vendor carries
 - how the organization authenticates to the service
+- what audit or logging visibility the consumer has
+- how the consumer observes health, status, or incidents
+- what failure domain the dependency creates
 - what SLA the vendor commits to
 
 These are not optional concerns. They are the minimum information needed before
