@@ -36,6 +36,8 @@ controls:
     appliesTo:
       - rbb.host
     relatedConcern: authentication
+    requirementMode: mandatory
+    naAllowed: false
     validAnswerTypes:
       - externalInteraction
       - abbConfiguration
@@ -49,6 +51,8 @@ controls:
     appliesTo:
       - rbb.host
     relatedConcern: log-management
+    requirementMode: mandatory
+    naAllowed: false
     validAnswerTypes:
       - abbConfiguration
       - externalInteraction
@@ -62,6 +66,8 @@ controls:
     appliesTo:
       - rbb.host
     relatedConcern: security-monitoring
+    requirementMode: mandatory
+    naAllowed: false
     validAnswerTypes:
       - abb
       - abbConfiguration
@@ -76,6 +82,8 @@ controls:
     appliesTo:
       - rbb.host
     relatedConcern: patch-management
+    requirementMode: mandatory
+    naAllowed: false
     validAnswerTypes:
       - abb
       - externalInteraction
@@ -89,6 +97,8 @@ controls:
     appliesTo:
       - rbb.service.general
     relatedConcern: secrets-management
+    requirementMode: mandatory
+    naAllowed: false
     validAnswerTypes:
       - externalInteraction
       - abbConfiguration
@@ -101,6 +111,8 @@ controls:
     externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
     appliesTo:
       - rbb.service.product
+    requirementMode: mandatory
+    naAllowed: false
     validAnswerTypes:
       - externalInteraction
       - abbConfiguration
@@ -114,6 +126,8 @@ controls:
     appliesTo:
       - rbb.service.database
     relatedConcern: access-control-model
+    requirementMode: mandatory
+    naAllowed: false
     validAnswerTypes:
       - externalInteraction
       - abbConfiguration
@@ -127,6 +141,8 @@ controls:
     appliesTo:
       - rbb.service.database
     relatedConcern: backup-strategy
+    requirementMode: mandatory
+    naAllowed: false
     validAnswerTypes:
       - field
       - architecturalDecision
@@ -139,6 +155,8 @@ controls:
     appliesTo:
       - sdm
     relatedConcern: data-classification
+    requirementMode: mandatory
+    naAllowed: false
     validAnswerTypes:
       - field
       - architecturalDecision
@@ -151,6 +169,8 @@ controls:
     appliesTo:
       - sdm
     relatedConcern: ra-conformance
+    requirementMode: mandatory
+    naAllowed: false
     validAnswerTypes:
       - field
       - architecturalDecision

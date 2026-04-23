@@ -52,6 +52,7 @@ VALID_CONTROL_ANSWER_TYPES = {
     "architecturalDecision",
     "field",
 }
+VALID_CONTROL_REQUIREMENT_MODES = {"mandatory", "conditional"}
 
 
 def discover_yaml_files(root: Path) -> list[Path]:
@@ -699,30 +700,72 @@ def validate_compliance_framework(
             if invalid_answer_types:
                 failures.append(f"{context}: invalid validAnswerTypes values {invalid_answer_types}")
 
+        requirement_mode = control.get("requirementMode", "mandatory")
+        if requirement_mode not in VALID_CONTROL_REQUIREMENT_MODES:
+            failures.append(
+                f"{context}: requirementMode must be one of {sorted(VALID_CONTROL_REQUIREMENT_MODES)}"
+            )
+
+        na_allowed = control.get("naAllowed")
+        if na_allowed is not None and not isinstance(na_allowed, bool):
+            failures.append(f"{context}: naAllowed must be true or false")
+        if requirement_mode == "mandatory" and na_allowed is True:
+            failures.append(f"{context}: mandatory controls cannot allow N/A responses")
+        if requirement_mode == "conditional" and na_allowed is False:
+            failures.append(f"{context}: conditional controls must allow N/A responses")
+
+        applicability = control.get("applicability")
+        if applicability is not None:
+            if not isinstance(applicability, dict):
+                failures.append(f"{context}: applicability must be a mapping")
+            else:
+                groups = [key for key in ("anyOf", "allOf") if key in applicability]
+                if not groups:
+                    failures.append(f"{context}: applicability must declare anyOf or allOf")
+                for group in groups:
+                    clauses = applicability.get(group)
+                    if not isinstance(clauses, list) or not clauses:
+                        failures.append(f"{context}: applicability.{group} must be a non-empty list")
+                        continue
+                    for clause_index, clause in enumerate(clauses):
+                        if not isinstance(clause, dict):
+                            failures.append(f"{context}: applicability.{group}[{clause_index}] must be a mapping")
+                            continue
+                        if not is_non_empty(clause.get("field")):
+                            failures.append(f"{context}: applicability.{group}[{clause_index}] must declare field")
+                        predicates = [key for key in ("equals", "in", "contains", "truthy") if key in clause]
+                        if not predicates:
+                            failures.append(
+                                f"{context}: applicability.{group}[{clause_index}] must declare equals, in, contains, or truthy"
+                            )
+                        if "truthy" in clause and not isinstance(clause.get("truthy"), bool):
+                            failures.append(f"{context}: applicability.{group}[{clause_index}].truthy must be true or false")
+                        if "in" in clause and not isinstance(clause.get("in"), list):
+                            failures.append(f"{context}: applicability.{group}[{clause_index}].in must be a list")
+
         related_concern = control.get("relatedConcern")
-        if not is_non_empty(related_concern):
-            continue
-        for scope in applies_to:
-            odc_id = scope_to_odc_id(str(scope))
-            if not odc_id:
-                continue
-            if odc_id not in odcs:
-                failures.append(f"{context}: appliesTo scope '{scope}' resolves to unknown ODC '{odc_id}'")
-                continue
-            try:
-                resolved = resolve_odc_requirements(odc_id, odcs)
-            except (KeyError, ValueError) as exc:
-                failures.append(f"{context}: could not resolve ODC '{odc_id}': {exc}")
-                continue
-            valid_requirement_ids = {
-                requirement.get("id")
-                for requirement in resolved
-                if isinstance(requirement, dict) and is_non_empty(requirement.get("id"))
-            }
-            if related_concern not in valid_requirement_ids:
-                failures.append(
-                    f"{context}: relatedConcern '{related_concern}' is not defined on ODC '{odc_id}'"
-                )
+        if is_non_empty(related_concern):
+            for scope in applies_to:
+                odc_id = scope_to_odc_id(str(scope))
+                if not odc_id:
+                    continue
+                if odc_id not in odcs:
+                    failures.append(f"{context}: appliesTo scope '{scope}' resolves to unknown ODC '{odc_id}'")
+                    continue
+                try:
+                    resolved = resolve_odc_requirements(odc_id, odcs)
+                except (KeyError, ValueError) as exc:
+                    failures.append(f"{context}: could not resolve ODC '{odc_id}': {exc}")
+                    continue
+                valid_requirement_ids = {
+                    requirement.get("id")
+                    for requirement in resolved
+                    if isinstance(requirement, dict) and is_non_empty(requirement.get("id"))
+                }
+                if related_concern not in valid_requirement_ids:
+                    failures.append(
+                        f"{context}: relatedConcern '{related_concern}' is not defined on ODC '{odc_id}'"
+                    )
 
 
 def validate_service_group_structure(

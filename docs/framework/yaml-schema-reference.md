@@ -81,7 +81,9 @@ SDMs use the dedicated schema file and the SDM guide.
 ### Compliance Framework
 
 Compliance frameworks are single-file objects. They carry both metadata and
-inline `controls`.
+inline `controls`. Controls can be `mandatory` or `conditional`. Conditional
+controls can explicitly allow `N/A` responses and may carry `applicability`
+metadata for future scope evaluation.
 
 - Guide: [security-and-compliance-controls.md](security-and-compliance-controls.md)
 - Schema: [compliance-framework.schema.yaml](../../schemas/compliance-framework.schema.yaml)

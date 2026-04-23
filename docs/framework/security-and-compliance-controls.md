@@ -22,6 +22,9 @@ list. Each control defines:
 - `externalReference`
 - `appliesTo`
 - `relatedConcern` when the control refines an existing ODC concern
+- `requirementMode` as `mandatory` or `conditional`
+- `naAllowed` so conditional frameworks can explicitly permit `N/A`
+- optional `applicability` rules for future scope evaluation
 - `validAnswerTypes`
 
 To add a new framework or extend an existing one, only that single file needs
@@ -43,6 +46,12 @@ The browser exposes a compliance framework selector in the sidebar. When the
 architect changes the selected framework, the ODC detail view and the RBB
 ODC-satisfaction panels re-render using the controls defined for that
 framework.
+
+Mandatory controls are treated as always in scope once that framework is
+selected. Conditional controls stay visible, but the framework can explicitly
+signal that `N/A` is an acceptable response when the product or deployment is
+out of scope for that control set. This is the intended model for frameworks
+such as TX-RAMP, PCI, HIPAA, and FedRAMP.
 
 If the selected framework has no controls for a given scope or concern, the
 browser shows that no required controls were added by that framework. That is

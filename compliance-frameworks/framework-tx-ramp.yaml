@@ -33,6 +33,14 @@ controls:
     appliesTo:
       - rbb.host
     relatedConcern: authentication
+    requirementMode: conditional
+    naAllowed: true
+    applicability:
+      anyOf:
+        - field: complianceContext.txRampInScope
+          equals: true
+        - field: complianceContext.soldInTexas
+          equals: true
     validAnswerTypes:
       - externalInteraction
       - abbConfiguration
@@ -46,6 +54,14 @@ controls:
     appliesTo:
       - rbb.host
     relatedConcern: log-management
+    requirementMode: conditional
+    naAllowed: true
+    applicability:
+      anyOf:
+        - field: complianceContext.txRampInScope
+          equals: true
+        - field: complianceContext.soldInTexas
+          equals: true
     validAnswerTypes:
       - abbConfiguration
       - externalInteraction
@@ -59,6 +75,14 @@ controls:
     appliesTo:
       - rbb.host
     relatedConcern: security-monitoring
+    requirementMode: conditional
+    naAllowed: true
+    applicability:
+      anyOf:
+        - field: complianceContext.txRampInScope
+          equals: true
+        - field: complianceContext.soldInTexas
+          equals: true
     validAnswerTypes:
       - abb
       - abbConfiguration
@@ -73,6 +97,14 @@ controls:
     appliesTo:
       - rbb.host
     relatedConcern: patch-management
+    requirementMode: conditional
+    naAllowed: true
+    applicability:
+      anyOf:
+        - field: complianceContext.txRampInScope
+          equals: true
+        - field: complianceContext.soldInTexas
+          equals: true
     validAnswerTypes:
       - abb
       - externalInteraction
@@ -86,6 +118,14 @@ controls:
     appliesTo:
       - rbb.service.database
     relatedConcern: encryption-at-rest
+    requirementMode: conditional
+    naAllowed: true
+    applicability:
+      anyOf:
+        - field: complianceContext.txRampInScope
+          equals: true
+        - field: complianceContext.soldInTexas
+          equals: true
     validAnswerTypes:
       - field
       - abbConfiguration
@@ -99,6 +139,14 @@ controls:
     appliesTo:
       - rbb.service.database
     relatedConcern: access-control-model
+    requirementMode: conditional
+    naAllowed: true
+    applicability:
+      anyOf:
+        - field: complianceContext.txRampInScope
+          equals: true
+        - field: complianceContext.soldInTexas
+          equals: true
     validAnswerTypes:
       - externalInteraction
       - abbConfiguration
@@ -112,6 +160,14 @@ controls:
     appliesTo:
       - rbb.service.database
     relatedConcern: backup-strategy
+    requirementMode: conditional
+    naAllowed: true
+    applicability:
+      anyOf:
+        - field: complianceContext.txRampInScope
+          equals: true
+        - field: complianceContext.soldInTexas
+          equals: true
     validAnswerTypes:
       - field
       - architecturalDecision
@@ -124,6 +180,14 @@ controls:
     appliesTo:
       - rbb.service.general
     relatedConcern: secrets-management
+    requirementMode: conditional
+    naAllowed: true
+    applicability:
+      anyOf:
+        - field: complianceContext.txRampInScope
+          equals: true
+        - field: complianceContext.soldInTexas
+          equals: true
     validAnswerTypes:
       - externalInteraction
       - abbConfiguration
@@ -136,6 +200,14 @@ controls:
     externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
     appliesTo:
       - rbb.service.product
+    requirementMode: conditional
+    naAllowed: true
+    applicability:
+      anyOf:
+        - field: complianceContext.txRampInScope
+          equals: true
+        - field: complianceContext.soldInTexas
+          equals: true
     validAnswerTypes:
       - externalInteraction
       - abbConfiguration
@@ -149,6 +221,14 @@ controls:
     appliesTo:
       - sdm
     relatedConcern: data-classification
+    requirementMode: conditional
+    naAllowed: true
+    applicability:
+      anyOf:
+        - field: complianceContext.txRampInScope
+          equals: true
+        - field: complianceContext.soldInTexas
+          equals: true
     validAnswerTypes:
       - field
       - architecturalDecision
@@ -161,6 +241,14 @@ controls:
     appliesTo:
       - sdm
     relatedConcern: availability-requirement
+    requirementMode: conditional
+    naAllowed: true
+    applicability:
+      anyOf:
+        - field: complianceContext.txRampInScope
+          equals: true
+        - field: complianceContext.soldInTexas
+          equals: true
     validAnswerTypes:
       - field
       - architecturalDecision
@@ -173,6 +261,14 @@ controls:
     appliesTo:
       - sdm
     relatedConcern: ra-conformance
+    requirementMode: conditional
+    naAllowed: true
+    applicability:
+      anyOf:
+        - field: complianceContext.txRampInScope
+          equals: true
+        - field: complianceContext.soldInTexas
+          equals: true
     validAnswerTypes:
       - field
       - architecturalDecision

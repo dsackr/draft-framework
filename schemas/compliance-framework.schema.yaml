@@ -52,7 +52,14 @@ control:
   optionalFields:
     - externalReference
     - relatedConcern
+    - requirementMode
+    - naAllowed
+    - applicability
     - notes
+  enumFields:
+    requirementMode:
+      - mandatory
+      - conditional
   enumListFields:
     appliesTo:
       - rbb.host
@@ -72,6 +79,8 @@ control:
   fieldTypes:
     appliesTo: list
     validAnswerTypes: list
+    naAllowed: bool
+    applicability: dict
 
 controls structure:
   - controlId: CTRL-001
@@ -82,6 +91,8 @@ controls structure:
       - rbb.host
       - rbb.service.database
     relatedConcern: authentication
+    requirementMode: mandatory
+    naAllowed: false
     validAnswerTypes:
       - abbConfiguration
       - externalInteraction

@@ -239,6 +239,9 @@ def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, A
                     "externalReference": str(control.get("externalReference", "")),
                     "appliesTo": [str(scope) for scope in control.get("appliesTo", []) if str(scope).strip()],
                     "relatedConcern": str(control.get("relatedConcern", "")),
+                    "requirementMode": str(control.get("requirementMode", "mandatory")),
+                    "naAllowed": bool(control.get("naAllowed", False)),
+                    "applicability": control.get("applicability", {}),
                     "validAnswerTypes": [str(value) for value in control.get("validAnswerTypes", []) if str(value).strip()],
                     "notes": str(control.get("notes", "")),
                 }
@@ -949,12 +952,28 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .control-badge {
       display: inline-flex;
       align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
       padding: 4px 10px;
       border-radius: 999px;
       font-size: 11px;
       background: #1e3a5f;
       border: 1px solid #3b82f6;
       color: #93c5fd;
+    }
+    .control-badge.conditional {
+      background: #4a3414;
+      border-color: #f59e0b;
+      color: #fcd34d;
+    }
+    .control-mode {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.32);
+      color: inherit;
+      font-size: 11px;
+      white-space: nowrap;
     }
     .section-stack {
       display: grid;
@@ -1932,6 +1951,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return complianceData.controlsByFramework?.[selectedFrameworkId] || [];
     }
 
+    function controlModeLabel(control) {
+      if ((control.requirementMode || 'mandatory') === 'conditional') {
+        return control.naAllowed ? 'Conditional / N-A allowed' : 'Conditional';
+      }
+      return 'Required';
+    }
+
     function scopeForObject(object) {
       if (!object) return null;
       if (object.type === 'odc') {
@@ -2264,8 +2290,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
       return controls.map(control => `
         ${control.externalReference
-          ? `<a class="control-badge" href="${escapeHtml(control.externalReference)}" target="_blank" rel="noopener noreferrer">${escapeHtml(control.controlId || '')}${control.name ? ` - ${escapeHtml(control.name)}` : ''}</a>`
-          : `<span class="control-badge">${escapeHtml(control.controlId || '')}${control.name ? ` - ${escapeHtml(control.name)}` : ''}</span>`}
+          ? `<a class="control-badge ${control.requirementMode === 'conditional' ? 'conditional' : ''}" href="${escapeHtml(control.externalReference)}" target="_blank" rel="noopener noreferrer">${escapeHtml(control.controlId || '')}${control.name ? ` - ${escapeHtml(control.name)}` : ''}<span class="control-mode">${escapeHtml(controlModeLabel(control))}</span></a>`
+          : `<span class="control-badge ${control.requirementMode === 'conditional' ? 'conditional' : ''}">${escapeHtml(control.controlId || '')}${control.name ? ` - ${escapeHtml(control.name)}` : ''}<span class="control-mode">${escapeHtml(controlModeLabel(control))}</span></span>`}
       `).join('');
     }
 
