@@ -2,17 +2,24 @@
 
 ## What An ABB Is
 
-An Architecture Building Block, or ABB, is the catalog’s smallest reusable unit. It is a configuration document for a specific vendor product at a specific version.
+An Architecture Building Block, or ABB, is a discrete third-party product
+object. It records one vendor product at one product version so that RBBs can
+compose real products instead of generic categories.
 
-That definition matters. An ABB is not “Windows Server” in the abstract. It is `abb.os.microsoft-windowsserver-2022`. It is not “SQL Server” as a general category. It is `abb.software.microsoft-sqlserver-2019` or `abb.software.microsoft-sqlserver-2022`.
+That definition matters. An ABB is not “Windows Server” in the abstract. It is
+`abb.os.microsoft-windowsserver-2022`. It is not “SQL Server” as a general
+category. It is `abb.software.microsoft-sqlserver-2019` or
+`abb.software.microsoft-sqlserver-2022`.
 
-The framework uses that level of specificity because architecture standards become misleading very quickly if version and vendor lifecycle are left implicit.
+The framework uses that level of specificity because architecture standards
+become misleading very quickly if version and vendor lifecycle are left
+implicit.
 
 ## YAML Shape
 
-ABBs do not currently have one single schema file for every subtype. The
-minimum contract is enforced by [`tools/validate.py`](../../tools/validate.py),
-and Appliance ABBs additionally follow
+ABBs follow the authoritative
+[abb.schema.yaml](../../schemas/abb.schema.yaml) schema. Appliance ABBs
+additionally follow
 [abb-appliance.schema.yaml](../../schemas/abb-appliance.schema.yaml).
 
 At minimum, an ABB YAML should include:
@@ -21,23 +28,45 @@ At minimum, an ABB YAML should include:
 - `type: abb`
 - `name`
 - `vendor`
+- `productName`
+- `productVersion`
+- `classification`
 - `catalogStatus`
 - `lifecycleStatus`
 
-Common ABBs also include product/version fields and vendor lifecycle metadata.
+These fields are not optional modeling guidance. The validator enforces them.
 
 ## What Goes In An ABB
 
-An ABB records the information engineers need in order to make technology choices responsibly. It includes:
+An ABB records the information engineers need in order to make technology
+choices responsibly. It includes:
 
 - vendor name
 - product name
 - product version
+- ABB classification
 - framework lifecycle status
 - vendor lifecycle dates when those dates are known
 - optional `platformDependency`
 
-A good example is the CrowdStrike Falcon agent. The ABB captures the fact that the agent is installed locally on a host, but it also acknowledges that the agent exists to connect the host to the CrowdStrike platform.
+## ABB Classifications
+
+Every ABB must declare exactly one classification.
+
+| Classification | Meaning |
+|---|---|
+| Operating System | A vendor product that is the operating system. |
+| Compute Platform | A vendor product that provides the physical or virtual compute substrate the operating system runs on. |
+| Software | A vendor product that runs locally and does not require an external interaction. |
+| Agent | A vendor product that runs locally and requires an external interaction. |
+
+These classifications are machine-readable semantics, not just documentation
+labels. The validator can use them when checking whether an RBB is built from
+the right kinds of ABBs.
+
+A good example is the CrowdStrike Falcon agent. The ABB captures the fact that
+the agent is installed locally on a host, but it also acknowledges that the
+agent exists to connect the host to the CrowdStrike platform.
 
 ## What An ABB Is Not
 
@@ -51,10 +80,10 @@ An ABB is not a running system. If an organization has a production SQL Server c
 
 The naming convention is intentionally rigid.
 
-- OS ABBs follow `abb.os.<vendor>-<os>-<major>`
-- hardware ABBs follow `abb.hardware.<vendor>-<product>`
-- software ABBs follow `abb.software.<vendor>-<product>-<ver>`
-- agent ABBs follow `abb.agent.<vendor>-<product>`
+- Operating System ABBs typically follow `abb.os.<vendor>-<os>-<major>`
+- Compute Platform ABBs typically follow `abb.hardware.<vendor>-<product>`
+- Software ABBs typically follow `abb.software.<vendor>-<product>-<ver>`
+- Agent ABBs typically follow `abb.agent.<vendor>-<product>`
 
 Examples:
 
@@ -70,10 +99,21 @@ The rule is to stay lowercase, keep the segments dot-separated, and use hyphens 
 
 ABBs become useful when they are referenced as internal components in RBBs.
 
-- A host RBB uses an OS ABB and a hardware ABB as foundational components, then adds any agent ABBs physically installed on the host.
+- A host RBB uses an Operating System ABB and a Compute Platform ABB as
+  foundational components, then adds any Agent ABBs physically installed on the
+  host.
 - A service RBB references one function ABB that provides the service capability, such as IIS or SQL Server.
 
-This separation makes the architecture easier to reason about. For example, `rbb.service.dbms.sqlserver-2022` does not need to redefine what SQL Server 2022 is. It can simply reference `abb.software.microsoft-sqlserver-2022` as its function ABB and focus on the architectural decisions that matter at the service level.
+This separation makes the architecture easier to reason about. For example,
+`rbb.service.dbms.sqlserver-2022` does not need to redefine what SQL Server
+2022 is. It can simply reference
+`abb.software.microsoft-sqlserver-2022` as its function ABB and focus on the
+architectural decisions that matter at the service level.
+
+When an Agent ABB is used inside an RBB, the RBB must also declare the
+corresponding `externalInteractions` that the agent depends on, unless an
+Architecture Decision explains why the interaction is intentionally omitted.
+That requirement does not apply to Software ABBs.
 
 ## Appliance ABBs
 
@@ -103,11 +143,11 @@ not actually control.
 
 ## How To Add A New ABB
 
-1. Decide whether the object is an OS, hardware, software, or agent ABB.
+1. Decide whether the object is an Operating System, Compute Platform, Software, or Agent ABB.
 2. Choose the correct ID pattern and make sure the ID is lowercase.
 3. Create the YAML file in the correct folder.
 4. Fill in the shared base fields: schema version, ID, type, name, description, version, catalog status, lifecycle status, owner, and tags.
-5. Fill in the ABB-specific fields: category, vendor, product, product version, optional platform dependency, and vendor lifecycle.
+5. Fill in the ABB-specific fields: `classification`, `vendor`, `productName`, `productVersion`, optional `platformDependency`, and vendor lifecycle.
 6. If the vendor publishes lifecycle dates, include them. If the vendor does not publish them, say so explicitly in `vendorLifecycle.notes` and leave the dates null rather than guessing.
 7. Run `python3 tools/validate.py`.
 

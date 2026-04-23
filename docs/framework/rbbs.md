@@ -60,6 +60,11 @@ For a host RBB, that means the operating system, hardware substrate, and any
 agents installed on the host. For a service RBB, that means the host pattern it
 runs on and the function-defining component that gives the service its purpose.
 
+Because ABB classifications are machine-readable, RBB validation can reason
+about what kind of vendor product has been attached. A host RBB can therefore
+be checked against Operating System, Compute Platform, Software, and Agent ABB
+semantics instead of relying only on naming conventions.
+
 ### External Interactions
 
 External Interactions declare systems, services, or platforms outside the RBB
@@ -89,15 +94,21 @@ compliance control, or added component or interaction.
 
 A host RBB represents a standardized host platform. It typically includes:
 
-- the operating system ABB
-- the hardware ABB
-- any agent ABBs physically installed on the host
+- one Operating System ABB
+- one Compute Platform ABB
+- any Agent ABBs physically installed on the host
 - any host-baseline Architecture Decisions needed to answer ODC or compliance
   questions that are not otherwise explicit
 
 Those are not the same thing as external interactions. An internal component is
 part of the host. An external interaction is something outside the host
 boundary that the host depends on or communicates with.
+
+If an Agent ABB is present on the host, the host RBB must also document the
+corresponding external interaction unless an Architecture Decision explicitly
+records the exception. The machine-readable exception path is
+`architecturalDecisions.agentInteractionExceptions`. Software ABBs do not carry
+that requirement.
 
 Host ODCs should define the host itself and its baseline controls. They should
 not force service or data concerns such as backup strategy onto the host object.

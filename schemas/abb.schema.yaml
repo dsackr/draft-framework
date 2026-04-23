@@ -5,6 +5,10 @@ requiredFields:
   - id
   - type
   - name
+  - vendor
+  - productName
+  - productVersion
+  - classification
   - catalogStatus
   - lifecycleStatus
 optionalFields:
@@ -12,10 +16,9 @@ optionalFields:
   - version
   - owner
   - tags
-  - category
   - subtype
   - vendor
-  - product
+  - productName
   - productVersion
   - notes
   - vendorLifecycle
@@ -37,9 +40,9 @@ enumFields:
     - maintain
     - disinvest
     - exit
-  category:
-    - os
-    - hardware
+  classification:
+    - operating-system
+    - compute-platform
     - software
     - agent
 fieldTypes:

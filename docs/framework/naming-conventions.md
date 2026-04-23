@@ -11,7 +11,7 @@ A good ID is not just readable. It is durable. Once an ID is in use, other objec
 | Object type | Pattern | Example |
 | --- | --- | --- |
 | ABB OS | `abb.os.<vendor>-<os>-<major>` | `abb.os.amazon-linux-2` |
-| ABB hardware | `abb.hardware.<vendor>-<product>` | `abb.hardware.amazon-ec2-standard` |
+| ABB compute platform | `abb.hardware.<vendor>-<product>` | `abb.hardware.amazon-ec2-standard` |
 | ABB software | `abb.software.<vendor>-<product>-<ver>` | `abb.software.microsoft-sqlserver-2019` |
 | ABB agent | `abb.agent.<vendor>-<product>` | `abb.agent.crowdstrike-falcon` |
 | Host RBB | `rbb.host.<os>.<platform>.<variant>` | `rbb.host.windows.2022.ec2.standard` |

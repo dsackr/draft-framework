@@ -13,6 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_ROOT = REPO_ROOT / "schemas"
 SKIP_DIRS = {"tools", "schemas", "docs", "adrs", ".github", ".git"}
 VALID_DIAGRAM_TIERS = {"presentation", "application", "data", "utility"}
+VALID_ABB_CLASSIFICATIONS = {"operating-system", "compute-platform", "software", "agent"}
 DECISION_ENUMS = {
     "autoscaling": {"required", "optional", "none"},
     "loadBalancer": {"required", "optional", "none"},
@@ -291,6 +292,88 @@ def validate_architectural_decisions(obj: dict[str, Any], path: Path, failures: 
             )
 
 
+def validate_abb(obj: dict[str, Any], path: Path, failures: list[str]) -> None:
+    classification = obj.get("classification")
+    if classification not in VALID_ABB_CLASSIFICATIONS:
+        failures.append(
+            f"{path}: ABB classification must be one of {sorted(VALID_ABB_CLASSIFICATIONS)}"
+        )
+
+
+def agent_interaction_exception(obj: dict[str, Any], abb_id: str) -> bool:
+    decisions = obj.get("architecturalDecisions", {})
+    if not isinstance(decisions, dict):
+        return False
+    exceptions = decisions.get("agentInteractionExceptions")
+    if isinstance(exceptions, list):
+        return abb_id in exceptions
+    if isinstance(exceptions, dict):
+        value = exceptions.get(abb_id)
+        return is_non_empty(value) or value is True
+    return False
+
+
+def has_enabled_external_interaction(obj: dict[str, Any], abb_id: str) -> bool:
+    interactions = obj.get("externalInteractions", [])
+    if not isinstance(interactions, list):
+        return False
+    return any(
+        isinstance(interaction, dict) and interaction.get("enabledBy") == abb_id
+        for interaction in interactions
+    )
+
+
+def validate_classified_abb_refs(
+    obj: dict[str, Any],
+    path: Path,
+    catalog_by_id: dict[str, dict[str, Any]],
+    failures: list[str],
+) -> None:
+    def validate_ref(field: str, expected_classification: str | None = None) -> None:
+        ref = obj.get(field)
+        if not ref:
+            return
+        target = catalog_by_id.get(ref)
+        if not target or target.get("type") != "abb":
+            return
+        target_classification = target.get("classification")
+        if expected_classification and target_classification != expected_classification:
+            failures.append(
+                f"{path}: {field} must reference an ABB classified as '{expected_classification}' — got '{target_classification or 'unknown'}'"
+            )
+
+    validate_ref("osAbb", "operating-system")
+    validate_ref("hardwareAbb", "compute-platform")
+
+    function_ref = obj.get("functionAbb")
+    if function_ref:
+        target = catalog_by_id.get(function_ref)
+        if target and target.get("type") == "abb":
+            classification = target.get("classification")
+            if classification not in {"software", "agent"}:
+                failures.append(
+                    f"{path}: functionAbb must reference an ABB classified as 'software' or 'agent' — got '{classification or 'unknown'}'"
+                )
+
+    components = obj.get("internalComponents", [])
+    if not isinstance(components, list):
+        return
+    for component in components:
+        if not isinstance(component, dict):
+            continue
+        ref = component.get("ref")
+        if not ref:
+            continue
+        target = catalog_by_id.get(ref)
+        if not target or target.get("type") != "abb":
+            continue
+        if target.get("classification") == "agent":
+            if not has_enabled_external_interaction(obj, ref) and not agent_interaction_exception(obj, ref):
+                failures.append(
+                    f"{path}: agent ABB '{ref}' requires an externalInteraction enabledBy that ABB or architecturalDecisions.agentInteractionExceptions"
+                )
+
+
 def validate_rbb(
     obj: dict[str, Any],
     path: Path,
@@ -340,6 +423,7 @@ def validate_rbb(
         if obj.get("dataLeavesInfrastructure") is True and not is_non_empty(obj.get("dpaNotes")):
             warnings.append(f"{path}: SaaS Services with dataLeavesInfrastructure=true should document dpaNotes")
 
+    validate_classified_abb_refs(obj, path, catalog_by_id, failures)
     validate_architectural_decisions(obj, path, failures)
 
 
@@ -625,6 +709,8 @@ def main() -> int:
 
     for path, obj in objects.items():
         validate_against_schema(obj, path, schemas, failures)
+        if obj.get("type") == "abb":
+            validate_abb(obj, path, failures)
         if obj.get("type") == "ard":
             validate_ard(obj, path, failures, warnings)
         if obj.get("type") == "compliance_framework":

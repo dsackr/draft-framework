@@ -25,7 +25,7 @@ types by the role they play in the model.
 
 | Object Type | Purpose |
 |---|---|
-| ABB | The smallest vendor component in the catalog. ABBs are used to compose RBBs but are not peer architecture content types. This category also includes Appliance ABBs for blackbox vendor-managed components deployed inside the infrastructure boundary. |
+| ABB | A discrete third-party product object used to compose RBBs. Every ABB declares vendor, product name, product version, and exactly one ABB classification. Appliance ABBs remain a subtype of ABB, not a separate peer architecture content type. |
 | Deployment Risk / Decision | A deployment-scoped record of a known risk or accepted decision attached to an SDM or deployed service. The current machine-readable object type remains `ard`. |
 
 ## Extensible Framework Content

@@ -62,7 +62,7 @@ ID immutability is part of the DRAFT contract. Once an object reaches `catalogSt
 
 An ABB, or Architecture Building Block, is a configuration document for a specific vendor product at a specific version. ABBs represent installable, vendor-provided building blocks such as operating systems, infrastructure hardware profiles, vendor software, or agents. An ABB is not a deployment, not a pattern, and not first-party product code. It is the catalog’s unit of reusable vendor technology definition.
 
-ABBs carry vendor lifecycle metadata and framework lifecycle intent. ABB categories are `os`, `hardware`, `software`, and `agent`. ABBs may declare a `platformDependency` when they depend on another platform or external system.
+ABBs carry vendor lifecycle metadata and framework lifecycle intent. Every ABB must declare `vendor`, `productName`, `productVersion`, and exactly one `classification`. ABB classifications are `operating-system`, `compute-platform`, `software`, and `agent`. ABBs may declare a `platformDependency` when they depend on another platform or external system.
 
 ABBs may also use `subtype: appliance`. Appliance ABBs model blackbox
 vendor-managed components that are still deployed inside the adopter's
@@ -79,7 +79,7 @@ architecture concern.
 
 An RBB, or Reusable Building Block, is a reusable architecture pattern that Reference Architectures and Software Distribution Manifests are assembled from. There are two categories: `host` and `service`.
 
-A host RBB represents a compute platform configuration. It defines internal components such as an OS ABB, a hardware ABB, and installable agent ABBs, plus external interactions such as authentication, logging, monitoring, security, and patching platforms.
+A host RBB represents a compute platform configuration. It defines internal components such as an Operating System ABB, a Compute Platform ABB, and installable Agent ABBs, plus external interactions such as authentication, logging, monitoring, security, and patching platforms.
 
 A service RBB represents a reusable service pattern. It composes a host RBB together with a function ABB, then adds any service-specific external interactions and architecture decisions on top. Service RBBs are categorized further by `serviceCategory`, such as `general`, `database`, `product`, or `saas`.
 
@@ -130,11 +130,11 @@ A Product Service does not enumerate code packages in version 1 of DRAFT. Instea
 
 ### ABB Schema
 
-ABB objects include category-specific vendor metadata:
+ABB objects include product-specific metadata:
 
-- `category`
+- `classification`
 - `vendor`
-- `product`
+- `productName`
 - `productVersion`
 - `platformDependency` (optional)
 - `vendorLifecycle.mainstreamSupportEnd`

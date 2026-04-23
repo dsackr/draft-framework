@@ -15,11 +15,13 @@ Many mistakes happen because engineers skip that decision and start writing fiel
 
 ## Add An ABB
 
-1. Decide whether the object is an OS, hardware, software, or agent ABB.
+1. Decide whether the object is an Operating System, Compute Platform, Software, or Agent ABB.
 2. Choose the correct ID pattern.
 3. Create the YAML file in `abbs/`.
 4. Fill in the shared base fields.
-5. Fill in the ABB-specific metadata such as vendor lifecycle, product version, and optional platform dependency.
+5. Fill in the required ABB fields: `vendor`, `productName`, `productVersion`, and `classification`.
+6. Fill in any remaining ABB-specific metadata such as vendor lifecycle and optional platform dependency.
+7. If the ABB is classified as `agent`, make sure any RBB that uses it also documents the corresponding external interaction or an Architecture Decision exception under `architecturalDecisions.agentInteractionExceptions`.
 6. Run validation.
 
 ABBs should be specific. If you cannot name the product version clearly, you probably are not ready to create the object yet.
@@ -27,8 +29,8 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 ## Add A Host RBB
 
 1. Create the file in `rbbs/`.
-2. Reference the OS and hardware ABBs explicitly.
-3. Add any agent ABBs or other internal components that physically live on the host.
+2. Reference the Operating System and Compute Platform ABBs explicitly.
+3. Add any Agent ABBs or other internal components that physically live on the host.
 4. Document `externalInteractions` for identity, logging, security, monitoring, patching, or other platforms.
 5. Add `architecturalDecisions` when the host must answer an ODC or compliance question that is not expressed directly in the object.
 6. Add `satisfiesODC: [odc.host]`.

@@ -1,0 +1,20 @@
+schemaVersion: "1.0"
+id: abb.os.canonical-ubuntu-2204
+type: abb
+name: Ubuntu 22.04 LTS
+description: >
+  Canonical Ubuntu Server 22.04 LTS operating system product definition for
+  Linux host patterns.
+version: 1.0.0
+catalogStatus: draft
+lifecycleStatus: maintain
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+  - abb
+  - operating-system
+vendor: Canonical
+productName: Ubuntu Server
+productVersion: "22.04 LTS"
+classification: operating-system

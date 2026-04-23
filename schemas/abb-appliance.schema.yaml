@@ -7,6 +7,9 @@ requiredFields:
   - type
   - name
   - vendor
+  - productName
+  - productVersion
+  - classification
   - capability
   - catalogStatus
   - lifecycleStatus
@@ -48,6 +51,11 @@ enumFields:
     - aws-managed
     - organization-scheduled
     - vendor-managed
+  classification:
+    - operating-system
+    - compute-platform
+    - software
+    - agent
 fieldTypes:
   owner: dict
   tags: list

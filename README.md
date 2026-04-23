@@ -31,7 +31,7 @@ linked below.
 
 ### Supporting Model Objects
 
-- [Architecture Building Block (ABB)](docs/framework/abbs.md)
+- [Architecture Building Blocks (ABBs)](docs/framework/abbs.md)
 - [Deployment Risks and Decisions (DRDs)](docs/framework/deployment-risks-and-decisions.md)
 
 ### Extensible Framework Content

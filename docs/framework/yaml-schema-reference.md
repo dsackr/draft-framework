@@ -17,7 +17,7 @@ authoritative source for object shape.
 
 | Object type | Folder | Schema source | Notes |
 |---|---|---|---|
-| ABB | `abbs/` | [abb.schema.yaml](../../schemas/abb.schema.yaml) | ABBs use typed IDs such as `abb.os.*`, `abb.software.*`, and `abb.agent.*`. Appliance ABBs also follow [abb-appliance.schema.yaml](../../schemas/abb-appliance.schema.yaml). |
+| ABB | `abbs/` | [abb.schema.yaml](../../schemas/abb.schema.yaml) | ABBs are discrete third-party product objects with required `vendor`, `productName`, `productVersion`, and `classification`. Appliance ABBs also follow [abb-appliance.schema.yaml](../../schemas/abb-appliance.schema.yaml). |
 | RBB | `rbbs/` | [rbb.schema.yaml](../../schemas/rbb.schema.yaml) | RBB is the reusable building-block type. The schema defines the shared contract; the validator applies relationship checks. |
 | Reference Architecture | `reference-architectures/` | [reference-architecture.schema.yaml](../../schemas/reference-architecture.schema.yaml) | RA validation is enforced in `tools/validate.py` and `odc.ra`. |
 | Product Service | `rbbs/` | [ps.schema.yaml](../../schemas/ps.schema.yaml) | Product Services are RBBs with `category: service` and `serviceCategory: product`. |

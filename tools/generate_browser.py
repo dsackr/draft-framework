@@ -151,13 +151,18 @@ def to_json(value: Any) -> str:
     return json.dumps(value, indent=2, default=str)
 
 
+def humanize_slug(value: str) -> str:
+    return value.replace("-", " ").title()
+
+
 def filter_type_for(obj: dict[str, Any]) -> str:
     return str(obj.get("type", "unknown"))
 
 
 def type_label_for(obj: dict[str, Any]) -> str:
     if obj["type"] == "abb":
-        suffix = " / appliance" if obj.get("subtype") == "appliance" else f" / {obj.get('category', 'unknown')}"
+        classification = humanize_slug(str(obj.get("classification", "unknown")))
+        suffix = f" / appliance / {classification}" if obj.get("subtype") == "appliance" else f" / {classification}"
         return f"ABB{suffix}"
     if obj["type"] == "odc":
         return "ODC"
@@ -310,6 +315,10 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "runsOn": obj.get("runsOn", ""),
                 "subtype": obj.get("subtype", ""),
                 "vendor": obj.get("vendor", ""),
+                "productName": obj.get("productName", ""),
+                "productVersion": obj.get("productVersion", ""),
+                "classification": obj.get("classification", ""),
+                "platformDependency": obj.get("platformDependency", ""),
                 "capability": obj.get("capability", ""),
                 "networkPlacement": obj.get("networkPlacement", ""),
                 "patchingOwner": obj.get("patchingOwner", ""),
@@ -2059,6 +2068,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
+    function abbClassificationLabel(value) {
+      return formatTitleCase(String(value || 'unknown').replace(/-/g, ' '));
+    }
+
     function renderListView() {
       currentMode = 'list';
       currentDetailId = null;
@@ -2345,26 +2358,31 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
-    function applianceAbbDetailMarkup(object) {
+    function abbDetailMarkup(object) {
+      const title = object.subtype === 'appliance' ? 'Appliance ABB' : 'Architecture Building Block';
       return `
         <section class="section-card">
-          <h3>Appliance ABB</h3>
+          <h3>${escapeHtml(title)}</h3>
           <div class="section-stack">
             <div class="badges">
-              ${applianceBadge()}
+              ${object.subtype === 'appliance' ? applianceBadge() : ''}
               ${lifecycleBadge(object.lifecycleStatus)}
               ${catalogBadge(object.catalogStatus)}
             </div>
             <dl class="definition-list">
               <dt>Vendor</dt><dd>${escapeHtml(object.vendor || '')}</dd>
-              <dt>Capability</dt><dd>${escapeHtml(object.capability || '')}</dd>
-              <dt>Network Placement</dt><dd>${escapeHtml(object.networkPlacement || '')}</dd>
-              <dt>Patching Owner</dt><dd>${escapeHtml(object.patchingOwner || '')}</dd>
+              <dt>Product Name</dt><dd>${escapeHtml(object.productName || '')}</dd>
+              <dt>Product Version</dt><dd>${escapeHtml(object.productVersion || '')}</dd>
+              <dt>Classification</dt><dd>${escapeHtml(abbClassificationLabel(object.classification))}</dd>
+              ${object.platformDependency ? `<dt>Platform Dependency</dt><dd>${escapeHtml(object.platformDependency)}</dd>` : ''}
+              ${object.capability ? `<dt>Capability</dt><dd>${escapeHtml(object.capability || '')}</dd>` : ''}
+              ${object.networkPlacement ? `<dt>Network Placement</dt><dd>${escapeHtml(object.networkPlacement || '')}</dd>` : ''}
+              ${object.patchingOwner ? `<dt>Patching Owner</dt><dd>${escapeHtml(object.patchingOwner || '')}</dd>` : ''}
               <dt>Compliance Certs</dt><dd>${escapeHtml((object.complianceCerts || []).join(', ') || 'None documented')}</dd>
             </dl>
           </div>
         </section>
-        ${objectLookup['odc.appliance-abb'] ? odcRequirementsMarkup(objectLookup['odc.appliance-abb']) : ''}
+        ${object.subtype === 'appliance' && objectLookup['odc.appliance-abb'] ? odcRequirementsMarkup(objectLookup['odc.appliance-abb']) : ''}
       `;
     }
 
@@ -2923,13 +2941,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           </div>
           ${usedByMarkup(object)}
         `;
-      } else if (object.type === 'abb' && object.subtype === 'appliance') {
+      } else if (object.type === 'abb') {
         detailBody = `
           ${headerMarkup}
-          ${applianceAbbDetailMarkup(object)}
+          ${abbDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
-      } else if (object.type === 'rbb' || object.type === 'abb' || object.type === 'reference_architecture') {
+      } else if (object.type === 'rbb' || object.type === 'reference_architecture') {
         detailBody = `
           ${headerMarkup}
           <section class="middle-grid">

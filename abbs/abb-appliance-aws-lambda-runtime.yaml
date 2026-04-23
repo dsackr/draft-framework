@@ -17,6 +17,9 @@ tags:
   - appliance
   - lambda
 vendor: Amazon Web Services
+productName: AWS Lambda Runtime
+productVersion: managed
+classification: compute-platform
 capability: compute
 networkPlacement: vpc-private
 patchingOwner: aws-managed
