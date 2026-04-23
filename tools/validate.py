@@ -235,14 +235,18 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any]) -> bool:
         )
     if mechanism_type == "architecturalDecision":
         key = mechanism.get("key", "")
-        variants = obj.get("variants", {})
-        if not isinstance(variants, dict):
-            return False
-        for variant in variants.values():
-            decisions = variant.get("architecturalDecisions", {}) if isinstance(variant, dict) else {}
+        decisions = obj.get("architecturalDecisions", {})
+        if isinstance(decisions, dict):
             value = get_nested_value(decisions, key)
             if is_non_empty(value):
                 return True
+        variants = obj.get("variants", {})
+        if isinstance(variants, dict):
+            for variant in variants.values():
+                variant_decisions = variant.get("architecturalDecisions", {}) if isinstance(variant, dict) else {}
+                value = get_nested_value(variant_decisions, key)
+                if is_non_empty(value):
+                    return True
         return False
     return False
 
@@ -273,17 +277,20 @@ def validate_against_schema(obj: dict[str, Any], path: Path, schemas: list[dict[
 
 
 def validate_architectural_decisions(obj: dict[str, Any], path: Path, failures: list[str]) -> None:
+    decision_sets: list[dict[str, Any]] = []
+    direct_decisions = obj.get("architecturalDecisions", {})
+    if isinstance(direct_decisions, dict):
+        decision_sets.append(direct_decisions)
     variants = obj.get("variants", {})
-    if not isinstance(variants, dict):
-        return
+    if isinstance(variants, dict):
+        for variant in variants.values():
+            if not isinstance(variant, dict):
+                continue
+            decisions = variant.get("architecturalDecisions", {})
+            if isinstance(decisions, dict):
+                decision_sets.append(decisions)
 
-    for variant in variants.values():
-        if not isinstance(variant, dict):
-            continue
-        decisions = variant.get("architecturalDecisions", {})
-        if not isinstance(decisions, dict):
-            continue
-
+    for decisions in decision_sets:
         for key, allowed_values in DECISION_ENUMS.items():
             if key in decisions and decisions[key] not in allowed_values:
                 allowed_text = ", ".join(sorted(allowed_values))
@@ -315,14 +322,6 @@ def validate_rbb(
 
     category = obj.get("category")
     service_category = obj.get("serviceCategory")
-    variants = obj.get("variants", {})
-
-    if category == "host" or (category == "service" and service_category in {"general", "database", "product"}):
-        if not isinstance(variants, dict) or len(variants) == 0:
-            failures.append(
-                f"{path}: [{obj.get('id', 'unknown')}] at least one named variant must be present with architecturalDecisions documented"
-            )
-
     applicable = sorted(set(satisfies) | set(applicable_aag_ids(obj, aags)))
     for aag_id in applicable:
         if aag_id not in aags:
@@ -410,26 +409,9 @@ def validate_sdm(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]
     if not isinstance(service_groups, list):
         service_groups = []
 
-    all_intents: list[str] = []
-    for group in service_groups:
-        if not isinstance(group, dict):
-            continue
-        for key in ("rbbs",):
-            entries = group.get(key, [])
-            if isinstance(entries, list):
-                all_intents.extend(
-                    str(entry.get("intent", "")).strip()
-                    for entry in entries
-                    if isinstance(entry, dict) and is_non_empty(entry.get("intent"))
-                )
-
     if not service_groups:
         failures.append(
-            f"{path}: [{object_id}] AAG requirement 'variant-selection' not satisfied — needs internalComponent(variantDeclared=true)"
-        )
-    elif not obj.get("appliesPattern") and not all_intents:
-        failures.append(
-            f"{path}: [{object_id}] AAG requirement 'variant-selection' not satisfied — needs internalComponent(variantDeclared=true)"
+            f"{path}: [{object_id}] AAG requirement 'ra-conformance' not satisfied — serviceGroups cannot be empty"
         )
 
     architectural_decisions = obj.get("architecturalDecisions", {})

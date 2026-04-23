@@ -2,11 +2,15 @@
 
 ## What An RBB Is
 
-An RA Building Block, or RBB, is the framework's only reusable building-block
-architecture type. This is the level where the catalog stops describing
-individual products and starts describing reusable runtime and service patterns.
+An RBB, or Reference Building Block, is the framework's only reusable
+building-block architecture type. It is the layer where the catalog defines
+reusable runtime and service patterns that can be referenced by Reference
+Architectures and Software Distribution Manifests.
 
-RAs and SDMs are built from RBBs, not directly from ABBs, because the RBB is where the framework captures structure, interactions, and decisions.
+RAs and SDMs are built from RBBs, not directly from ABBs, because the RBB is
+where the framework captures the reusable architecture contract: what the thing
+is made of, what it interacts with, and which Architecture Decisions explain
+the pattern.
 
 ## YAML Shape
 
@@ -22,54 +26,89 @@ At minimum, an RBB YAML should include:
 - `catalogStatus`
 - `lifecycleStatus`
 - `internalComponents`
-- `variants`
+- `externalInteractions`
+
+`architecturalDecisions` is optional at the schema level, but it becomes
+required whenever an AAG requirement or attached compliance control needs an
+answer that the object does not provide directly.
 
 ## RBB Classifications
 
-The framework taxonomy organizes reusable and deployed service patterns around
-these classifications:
+The framework taxonomy organizes RBBs into these classifications:
 
 | Classification | Purpose |
 |---|---|
-| Host | The runtime substrate on which services run. |
-| General Service | A reusable non-database service pattern that runs on a host or managed substrate. |
+| Host | The runtime substrate on which reusable or product-specific services run. |
+| General Service | A reusable non-database service pattern that runs on a host or equivalent managed substrate. |
 | Database Service | A reusable data-platform service pattern with durability, recovery, and access-control concerns. |
 | SaaS Service | A vendor-managed service classification used when traffic or data may leave the infrastructure boundary. It is modeled as an RBB with `category: service` and `serviceCategory: saas`. |
 | Product Service | A first-party service classification used when organization-authored code runs on an RBB or blackbox host pattern. It is modeled as an RBB with `category: service` and `serviceCategory: product`. |
 
-Machine-readably, all five classifications are represented as `rbb` objects.
-Host, General Service, and Database Service use the shared RBB schema directly.
-Product Service and SaaS Service also use RBB-based schemas, adding the extra
-metadata needed for product ownership, `runsOn`, or vendor governance concerns.
+RA and SDM are top-level architecture objects. They are not RBB
+classifications.
+
+## The Three Core RBB Concepts
+
+Every RBB uses the same three architecture concepts.
+
+### Internal Components
+
+Internal Components are the ABBs or RBBs that exist inside the boundary of the
+RBB being described.
+
+For a host RBB, that means the operating system, hardware substrate, and any
+agents installed on the host. For a service RBB, that means the host pattern it
+runs on and the function-defining component that gives the service its purpose.
+
+### External Interactions
+
+External Interactions declare systems, services, or platforms outside the RBB
+boundary that the RBB communicates with or depends on. An external interaction
+may optionally point to another catalog object with `ref`, but that is
+enrichment, not a prerequisite for completeness.
+
+### Architecture Decisions
+
+Architecture Decisions are where the object explains required answers that are
+not otherwise expressed directly in the object shape, and where it justifies
+non-obvious additions.
+
+An Architecture Decision is required when:
+
+- an AAG question or compliance control requires an answer and the object does
+  not provide that answer directly
+- an internal component is added that is not required by an AAG or compliance
+  control
+- an external interaction is added that is not required by an AAG or
+  compliance control
+
+Architecture Decisions should reference the triggering AAG requirement,
+compliance control, or added component or interaction.
 
 ## Host Classification
 
-A host RBB represents a standardized host platform. It includes:
+A host RBB represents a standardized host platform. It typically includes:
 
 - the operating system ABB
 - the hardware ABB
 - any agent ABBs physically installed on the host
-- `externalInteractions` with platforms the host communicates with
+- any host-baseline Architecture Decisions needed to answer AAG or compliance
+  questions that are not otherwise explicit
 
-Those are not the same thing as internal components. An internal component is part of the host. An external interaction is something outside the host boundary that the host depends on or communicates with.
+Those are not the same thing as external interactions. An internal component is
+part of the host. An external interaction is something outside the host
+boundary that the host depends on or communicates with.
 
-Concrete example: `rbb.host.windows.2022.ec2.standard` includes CrowdStrike Falcon, Automox, and Dynatrace agents as internal components because they are installed on the host. It also declares external interactions with the CrowdStrike platform, Automox patch management, Dynatrace, centralized logging, and Active Directory because those systems exist outside the host boundary.
+Host AAGs should define the host itself and its baseline controls. They should
+not force service or data concerns such as backup strategy onto the host object.
 
 ## General Service And Database Service Classifications
 
-A service RBB composes a host RBB with one function ABB. This is the
-framework’s way of saying that a reusable service capability is not just
-software in the abstract. It is software running on a specific host pattern
-with specific interactions and decisions layered on top.
-
-Concrete example: `rbb.service.dbms.sqlserver-2022` references `rbb.host.windows.2022.ec2.standard` as `hostRbb` and `abb.software.microsoft-sqlserver-2022` as `functionAbb`. That tells an engineer two important things immediately:
-
-- the database service is built on the standard Windows 2022 EC2 host pattern
-- the function-defining software is SQL Server 2022
-
-From there, the service RBB adds database-specific external interactions and
-variant-specific architectural decisions such as backup strategy, RTO, RPO, and
-HA mechanism.
+A General Service or Database Service RBB composes a host or managed substrate
+with the function-defining component that gives the service its purpose. This
+is the framework’s way of saying that a reusable service capability is not just
+software in the abstract. It is software running on a specific pattern with
+specific interactions and decisions layered on top.
 
 General Service and Database Service are both service-side classifications of
 the same reusable building-block concept. The difference is scope:
@@ -78,66 +117,67 @@ the same reusable building-block concept. The difference is scope:
 - Database Service captures reusable database patterns with explicit data
   durability and protection concerns.
 
-## Variants And Architectural Decisions
+## Product Service And SaaS Service Classifications
 
-Variants are a core part of the RBB model. The keys under `variants` are open-ended and descriptive. `ha` and `sa` are common examples, but they are not the only valid values. Other valid examples include `hp`, `sp`, `geo-redundant`, and `single-region`. Each named variant has its own `architecturalDecisions` map.
+Product Service and SaaS Service are also RBB classifications.
 
-Those decisions capture the operating posture of that variant: node counts, patching cadence, backup approach, autoscaling expectations, and any other design choices that matter.
+- Product Service is used when organization-authored code runs on an RBB or
+  blackbox host pattern.
+- SaaS Service is used when a vendor-managed service may route data or traffic
+  outside the infrastructure boundary.
 
-Important: `architecturalDecisions` values must be machine-readable. Use the constrained enums defined in the schema for known keys. Do not use prose values. These fields are intended to drive IaC automation in a future phase.
-
-### Common Variant Examples
-
-A high-availability variant is intended for workloads that need resilience against node or instance failure. It usually implies more nodes, explicit failover or traffic management behavior, and tighter recovery expectations.
-
-A standard-availability variant is intended for less demanding or less complex use cases. It may still be production-grade, but it accepts a simpler failure model and usually lower operational overhead.
-
-The important rule is not that HA must always mean three nodes or that SA must always mean one node. The important rule is that the YAML must document the decisions that define the posture of the named variant. The validator cares that at least one named variant exists and that the variant carries architectural decisions. It does not require specific keys like `ha` or `sa`.
+These are not separate peer object types in the architecture taxonomy. They are
+service-side RBB classifications with additional metadata fields.
 
 ## External Interactions As Black Boxes
 
 External interactions are treated as black boxes by design.
 
-An RBB is complete if it documents the fact that it interacts with authentication, logging, monitoring, patching, or another platform, regardless of whether the interacted-with thing exists in the catalog as a first-class object. The `ref` field is optional enrichment, not a prerequisite for completeness.
+An RBB is complete if it documents the fact that it interacts with
+authentication, logging, monitoring, patching, or another platform, regardless
+of whether the interacted-with thing exists in the catalog as a first-class
+object. The `ref` field is optional enrichment, not a prerequisite for
+completeness.
 
-That means a host RBB can be complete even if its logging platform is not modeled elsewhere in the repo. The point is to declare the dependency clearly, not to block architecture documentation until every connected platform has been cataloged.
+That means a host RBB can be complete even if its logging platform is not
+modeled elsewhere in the repo. The point is to declare the dependency clearly,
+not to block architecture documentation until every connected platform has been
+cataloged.
 
 ## How To Add A New RBB
 
-1. Decide whether you are modeling a Host, General Service, or Database Service
-   RBB.
+1. Decide which RBB classification you are modeling.
 2. Choose the correct ID convention and folder.
 3. Add the shared base fields.
-4. If the RBB is a host, specify `osAbb`, `hardwareAbb`, and the internal
-   components that live on the host.
-5. If it is a service, specify `hostRbb`, `functionAbb`, and any service-level
-   external interactions that go beyond the host already declares.
-6. Add `variants` and document the architectural decisions for each supported variant.
+4. If the RBB is a host, specify the internal components that live on the host.
+5. If it is a service, specify the host or managed substrate it runs on and the
+   function-defining component that gives the service its purpose.
+6. Add any Architecture Decisions required by the AAG or attached compliance
+   framework when the object does not answer the question directly.
 7. Set `satisfiesAAG` and run validation.
 
-The validation step matters more for RBBs than for any other object type because this is where the governance model is enforced.
+The validation step matters more for RBBs than for any other object type
+because this is where the checklist and compliance model are enforced.
 
 ## FAQ
 
-### Can a service RBB reference multiple host RBBs?
-
-No. A service RBB is meant to describe one reusable service pattern composed from one host pattern and one function ABB. If a service really needs materially different host substrates, that is usually a sign that you need separate service RBBs.
-
 ### What is the difference between an internal component and an external interaction?
 
-If the thing is deployed on or inside the object, it is an internal component. If the object talks to it across a boundary, it is an external interaction.
+If the thing is deployed on or inside the object, it is an internal component.
+If the object talks to it across a boundary, it is an external interaction.
 
 ### Where do Product Services and SaaS Services fit?
 
-They are part of the service taxonomy, but they are not modeled as reusable
-`rbb` objects in the current machine-readable repo.
+They are RBB classifications.
 
-- Use an RBB when you are defining a reusable host or service pattern.
-- Use a Product Service when you are documenting first-party code deployed on a
-  reusable pattern.
-- Use a SaaS Service when the service is vendor-managed and may carry data
-  outside the infrastructure boundary.
+- Use Product Service when the object represents organization-authored code.
+- Use SaaS Service when the object represents a vendor-managed service that may
+  carry data or traffic outside the infrastructure boundary.
+- Use the other RBB classifications for reusable host and reusable service
+  patterns that are not first-party workloads or SaaS dependencies.
 
 ### Why does an agent ABB appear as both an internal component and enable an external interaction?
 
-That is not duplication. The internal component tells you what is physically present on the host. The `enabledBy` field on the external interaction tells you which internal component makes the external dependency possible.
+That is not duplication. The internal component tells you what is physically
+present on the host. The `enabledBy` field on the external interaction tells
+you which internal component makes the external dependency possible.

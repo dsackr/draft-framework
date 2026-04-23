@@ -24,11 +24,15 @@ linked below.
 - [Reference Architectures (RAs)](docs/framework/reference-architectures.md)
 - [Software Distribution Manifests (SDMs)](docs/framework/software-distribution-manifests.md)
 
-### Supporting Object Guides
+### RBB Classifications
+
+- [Product Service](docs/framework/product-service.md)
+- [SaaS Service](docs/framework/saas-services.md)
+
+### Supporting Model Objects
 
 - [Architecture Building Block (ABB)](docs/framework/abbs.md)
-- [Product Service (PS)](docs/framework/product-service.md)
-- [Software as a Service (SaaS) Service](docs/framework/saas-services.md)
+- [Deployment Risks and Decisions (DRDs)](docs/framework/deployment-risks-and-decisions.md)
 
 ### Extensible Framework Content
 

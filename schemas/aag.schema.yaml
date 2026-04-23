@@ -52,4 +52,9 @@ satisfactionMechanism:
   optionalFields:
     - criteria
     - key
+    - equals
+    - allowEmpty
     - example
+  fieldTypes:
+    criteria: dict
+    allowEmpty: bool

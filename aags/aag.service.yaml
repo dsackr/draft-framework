@@ -19,7 +19,7 @@ appliesTo:
   serviceCategory: general
 requirements:
   - id: scaling-approach
-    description: The service must document how capacity is scaled for its declared variants.
+    description: The service must document how capacity is scaled.
     rationale: Services cannot be approved without an explicit statement of their horizontal or vertical scaling model.
     canBeSatisfiedBy:
       - mechanism: architecturalDecision
@@ -27,7 +27,7 @@ requirements:
         example: Horizontal autoscaling behind a load balancer or manual scale-up for a database tier.
     minimumSatisfactions: 1
   - id: health-check
-    description: The service must document how health is determined for each supported variant.
+    description: The service must document how health is determined.
     rationale: Health signaling determines how failures are detected and how traffic or failover decisions are made.
     canBeSatisfiedBy:
       - mechanism: externalInteraction

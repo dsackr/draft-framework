@@ -18,16 +18,11 @@ owner:
 tags:
   - lambda
   - serverless
-variants:
-  standard:
-    notes: >
-      Standard Lambda execution environment. HA and scaling are inherent
-      to the Lambda platform — AWS manages concurrency and availability.
-    architecturalDecisions:
-      authenticationApproach: IAM-based invocation and execution roles managed by AWS
-      loggingApproach: Function and platform logs emitted to CloudWatch Logs
-      securityMonitoringApproach: AWS-native monitoring and audit integration for the managed runtime
-      patchManagementApproach: Runtime patching is handled by AWS as part of the managed platform
+architecturalDecisions:
+  authenticationApproach: IAM-based invocation and execution roles managed by AWS
+  loggingApproach: Function and platform logs emitted to CloudWatch Logs
+  securityMonitoringApproach: AWS-native monitoring and audit integration for the managed runtime
+  patchManagementApproach: Runtime patching is handled by AWS as part of the managed platform
 internalComponents:
   - ref: abb.appliance.aws-lambda-runtime
     role: appliance

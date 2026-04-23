@@ -35,7 +35,7 @@ requirements:
         example: A one-hour or twenty-four-hour recovery point objective.
     minimumSatisfactions: 3
   - id: ha-mechanism
-    description: The DBMS service must document the database-level availability mechanism used by each variant.
+    description: The DBMS service must document its database-level availability mechanism.
     rationale: Database resilience depends on an explicit clustering, replication, or standalone posture.
     canBeSatisfiedBy:
       - mechanism: architecturalDecision

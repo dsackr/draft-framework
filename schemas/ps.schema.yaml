@@ -13,13 +13,14 @@ requiredFields:
   - runsOn
   - catalogStatus
   - lifecycleStatus
-  - variants
 optionalFields:
   - description
   - version
   - owner
   - tags
   - notes
+  - variants
+  - architecturalDecisions
 idPattern: "^ps\\.[a-z0-9-]+\\.[a-z0-9-]+$"
 enumFields:
   catalogStatus:
@@ -36,3 +37,4 @@ fieldTypes:
   owner: dict
   tags: list
   variants: dict
+  architecturalDecisions: dict

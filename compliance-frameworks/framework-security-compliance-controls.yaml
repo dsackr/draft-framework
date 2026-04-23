@@ -33,8 +33,6 @@ requirementMappings:
   aag.sdm:
     ra-conformance:
       - CC.SecurityCompliance.10.1.1
-    variant-selection:
-      - CC.SecurityCompliance.10.1.1
     availability-requirement:
       - CC.SecurityCompliance.10.1.1
     data-classification:

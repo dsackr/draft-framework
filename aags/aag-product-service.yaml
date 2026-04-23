@@ -7,7 +7,7 @@ description: >
   1st party organization-authored code deployed on a standard RBB pattern.
   Version 1 of this framework does not enumerate individual code packages —
   it acknowledges that 1st party code is present and documents the deployment
-  context, RBB dependency, variant requirements, and external integrations.
+  context, RBB dependency, and product ownership.
 version: 1.0.0
 catalogStatus: approved
 lifecycleStatus: invest
@@ -29,14 +29,6 @@ requirements:
       - mechanism: field
         key: runsOn
         example: "runsOn: rbb.service.web.iis-standard"
-  - id: variant-coverage
-    description: >
-      What deployment variants are defined for this Product Service?
-      At least one named variant must exist.
-    canBeSatisfiedBy:
-      - mechanism: field
-        key: variants
-        example: "variants: { ha: { ... }, sa: { ... } }"
   - id: product-ownership
     description: What product does this PS belong to?
     canBeSatisfiedBy:

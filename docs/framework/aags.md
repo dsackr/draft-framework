@@ -2,7 +2,10 @@
 
 ## What An AAG Is
 
-An Architecture Analysis Guideline, or AAG, is the governance layer for catalog objects that need an explicit completeness test. It does not describe the component itself. It describes the concerns that must be addressed before the object is mature enough to be approved.
+An Architecture Analysis Guideline, or AAG, is the checklist layer for catalog
+objects that need an explicit completeness test. It does not redefine the
+taxonomy of the object. Instead, it asks for the required answers needed to
+build a complete and correct object.
 
 That distinction matters. The catalog object says what the component or pattern is, what it includes, and what it interacts with. The AAG says what questions that object must answer before the framework should trust it as a reusable standard.
 
@@ -38,10 +41,10 @@ The framework models AAGs in terms of requirements and satisfaction mechanisms r
 - a list of `canBeSatisfiedBy` mechanisms
 - a `minimumSatisfactions` count
 
-This is more useful than simple field existence because it captures intent. The
-framework does not care that a field exists for its own sake. It cares that the
-relevant host, service, data, or deployment concern has actually been
-addressed.
+This is more useful than simple field existence because it captures intent. An
+AAG is not merely a post-hoc governance audit. It is the framework’s way of
+asking the architect the questions that must be answered while the object is
+being built.
 
 ## Satisfaction Mechanisms
 
@@ -70,9 +73,12 @@ Example: authentication through Active Directory, or logging through a centraliz
 
 ### `architecturalDecision`
 
-This means the requirement can be satisfied through an explicit key in a variant’s `architecturalDecisions`.
+This means the requirement can be satisfied through an explicit answer in the
+object’s `architecturalDecisions` block.
 
-Example: a service RBB satisfies secrets management by documenting `secretsManagement` in one of its named variants, even if the external secrets platform is not modeled as a separate interaction.
+Example: a service RBB satisfies secrets management by documenting
+`secretsManagement` in `architecturalDecisions`, even if the external secrets
+platform is not modeled as a separate interaction.
 
 ## Why The Mechanism Model Matters
 
@@ -142,8 +148,7 @@ vendor carries, and what SLA the vendor offers.
 
 This AAG applies to Product Service RBB classifications. In plain language, it
 requires the object to document which RBB pattern it runs on, what product owns
-it, what variants exist, and that it is explicitly classified as a Product
-Service.
+it, and that it is explicitly classified as a Product Service.
 
 ### `aag.ra`
 
@@ -156,6 +161,28 @@ Concrete example: `ra.dotnet.three-tier.ha` satisfies this AAG by declaring `pat
 This AAG applies to software distribution manifests. In plain language, it requires an SDM to declare which RA it conforms to, which variant each deployed RBB uses, what availability target the product is built for, whether it has product-specific external interactions beyond its component RBBs, and what data classification it handles.
 
 Concrete example: a software distribution manifest satisfies this AAG by pointing to a reference architecture, selecting a variant for each deployed component, documenting an availability target, and identifying its data classification.
+
+## Architecture Decision Trigger Rules
+
+Architecture Decisions exist to answer required questions that are not
+otherwise resolved directly by the object shape, and to explain exceptions or
+extensions beyond what the AAGs and selected compliance frameworks ask for.
+
+Use an Architecture Decision when:
+
+- an AAG requirement or compliance control needs an answer and the object does
+  not provide that answer directly through a field, internal component, or
+  external interaction
+- an internal component is added that was not explicitly required by an AAG or
+  selected compliance control
+- an external interaction is added that was not explicitly required by an AAG
+  or selected compliance control
+
+An Architecture Decision should reference the thing that triggered it:
+
+- the AAG requirement ID
+- the compliance control ID
+- or the specific added component or interaction
 
 ## Compliance Framework Mappings
 
@@ -179,7 +206,7 @@ Inheritance works the same way in AAGs as it does in many programming models.
 
 - An `externalInteraction` mechanism is satisfied when the RBB has an `externalInteractions` entry whose capability matches the requirement criteria.
 - An `internalComponent` mechanism is satisfied when the RBB has an `internalComponents` entry whose role matches the requirement criteria.
-- An `architecturalDecision` mechanism is satisfied when the required key exists and is non-empty in any variant’s `architecturalDecisions` map.
+- An `architecturalDecision` mechanism is satisfied when the required key exists and is non-empty in the object’s `architecturalDecisions` map. Legacy variant-level decisions are still recognized for backward compatibility.
 - A `field` mechanism is satisfied when the specified object field is populated, or equals the expected value when the mechanism declares `equals`.
 
 If the number of satisfied mechanisms is less than `minimumSatisfactions`, the validator emits a failure. RA and SDM failures use the same style of message, but the validator checks their rules directly because those objects do not expose the same RBB-specific structures.

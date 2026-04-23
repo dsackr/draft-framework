@@ -41,6 +41,14 @@ vendor-managed services:
 These are not optional concerns. They are the minimum information needed before
 the service can be treated as an understood architecture dependency.
 
+## Architecture Decisions
+
+SaaS Services use the same Architecture Decision trigger logic as every other
+RBB classification. If an AAG or compliance control requires an answer and the
+object does not provide it directly, an Architecture Decision is required to
+explain the answer. The same applies when an internal component or external
+interaction is added beyond what the checklist or controls require.
+
 ## YAML Shape
 
 SaaS Services use the dedicated

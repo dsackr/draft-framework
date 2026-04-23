@@ -32,5 +32,5 @@ types by the role they play in the model.
 
 | Object Type | Purpose |
 |---|---|
-| AAGs | Checklists that guide the user to build a complete and correct object. An AAG validates an object after its taxonomy has been chosen; it does not redefine the taxonomy. |
+| AAGs | Checklists that guide the user to build a complete and correct object. They ask for required answers and validate that those answers are present once the object taxonomy has been chosen. |
 | Security and Compliance Controls | The selectable control catalogs and requirement-to-control mappings that sit beside the architecture model. They let the same AAG requirement set be viewed through different compliance frameworks without changing the architecture objects themselves. |

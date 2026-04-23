@@ -24,15 +24,6 @@ requirements:
         key: appliesPattern
         example: ra.dotnet.three-tier.ha
     minimumSatisfactions: 1
-  - id: variant-selection
-    description: Each deployed RBB must specify which variant is selected.
-    rationale: Variant selection is the primary architectural decision in an SDM — it drives availability cost and capacity.
-    canBeSatisfiedBy:
-      - mechanism: internalComponent
-        criteria:
-          variantDeclared: true
-        example: "rbb.service.web.iis-standard with variant: ha"
-    minimumSatisfactions: 1
   - id: availability-requirement
     description: The product availability tier must be documented.
     rationale: Availability requirements justify variant selections and inform operational support models.
