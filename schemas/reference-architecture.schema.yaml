@@ -7,7 +7,7 @@ requiredFields:
   - name
   - catalogStatus
   - lifecycleStatus
-  - requiredRBBs
+  - serviceGroups
 optionalFields:
   - description
   - version
@@ -16,6 +16,7 @@ optionalFields:
   - patternType
   - architecturalDecisions
   - applicableODC
+  - scalingUnits
 idPattern: "^ra\\.[a-z0-9.-]+$"
 enumFields:
   catalogStatus:
@@ -31,13 +32,77 @@ enumFields:
 fieldTypes:
   owner: dict
   tags: list
-  requiredRBBs: list
   architecturalDecisions: dict
+  scalingUnits: list
+  serviceGroups: list
 collectionSchemas:
-  requiredRBBs: requiredRBB
-requiredRBB:
+  scalingUnits: scalingUnit
+  serviceGroups: serviceGroup
+
+scalingUnit:
+  requiredFields:
+    - name
+    - type
+  optionalFields:
+    - instanceCount
+    - notes
+  enumFields:
+    type:
+      - replicable
+      - shared
+
+serviceGroup:
+  requiredFields:
+    - name
+  optionalFields:
+    - deploymentTarget
+    - scalingUnit
+    - rbbs
+    - applianceAbbs
+    - externalInteractions
+  fieldTypes:
+    rbbs: list
+    applianceAbbs: list
+    externalInteractions: list
+  collectionSchemas:
+    rbbs: rbbEntry
+    applianceAbbs: applianceAbbEntry
+    externalInteractions: externalInteraction
+
+rbbEntry:
   requiredFields:
     - ref
-    - role
+  optionalFields:
+    - diagramTier
+    - intent
+    - instance
+    - riskRef
+    - notes
+  enumFields:
+    diagramTier:
+      - presentation
+      - application
+      - data
+      - utility
+    intent:
+      - ha
+      - sa
+
+applianceAbbEntry:
+  requiredFields:
+    - ref
   optionalFields:
     - notes
+
+externalInteraction:
+  requiredFields:
+    - name
+  optionalFields:
+    - type
+    - ref
+    - capability
+    - notes
+  enumFields:
+    type:
+      - internal
+      - external

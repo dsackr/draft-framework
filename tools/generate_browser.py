@@ -362,7 +362,6 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "satisfiesODC": obj.get("satisfiesODC", []),
                 "appliesTo": obj.get("appliesTo", {}),
                 "inherits": obj.get("inherits", ""),
-                "requiredRBBs": obj.get("requiredRBBs", []),
                 "scalingUnits": obj.get("scalingUnits", []),
                 "serviceGroups": obj.get("serviceGroups", []),
                 "appliesPattern": obj.get("appliesPattern", ""),
@@ -2812,20 +2811,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
-    function renderDeploymentTopology(sdm) {
-      const serviceGroups = sdm.serviceGroups || [];
+    function renderDeploymentTopology(object) {
+      const serviceGroups = object.serviceGroups || [];
 
       if (!serviceGroups.length) {
         return `
           <div class="topology-layout">
-            <div class="empty-card">No deployment topology data is available for this software distribution manifest.</div>
+            <div class="empty-card">No topology data is available for this object.</div>
           </div>
         `;
       }
 
       const targets = new Map();
       serviceGroups.forEach(group => {
-        const target = group.deploymentTarget || 'Unspecified';
+        const target = group.deploymentTarget || (object.type === 'reference_architecture' ? 'Reference Pattern' : 'Unspecified');
         if (!targets.has(target)) {
           targets.set(target, []);
         }
@@ -2833,7 +2832,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       });
 
       const scalingUnits = [...new Set(serviceGroups.map(group => group.scalingUnit).filter(Boolean))];
-      const topologyToolbar = `
+      const topologyToolbar = object.type === 'software_distribution_manifest' ? `
         <div class="topology-toolbar">
           <div class="topology-filter-buttons">
             <button class="topology-filter-button ${currentSdmScalingFilter === 'all' ? 'active' : ''}" data-scaling-filter="all">All scaling units</button>
@@ -2841,7 +2840,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           </div>
           <div class="topology-filter-help">Select a scaling unit to highlight participating services.</div>
         </div>
-      `;
+      ` : '';
 
       const deploymentTargetMarkup = [...targets.entries()].map(([target, grouped]) => {
         const meta = deploymentTargetPresentation(target);
@@ -3092,13 +3091,37 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           </div>
           ${usedByMarkup(object)}
         `;
+      } else if (object.type === 'reference_architecture') {
+        detailBody = `
+          ${headerMarkup}
+          <div class="detail-tabs">
+            <button class="detail-tab" data-sdm-tab="details">Details</button>
+            <button class="detail-tab active" data-sdm-tab="topology">Deployment Pattern</button>
+          </div>
+          <div class="detail-panel" data-sdm-panel="details" hidden>
+            ${sdmServiceGroupsMarkup(object)}
+            <section class="decisions-card">
+              <h3>Architectural Decisions</h3>
+            ${object.architecturalDecisions && Object.keys(object.architecturalDecisions).length
+                ? `<div class="decisions-grid single"><section class="decision-card"><dl class="definition-list">${Object.entries(object.architecturalDecisions).map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(Array.isArray(value) ? value.join(', ') : String(value))}</dd>`).join('')}</dl></section></div>`
+                : '<div class="empty-card">No architectural decisions are defined for this object.</div>'}
+            </section>
+          </div>
+          <div class="detail-panel" data-sdm-panel="topology">
+            <section class="section-card">
+              <h3>Deployment Pattern</h3>
+              <div id="topology-canvas"></div>
+            </section>
+          </div>
+          ${usedByMarkup(object)}
+        `;
       } else if (object.type === 'abb') {
         detailBody = `
           ${headerMarkup}
           ${abbDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
-      } else if (object.type === 'rbb' || object.type === 'reference_architecture') {
+      } else if (object.type === 'rbb') {
         detailBody = `
           ${headerMarkup}
           <section class="middle-grid">
@@ -3149,7 +3172,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       attachTopNavHandlers();
       attachSidebarHandlers();
       attachObjectLinkHandlers(appRoot);
-      if (object.type === 'software_distribution_manifest') {
+      if (object.type === 'software_distribution_manifest' || object.type === 'reference_architecture') {
         currentSdmScalingFilter = 'all';
         const applySdmScalingFilter = () => {
           const topologyCanvas = document.getElementById('topology-canvas');

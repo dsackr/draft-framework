@@ -617,16 +617,20 @@ def validate_ra(obj: dict[str, Any], path: Path, odcs: dict[str, dict[str, Any]]
             f"{path}: [{object_id}] ODC requirement 'pattern-type' not satisfied — needs architecturalDecision(patternType)"
         )
 
-    required_rbbs = obj.get("requiredRBBs", [])
-    if not isinstance(required_rbbs, list) or not required_rbbs:
+    service_groups = obj.get("serviceGroups", [])
+    if not isinstance(service_groups, list) or not service_groups:
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'required-rbbs' not satisfied — needs internalComponent(role=web-tier | app-tier | data-tier | cache-tier | messaging-tier)"
+            f"{path}: [{object_id}] ODC requirement 'service-groups' not satisfied — needs serviceGroups with tiered RBB entries"
         )
     else:
-        missing_roles = [entry.get("ref", "unknown") for entry in required_rbbs if not is_non_empty(entry.get("role"))]
-        if missing_roles:
+        groups_without_rbbs = [
+            group.get("name", "unknown")
+            for group in service_groups
+            if isinstance(group, dict) and not isinstance(group.get("rbbs"), list)
+        ]
+        if groups_without_rbbs:
             failures.append(
-                f"{path}: [{object_id}] ODC requirement 'required-rbbs' not satisfied — every requiredRBB must declare a role (missing on: {', '.join(missing_roles)})"
+                f"{path}: [{object_id}] ODC requirement 'service-groups' not satisfied — every service group must declare rbbs (missing on: {', '.join(groups_without_rbbs)})"
             )
 
     if not is_non_empty(obj.get("architecturalDecisions")):
@@ -811,6 +815,7 @@ def validate_service_group_structure(
     appliance_abb_ids: set[str],
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
+    require_deployment_target: bool = True,
 ) -> None:
     scaling_units = obj.get("scalingUnits", [])
     service_groups = obj.get("serviceGroups", [])
@@ -847,7 +852,7 @@ def validate_service_group_structure(
             failures.append(f"{path}: serviceGroups entries must include name")
             continue
         service_group_names.add(str(name))
-        if not is_non_empty(deployment_target):
+        if require_deployment_target and not is_non_empty(deployment_target):
             failures.append(f"{path}: serviceGroup '{name}' missing deploymentTarget")
 
     for group in service_groups:
@@ -895,13 +900,14 @@ def validate_service_group_structure(
                     )
 
 
-def validate_sdm_refs(
+def validate_service_group_refs(
     obj: dict[str, Any],
     path: Path,
     ard_ids: set[str],
     appliance_abb_ids: set[str],
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
+    require_deployment_target: bool = True,
 ) -> None:
     for risk in obj.get("architectureRisksAndDecisions", []):
         if not isinstance(risk, dict):
@@ -917,6 +923,7 @@ def validate_sdm_refs(
         appliance_abb_ids,
         catalog_by_id,
         failures,
+        require_deployment_target=require_deployment_target,
     )
 
 
@@ -957,9 +964,18 @@ def main() -> int:
             validate_rbb(obj, path, odcs, catalog_by_id, catalog_ids, failures, warnings)
         if obj.get("type") == "reference_architecture":
             validate_ra(obj, path, odcs, failures)
+            validate_service_group_refs(
+                obj,
+                path,
+                ard_ids,
+                appliance_abb_ids,
+                catalog_by_id,
+                failures,
+                require_deployment_target=False,
+            )
         if obj.get("type") == "software_distribution_manifest":
             validate_sdm(obj, path, odcs, failures)
-            validate_sdm_refs(obj, path, ard_ids, appliance_abb_ids, catalog_by_id, failures)
+            validate_service_group_refs(obj, path, ard_ids, appliance_abb_ids, catalog_by_id, failures)
 
     failing_paths = {entry.split(":", 1)[0] for entry in failures}
     for path in files:

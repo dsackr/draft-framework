@@ -24,28 +24,32 @@ At minimum, an RA YAML should include:
 - `name`
 - `catalogStatus`
 - `lifecycleStatus`
-- `requiredRBBs`
+- `serviceGroups`
 
 Most RAs also include `description`, `patternType`, and
 `architecturalDecisions`.
 
-## What `requiredRBBs` Means
+## What `serviceGroups` Means
 
-The core field in an RA is `requiredRBBs`. Each entry names:
+The core field in an RA is `serviceGroups`. Each group clusters the required
+services that work together in the deployment pattern. Inside each group, the
+pattern declares:
 
-- the RBB that must exist
-- the role the RBB plays in the pattern
+- the RBBs that must exist
+- the `diagramTier` each RBB belongs to
+- any group-local interactions or notes that matter to the pattern
 
-This field does more than list ingredients. It says which reusable components
-must exist and what role each component fills in the deployment pattern so the
-intended non-functional qualities can actually be achieved.
+This does more than list ingredients. It shows how the pattern is meant to be
+assembled using the same tiered service-group grammar the SDM uses later.
 
 ## Concrete Example
 
-A representative reference architecture says that a three-tier .NET high-availability pattern requires:
+A representative reference architecture says that a three-tier .NET
+high-availability pattern includes service groups such as:
 
-- a web-tier service RBB based on `rbb.service.web.iis-standard`
-- a data-tier service RBB based on a SQL Server DBMS RBB
+- `Frontend UI` with presentation-tier web services
+- `Application Runtime Services` with application-tier runtime services
+- `Data Services` with data-tier DBMS services
 
 The RA also carries architectural decisions that explain what the deployment
 pattern assumes, such as web-tier autoscaling and AlwaysOn on the data tier.

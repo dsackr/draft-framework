@@ -205,7 +205,7 @@ specific answers:
 This ODC applies to reference architectures. It requires an RA to declare:
 
 - the supported deployment pattern it represents
-- the RBBs and roles required to realize that pattern
+- the service groups and tiered RBBs required to realize that pattern
 - the pattern-level decisions that deliver the intended non-functional
   qualities
 

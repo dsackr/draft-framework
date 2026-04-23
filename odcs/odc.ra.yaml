@@ -24,14 +24,14 @@ requirements:
         key: patternType
         example: multi-tier
     minimumSatisfactions: 1
-  - id: required-rbbs
-    description: Which RBBs, in which roles, are required to realize this deployment pattern?
-    rationale: The RA is the mechanism that tells downstream SDMs and application teams which reusable components they must assemble to achieve the intended posture.
+  - id: service-groups
+    description: How are the required services clustered into service groups and diagram tiers to realize this deployment pattern?
+    rationale: The RA should guide downstream SDMs and application teams with the same service-group and tier structure they will use in a real deployment.
     canBeSatisfiedBy:
       - mechanism: internalComponent
         criteria:
-          role: web-tier | app-tier | data-tier | cache-tier | messaging-tier
-        example: "rbb.service.web.iis-standard with role: web-tier"
+          role: service-group
+        example: "Frontend UI service group with presentation-tier RBBs and Data Services service group with data-tier RBBs"
     minimumSatisfactions: 1
   - id: deployment-qualities
     description: What non-functional deployment qualities is this Reference Architecture intended to deliver, and what pattern-level decisions make that possible?
