@@ -10,8 +10,8 @@ version: 0.1.0
 catalogStatus: draft
 lifecycleStatus: invest
 owner:
-  team: cloud-operations
-  contact: dsackrider@frontlineed.com
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
 tags:
   - compliance
   - tx-ramp
@@ -20,16 +20,16 @@ frameworkKind: common
 controlIdNamespace: TXRAMP
 defaultSelection: false
 notes: >
-  Starter mapping aligned to the workbook source currently used to track
-  TX-RAMP controls. Replace the workbook link with deeper authoritative links
-  later if stable per-control references become available.
+  Starter mapping aligned to the public TX-RAMP program information. Replace
+  the shared program link with deeper authoritative links later if stable
+  per-control references become available.
 controls:
   - controlId: AC-2
     name: Account Management and Centralized Authentication
     description: >
       Administrative identities must be governed through approved account
       management and centralized authentication workflows.
-    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
     appliesTo:
       - rbb.host
     relatedConcern: authentication
@@ -50,7 +50,7 @@ controls:
     description: >
       Hosts must generate, retain, and forward logs to an approved centralized
       logging workflow.
-    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
     appliesTo:
       - rbb.host
     relatedConcern: log-management
@@ -71,7 +71,7 @@ controls:
     description: >
       Hosts must provide security telemetry to approved detection and response
       workflows.
-    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
     appliesTo:
       - rbb.host
     relatedConcern: security-monitoring
@@ -93,7 +93,7 @@ controls:
     description: >
       Infrastructure components must operate under approved configuration,
       change, and patch management workflows.
-    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
     appliesTo:
       - rbb.host
     relatedConcern: patch-management
@@ -114,7 +114,7 @@ controls:
     description: >
       Database services must document protection mechanisms for stored data,
       including encryption expectations where applicable.
-    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
     appliesTo:
       - rbb.service.database
     relatedConcern: encryption-at-rest
@@ -135,7 +135,7 @@ controls:
     description: >
       Database identity, role, and privilege design must be explicitly
       documented.
-    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
     appliesTo:
       - rbb.service.database
     relatedConcern: access-control-model
@@ -156,7 +156,7 @@ controls:
     description: >
       Database services must define backup strategy, recovery targets, and
       restoration expectations.
-    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
     appliesTo:
       - rbb.service.database
     relatedConcern: backup-strategy
@@ -176,7 +176,7 @@ controls:
     description: >
       Services must document how secrets and authenticators are stored, rotated,
       and accessed through approved mechanisms.
-    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
     appliesTo:
       - rbb.service.general
     relatedConcern: secrets-management
@@ -197,7 +197,7 @@ controls:
     description: >
       Product services must document how secrets and authenticators are stored,
       rotated, and accessed through approved mechanisms.
-    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
     appliesTo:
       - rbb.service.product
     requirementMode: conditional
@@ -217,7 +217,7 @@ controls:
     description: >
       Software distributions must declare governing data classification so the
       correct control set can be applied.
-    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
     appliesTo:
       - sdm
     relatedConcern: data-classification
@@ -237,7 +237,7 @@ controls:
     description: >
       Software distributions must declare the availability requirement and
       recovery expectations they are designed to meet.
-    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
     appliesTo:
       - sdm
     relatedConcern: availability-requirement
@@ -257,7 +257,7 @@ controls:
     description: >
       Software distributions must document conformance to or deviation from the
       selected reference architecture and control baseline.
-    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
     appliesTo:
       - sdm
     relatedConcern: ra-conformance
