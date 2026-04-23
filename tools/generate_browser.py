@@ -2263,9 +2263,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         return '<span class="interaction-notes">No required controls added by the selected framework.</span>';
       }
       return controls.map(control => `
-        <span class="control-badge">
-          ${escapeHtml(control.controlId || '')}${control.name ? ` - ${escapeHtml(control.name)}` : ''}
-        </span>
+        ${control.externalReference
+          ? `<a class="control-badge" href="${escapeHtml(control.externalReference)}" target="_blank" rel="noopener noreferrer">${escapeHtml(control.controlId || '')}${control.name ? ` - ${escapeHtml(control.name)}` : ''}</a>`
+          : `<span class="control-badge">${escapeHtml(control.controlId || '')}${control.name ? ` - ${escapeHtml(control.name)}` : ''}</span>`}
       `).join('');
     }
 
