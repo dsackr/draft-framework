@@ -20,7 +20,9 @@ VALID_HOST_CONCERNS = {
     "health-welfare-monitoring",
     "security-monitoring",
     "patch-management",
+    "secrets-management",
 }
+VALID_DEPLOYMENT_QUALITIES = {"availability", "scalability", "recoverability"}
 DECISION_ENUMS = {
     "autoscaling": {"required", "optional", "none"},
     "loadBalancer": {"required", "optional", "none"},
@@ -267,6 +269,9 @@ def mechanism_description(mechanism: dict[str, Any]) -> str:
     if mechanism_type == "abbConfiguration":
         concern = mechanism.get("criteria", {}).get("concern", "unknown")
         return f"abbConfiguration(concern={concern})"
+    if mechanism_type == "deploymentConfiguration":
+        quality = mechanism.get("criteria", {}).get("quality", "unknown")
+        return f"deploymentConfiguration(quality={quality})"
     if mechanism_type == "architecturalDecision":
         return f"architecturalDecision({mechanism.get('key', 'unknown')})"
     return str(mechanism_type)
@@ -351,6 +356,18 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any], catalog_
         if isinstance(decisions, dict):
             value = get_nested_value(decisions, key)
             if is_non_empty(value):
+                return True
+        return False
+    if mechanism_type == "deploymentConfiguration":
+        quality = mechanism.get("criteria", {}).get("quality")
+        configurations = obj.get("deploymentConfigurations", [])
+        if not isinstance(configurations, list):
+            return False
+        for configuration in configurations:
+            if not isinstance(configuration, dict):
+                continue
+            qualities = configuration.get("addressesQualities", [])
+            if isinstance(qualities, list) and quality in qualities:
                 return True
         return False
     return False
@@ -567,6 +584,25 @@ def validate_rbb(
             warnings.append(f"{path}: SaaS Services with dataLeavesInfrastructure=true should document dpaNotes")
 
     validate_classified_abb_refs(obj, path, catalog_by_id, failures)
+    deployment_configurations = obj.get("deploymentConfigurations", [])
+    if deployment_configurations is not None:
+        if not isinstance(deployment_configurations, list):
+            failures.append(f"{path}: deploymentConfigurations must be a list")
+        else:
+            for index, configuration in enumerate(deployment_configurations):
+                if not isinstance(configuration, dict):
+                    failures.append(f"{path}: deploymentConfigurations[{index}] must be a mapping")
+                    continue
+                qualities = configuration.get("addressesQualities", [])
+                if qualities is not None:
+                    if not isinstance(qualities, list):
+                        failures.append(f"{path}: deploymentConfigurations[{index}].addressesQualities must be a list")
+                    else:
+                        invalid = [quality for quality in qualities if quality not in VALID_DEPLOYMENT_QUALITIES]
+                        if invalid:
+                            failures.append(
+                                f"{path}: deploymentConfigurations[{index}].addressesQualities contains invalid values {invalid}"
+                            )
     validate_architectural_decisions(obj, path, failures)
 
 

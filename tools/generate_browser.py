@@ -338,6 +338,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "platformDependency": obj.get("platformDependency", ""),
                 "addressesConcerns": obj.get("addressesConcerns", []),
                 "configurations": obj.get("configurations", []),
+                "deploymentConfigurations": obj.get("deploymentConfigurations", []),
                 "capability": obj.get("capability", ""),
                 "networkPlacement": obj.get("networkPlacement", ""),
                 "patchingOwner": obj.get("patchingOwner", ""),
@@ -2495,6 +2496,27 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
+    function deploymentConfigurationsMarkup(object) {
+      const configurations = object.deploymentConfigurations || [];
+      if (!configurations.length) {
+        return '';
+      }
+      return `
+        <section class="section-card">
+          <h3>Deployment Configurations</h3>
+          <div class="section-stack">
+            ${configurations.map(configuration => `
+              <article class="odc-card">
+                <div class="odc-name">${escapeHtml(configuration.name || configuration.id || 'Deployment Configuration')}</div>
+                <div class="interaction-notes">${escapeHtml(configuration.description || '')}</div>
+                ${configuration.addressesQualities?.length ? `<div class="object-id">${escapeHtml(configuration.addressesQualities.join(', '))}</div>` : ''}
+              </article>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
     function saasServiceDetailMarkup(object) {
       return `
         <section class="section-card">
@@ -3072,6 +3094,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </div>
           </section>
           ${object.type === 'rbb' ? rbbOdcMarkup(object) : ''}
+          ${object.type === 'rbb' ? deploymentConfigurationsMarkup(object) : ''}
           <section class="decisions-card">
             <h3>Architectural Decisions</h3>
             ${decisionMarkup(object)}

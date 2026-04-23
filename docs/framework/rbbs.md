@@ -32,6 +32,11 @@ At minimum, an RBB YAML should include:
 required whenever an ODC requirement or attached compliance control needs an
 answer that the object does not provide directly.
 
+RBBs may also declare `deploymentConfigurations`. These are optional reusable
+deployment overlays on the RBB itself. A deployment configuration can carry
+named availability, scalability, or recoverability patterns without turning
+those qualities into separate object types.
+
 ## RBB Classifications
 
 The framework taxonomy organizes RBBs into these classifications:
@@ -131,6 +136,27 @@ the same reusable building-block concept. The difference is scope:
 - General Service captures reusable non-database service patterns.
 - Database Service captures reusable database patterns with explicit data
   durability and protection concerns.
+
+For a General Service, the structural baseline is:
+
+- one `hostRbb`
+- one `functionAbb`
+
+The General Service ODC then asks for the required service answers:
+
+- service authentication
+- secrets management
+- service logging
+- health and welfare monitoring
+- availability
+- scalability
+- recoverability
+- failure domain
+
+Availability, scalability, and recoverability can be answered through direct
+Architecture Decisions or by selecting a named `deploymentConfiguration` on the
+RBB. Failure domain is treated as an explicit architectural property rather
+than a deployment configuration.
 
 ## Product Service And SaaS Service Classifications
 

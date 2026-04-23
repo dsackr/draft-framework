@@ -163,6 +163,7 @@ Service RBBs additionally include:
 
 - `hostRbb`
 - `functionAbb`
+- optional `deploymentConfigurations`
 
 `architecturalDecisions` is used when an object must answer an ODC or compliance question that is not otherwise expressed directly in the object.
 
@@ -188,9 +189,12 @@ Each satisfaction mechanism is one of:
 
 - `externalInteraction`
 - `internalComponent`
+- `abbConfiguration`
+- `deploymentConfiguration`
+- `field`
 - `architecturalDecision`
 
-This model matters because an ODC defines what must be addressed, not necessarily the exact implementation path. For example, authentication can be satisfied by an explicit external identity interaction or by a documented architectural decision, depending on the object type.
+This model matters because an ODC defines what must be addressed, not necessarily the exact implementation path. For example, authentication can be satisfied by an explicit external identity interaction, a named ABB configuration, or a documented architectural decision, depending on the object type.
 
 ### Compliance Framework Schema
 
@@ -283,7 +287,7 @@ The host ODC applies to host RBBs. It requires that the host address authenticat
 
 ### odc.service
 
-The service ODC applies to all service RBBs. It requires that a service document scaling approach, health check behavior, and secrets management. It assumes host posture is inherited from the referenced host RBB rather than duplicated.
+The general service ODC applies to reusable non-database service RBBs. The structural baseline is enforced separately by schema and validator rules through `hostRbb` and `functionAbb`. The ODC itself requires answers for service authentication, secrets management, service logging, health and welfare monitoring, availability, scalability, recoverability, and failure domain. Availability, scalability, and recoverability may be answered either by direct architecture decisions or by named `deploymentConfigurations` defined on the RBB.
 
 ### odc.service.dbms
 

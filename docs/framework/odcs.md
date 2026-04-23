@@ -133,9 +133,28 @@ or architectural decisions.
 This is the generic service baseline. In plain language, it requires a service
 RBB to explain:
 
-- how the service scales
-- how health is checked
-- how secrets are managed
+- service authentication
+- secrets management
+- service logging
+- health and welfare monitoring
+- availability
+- scalability
+- recoverability
+- failure domain
+
+The structural service shape is still enforced separately by schema and
+validator rules:
+
+- one `hostRbb`
+- one `functionAbb`
+
+The ODC is responsible for the required answers, not for restating the
+structural contract.
+
+Availability, scalability, and recoverability may be answered either through
+direct Architecture Decisions or through a named `deploymentConfiguration`
+defined on the RBB. Failure domain is always treated as an explicit
+architectural answer.
 
 ### `odc.service.dbms`
 
@@ -248,6 +267,9 @@ explicit validation rules for those object types.
   exists and is non-empty in the object's `architecturalDecisions` map.
 - A `field` mechanism is satisfied when the specified object field is
   populated, or equals the expected value when the mechanism declares `equals`.
+- A `deploymentConfiguration` mechanism is satisfied when the object declares a
+  named deployment configuration whose `addressesQualities` covers the required
+  quality.
 
 If the number of satisfied mechanisms is less than `minimumSatisfactions`, the
 validator emits a failure.
