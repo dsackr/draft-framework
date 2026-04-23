@@ -2022,11 +2022,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
+    function objectCardTitle(object) {
+      if (object.type !== 'aag') {
+        return object.name;
+      }
+      const trimmed = String(object.name || '').replace(/\s+Architecture Analysis Guideline$/i, '');
+      if (trimmed === 'Appliance ABB') {
+        return 'Appliance';
+      }
+      return trimmed;
+    }
+
     function objectCardMarkup(object) {
       return `
         <article class="object-card" data-object-id="${object.id}">
           <div>
-            <h3>${escapeHtml(object.name)}</h3>
+            <h3>${escapeHtml(objectCardTitle(object))}</h3>
             <div class="object-id">${escapeHtml(object.id)}</div>
           </div>
           <div class="badges">
