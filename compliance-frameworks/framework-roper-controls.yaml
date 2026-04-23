@@ -1,0 +1,156 @@
+schemaVersion: "1.0"
+id: framework.roper-controls
+type: compliance_framework
+name: Roper Controls
+description: >
+  Organization-specific control overlay for DRAFT. This framework is intended
+  to carry Roper control mappings that refine existing DRAFT concerns without
+  changing the underlying ODC files.
+version: 0.1.0
+catalogStatus: draft
+lifecycleStatus: invest
+owner:
+  team: cloud-operations
+  contact: dsackrider@frontlineed.com
+tags:
+  - compliance
+  - roper
+  - organizational
+  - overlay
+frameworkKind: organizational
+controlIdNamespace: RC
+defaultSelection: false
+extends:
+  - framework.security-compliance-controls
+notes: >
+  Starter overlay built to match the DRAFT compliance-framework schema and the
+  repo's existing required-control style. The workbook link is currently the
+  authoritative source for the detailed Roper control definitions.
+controls:
+  - controlId: RC.AC-01
+    name: Administrative Authentication and Access Governance
+    description: >
+      Administrative access must use approved centralized identity services and
+      follow defined privilege governance.
+    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    appliesTo:
+      - rbb.host
+    relatedConcern: authentication
+    validAnswerTypes:
+      - externalInteraction
+      - abbConfiguration
+      - architecturalDecision
+  - controlId: RC.LOG-01
+    name: Centralized Logging and Retention
+    description: >
+      Systems must forward operational and security logs to an approved
+      centralized logging workflow with defined retention expectations.
+    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    appliesTo:
+      - rbb.host
+    relatedConcern: log-management
+    validAnswerTypes:
+      - abbConfiguration
+      - externalInteraction
+      - architecturalDecision
+  - controlId: RC.MON-01
+    name: Operational and Security Monitoring
+    description: >
+      Systems must provide host health telemetry and security monitoring data to
+      approved monitoring and response workflows.
+    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    appliesTo:
+      - rbb.host
+    relatedConcern: security-monitoring
+    validAnswerTypes:
+      - abb
+      - abbConfiguration
+      - externalInteraction
+      - architecturalDecision
+  - controlId: RC.PAT-01
+    name: Vulnerability and Patch Management
+    description: >
+      Patch ownership, remediation workflow, and exception handling must be
+      explicitly documented and operationalized.
+    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    appliesTo:
+      - rbb.host
+    relatedConcern: patch-management
+    validAnswerTypes:
+      - abb
+      - externalInteraction
+      - architecturalDecision
+  - controlId: RC.SEC-01
+    name: Secrets Management
+    description: >
+      Secrets must be stored, rotated, and accessed through an approved secrets
+      management approach.
+    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    appliesTo:
+      - rbb.service.general
+    relatedConcern: secrets-management
+    validAnswerTypes:
+      - externalInteraction
+      - abbConfiguration
+      - architecturalDecision
+  - controlId: RC.SEC-01
+    name: Product Service Secrets Management
+    description: >
+      Product services must document how secrets are stored, rotated, and
+      accessed through approved mechanisms.
+    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    appliesTo:
+      - rbb.service.product
+    validAnswerTypes:
+      - externalInteraction
+      - abbConfiguration
+      - architecturalDecision
+  - controlId: RC.DB-01
+    name: Database Access and Recovery Controls
+    description: >
+      Database services must define their access-control model and backup and
+      recovery expectations.
+    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    appliesTo:
+      - rbb.service.database
+    relatedConcern: access-control-model
+    validAnswerTypes:
+      - externalInteraction
+      - abbConfiguration
+      - architecturalDecision
+  - controlId: RC.DB-02
+    name: Database Backup Strategy
+    description: >
+      Database services must define backup strategy, recovery targets, and
+      restoration expectations.
+    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    appliesTo:
+      - rbb.service.database
+    relatedConcern: backup-strategy
+    validAnswerTypes:
+      - field
+      - architecturalDecision
+  - controlId: RC.SDM-01
+    name: Product Data Classification and Availability Declaration
+    description: >
+      Software distributions must declare governing data classification and
+      target availability requirements.
+    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    appliesTo:
+      - sdm
+    relatedConcern: data-classification
+    validAnswerTypes:
+      - field
+      - architecturalDecision
+  - controlId: RC.SDM-02
+    name: Reference Architecture Conformance
+    description: >
+      Software distributions must document how they conform to or intentionally
+      deviate from the selected reference architecture.
+    externalReference: https://frontlinetechnologi.sharepoint.com/:x:/t/group_tm_security/IQBmLXKoFH1oQa8uFOhb7BinAfyTil7lH7qiiLYkcnF8MG0
+    appliesTo:
+      - sdm
+    relatedConcern: ra-conformance
+    validAnswerTypes:
+      - field
+      - architecturalDecision
