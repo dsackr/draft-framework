@@ -1,6 +1,6 @@
 # DRAFT Rebuild Prompt
 
-Use this document as the canonical prompt for rebuilding DRAFT — Deployable Reference Architecture Framework Toolkit — in the `draft-framework` repository. It describes the framework, the catalog object model, the schema rules, the validation behavior, and the browser UI contract in enough detail that an engineer or coding agent can reconstruct the project without relying on the current implementation files. This document intentionally excludes concrete ABB, RBB, Reference Architecture, and Software Distribution Manifest instances. It does include the AAG definitions because those are framework rules rather than environment-specific examples.
+Use this document as the canonical prompt for rebuilding DRAFT — Deployable Reference Architecture Framework Toolkit — in the `draft-framework` repository. It describes the framework, the catalog object model, the schema rules, the validation behavior, and the browser UI contract in enough detail that an engineer or coding agent can reconstruct the project without relying on the current implementation files. This document intentionally excludes concrete ABB, RBB, Reference Architecture, and Software Distribution Manifest instances. It does include the ODC definitions because those are framework rules rather than environment-specific examples.
 
 ## What This Repository Is
 
@@ -19,7 +19,7 @@ The repository should contain these top-level folders:
 - `abbs/` for Architecture Building Blocks
 - `rbbs/` for SaaS Service RBB classifications
 - `rbbs/` for Reusable Building Blocks
-- `aags/` for Architecture Analysis Guidelines
+- `odcs/` for Object Definition Checklists
 - `ards/` for Architecture Risks and Decisions
 - `compliance-frameworks/` for selectable compliance framework objects
 - `rbbs/` for Product Service RBB classifications
@@ -85,17 +85,17 @@ A service RBB represents a reusable service pattern. It composes a host RBB toge
 
 The distinction between ABB and RBB is important. An ABB is an individual vendor technology definition. An RBB is a reusable architecture pattern that uses ABBs and possibly other RBBs.
 
-### AAG
+### ODC
 
-An AAG, or Architecture Analysis Guideline, is a first-class catalog object that defines the requirements an architecture object must satisfy before it is considered complete enough for approval. AAGs are not visual components in a deployment. They are governance rules.
+An ODC, or Object Definition Checklist, is a first-class catalog object that defines the required questions and answers needed to build a complete and correct architecture object. ODCs are not deployed runtime components. They are structured object-definition checklists.
 
-In the current DRAFT implementation, AAGs are written for host RBBs, service
+In the current DRAFT implementation, ODCs are written for host RBBs, service
 RBBs, DBMS service RBBs, appliance ABBs, SaaS Services, reference
 architectures, software distribution manifests, and product services.
 
 ### Compliance Framework
 
-A Compliance Framework is a first-class catalog object that defines a selectable control catalog. It exists so the same architecture requirement model can be viewed under different compliance regimes without rewriting the AAGs themselves.
+A Compliance Framework is a first-class catalog object that defines a selectable control catalog. It exists so the same architecture requirement model can be viewed under different compliance regimes without rewriting the ODCs themselves.
 
 Common examples include a baseline controls pack, NIST CSF, SOC 2, or an organization-specific overlay.
 
@@ -149,7 +149,7 @@ RBB objects include:
 
 - `category`: `host` or `service`
 - `serviceCategory` when category is `service`
-- `satisfiesAAG`
+- `satisfiesODC`
 - `internalComponents`
 - `externalInteractions`
 - `architecturalDecisions`
@@ -164,13 +164,13 @@ Service RBBs additionally include:
 - `hostRbb`
 - `functionAbb`
 
-`architecturalDecisions` is used when an object must answer an AAG or compliance question that is not otherwise expressed directly in the object.
+`architecturalDecisions` is used when an object must answer an ODC or compliance question that is not otherwise expressed directly in the object.
 
 Known `architecturalDecisions` keys must remain machine-readable. When `autoscaling` or `loadBalancer` are present, they must use the enum values `required`, `optional`, or `none`. When `minNodes` is present, it must be an integer.
 
-### AAG Schema
+### ODC Schema
 
-AAG objects include:
+ODC objects include:
 
 - `appliesTo`
 - `inherits` (optional)
@@ -190,7 +190,7 @@ Each satisfaction mechanism is one of:
 - `internalComponent`
 - `architecturalDecision`
 
-This model matters because an AAG defines what must be addressed, not necessarily the exact implementation path. For example, authentication can be satisfied by an explicit external identity interaction or by a documented architectural decision, depending on the object type.
+This model matters because an ODC defines what must be addressed, not necessarily the exact implementation path. For example, authentication can be satisfied by an explicit external identity interaction or by a documented architectural decision, depending on the object type.
 
 ### Compliance Framework Schema
 
@@ -204,8 +204,8 @@ Compliance framework objects include:
 
 These objects make compliance selection data-driven. A framework may extend another framework so an organization-specific overlay can inherit a baseline control pack and override only the differences.
 
-When present, `requirementMappings` is a nested map of `aag-id ->
-requirement-id -> [control ids]`. This keeps AAGs architecture-focused while
+When present, `requirementMappings` is a nested map of `odc-id ->
+requirement-id -> [control ids]`. This keeps ODCs architecture-focused while
 allowing control catalogs to be refreshed independently.
 
 ### ARD Schema
@@ -238,7 +238,7 @@ Each `requiredRBBs` entry includes:
 - `role`
 - optional notes
 
-Reference Architectures are validated against `aag.ra`.
+Reference Architectures are validated against `odc.ra`.
 
 ### Software Distribution Manifest Schema
 
@@ -260,7 +260,7 @@ Deployed RBB entries can use `intent` only when the architect is
 making an explicit design decision that deviates from the Reference Architecture
 default, or when no Reference Architecture exists.
 
-Software Distribution Manifests are validated against `aag.sdm`. Risk references and ARD lists must resolve to actual ARD objects.
+Software Distribution Manifests are validated against `odc.sdm`. Risk references and ARD lists must resolve to actual ARD objects.
 
 ### Product Service Schema
 
@@ -273,23 +273,23 @@ Product Service objects include:
 
 `runsOn` must resolve to a known RBB ID. Product Service IDs must match `ps.<product>.<service-name>`.
 
-## AAG Definitions
+## ODC Definitions
 
-### aag.host
+### odc.host
 
-The host AAG applies to host RBBs. It requires that the host address authentication, logging, security monitoring, and patch management. Host AAGs validate the host baseline itself; backup belongs to service and data concerns unless an attached compliance framework adds stricter expectations.
+The host ODC applies to host RBBs. It requires that the host address authentication, logging, security monitoring, and patch management. Host ODCs validate the host baseline itself; backup belongs to service and data concerns unless an attached compliance framework adds stricter expectations.
 
-### aag.service
+### odc.service
 
-The service AAG applies to all service RBBs. It requires that a service document scaling approach, health check behavior, and secrets management. It assumes host posture is inherited from the referenced host RBB rather than duplicated.
+The service ODC applies to all service RBBs. It requires that a service document scaling approach, health check behavior, and secrets management. It assumes host posture is inherited from the referenced host RBB rather than duplicated.
 
-### aag.service.dbms
+### odc.service.dbms
 
-The DBMS service AAG inherits `aag.service` and adds DBMS-specific durability and control requirements. It requires backup strategy, recovery time, recovery point, high-availability mechanism, encryption at rest, and access control model.
+The DBMS service ODC inherits `odc.service` and adds DBMS-specific durability and control requirements. It requires backup strategy, recovery time, recovery point, high-availability mechanism, encryption at rest, and access control model.
 
-### aag.ra
+### odc.ra
 
-The Reference Architecture AAG requires:
+The Reference Architecture ODC requires:
 
 - a non-empty `patternType`
 - at least one `requiredRBBs` entry
@@ -297,18 +297,18 @@ The Reference Architecture AAG requires:
 - pattern-level `architecturalDecisions`
 - evidence that pattern-level architecture decisions are covered
 
-### aag.sdm
+### odc.sdm
 
-The Software Distribution Manifest AAG requires:
+The Software Distribution Manifest ODC requires:
 
 - a non-empty `appliesPattern`
 - `architecturalDecisions.availabilityRequirement`
 - either product-level `externalInteractions` or an explicit `noAdditionalInteractions` decision
 - `architecturalDecisions.dataClassification`
 
-### aag.product-service
+### odc.product-service
 
-The Product Service AAG defines the minimum modeling contract for a first-party service:
+The Product Service ODC defines the minimum modeling contract for a first-party service:
 
 - selection of the RBB pattern via `runsOn`
 - a populated `product` field
@@ -324,7 +324,7 @@ Validation performs these categories of checks:
 - ID prefix and format rules by object type
 - valid lifecycle and catalog status enums
 - machine-readable decision enforcement for `autoscaling`, `loadBalancer`, and `minNodes`
-- AAG satisfaction checks for applicable object types
+- ODC satisfaction checks for applicable object types
 - reference resolution checks, such as `runsOn`, `hostRbb`, `functionAbb`, `osAbb`, `hardwareAbb`, and ARD references
 
 The validator exits non-zero on failure and prints pass or fail per file. This output is designed for both local use and CI.
@@ -335,7 +335,7 @@ IDs are lowercase, dot-separated, and use hyphens inside segments. The major obj
 
 - `abb.*` for ABBs
 - `rbb.*` for RBBs
-- `aag.*` for AAGs
+- `odc.*` for ODCs
 - `ard.*` for ARDs
 - `ps.*` for Product Services
 - `ra.*` for Reference Architectures
@@ -367,11 +367,11 @@ Detail View dispatches on `object.type` only. There must be no routing logic bas
 
 Expected renderers:
 
-- AAG detail: requirements document layout
+- ODC detail: requirements document layout
 - ARD detail: structured risk/decision card
 - Product Service detail: product, `runsOn`, lifecycle, description, and Architecture Decisions
 - Software Distribution Manifest detail: details tab plus deployment topology tab
-- RBB and ABB detail: internal components, interactions, decisions, and any AAG or usage panels
+- RBB and ABB detail: internal components, interactions, decisions, and any ODC or usage panels
 - unknown type: generic key-value fallback view
 
 Detail views should also include a `Used By` panel sourced from the reverse cross-reference index wherever references exist.
@@ -430,7 +430,7 @@ The repository should remain Python-only. `pyyaml` is the only required dependen
 If you are rebuilding this repository from scratch, the required deliverables are:
 
 1. A YAML catalog folder structure containing the object families described above.
-2. A validator that enforces base fields, type-specific IDs, machine-readable decisions, reference resolution, and AAG satisfaction.
+2. A validator that enforces base fields, type-specific IDs, machine-readable decisions, reference resolution, and ODC satisfaction.
 3. A browser generator that loads YAML into a registry, builds cross-reference indexes, and renders list, detail, impact, and deployment topology views from data.
 4. Framework documentation that explains the object model, naming rules, and governance intent.
 5. GitHub automation that runs validation and regenerates the browser on catalog changes.

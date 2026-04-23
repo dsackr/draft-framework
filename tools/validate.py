@@ -153,28 +153,28 @@ def validate_schema_section(
             validate_schema_section(item, child_schema, f"{context}: {field}[{index}]", failures)
 
 
-def resolve_aag_requirements(aag_id: str, aags: dict[str, dict[str, Any]], stack: set[str] | None = None) -> list[dict[str, Any]]:
-    if aag_id not in aags:
-        raise KeyError(f"unknown AAG '{aag_id}'")
+def resolve_odc_requirements(odc_id: str, odcs: dict[str, dict[str, Any]], stack: set[str] | None = None) -> list[dict[str, Any]]:
+    if odc_id not in odcs:
+        raise KeyError(f"unknown ODC '{odc_id}'")
     stack = stack or set()
-    if aag_id in stack:
-        raise ValueError(f"cyclic AAG inheritance detected at '{aag_id}'")
-    stack.add(aag_id)
-    aag = aags[aag_id]
+    if odc_id in stack:
+        raise ValueError(f"cyclic ODC inheritance detected at '{odc_id}'")
+    stack.add(odc_id)
+    odc = odcs[odc_id]
     requirements: list[dict[str, Any]] = []
-    parent_id = aag.get("inherits")
+    parent_id = odc.get("inherits")
     if parent_id:
-        requirements.extend(resolve_aag_requirements(parent_id, aags, stack))
-    requirements.extend(aag.get("requirements", []))
-    stack.remove(aag_id)
+        requirements.extend(resolve_odc_requirements(parent_id, odcs, stack))
+    requirements.extend(odc.get("requirements", []))
+    stack.remove(odc_id)
     return requirements
 
 
-def applicable_aag_ids(obj: dict[str, Any], aags: dict[str, dict[str, Any]]) -> list[str]:
+def applicable_odc_ids(obj: dict[str, Any], odcs: dict[str, dict[str, Any]]) -> list[str]:
     object_type = obj.get("type")
     applicable: list[str] = []
-    for aag_id, aag in aags.items():
-        applies_to = aag.get("appliesTo", {})
+    for odc_id, odc in odcs.items():
+        applies_to = odc.get("appliesTo", {})
         if not isinstance(applies_to, dict):
             continue
         if applies_to.get("type") != object_type:
@@ -188,7 +188,7 @@ def applicable_aag_ids(obj: dict[str, Any], aags: dict[str, dict[str, Any]]) -> 
                 continue
             if service_category and obj.get("serviceCategory") != service_category:
                 continue
-        applicable.append(aag_id)
+        applicable.append(odc_id)
     return sorted(applicable)
 
 
@@ -244,7 +244,7 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any]) -> bool:
     return False
 
 
-def validate_aag_requirement(obj: dict[str, Any], requirement: dict[str, Any]) -> tuple[bool, str]:
+def validate_odc_requirement(obj: dict[str, Any], requirement: dict[str, Any]) -> tuple[bool, str]:
     mechanisms = requirement.get("canBeSatisfiedBy", [])
     minimum = int(requirement.get("minimumSatisfactions", 1))
     satisfied = [mechanism for mechanism in mechanisms if mechanism_satisfied(obj, mechanism)]
@@ -257,7 +257,7 @@ def validate_aag_requirement(obj: dict[str, Any], requirement: dict[str, Any]) -
         mechanism_text = f"at least {minimum} of {mechanism_text}"
     return (
         False,
-        f"[{obj.get('id', 'unknown')}] AAG requirement '{requirement_id}' not satisfied — needs {mechanism_text}",
+        f"[{obj.get('id', 'unknown')}] ODC requirement '{requirement_id}' not satisfied — needs {mechanism_text}",
     )
 
 
@@ -294,26 +294,26 @@ def validate_architectural_decisions(obj: dict[str, Any], path: Path, failures: 
 def validate_rbb(
     obj: dict[str, Any],
     path: Path,
-    aags: dict[str, dict[str, Any]],
+    odcs: dict[str, dict[str, Any]],
     catalog_by_id: dict[str, dict[str, Any]],
     catalog_ids: set[str],
     failures: list[str],
     warnings: list[str],
 ) -> None:
-    satisfies = obj.get("satisfiesAAG", [])
+    satisfies = obj.get("satisfiesODC", [])
     if not isinstance(satisfies, list):
-        failures.append(f"{path}: satisfiesAAG must be a list")
+        failures.append(f"{path}: satisfiesODC must be a list")
         return
 
     category = obj.get("category")
     service_category = obj.get("serviceCategory")
-    applicable = sorted(set(satisfies) | set(applicable_aag_ids(obj, aags)))
-    for aag_id in applicable:
-        if aag_id not in aags:
-            failures.append(f"{path}: referenced AAG '{aag_id}' does not exist")
+    applicable = sorted(set(satisfies) | set(applicable_odc_ids(obj, odcs)))
+    for odc_id in applicable:
+        if odc_id not in odcs:
+            failures.append(f"{path}: referenced ODC '{odc_id}' does not exist")
             continue
-        for requirement in resolve_aag_requirements(aag_id, aags):
-            valid, message = validate_aag_requirement(obj, requirement)
+        for requirement in resolve_odc_requirements(odc_id, odcs):
+            valid, message = validate_odc_requirement(obj, requirement)
             if not valid:
                 failures.append(f"{path}: {message}")
 
@@ -343,44 +343,44 @@ def validate_rbb(
     validate_architectural_decisions(obj, path, failures)
 
 
-def validate_ra(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]], failures: list[str]) -> None:
-    applicable = applicable_aag_ids(obj, aags)
-    if "aag.ra" not in applicable:
+def validate_ra(obj: dict[str, Any], path: Path, odcs: dict[str, dict[str, Any]], failures: list[str]) -> None:
+    applicable = applicable_odc_ids(obj, odcs)
+    if "odc.ra" not in applicable:
         return
 
     object_id = obj.get("id", "unknown")
     if not is_non_empty(obj.get("patternType")):
         failures.append(
-            f"{path}: [{object_id}] AAG requirement 'pattern-type' not satisfied — needs architecturalDecision(patternType)"
+            f"{path}: [{object_id}] ODC requirement 'pattern-type' not satisfied — needs architecturalDecision(patternType)"
         )
 
     required_rbbs = obj.get("requiredRBBs", [])
     if not isinstance(required_rbbs, list) or not required_rbbs:
         failures.append(
-            f"{path}: [{object_id}] AAG requirement 'required-rbbs' not satisfied — needs internalComponent(role=web-tier | app-tier | data-tier | cache-tier | messaging-tier)"
+            f"{path}: [{object_id}] ODC requirement 'required-rbbs' not satisfied — needs internalComponent(role=web-tier | app-tier | data-tier | cache-tier | messaging-tier)"
         )
     else:
         missing_roles = [entry.get("ref", "unknown") for entry in required_rbbs if not is_non_empty(entry.get("role"))]
         if missing_roles:
             failures.append(
-                f"{path}: [{object_id}] AAG requirement 'required-rbbs' not satisfied — every requiredRBB must declare a role (missing on: {', '.join(missing_roles)})"
+                f"{path}: [{object_id}] ODC requirement 'required-rbbs' not satisfied — every requiredRBB must declare a role (missing on: {', '.join(missing_roles)})"
             )
 
     if not is_non_empty(obj.get("architecturalDecisions")):
         failures.append(
-            f"{path}: [{object_id}] AAG requirement 'pattern-decisions' not satisfied — needs architecturalDecision(architecturalDecisions)"
+            f"{path}: [{object_id}] ODC requirement 'pattern-decisions' not satisfied — needs architecturalDecision(architecturalDecisions)"
         )
 
 
-def validate_sdm(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]], failures: list[str]) -> None:
-    applicable = applicable_aag_ids(obj, aags)
-    if "aag.sdm" not in applicable:
+def validate_sdm(obj: dict[str, Any], path: Path, odcs: dict[str, dict[str, Any]], failures: list[str]) -> None:
+    applicable = applicable_odc_ids(obj, odcs)
+    if "odc.sdm" not in applicable:
         return
 
     object_id = obj.get("id", "unknown")
     if not is_non_empty(obj.get("appliesPattern")):
         failures.append(
-            f"{path}: [{object_id}] AAG requirement 'ra-conformance' not satisfied — needs architecturalDecision(appliesPattern)"
+            f"{path}: [{object_id}] ODC requirement 'ra-conformance' not satisfied — needs architecturalDecision(appliesPattern)"
         )
 
     service_groups = obj.get("serviceGroups", [])
@@ -389,7 +389,7 @@ def validate_sdm(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]
 
     if not service_groups:
         failures.append(
-            f"{path}: [{object_id}] AAG requirement 'ra-conformance' not satisfied — serviceGroups cannot be empty"
+            f"{path}: [{object_id}] ODC requirement 'ra-conformance' not satisfied — serviceGroups cannot be empty"
         )
 
     architectural_decisions = obj.get("architecturalDecisions", {})
@@ -398,7 +398,7 @@ def validate_sdm(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]
 
     if not is_non_empty(architectural_decisions.get("availabilityRequirement")):
         failures.append(
-            f"{path}: [{object_id}] AAG requirement 'availability-requirement' not satisfied — needs architecturalDecision(availabilityRequirement)"
+            f"{path}: [{object_id}] ODC requirement 'availability-requirement' not satisfied — needs architecturalDecision(availabilityRequirement)"
         )
 
     has_additional_interactions = any(
@@ -409,12 +409,12 @@ def validate_sdm(obj: dict[str, Any], path: Path, aags: dict[str, dict[str, Any]
     )
     if not has_additional_interactions and not is_non_empty(architectural_decisions.get("noAdditionalInteractions")):
         failures.append(
-            f"{path}: [{object_id}] AAG requirement 'additional-interactions' not satisfied — needs externalInteraction(capability=any) or architecturalDecision(noAdditionalInteractions)"
+            f"{path}: [{object_id}] ODC requirement 'additional-interactions' not satisfied — needs externalInteraction(capability=any) or architecturalDecision(noAdditionalInteractions)"
         )
 
     if not is_non_empty(architectural_decisions.get("dataClassification")):
         failures.append(
-            f"{path}: [{object_id}] AAG requirement 'data-classification' not satisfied — needs architecturalDecision(dataClassification)"
+            f"{path}: [{object_id}] ODC requirement 'data-classification' not satisfied — needs architecturalDecision(dataClassification)"
         )
 
 
@@ -427,7 +427,7 @@ def validate_compliance_framework(
     obj: dict[str, Any],
     path: Path,
     catalog_by_id: dict[str, dict[str, Any]],
-    aags: dict[str, dict[str, Any]],
+    odcs: dict[str, dict[str, Any]],
     failures: list[str],
 ) -> None:
     extends = obj.get("extends", [])
@@ -445,15 +445,15 @@ def validate_compliance_framework(
     if requirement_mappings is None:
         return
     if not isinstance(requirement_mappings, dict):
-        failures.append(f"{path}: requirementMappings must be a mapping of aag-id to requirement mappings")
+        failures.append(f"{path}: requirementMappings must be a mapping of odc-id to requirement mappings")
         return
 
     for aag_id, req_map in requirement_mappings.items():
         if not req_map:
             continue
-        if aag_id not in aags:
+        if aag_id not in odcs:
             failures.append(
-                f"{path}: requirementMappings references unknown AAG '{aag_id}'"
+                f"{path}: requirementMappings references unknown ODC '{aag_id}'"
             )
             continue
         if not isinstance(req_map, dict):
@@ -462,9 +462,9 @@ def validate_compliance_framework(
             )
             continue
         try:
-            resolved = resolve_aag_requirements(aag_id, aags)
+            resolved = resolve_odc_requirements(aag_id, odcs)
         except (KeyError, ValueError) as exc:
-            failures.append(f"{path}: could not resolve AAG '{aag_id}': {exc}")
+            failures.append(f"{path}: could not resolve ODC '{aag_id}': {exc}")
             continue
         valid_requirement_ids = {
             r.get("id") for r in resolved if isinstance(r, dict) and is_non_empty(r.get("id"))
@@ -616,7 +616,7 @@ def main() -> int:
         for obj in objects.values()
         if isinstance(obj, dict) and is_non_empty(obj.get("id"))
     }
-    aags = {object_id: obj for object_id, obj in catalog_by_id.items() if obj.get("type") == "aag"}
+    odcs = {object_id: obj for object_id, obj in catalog_by_id.items() if obj.get("type") == "odc"}
     ard_ids = {object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "ard"}
     appliance_abb_ids = {
         object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "abb" and obj.get("subtype") == "appliance"
@@ -628,13 +628,13 @@ def main() -> int:
         if obj.get("type") == "ard":
             validate_ard(obj, path, failures, warnings)
         if obj.get("type") == "compliance_framework":
-            validate_compliance_framework(obj, path, catalog_by_id, aags, failures)
+            validate_compliance_framework(obj, path, catalog_by_id, odcs, failures)
         if obj.get("type") == "rbb":
-            validate_rbb(obj, path, aags, catalog_by_id, catalog_ids, failures, warnings)
+            validate_rbb(obj, path, odcs, catalog_by_id, catalog_ids, failures, warnings)
         if obj.get("type") == "reference_architecture":
-            validate_ra(obj, path, aags, failures)
+            validate_ra(obj, path, odcs, failures)
         if obj.get("type") == "software_distribution_manifest":
-            validate_sdm(obj, path, aags, failures)
+            validate_sdm(obj, path, odcs, failures)
             validate_sdm_refs(obj, path, ard_ids, appliance_abb_ids, catalog_by_id, failures)
 
     failing_paths = {entry.split(":", 1)[0] for entry in failures}

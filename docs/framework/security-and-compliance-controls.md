@@ -2,9 +2,9 @@
 
 ## What This Layer Does
 
-DRAFT treats compliance as a pluggable layer rather than a fixed property of the AAG files.
+DRAFT treats compliance as a pluggable layer rather than a fixed property of the ODC files.
 
-The AAGs define the architecture requirements. Compliance framework objects define which controls correspond to those requirements.
+The ODCs define the architecture requirements. Compliance framework objects define which controls correspond to those requirements.
 
 That split exists so the same architecture model can be reused under multiple compliance regimes. One team may want to work from a baseline controls pack. Another may want to align the same requirements to NIST CSF, SOC 2, or an internal control framework that is specific to their organization.
 
@@ -12,11 +12,11 @@ That split exists so the same architecture model can be reused under multiple co
 
 Each compliance framework is a single YAML file in `compliance-frameworks/`. The
 framework object contains both its definition metadata and a
-`requirementMappings` block that maps AAG requirement IDs directly to control
+`requirementMappings` block that maps ODC requirement IDs directly to control
 IDs for that framework.
 
 To add a new framework or extend an existing one, only that single file needs
-to change. No AAG files are modified.
+to change. No ODC files are modified.
 
 ## What Ships In The Repo
 
@@ -28,7 +28,7 @@ It also includes starter framework definitions for common external frameworks an
 
 ## How The Browser Uses It
 
-The browser exposes a compliance framework selector in the sidebar. When the architect changes the selected framework, the AAG detail view and the RBB AAG-satisfaction panels re-render using the mappings for that framework.
+The browser exposes a compliance framework selector in the sidebar. When the architect changes the selected framework, the ODC detail view and the RBB ODC-satisfaction panels re-render using the mappings for that framework.
 
 If the selected framework has no mappings for a requirement, the browser shows that no controls are currently mapped. That is intentional. Missing mappings are data gaps to fill, not rendering failures.
 

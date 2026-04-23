@@ -16,7 +16,7 @@ A good ID is not just readable. It is durable. Once an ID is in use, other objec
 | ABB agent | `abb.agent.<vendor>-<product>` | `abb.agent.crowdstrike-falcon` |
 | Host RBB | `rbb.host.<os>.<platform>.<variant>` | `rbb.host.windows.2022.ec2.standard` |
 | Service RBB | `rbb.service.<category>.<product>` | `rbb.service.dbms.sqlserver-2022` |
-| AAG | `aag.<name>` | `aag.host`, `aag.service.dbms` |
+| ODC | `odc.<name>` | `odc.host`, `odc.service.dbms` |
 | Reference architecture | `ra.<pattern-slug>` | `ra.dotnet.three-tier.ha` |
 | Software distribution manifest | `sdm.<product-slug>` | `sdm.student-health` |
 

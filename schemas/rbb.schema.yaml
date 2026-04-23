@@ -16,7 +16,7 @@ optionalFields:
   - category
   - subtype
   - serviceCategory
-  - satisfiesAAG
+  - satisfiesODC
   - architecturalDecisions
   - osAbb
   - hardwareAbb
@@ -46,7 +46,7 @@ enumFields:
 fieldTypes:
   tags: list
   owner: dict
-  satisfiesAAG: list
+  satisfiesODC: list
   architecturalDecisions: dict
   internalComponents: list
   externalInteractions: list

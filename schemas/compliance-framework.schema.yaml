@@ -17,7 +17,7 @@ optionalFields:
   - defaultSelection  # boolean
   - extends           # list of framework ids this framework inherits mappings from
   - notes
-  - requirementMappings  # dict: aag-id -> requirement-id -> list of control ids
+  - requirementMappings  # dict: odc-id -> requirement-id -> list of control ids
 idPattern: "^framework\\.[a-z0-9-]+$"
 enumFields:
   catalogStatus:
@@ -41,11 +41,11 @@ fieldTypes:
   requirementMappings: dict
 
 requirementMappings structure:
-  aag.host:
+  odc.host:
     authentication:
       - CTRL-001
     logging:
       - CTRL-002
-  aag.service:
+  odc.service:
     secrets-management:
       - CTRL-003

@@ -1,5 +1,5 @@
 schemaVersion: "1.0"
-type: aag
+type: odc
 requiredFields:
   - schemaVersion
   - id
@@ -15,7 +15,7 @@ optionalFields:
   - tags
   - appliesTo
   - inherits
-idPattern: "^aag\\.[a-z0-9.-]+$"
+idPattern: "^odc\\.[a-z0-9.-]+$"
 enumFields:
   catalogStatus:
     - stub

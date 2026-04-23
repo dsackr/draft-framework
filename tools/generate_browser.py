@@ -21,7 +21,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_PATH = REPO_ROOT / "docs" / "index.html"
 CATALOG_FOLDERS = [
-    "aags",
+    "odcs",
     "abbs",
     "ards",
     "compliance-frameworks",
@@ -51,7 +51,7 @@ REF_CONTAINER_KEYS = {
     "riskRef",
     "framework",
 }
-CATALOG_ID_PREFIXES = ("abb.", "rbb.", "aag.", "ard.", "ps.", "ra.", "sdm.", "framework.", "saas.")
+CATALOG_ID_PREFIXES = ("abb.", "rbb.", "odc.", "ard.", "ps.", "ra.", "sdm.", "framework.", "saas.")
 
 
 def is_product_service_classification(obj: dict[str, Any]) -> bool:
@@ -132,7 +132,7 @@ def shape_for(obj: dict[str, Any]) -> str:
         return "hexagon"
     if obj["type"] == "software_distribution_manifest":
         return "star"
-    if obj["type"] == "aag":
+    if obj["type"] == "odc":
         return "barrel"
     if obj["type"] == "compliance_framework":
         return "hexagon"
@@ -159,8 +159,8 @@ def type_label_for(obj: dict[str, Any]) -> str:
     if obj["type"] == "abb":
         suffix = " / appliance" if obj.get("subtype") == "appliance" else f" / {obj.get('category', 'unknown')}"
         return f"ABB{suffix}"
-    if obj["type"] == "aag":
-        return "AAG"
+    if obj["type"] == "odc":
+        return "ODC"
     if obj["type"] == "compliance_framework":
         return "Compliance Framework"
     if obj["type"] == "ard":
@@ -330,7 +330,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "externalInteractions": obj.get("externalInteractions", []),
                 "architecturalDecisions": obj.get("architecturalDecisions", {}),
                 "requirements": obj.get("requirements", []),
-                "satisfiesAAG": obj.get("satisfiesAAG", []),
+                "satisfiesODC": obj.get("satisfiesODC", []),
                 "inherits": obj.get("inherits", ""),
                 "requiredRBBs": obj.get("requiredRBBs", []),
                 "scalingUnits": obj.get("scalingUnits", []),
@@ -838,7 +838,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       gap: 10px;
     }
     .requirement-card,
-    .aag-card {
+    .odc-card {
       padding: 14px;
       display: grid;
       gap: 10px;
@@ -867,7 +867,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       word-break: break-word;
     }
     .requirement-name,
-    .aag-name {
+    .odc-name {
       font-weight: 600;
       line-height: 1.4;
     }
@@ -878,7 +878,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .requirement-description,
     .requirement-rationale,
     .mechanism-line,
-    .aag-control-line {
+    .odc-control-line {
       color: var(--muted);
       font-size: 13px;
       line-height: 1.5;
@@ -913,7 +913,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       line-height: 1.5;
     }
     .control-badges,
-    .aag-control-badges {
+    .odc-control-badges {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
@@ -1560,7 +1560,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .requirement-description,
     .requirement-rationale,
     .mechanism-line,
-    .aag-control-line,
+    .odc-control-line,
     .requirement-rationale-label,
     .mechanism-label,
     .mechanism-text,
@@ -1656,12 +1656,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         id: 'framework',
         label: 'Framework Content',
         filters: [
-          { id: 'all', label: 'All', types: ['aag', 'compliance_framework'] },
-          { id: 'aag', label: 'AAGs', types: ['aag'] },
+          { id: 'all', label: 'All', types: ['odc', 'compliance_framework'] },
+          { id: 'odc', label: 'ODCs', types: ['odc'] },
           { id: 'compliance_framework', label: 'Compliance Frameworks', types: ['compliance_framework'] }
         ],
         rows: [
-          { id: 'aag', label: 'AAGs', types: ['aag'] },
+          { id: 'odc', label: 'ODCs', types: ['odc'] },
           { id: 'compliance_framework', label: 'Compliance Frameworks', types: ['compliance_framework'] }
         ]
       }
@@ -1670,7 +1670,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     const complianceFrameworks = complianceData.frameworks || [];
     const deployableTypes = new Set(
       allObjects
-        .filter(object => !['aag', 'ard', 'compliance_framework'].includes(object.type))
+        .filter(object => !['odc', 'ard', 'compliance_framework'].includes(object.type))
         .map(object => object.type)
     );
     const impactOrder = ['software_distribution_manifest', 'reference_architecture', 'rbb', 'abb'];
@@ -1727,7 +1727,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const normalized = String(typeValue || '');
       if (normalized === 'abb') return 'ABB';
       if (normalized === 'rbb') return 'RBB';
-      if (normalized === 'aag') return 'AAG';
+      if (normalized === 'odc') return 'ODC';
       if (normalized === 'ard') return 'ARD';
       if (normalized === 'software_distribution_manifest') return 'Software Distribution Manifest';
       if (normalized === 'reference_architecture') return 'Reference Architecture';
@@ -1922,7 +1922,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <option value="${framework.id}" ${framework.id === current?.id ? 'selected' : ''}>${escapeHtml(framework.name)}</option>
             `).join('')}
           </select>
-          <div class="sidebar-help">${escapeHtml(current?.description || 'Select the control framework used to render AAG mappings.')}</div>
+          <div class="sidebar-help">${escapeHtml(current?.description || 'Select the control framework used to render ODC mappings.')}</div>
         </div>
       `;
     }
@@ -2025,10 +2025,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function objectCardTitle(object) {
-      if (object.type !== 'aag') {
+      if (object.type !== 'odc') {
         return object.name;
       }
-      const trimmed = String(object.name || '').replace(/\s+Architecture Analysis Guideline$/i, '');
+      const trimmed = String(object.name || '').replace(/\s+Object Definition Checklist$/i, '');
       if (trimmed === 'Appliance ABB') {
         return 'Appliance';
       }
@@ -2191,11 +2191,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return controls.map(control => `<span class="control-badge">${escapeHtml(control)}</span>`).join('');
     }
 
-    function aagRequirementsMarkup(object) {
+    function odcRequirementsMarkup(object) {
       const requirements = object.requirements || [];
       const framework = selectedFramework();
       if (!requirements.length) {
-        return '<div class="empty-card">No requirements are documented for this AAG.</div>';
+        return '<div class="empty-card">No requirements are documented for this ODC.</div>';
       }
       return `
         <section class="section-card">
@@ -2227,25 +2227,25 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
-    function rbbAagMarkup(object) {
-      const aagIds = object.satisfiesAAG || [];
+    function rbbOdcMarkup(object) {
+      const odcIds = object.satisfiesODC || [];
       const framework = selectedFramework();
-      if (!aagIds.length) {
+      if (!odcIds.length) {
         return '';
       }
       return `
         <section class="section-card">
-          <h3>AAG Satisfaction${framework ? ` / ${escapeHtml(framework.name)}` : ''}</h3>
+          <h3>ODC Satisfaction${framework ? ` / ${escapeHtml(framework.name)}` : ''}</h3>
           <div class="section-stack">
-            ${aagIds.map(aagId => {
-              const aag = objectLookup[aagId];
-              const requirements = aag?.requirements || [];
+            ${odcIds.map(odcId => {
+              const odc = objectLookup[odcId];
+              const requirements = odc?.requirements || [];
               return `
-                <article class="aag-card">
-                  <div class="aag-name">Satisfies: ${escapeHtml(aagId)}</div>
+                <article class="odc-card">
+                  <div class="odc-name">Satisfies: ${escapeHtml(odcId)}</div>
                   ${requirements.length ? requirements.map(requirement => `
-                    <div class="aag-control-line">└─ ${escapeHtml(requirement.id || 'requirement')} → ${escapeHtml(controlsForRequirement(aagId, requirement.id || '').join(', ') || 'No controls mapped')}</div>
-                  `).join('') : '<div class="interaction-notes">No requirements found on referenced AAG.</div>'}
+                    <div class="odc-control-line">└─ ${escapeHtml(requirement.id || 'requirement')} → ${escapeHtml(controlsForRequirement(odcId, requirement.id || '').join(', ') || 'No controls mapped')}</div>
+                  `).join('') : '<div class="interaction-notes">No requirements found on referenced ODC.</div>'}
                 </article>
               `;
             }).join('')}
@@ -2266,8 +2266,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${references.map(entry => {
               const ard = objectLookup[entry.ref];
               return `
-                <article class="aag-card">
-                  <div class="aag-name">
+                <article class="odc-card">
+                  <div class="odc-name">
                     ${ard ? `<span class="ard-link" data-object-link="${ard.id}">${escapeHtml(ard.name)}</span>` : escapeHtml(entry.ref || 'Unknown ARD')}
                   </div>
                   <div class="object-id">${escapeHtml(entry.ref || '')}</div>
@@ -2301,8 +2301,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 return !['product', 'saas'].includes(serviceCategory || '');
               }).length;
               return `
-                <article class="aag-card">
-                  <div class="aag-name">${escapeHtml(group.name || 'Unnamed Service Group')}</div>
+                <article class="odc-card">
+                  <div class="odc-name">${escapeHtml(group.name || 'Unnamed Service Group')}</div>
                   <div class="interaction-notes">${escapeHtml(group.deploymentTarget || 'Unspecified deployment target')}</div>
                   <div class="badges">
                     ${group.scalingUnit ? `<span class="badge">${escapeHtml(group.scalingUnit)}</span>` : '<span class="badge">unscoped</span>'}
@@ -2364,7 +2364,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </dl>
           </div>
         </section>
-        ${objectLookup['aag.appliance-abb'] ? aagRequirementsMarkup(objectLookup['aag.appliance-abb']) : ''}
+        ${objectLookup['odc.appliance-abb'] ? odcRequirementsMarkup(objectLookup['odc.appliance-abb']) : ''}
       `;
     }
 
@@ -2391,7 +2391,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${object.incidentNotificationProcess ? `<div class="interaction-notes"><strong>Incident Notification:</strong> ${escapeHtml(object.incidentNotificationProcess)}</div>` : ''}
           </div>
         </section>
-        ${objectLookup['aag.saas-service'] ? aagRequirementsMarkup(objectLookup['aag.saas-service']) : ''}
+        ${objectLookup['odc.saas-service'] ? odcRequirementsMarkup(objectLookup['odc.saas-service']) : ''}
       `;
     }
 
@@ -2762,8 +2762,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${inbound.map(reference => {
               const source = objectLookup[reference.source];
               return `
-                <article class="aag-card">
-                  <div class="aag-name">
+                <article class="odc-card">
+                  <div class="odc-name">
                     ${source ? `<span class="ard-link" data-object-link="${source.id}">${escapeHtml(source.name)}</span>` : escapeHtml(reference.source)}
                   </div>
                   <div class="object-id">${escapeHtml(reference.source)}</div>
@@ -2847,10 +2847,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
 
       let detailBody = '';
-      if (object.type === 'aag') {
+      if (object.type === 'odc') {
         detailBody = `
           ${headerMarkup}
-          ${aagRequirementsMarkup(object)}
+          ${odcRequirementsMarkup(object)}
           ${usedByMarkup(object)}
         `;
       } else if (object.type === 'compliance_framework') {
@@ -2942,7 +2942,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               ${interactionMarkup(object)}
             </div>
           </section>
-          ${object.type === 'rbb' ? rbbAagMarkup(object) : ''}
+          ${object.type === 'rbb' ? rbbOdcMarkup(object) : ''}
           <section class="decisions-card">
             <h3>Architectural Decisions</h3>
             ${decisionMarkup(object)}
@@ -3032,7 +3032,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         renderTopologyIntoCanvas();
       }
-      if (!['aag', 'ard', 'software_distribution_manifest', 'compliance_framework'].includes(object.type) && !(object.type === 'abb' && object.subtype === 'appliance') && !(object.type === 'rbb' && object.serviceCategory === 'saas')) {
+      if (!['odc', 'ard', 'software_distribution_manifest', 'compliance_framework'].includes(object.type) && !(object.type === 'abb' && object.subtype === 'appliance') && !(object.type === 'rbb' && object.serviceCategory === 'saas')) {
         renderInternalDiagram(detailDiagramSource);
       }
     }

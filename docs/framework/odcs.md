@@ -1,0 +1,257 @@
+# ODCs
+
+## What An ODC Is
+
+An Object Definition Checklist, or ODC, is **a structured checklist of
+required questions and answers used to define a complete and correct
+architecture object.**
+
+An ODC exists to help build an object correctly while it is being authored. It
+does not redefine the taxonomy of the object. Type, classification, and
+structure come from the object schema and the object itself. The ODC tells the
+author which required questions must be answered so the object is complete,
+supportable, and reusable.
+
+That means ODCs are not primarily post-hoc governance artifacts. They are the
+framework's machine-readable object-definition contract.
+
+## YAML Shape
+
+ODCs follow the authoritative
+[odc.schema.yaml](../../schemas/odc.schema.yaml) schema and are enforced by
+[`tools/validate.py`](../../tools/validate.py).
+
+At minimum, an ODC YAML should include:
+
+- `id`
+- `type: odc`
+- `name`
+- `description`
+- `requirements`
+
+Most ODCs also include `version`, `catalogStatus`, `lifecycleStatus`,
+`appliesTo`, and sometimes `inherits`.
+
+## How The Model Works
+
+The framework models ODCs in terms of requirements and satisfaction mechanisms
+rather than raw field-path checks. Each requirement has:
+
+- an `id`
+- a `description`
+- a `rationale`
+- a list of `canBeSatisfiedBy` mechanisms
+- a `minimumSatisfactions` count
+
+This is more useful than simple field existence because it captures intent. An
+ODC asks the architect the questions that must be answered while the object is
+being defined.
+
+## Satisfaction Mechanisms
+
+There are four satisfaction mechanisms.
+
+### `field`
+
+The requirement is satisfied directly by a field on the object itself.
+
+Example: a Product Service satisfies product ownership by populating `product`,
+and a SaaS Service satisfies data-boundary by setting
+`dataLeavesInfrastructure`.
+
+### `internalComponent`
+
+The requirement is satisfied by something deployed inside the RBB.
+
+Example: a host RBB that includes a security or patching agent ABB as an
+internal component.
+
+### `externalInteraction`
+
+The requirement is satisfied by documenting that the object interacts with an
+external platform that provides the required capability.
+
+Example: authentication through Active Directory, or logging through a
+centralized logging platform.
+
+### `architecturalDecision`
+
+The requirement is satisfied through an explicit answer in the object's
+`architecturalDecisions` block.
+
+Example: a service RBB satisfies secrets management by documenting
+`secretsManagement`, even if the external secrets platform is not modeled as a
+separate interaction.
+
+## Why The Mechanism Model Matters
+
+The mechanism model keeps the framework focused on required answers rather than
+forcing one implementation pattern.
+
+An ODC should not say that authentication must always be modeled as an external
+platform dependency. In some cases that is the right representation. In others,
+a clear architectural decision is enough. The ODC's job is to say that the
+concern must be addressed. It is not the ODC's job to prescribe the only
+acceptable shape of the answer.
+
+## The Current ODC Set
+
+### `odc.host`
+
+This is the host baseline. In plain language, it requires a host RBB to
+address:
+
+- authentication
+- logging
+- security monitoring
+- patch management
+
+Backup is intentionally not a host-baseline requirement. Recovery and
+protection concerns belong to the service or data layer unless a selected
+security or compliance framework adds stricter expectations through control
+mappings.
+
+### `odc.service`
+
+This is the generic service baseline. In plain language, it requires a service
+RBB to explain:
+
+- how the service scales
+- how health is checked
+- how secrets are managed
+
+### `odc.service.dbms`
+
+This extends the service baseline for database services. In plain language, it
+requires a DBMS service RBB to document:
+
+- backup strategy, including RTO and RPO
+- HA mechanism
+- encryption at rest
+- access-control model
+
+### `odc.appliance-abb`
+
+This ODC applies to appliance ABBs. It requires the object to document what
+capability the appliance provides, how resilient it is, where it sits in the
+network, who owns patching, and what compliance posture it carries.
+
+### `odc.saas-service`
+
+This ODC applies to SaaS Service objects. It requires the architect to
+document whether data leaves the infrastructure boundary, what data residency
+commitments the vendor makes, whether a DPA is in place, how the organization
+authenticates to the service, what compliance certifications the vendor
+carries, and what SLA the vendor offers.
+
+### `odc.product-service`
+
+This ODC applies to Product Service RBB classifications. It requires the object
+to document which RBB pattern it runs on, what product owns it, and that it is
+explicitly classified as a Product Service.
+
+### `odc.ra`
+
+This ODC applies to reference architectures. It requires an RA to declare a
+clear pattern type, a complete list of required RBBs with roles, and
+pattern-level decisions that explain why the pattern exists in its current
+form.
+
+### `odc.sdm`
+
+This ODC applies to software distribution manifests. It requires an SDM to
+declare which RA it conforms to, what availability target the product is built
+for, whether it has product-specific external interactions beyond its component
+RBBs, and what data classification it handles.
+
+## Architecture Decision Trigger Rules
+
+Architecture Decisions exist to answer required questions that are not
+otherwise resolved directly by the object shape, and to explain exceptions or
+extensions beyond what the ODCs and selected compliance frameworks ask for.
+
+Use an Architecture Decision when:
+
+- an ODC requirement or compliance control needs an answer and the object does
+  not provide that answer directly through a field, internal component, or
+  external interaction
+- an internal component is added that was not explicitly required by an ODC or
+  selected compliance control
+- an external interaction is added that was not explicitly required by an ODC
+  or selected compliance control
+
+An Architecture Decision should reference the thing that triggered it:
+
+- the ODC requirement ID
+- the compliance control ID
+- or the specific added component or interaction
+
+## Compliance Framework Mappings
+
+Control mappings do not live inside the ODC files themselves. DRAFT models
+compliance as a separate framework layer with inline mappings on each
+compliance framework object.
+
+That separation matters because the same ODC can be viewed under multiple
+control catalogs. One organization might want to see the baseline Security and
+Compliance Controls pack. Another might want to view the same ODC through a
+NIST CSF mapping, a SOC 2 mapping, or an internal controls overlay. The
+requirement does not change. Only the mapped controls do.
+
+In practice, the browser lets the architect select a compliance framework. The
+framework selector then drives which controls are displayed under each
+requirement and in each RBB ODC-satisfaction panel.
+
+## Inheritance
+
+Inheritance works the same way in ODCs as it does in many programming models.
+
+`odc.service.dbms` declares `inherits: odc.service`, which means every DBMS
+service RBB is evaluated against both the generic service requirements and the
+DBMS-specific requirements.
+
+## How Validation Works
+
+`tools/validate.py` evaluates ODC satisfaction in two ways. For RBBs, it loads
+every ODC referenced in the object's `satisfiesODC` list, resolves
+inheritance, and then tests each requirement's permitted mechanisms. For RAs
+and SDMs, it applies the ODC identified by `appliesTo.type` and checks the
+explicit validation rules for those object types.
+
+- An `externalInteraction` mechanism is satisfied when the object has an
+  `externalInteractions` entry whose capability matches the requirement
+  criteria.
+- An `internalComponent` mechanism is satisfied when the object has an
+  `internalComponents` entry whose role matches the requirement criteria.
+- An `architecturalDecision` mechanism is satisfied when the required key
+  exists and is non-empty in the object's `architecturalDecisions` map.
+- A `field` mechanism is satisfied when the specified object field is
+  populated, or equals the expected value when the mechanism declares `equals`.
+
+If the number of satisfied mechanisms is less than `minimumSatisfactions`, the
+validator emits a failure.
+
+Example:
+
+```text
+[rbb.host.windows.2022.ec2.standard] ODC requirement 'authentication' not satisfied — needs externalInteraction(capability=authentication) or architecturalDecision(authenticationApproach)
+```
+
+## FAQ
+
+### Can I satisfy an authentication requirement with an architectural decision instead of an external interaction?
+
+Yes, if the ODC explicitly allows that mechanism.
+
+### What happens if my object is in draft status and does not satisfy all ODC requirements?
+
+Validation will still flag the missing requirement. Draft status is acceptable
+for work in progress, but the object is not ready for approval until the
+missing requirements are addressed.
+
+### Who writes ODCs?
+
+In practice, ODCs are authored and maintained by the architecture function,
+usually with input from infrastructure, security, database, and platform teams.
+A good ODC captures the recurring questions those teams need answered before
+they can safely support a reusable component.

@@ -36,7 +36,7 @@ linked below.
 
 ### Extensible Framework Content
 
-- [Architecture Analysis Guidelines (AAGs)](docs/framework/aags.md)
+- [Object Definition Checklists (ODCs)](docs/framework/odcs.md)
 - [Security and Compliance Controls (SCCs)](docs/framework/security-and-compliance-controls.md)
 
 ## Browser

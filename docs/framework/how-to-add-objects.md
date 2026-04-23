@@ -9,7 +9,7 @@ Are you documenting:
 - a vendor product
 - a reusable architecture pattern
 - a software distribution manifest
-- a governance rule
+- an object-definition checklist
 
 Many mistakes happen because engineers skip that decision and start writing fields immediately.
 
@@ -30,8 +30,8 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 2. Reference the OS and hardware ABBs explicitly.
 3. Add any agent ABBs or other internal components that physically live on the host.
 4. Document `externalInteractions` for identity, logging, security, monitoring, patching, or other platforms.
-5. Add `architecturalDecisions` when the host must answer an AAG or compliance question that is not expressed directly in the object.
-6. Add `satisfiesAAG: [aag.host]`.
+5. Add `architecturalDecisions` when the host must answer an ODC or compliance question that is not expressed directly in the object.
+6. Add `satisfiesODC: [odc.host]`.
 7. Run validation.
 
 ## Add A Service RBB
@@ -40,19 +40,19 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 2. Reference exactly one `hostRbb` and one `functionAbb`.
 3. Add service-level external interactions that go beyond the host baseline.
 4. Document the decisions that describe scaling, health, secrets handling, and, for DBMS services, durability and protection.
-5. Use `architecturalDecisions` whenever the service must answer an AAG or compliance question that is not expressed directly in the object.
-6. Set `satisfiesAAG` to the correct AAG list.
+5. Use `architecturalDecisions` whenever the service must answer an ODC or compliance question that is not expressed directly in the object.
+6. Set `satisfiesODC` to the correct ODC list.
 7. Run validation.
 
-## Add An AAG
+## Add An ODC
 
-1. Create the YAML file in `aags/`.
+1. Create the YAML file in `odcs/`.
 2. Define the `appliesTo` scope clearly.
 3. Write requirements in the mechanism-based model.
 4. For each requirement, explain what concern must be addressed, why it exists, which mechanisms are allowed, and how many satisfactions are required.
-5. If the AAG extends another AAG, use `inherits`.
+5. If the ODC extends another ODC, use `inherits`.
 
-An AAG can target more than RBBs. The current catalog includes AAGs for RBBs, reference architectures, and software distribution manifests. The `appliesTo` block is what tells the validator which object type the AAG governs.
+An ODC can target more than RBBs. The current catalog includes ODCs for RBBs, reference architectures, and software distribution manifests. The `appliesTo` block is what tells the validator which object type the ODC governs.
 
 Keep the requirements focused on architecture outcomes rather than implementation trivia.
 
@@ -63,7 +63,7 @@ Keep the requirements focused on architecture outcomes rather than implementatio
 3. Populate `requiredRBBs` with the reusable building blocks that define the pattern.
 4. Include the required roles.
 5. Add `architecturalDecisions` that explain what the pattern assumes.
-6. Make sure the file satisfies `aag.ra` by documenting `patternType`, required RBB roles, and pattern-level decisions.
+6. Make sure the file satisfies `odc.ra` by documenting `patternType`, required RBB roles, and pattern-level decisions.
 
 An RA should be generic enough to guide many products, not just one.
 
@@ -76,7 +76,7 @@ An RA should be generic enough to guide many products, not just one.
 5. Build the manifest out through `serviceGroups`, then place Product Services, RBBs, Appliance ABBs, and SaaS Services into the appropriate groups.
 6. Set `diagramTier` on every Product Service and RBB entry using one of `presentation`, `application`, `data`, or `utility`.
 7. Use `intent` only when the architect is explicitly deviating from the Reference Architecture or when no Reference Architecture exists.
-8. Add product-level `architecturalDecisions`, including availability requirement and data classification, so the SDM satisfies `aag.sdm`.
+8. Add product-level `architecturalDecisions`, including availability requirement and data classification, so the SDM satisfies `odc.sdm`.
 
 ## Run The Tools
 
@@ -94,7 +94,7 @@ python3 tools/generate_browser.py
 
 ## What The GitHub Actions Workflows Do
 
-- `validate-catalog.yml` runs on pushes and pull requests to make sure the YAML parses, base fields are valid, RBBs satisfy their AAGs, and RA/SDM objects satisfy their applicable AAG checks.
+- `validate-catalog.yml` runs on pushes and pull requests to make sure the YAML parses, base fields are valid, RBBs satisfy their ODCs, and RA/SDM objects satisfy their applicable ODC checks.
 - `generate-browser.yml` runs on pushes to `main` that change YAML content and regenerates `docs/index.html` so the published browser stays synchronized with the source data.
 
 ## How To Advance `catalogStatus`
@@ -105,7 +105,7 @@ python3 tools/generate_browser.py
 - `draft` means the structure and major fields are present and the object is ready for review.
 - `approved` means the object is complete enough to be trusted by other engineers.
 
-For RBBs, approved means the applicable AAG requirements are satisfied. For every object type, it also means the description, ownership, lifecycle, and relationships are clear enough that another engineer could use the object without guessing what it means.
+For RBBs, approved means the applicable ODC requirements are satisfied. For every object type, it also means the description, ownership, lifecycle, and relationships are clear enough that another engineer could use the object without guessing what it means.
 
 The catalog uses flat folders by object family. Do not create nested taxonomy
 folders under `abbs/` or `rbbs/`; the YAML content already carries the object

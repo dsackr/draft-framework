@@ -1,0 +1,54 @@
+schemaVersion: "1.0"
+id: odc.sdm
+type: odc
+name: Software Distribution Manifest Object Definition Checklist
+description: Structured checklist of required questions and answers used to define a complete and correct software distribution manifest.
+version: 1.0.0
+catalogStatus: approved
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+  - sdm
+  - checklist
+  - definition
+appliesTo:
+  type: software_distribution_manifest
+requirements:
+  - id: ra-conformance
+    description: The SDM must reference a valid RA ID or explicitly document that no applicable RA exists yet.
+    rationale: Connecting deployments to patterns enables governance discoverability and impact analysis.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: appliesPattern
+        example: ra.dotnet.three-tier.ha
+    minimumSatisfactions: 1
+  - id: availability-requirement
+    description: The product availability tier must be documented.
+    rationale: Availability requirements justify variant selections and inform operational support models.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: availabilityRequirement
+        example: 99.9%, business-hours, 24x7
+    minimumSatisfactions: 1
+  - id: additional-interactions
+    description: Any external systems this product interacts with beyond what its component RBBs declare must be documented — or explicitly stated as none.
+    rationale: Product-specific integrations are invisible to the architecture without explicit declaration.
+    canBeSatisfiedBy:
+      - mechanism: externalInteraction
+        criteria:
+          capability: any
+        example: Product-specific SaaS integration, partner API
+      - mechanism: architecturalDecision
+        key: noAdditionalInteractions
+        example: No additional interactions beyond component RBBs
+    minimumSatisfactions: 1
+  - id: data-classification
+    description: The type of data this product stores or processes must be documented.
+    rationale: Data classification drives security posture requirements and compliance obligations.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: dataClassification
+        example: PII, student records, internal-only, public
+    minimumSatisfactions: 1

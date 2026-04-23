@@ -4,7 +4,7 @@ type: compliance_framework
 name: Security and Compliance Controls
 description: >
   Baseline controls pack bundled with DRAFT. Requirement-to-control mappings
-  are defined inline and cover the host, service, DBMS service, and SDM AAGs.
+  are defined inline and cover the host, service, DBMS service, and SDM ODCs.
 version: 1.0.0
 catalogStatus: approved
 lifecycleStatus: maintain
@@ -19,7 +19,7 @@ frameworkKind: common
 controlIdNamespace: CC.SecurityCompliance
 defaultSelection: true
 requirementMappings:
-  aag.host:
+  odc.host:
     authentication:
       - CC.SecurityCompliance.04.2.2
       - CC.SecurityCompliance.04.4.1
@@ -30,20 +30,20 @@ requirementMappings:
     patch-management:
       - CC.SecurityCompliance.03.1.1
       - CC.SecurityCompliance.03.2.1
-  aag.sdm:
+  odc.sdm:
     ra-conformance:
       - CC.SecurityCompliance.10.1.1
     availability-requirement:
       - CC.SecurityCompliance.10.1.1
     data-classification:
       - CC.SecurityCompliance.0.2.1
-  aag.service.dbms:
+  odc.service.dbms:
     backup-strategy:
       - CC.SecurityCompliance.10.2.1
     encryption-at-rest:
       - CC.SecurityCompliance.0.2.1
     access-control-model:
       - CC.SecurityCompliance.04.1.1
-  aag.service:
+  odc.service:
     secrets-management:
       - CC.SecurityCompliance.04.3.1

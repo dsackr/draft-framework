@@ -1,0 +1,70 @@
+schemaVersion: "1.0"
+id: odc.saas-service
+type: odc
+name: SaaS Service Object Definition Checklist
+description: >
+  Structured checklist of required questions and answers used to define a
+  complete and correct SaaS Service. A SaaS Service is a
+  vendor-managed offering that an organization subscribes to. Unlike an Appliance
+  ABB, data passing through a SaaS Service may leave the infrastructure
+  boundary — making data governance the primary architectural concern.
+version: 1.0.0
+catalogStatus: approved
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+  - saas
+  - checklist
+  - definition
+appliesTo:
+  type: rbb
+  category: service
+  serviceCategory: saas
+requirements:
+  - id: function
+    description: What capability does this SaaS service provide?
+    canBeSatisfiedBy:
+      - mechanism: field
+        key: capability
+        example: "capability: waf"
+  - id: data-boundary
+    description: Does data leave the infrastructure boundary through this service?
+    canBeSatisfiedBy:
+      - mechanism: field
+        key: dataLeavesInfrastructure
+        example: "dataLeavesInfrastructure: true"
+  - id: data-residency
+    description: >
+      What are the vendor's data residency commitments?
+      Critical for FERPA, HIPAA-adjacent, and PII data.
+    canBeSatisfiedBy:
+      - mechanism: field
+        key: dataResidencyCommitment
+        example: "dataResidencyCommitment: US-only, AWS us-east-1"
+  - id: data-processing-agreement
+    description: Is a Data Processing Agreement in place with this vendor?
+    canBeSatisfiedBy:
+      - mechanism: field
+        key: dpaNotes
+        example: "dpaNotes: DPA signed 2024-03, covers FERPA and COPPA"
+  - id: compliance-certifications
+    description: What compliance certifications does the vendor carry?
+    canBeSatisfiedBy:
+      - mechanism: field
+        key: complianceCerts
+        allowEmpty: true
+        example: "complianceCerts: [SOC2 Type II, ISO27001]"
+  - id: authentication-model
+    description: How does the organization authenticate to this service?
+    canBeSatisfiedBy:
+      - mechanism: field
+        key: authenticationModel
+        example: "authenticationModel: saml"
+  - id: vendor-sla
+    description: What is the vendor's SLA commitment?
+    canBeSatisfiedBy:
+      - mechanism: field
+        key: vendorSLA
+        example: "vendorSLA: 99.99% uptime, 24x7 support"

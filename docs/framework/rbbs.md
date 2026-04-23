@@ -29,7 +29,7 @@ At minimum, an RBB YAML should include:
 - `externalInteractions`
 
 `architecturalDecisions` is optional at the schema level, but it becomes
-required whenever an AAG requirement or attached compliance control needs an
+required whenever an ODC requirement or attached compliance control needs an
 answer that the object does not provide directly.
 
 ## RBB Classifications
@@ -75,14 +75,14 @@ non-obvious additions.
 
 An Architecture Decision is required when:
 
-- an AAG question or compliance control requires an answer and the object does
+- an ODC question or compliance control requires an answer and the object does
   not provide that answer directly
-- an internal component is added that is not required by an AAG or compliance
+- an internal component is added that is not required by an ODC or compliance
   control
-- an external interaction is added that is not required by an AAG or
+- an external interaction is added that is not required by an ODC or
   compliance control
 
-Architecture Decisions should reference the triggering AAG requirement,
+Architecture Decisions should reference the triggering ODC requirement,
 compliance control, or added component or interaction.
 
 ## Host Classification
@@ -92,14 +92,14 @@ A host RBB represents a standardized host platform. It typically includes:
 - the operating system ABB
 - the hardware ABB
 - any agent ABBs physically installed on the host
-- any host-baseline Architecture Decisions needed to answer AAG or compliance
+- any host-baseline Architecture Decisions needed to answer ODC or compliance
   questions that are not otherwise explicit
 
 Those are not the same thing as external interactions. An internal component is
 part of the host. An external interaction is something outside the host
 boundary that the host depends on or communicates with.
 
-Host AAGs should define the host itself and its baseline controls. They should
+Host ODCs should define the host itself and its baseline controls. They should
 not force service or data concerns such as backup strategy onto the host object.
 
 ## General Service And Database Service Classifications
@@ -152,9 +152,9 @@ cataloged.
 4. If the RBB is a host, specify the internal components that live on the host.
 5. If it is a service, specify the host or managed substrate it runs on and the
    function-defining component that gives the service its purpose.
-6. Add any Architecture Decisions required by the AAG or attached compliance
-   framework when the object does not answer the question directly.
-7. Set `satisfiesAAG` and run validation.
+6. Add any Architecture Decisions required by the ODC or attached compliance
+  framework when the object does not answer the question directly.
+7. Set `satisfiesODC` and run validation.
 
 The validation step matters more for RBBs than for any other object type
 because this is where the checklist and compliance model are enforced.

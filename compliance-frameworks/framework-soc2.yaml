@@ -17,7 +17,7 @@ tags:
   - starter-pack
 frameworkKind: common
 notes: >
-  To add mappings, populate requirementMappings using the same aag-id and
+  To add mappings, populate requirementMappings using the same odc-id and
   requirement-id keys used in the bundled Security and Compliance Controls
   framework as a reference.
 requirementMappings: {}

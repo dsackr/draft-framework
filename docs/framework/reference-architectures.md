@@ -9,7 +9,7 @@ If an engineer asks, “what does a resilient .NET application stack look like h
 ## YAML Shape
 
 Reference Architectures are validated by
-[`tools/validate.py`](../../tools/validate.py) and `aag.ra`.
+[`tools/validate.py`](../../tools/validate.py) and `odc.ra`.
 
 At minimum, an RA YAML should include:
 

@@ -1,0 +1,64 @@
+schemaVersion: "1.0"
+id: odc.service.dbms
+type: odc
+name: DBMS Service Object Definition Checklist
+description: Additional DBMS service checklist items extending the generic service ODC for data durability, protection, and control.
+version: 2.0.0
+catalogStatus: approved
+lifecycleStatus: maintain
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+  - service
+  - dbms
+  - checklist
+  - definition
+appliesTo:
+  type: rbb
+  category: service
+  serviceCategory: database
+inherits: odc.service
+requirements:
+  - id: backup-strategy
+    description: The DBMS service must document backup strategy together with recovery time and recovery point expectations.
+    rationale: A database platform is not governable unless durability expectations are explicit.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: backup.strategy
+        example: Daily full plus hourly log backup or daily full backup.
+      - mechanism: architecturalDecision
+        key: backup.rto
+        example: A one-hour or four-hour recovery time objective.
+      - mechanism: architecturalDecision
+        key: backup.rpo
+        example: A one-hour or twenty-four-hour recovery point objective.
+    minimumSatisfactions: 3
+  - id: ha-mechanism
+    description: The DBMS service must document its database-level availability mechanism.
+    rationale: Database resilience depends on an explicit clustering, replication, or standalone posture.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: ha.mechanism
+        example: AlwaysOn Availability Groups or none for a standard-availability deployment.
+    minimumSatisfactions: 1
+  - id: encryption-at-rest
+    description: The DBMS service must document how data is encrypted at rest.
+    rationale: Storage protection is a core control for regulated and business-critical data.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: encryption.atRest
+        example: Transparent Data Encryption enabled for all production databases.
+    minimumSatisfactions: 1
+  - id: access-control-model
+    description: The DBMS service must document its administrative and application access control model.
+    rationale: Database access boundaries must be understandable to engineering, security, and operations teams.
+    canBeSatisfiedBy:
+      - mechanism: externalInteraction
+        criteria:
+          capability: authentication
+        example: Active Directory integration for database administrators and service identities.
+      - mechanism: architecturalDecision
+        key: accessControl.model
+        example: Active Directory integrated access with role-based SQL permissions.
+    minimumSatisfactions: 1

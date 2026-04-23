@@ -49,7 +49,7 @@ At minimum, a Product Service YAML should include:
 - `lifecycleStatus`
 
 Most Product Services also include `description`. `architecturalDecisions` is
-used when the object must answer an AAG or compliance question that is not
+used when the object must answer an ODC or compliance question that is not
 otherwise expressed directly in the YAML.
 
 ## What A Product Service Documents
@@ -84,7 +84,7 @@ If a component contains no first-party code, it is not a Product Service.
 ## Architecture Decisions
 
 Product Services use the same Architecture Decision trigger logic as other RBB
-classifications. If the Product Service must answer an AAG or compliance
+classifications. If the Product Service must answer an ODC or compliance
 question and the answer is not expressed directly in the object, an
 Architecture Decision is required. The same applies when internal components or
 external interactions are added beyond what the checklist or controls require.

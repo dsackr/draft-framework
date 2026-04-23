@@ -32,5 +32,5 @@ types by the role they play in the model.
 
 | Object Type | Purpose |
 |---|---|
-| AAGs | Checklists that guide the user to build a complete and correct object. They ask for required answers and validate that those answers are present once the object taxonomy has been chosen. |
-| Security and Compliance Controls | The selectable control catalogs and requirement-to-control mappings that sit beside the architecture model. They let the same AAG requirement set be viewed through different compliance frameworks without changing the architecture objects themselves. |
+| ODCs | Structured checklists of required questions and answers used to define a complete and correct architecture object. They help build the object once the object taxonomy has been chosen. |
+| Security and Compliance Controls | The selectable control catalogs and requirement-to-control mappings that sit beside the architecture model. They let the same ODC requirement set be viewed through different compliance frameworks without changing the architecture objects themselves. |

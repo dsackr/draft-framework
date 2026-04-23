@@ -25,9 +25,9 @@ The question to ask is simple: does traffic or data pass into vendor-managed
 infrastructure outside the infrastructure boundary? If yes, model it as a SaaS
 Service.
 
-## AAG Expectations
+## ODC Expectations
 
-The SaaS Service AAG focuses on governance questions that matter most for
+The SaaS Service ODC focuses on required definition questions that matter most for
 vendor-managed services:
 
 - what function the service provides
@@ -44,7 +44,7 @@ the service can be treated as an understood architecture dependency.
 ## Architecture Decisions
 
 SaaS Services use the same Architecture Decision trigger logic as every other
-RBB classification. If an AAG or compliance control requires an answer and the
+RBB classification. If an ODC or compliance control requires an answer and the
 object does not provide it directly, an Architecture Decision is required to
 explain the answer. The same applies when an internal component or external
 interaction is added beyond what the checklist or controls require.

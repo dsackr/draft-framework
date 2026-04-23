@@ -1,0 +1,52 @@
+schemaVersion: "1.0"
+id: odc.service
+type: odc
+name: Service Object Definition Checklist
+description: Structured checklist of required questions and answers used to define a complete and correct service RBB.
+version: 2.0.0
+catalogStatus: approved
+lifecycleStatus: maintain
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+  - service
+  - checklist
+  - definition
+appliesTo:
+  type: rbb
+  category: service
+  serviceCategory: general
+requirements:
+  - id: scaling-approach
+    description: The service must document how capacity is scaled.
+    rationale: Services cannot be approved without an explicit statement of their horizontal or vertical scaling model.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: scalingApproach
+        example: Horizontal autoscaling behind a load balancer or manual scale-up for a database tier.
+    minimumSatisfactions: 1
+  - id: health-check
+    description: The service must document how health is determined.
+    rationale: Health signaling determines how failures are detected and how traffic or failover decisions are made.
+    canBeSatisfiedBy:
+      - mechanism: externalInteraction
+        criteria:
+          capability: monitoring
+        example: A dedicated monitoring platform that performs health evaluation.
+      - mechanism: architecturalDecision
+        key: healthCheck
+        example: An HTTP probe, SQL listener probe, or synthetic availability check.
+    minimumSatisfactions: 1
+  - id: secrets-management
+    description: The service must document how credentials, certificates, or runtime secrets are managed.
+    rationale: Secret handling is a core part of service operability and security posture.
+    canBeSatisfiedBy:
+      - mechanism: externalInteraction
+        criteria:
+          capability: certificate-management
+        example: A certificate-management platform or secrets service used by the workload.
+      - mechanism: architecturalDecision
+        key: secretsManagement
+        example: A documented pattern for sourcing runtime secrets from a centralized store.
+    minimumSatisfactions: 1

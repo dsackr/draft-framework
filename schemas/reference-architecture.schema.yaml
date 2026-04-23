@@ -15,7 +15,7 @@ optionalFields:
   - tags
   - patternType
   - architecturalDecisions
-  - applicableAAG
+  - applicableODC
   - variantCoverage
 idPattern: "^ra\\.[a-z0-9.-]+$"
 enumFields:
