@@ -1752,6 +1752,93 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       color: #fca5a5;
       min-height: 22px;
     }
+    .editor-scroll {
+      display: grid;
+      gap: 14px;
+      max-height: 60vh;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .import-card {
+      border: 1px solid rgba(71,85,105,0.78);
+      border-radius: 16px;
+      padding: 16px;
+      background: rgba(15,23,42,0.52);
+      display: grid;
+      gap: 14px;
+    }
+    .import-card-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .import-card-title {
+      display: grid;
+      gap: 4px;
+    }
+    .import-card-title h5 {
+      margin: 0;
+      font-size: 14px;
+    }
+    .import-card-meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .editor-subgrid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .editor-checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .editor-choice {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(71,85,105,0.72);
+      border-radius: 12px;
+      background: rgba(15,23,42,0.72);
+      color: var(--text);
+      font-size: 14px;
+    }
+    .editor-choice input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+    }
+    .editor-inline-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .editor-divider {
+      height: 1px;
+      background: rgba(71,85,105,0.75);
+      margin: 4px 0;
+    }
+    .editor-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      color: #dbeafe;
+      background: rgba(37,99,235,0.2);
+      border: 1px solid rgba(96,165,250,0.32);
+    }
+    .editor-note {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
     .yaml-preview {
       white-space: pre-wrap;
       word-break: break-word;
@@ -1899,6 +1986,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     const legend = document.getElementById('legend');
     const editorOverlay = document.getElementById('editor-overlay');
     let editorState = null;
+    let controlImportState = null;
     const CATEGORY_CONFIG = [
       {
         id: 'architecture',
@@ -1944,6 +2032,31 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     ];
     const lifecycleValues = browserData.lifecycleValues || [];
     const complianceFrameworks = complianceData.frameworks || [];
+    const CONTROL_SCOPE_OPTIONS = [
+      { value: 'rbb.host', label: 'Host RBB' },
+      { value: 'rbb.service.general', label: 'General Service RBB' },
+      { value: 'rbb.service.database', label: 'Database Service RBB' },
+      { value: 'rbb.service.product', label: 'Product Service RBB' },
+      { value: 'rbb.service.saas', label: 'SaaS Service RBB' },
+      { value: 'ra', label: 'Reference Architecture' },
+      { value: 'sdm', label: 'Software Distribution Manifest' },
+      { value: 'abb.appliance', label: 'Appliance ABB' }
+    ];
+    const CONTROL_ANSWER_TYPE_OPTIONS = [
+      { value: 'abb', label: 'ABB' },
+      { value: 'abbConfiguration', label: 'ABB Configuration' },
+      { value: 'deploymentConfiguration', label: 'Deployment Configuration' },
+      { value: 'externalInteraction', label: 'External Interaction' },
+      { value: 'architecturalDecision', label: 'Architectural Decision' },
+      { value: 'field', label: 'Direct Field Answer' }
+    ];
+    const APPLICABILITY_FIELD_OPTIONS = [
+      'architecturalContext.soldInTexas',
+      'architecturalContext.servesTexasAgencies',
+      'architecturalContext.handlesCardholderData',
+      'architecturalContext.handlesPHI',
+      'architecturalContext.servesFederalCustomers'
+    ];
     const deployableTypes = new Set(
       allObjects
         .filter(object => !['odc', 'ard', 'compliance_framework'].includes(object.type))
@@ -2001,6 +2114,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function formatKeyLabel(value) {
       return formatTitleCase(String(value || '').replace(/\./g, '-'));
+    }
+
+    function relatedConcernOptions() {
+      const values = new Set();
+      allObjects
+        .filter(object => object.type === 'odc')
+        .forEach(object => {
+          (object.requirements || []).forEach(requirement => {
+            if (requirement?.id) {
+              values.add(String(requirement.id));
+            }
+          });
+        });
+      return Array.from(values).sort((a, b) => a.localeCompare(b));
     }
 
     function formatTypeLabel(typeValue) {
@@ -2813,6 +2940,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 : escapeHtml(parentId)
               ).join(', ')}</div>
             ` : ''}
+            <div class="header-actions">
+              <button class="action-button secondary" id="open-control-import-button">Import Controls</button>
+            </div>
           </div>
         </section>
       `;
@@ -3343,10 +3473,206 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
     }
 
+    function blankApplicabilityClause() {
+      return { field: '', operator: 'equals', value: '', valuesText: '', truthy: 'true' };
+    }
+
+    function normalizeApplicabilityClause(clause) {
+      if (!clause || typeof clause !== 'object') {
+        return blankApplicabilityClause();
+      }
+      if (Object.prototype.hasOwnProperty.call(clause, 'truthy')) {
+        return {
+          field: String(clause.field || ''),
+          operator: 'truthy',
+          value: '',
+          valuesText: '',
+          truthy: clause.truthy === false ? 'false' : 'true'
+        };
+      }
+      if (Array.isArray(clause.in)) {
+        return {
+          field: String(clause.field || ''),
+          operator: 'in',
+          value: '',
+          valuesText: clause.in.map(value => String(value)).join(', '),
+          truthy: 'true'
+        };
+      }
+      if (Object.prototype.hasOwnProperty.call(clause, 'contains')) {
+        return {
+          field: String(clause.field || ''),
+          operator: 'contains',
+          value: String(clause.contains || ''),
+          valuesText: '',
+          truthy: 'true'
+        };
+      }
+      return {
+        field: String(clause.field || ''),
+        operator: 'equals',
+        value: String(clause.equals || ''),
+        valuesText: '',
+        truthy: 'true'
+      };
+    }
+
+    function normalizeFrameworkControl(control = {}) {
+      const applicability = control.applicability || {};
+      const applicabilityMode = Array.isArray(applicability.allOf) && applicability.allOf.length ? 'allOf' : 'anyOf';
+      const clauses = Array.isArray(applicability[applicabilityMode]) ? applicability[applicabilityMode] : [];
+      return {
+        controlId: String(control.controlId || ''),
+        name: String(control.name || ''),
+        externalReference: String(control.externalReference || ''),
+        relatedConcern: String(control.relatedConcern || ''),
+        requirementMode: control.requirementMode === 'conditional' ? 'conditional' : 'mandatory',
+        appliesTo: Array.isArray(control.appliesTo) ? control.appliesTo.map(value => String(value)) : [],
+        validAnswerTypes: Array.isArray(control.validAnswerTypes) ? control.validAnswerTypes.map(value => String(value)) : [],
+        applicabilityMode,
+        applicabilityClauses: clauses.length ? clauses.map(normalizeApplicabilityClause) : [blankApplicabilityClause()],
+        description: String(control.description || ''),
+        notes: String(control.notes || '')
+      };
+    }
+
+    function parseImportedControlSeed(text) {
+      const parsed = jsyaml.load(text);
+      if (!parsed) return [];
+      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed.controls)) return parsed.controls;
+      if (parsed.controlId || parsed.name || parsed.externalReference) return [parsed];
+      throw new Error('Imported YAML must be a control list, a { controls: [...] } mapping, or a single control object.');
+    }
+
+    function cloneFrameworkControl(control) {
+      return {
+        ...control,
+        appliesTo: [...(control.appliesTo || [])],
+        validAnswerTypes: [...(control.validAnswerTypes || [])],
+        applicabilityClauses: (control.applicabilityClauses || []).map(clause => ({ ...clause }))
+      };
+    }
+
+    function mergeImportedControls(existingControls, importedControls) {
+      const merged = existingControls.map(cloneFrameworkControl);
+      importedControls.forEach(rawControl => {
+        const controlId = String(rawControl?.controlId || '').trim();
+        const name = String(rawControl?.name || '').trim();
+        const externalReference = String(rawControl?.externalReference || '').trim();
+        if (!controlId || !name || !externalReference) {
+          throw new Error('Each imported control must declare controlId, name, and externalReference.');
+        }
+        const existingIndex = merged.findIndex(control => control.controlId === controlId);
+        if (existingIndex >= 0) {
+          merged[existingIndex].name = name;
+          merged[existingIndex].externalReference = externalReference;
+        } else {
+          merged.push({
+            ...normalizeFrameworkControl({}),
+            controlId,
+            name,
+            externalReference
+          });
+        }
+      });
+      return merged;
+    }
+
+    function serializeControlImportFramework(object) {
+      const framework = sanitizeDetailObject(object);
+      framework.controls = controlImportState.controls.map((control, index) => {
+        const controlId = String(control.controlId || '').trim();
+        const name = String(control.name || '').trim();
+        const externalReference = String(control.externalReference || '').trim();
+        if (!controlId || !name || !externalReference) {
+          throw new Error(`Control ${index + 1} must include controlId, name, and externalReference.`);
+        }
+        if (!Array.isArray(control.appliesTo) || !control.appliesTo.length) {
+          throw new Error(`Control ${controlId} must declare at least one appliesTo scope.`);
+        }
+        if (!Array.isArray(control.validAnswerTypes) || !control.validAnswerTypes.length) {
+          throw new Error(`Control ${controlId} must declare at least one valid answer type.`);
+        }
+        const serialized = {
+          controlId,
+          name,
+          externalReference,
+          appliesTo: [...control.appliesTo],
+          requirementMode: control.requirementMode === 'conditional' ? 'conditional' : 'mandatory',
+          validAnswerTypes: [...control.validAnswerTypes]
+        };
+        const relatedConcern = String(control.relatedConcern || '').trim();
+        if (relatedConcern) {
+          serialized.relatedConcern = relatedConcern;
+        }
+        if (control.description) {
+          serialized.description = control.description;
+        }
+        if (control.notes) {
+          serialized.notes = control.notes;
+        }
+        if (serialized.requirementMode === 'conditional') {
+          serialized.naAllowed = true;
+          const clauses = (control.applicabilityClauses || []).map(clause => {
+            const field = String(clause.field || '').trim();
+            if (!field) {
+              throw new Error(`Control ${controlId} has a conditional applicability rule without a field.`);
+            }
+            if (clause.operator === 'truthy') {
+              return { field, truthy: clause.truthy !== 'false' };
+            }
+            if (clause.operator === 'in') {
+              const values = String(clause.valuesText || '')
+                .split(',')
+                .map(value => value.trim())
+                .filter(Boolean);
+              if (!values.length) {
+                throw new Error(`Control ${controlId} has an applicability "in" rule without values.`);
+              }
+              return { field, in: values };
+            }
+            const value = String(clause.value || '').trim();
+            if (!value) {
+              throw new Error(`Control ${controlId} has an applicability ${clause.operator} rule without a value.`);
+            }
+            return clause.operator === 'contains'
+              ? { field, contains: value }
+              : { field, equals: value };
+          });
+          if (!clauses.length) {
+            throw new Error(`Control ${controlId} must declare at least one applicability rule.`);
+          }
+          serialized.applicability = {
+            [control.applicabilityMode === 'allOf' ? 'allOf' : 'anyOf']: clauses
+          };
+        }
+        return serialized;
+      });
+      return framework;
+    }
+
+    function updateControlImportPreview(object) {
+      const errorNode = editorOverlay.querySelector('#control-import-error');
+      const previewNode = editorOverlay.querySelector('#control-import-preview');
+      if (!controlImportState || !errorNode || !previewNode) return;
+      try {
+        const serialized = serializeControlImportFramework(object);
+        controlImportState.serialized = serialized;
+        previewNode.textContent = jsyaml.dump(serialized, { lineWidth: 100, noRefs: true });
+        errorNode.textContent = '';
+      } catch (error) {
+        controlImportState.serialized = null;
+        previewNode.textContent = '';
+        errorNode.textContent = error instanceof Error ? error.message : String(error);
+      }
+    }
+
     function closeEditor() {
       editorOverlay.classList.remove('open');
       editorOverlay.innerHTML = '';
       editorState = null;
+      controlImportState = null;
     }
 
     function openEditor(object) {
@@ -3437,6 +3763,348 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         }
       }, { once: true });
       updateEditorPreview(object);
+    }
+
+    function controlCheckboxMarkup(kind, controlIndex, optionValue, optionLabel, selectedValues) {
+      return `
+        <label class="editor-choice">
+          <input type="checkbox" data-control-checkbox="${kind}" data-control-index="${controlIndex}" value="${escapeHtml(optionValue)}" ${selectedValues.includes(optionValue) ? 'checked' : ''}>
+          <span>${escapeHtml(optionLabel)}</span>
+        </label>
+      `;
+    }
+
+    function applicabilityClauseMarkup(controlIndex, clauseIndex, clause) {
+      const fieldListId = `applicability-fields-${controlIndex}-${clauseIndex}`;
+      const operator = clause.operator || 'equals';
+      const valueField = operator === 'truthy'
+        ? `
+          <div class="editor-field">
+            <label>Truthy</label>
+            <select data-clause-field="truthy" data-control-index="${controlIndex}" data-clause-index="${clauseIndex}">
+              <option value="true" ${clause.truthy !== 'false' ? 'selected' : ''}>true</option>
+              <option value="false" ${clause.truthy === 'false' ? 'selected' : ''}>false</option>
+            </select>
+          </div>
+        `
+        : operator === 'in'
+          ? `
+            <div class="editor-field">
+              <label>Values</label>
+              <input type="text" value="${escapeHtml(clause.valuesText || '')}" data-clause-field="valuesText" data-control-index="${controlIndex}" data-clause-index="${clauseIndex}" placeholder="value1, value2">
+            </div>
+          `
+          : `
+            <div class="editor-field">
+              <label>Value</label>
+              <input type="text" value="${escapeHtml(clause.value || '')}" data-clause-field="value" data-control-index="${controlIndex}" data-clause-index="${clauseIndex}">
+            </div>
+          `;
+      return `
+        <div class="import-card">
+          <div class="import-card-header">
+            <div class="import-card-title">
+              <h5>Applicability Rule ${clauseIndex + 1}</h5>
+              <div class="import-card-meta">Build the condition that makes this control apply.</div>
+            </div>
+            <button class="action-button secondary" data-remove-clause="${controlIndex}" data-remove-clause-index="${clauseIndex}">Remove Rule</button>
+          </div>
+          <div class="editor-subgrid">
+            <div class="editor-field">
+              <label>Field</label>
+              <input type="text" value="${escapeHtml(clause.field || '')}" list="${fieldListId}" data-clause-field="field" data-control-index="${controlIndex}" data-clause-index="${clauseIndex}">
+              <datalist id="${fieldListId}">
+                ${APPLICABILITY_FIELD_OPTIONS.map(option => `<option value="${escapeHtml(option)}"></option>`).join('')}
+              </datalist>
+            </div>
+            <div class="editor-field">
+              <label>Operator</label>
+              <select data-clause-field="operator" data-control-index="${controlIndex}" data-clause-index="${clauseIndex}">
+                <option value="equals" ${operator === 'equals' ? 'selected' : ''}>equals</option>
+                <option value="contains" ${operator === 'contains' ? 'selected' : ''}>contains</option>
+                <option value="in" ${operator === 'in' ? 'selected' : ''}>in</option>
+                <option value="truthy" ${operator === 'truthy' ? 'selected' : ''}>truthy</option>
+              </select>
+            </div>
+          </div>
+          ${valueField}
+        </div>
+      `;
+    }
+
+    function controlCardMarkup(control, controlIndex) {
+      const concernOptions = ['<option value=""></option>']
+        .concat(relatedConcernOptions().map(option => `<option value="${escapeHtml(option)}" ${control.relatedConcern === option ? 'selected' : ''}>${escapeHtml(option)}</option>`))
+        .join('');
+      const conditional = control.requirementMode === 'conditional';
+      return `
+        <div class="import-card">
+          <div class="import-card-header">
+            <div class="import-card-title">
+              <h5>${escapeHtml(control.controlId || `New Control ${controlIndex + 1}`)}</h5>
+              <div class="import-card-meta">${escapeHtml(control.name || 'Add the control identity, then map the DRAFT semantics below.')}</div>
+            </div>
+            <button class="action-button secondary" data-remove-control="${controlIndex}">Remove Control</button>
+          </div>
+          <div class="editor-subgrid">
+            <div class="editor-field">
+              <label>Control ID</label>
+              <input type="text" value="${escapeHtml(control.controlId || '')}" data-control-field="controlId" data-control-index="${controlIndex}">
+            </div>
+            <div class="editor-field">
+              <label>Friendly Name</label>
+              <input type="text" value="${escapeHtml(control.name || '')}" data-control-field="name" data-control-index="${controlIndex}">
+            </div>
+          </div>
+          <div class="editor-field">
+            <label>External Reference</label>
+            <input type="text" value="${escapeHtml(control.externalReference || '')}" data-control-field="externalReference" data-control-index="${controlIndex}">
+          </div>
+          <div class="editor-subgrid">
+            <div class="editor-field">
+              <label>Requirement Mode</label>
+              <select data-control-field="requirementMode" data-control-index="${controlIndex}">
+                <option value="mandatory" ${control.requirementMode === 'mandatory' ? 'selected' : ''}>Mandatory</option>
+                <option value="conditional" ${control.requirementMode === 'conditional' ? 'selected' : ''}>Conditional</option>
+              </select>
+            </div>
+            <div class="editor-field">
+              <label>Related Concern</label>
+              <select data-control-field="relatedConcern" data-control-index="${controlIndex}">
+                ${concernOptions}
+              </select>
+            </div>
+          </div>
+          <div class="editor-field">
+            <label>Applies To</label>
+            <div class="editor-checkbox-grid">
+              ${CONTROL_SCOPE_OPTIONS.map(option => controlCheckboxMarkup('appliesTo', controlIndex, option.value, option.label, control.appliesTo)).join('')}
+            </div>
+          </div>
+          <div class="editor-field">
+            <label>Valid Answer Types</label>
+            <div class="editor-checkbox-grid">
+              ${CONTROL_ANSWER_TYPE_OPTIONS.map(option => controlCheckboxMarkup('validAnswerTypes', controlIndex, option.value, option.label, control.validAnswerTypes)).join('')}
+            </div>
+          </div>
+          ${conditional ? `
+            <div class="editor-divider"></div>
+            <div class="editor-inline-actions">
+              <span class="editor-pill">Conditional control / N-A allowed</span>
+              <div class="editor-field" style="min-width: 220px;">
+                <label>Applicability Group</label>
+                <select data-control-field="applicabilityMode" data-control-index="${controlIndex}">
+                  <option value="anyOf" ${control.applicabilityMode !== 'allOf' ? 'selected' : ''}>anyOf</option>
+                  <option value="allOf" ${control.applicabilityMode === 'allOf' ? 'selected' : ''}>allOf</option>
+                </select>
+              </div>
+              <button class="action-button secondary" data-add-clause="${controlIndex}">Add Rule</button>
+            </div>
+            <div class="editor-note">Use applicability rules to describe when this control is in scope. Conditional controls automatically allow N/A.</div>
+            <div class="editor-form">
+              ${(control.applicabilityClauses || []).map((clause, clauseIndex) => applicabilityClauseMarkup(controlIndex, clauseIndex, clause)).join('')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    function openControlImporter(object) {
+      const framework = sanitizeDetailObject(object);
+      controlImportState = {
+        objectId: object.id,
+        framework,
+        controls: Array.isArray(framework.controls) ? framework.controls.map(normalizeFrameworkControl) : [],
+        serialized: null
+      };
+
+      const renderImporter = () => {
+        editorOverlay.innerHTML = `
+          <div class="editor-panel">
+            <div class="editor-header">
+              <div class="editor-title">
+                <h3>Import Controls Into ${escapeHtml(object.name)}</h3>
+                <p>Import minimal control identity data, answer the DRAFT semantics with constrained options, and download the rebuilt framework YAML. GitHub Pages stays read-only.</p>
+              </div>
+              <div class="editor-actions">
+                ${repoSourceUrl(object) ? `<a class="action-button secondary" href="${escapeHtml(repoSourceUrl(object))}" target="_blank" rel="noreferrer">Open Source On GitHub</a>` : ''}
+                <button class="action-button secondary" id="control-import-reset">Reset</button>
+                <button class="action-button secondary" id="control-import-close">Close</button>
+              </div>
+            </div>
+            <div class="editor-grid">
+              <section class="editor-card">
+                <h4>Import Source</h4>
+                <div class="editor-help">Paste YAML shaped as a list of controls, a single control object, or <code>controls: [...]</code>. Each imported control only needs <code>controlId</code>, <code>name</code>, and <code>externalReference</code>.</div>
+                <div class="editor-field">
+                  <label for="control-import-source">Control YAML</label>
+                  <textarea id="control-import-source" placeholder="- controlId: 4.4.1&#10;  name: Password Policy&#10;  externalReference: https://example.com/control"></textarea>
+                </div>
+                <div class="editor-inline-actions">
+                  <input type="file" id="control-import-file" accept=".yaml,.yml,text/yaml,text/x-yaml">
+                  <button class="action-button" id="control-import-parse">Import YAML</button>
+                  <button class="action-button secondary" id="control-import-add">Add Control</button>
+                </div>
+                <div class="editor-divider"></div>
+                <h4>Control Semantics</h4>
+                <div class="editor-help">Imported controls keep their identity fields. Use the options below to tell DRAFT where each control applies and how an object can answer it.</div>
+                <div id="control-import-list" class="editor-scroll">
+                  ${controlImportState.controls.length ? controlImportState.controls.map((control, index) => controlCardMarkup(control, index)).join('') : '<div class="editor-help">No controls loaded yet. Import a YAML file or add one control manually.</div>'}
+                </div>
+              </section>
+              <section class="editor-card">
+                <h4>Framework YAML Preview</h4>
+                <div class="editor-help">This preview updates as you edit control semantics. Download the result and commit it manually for now.</div>
+                <div id="control-import-error" class="editor-error"></div>
+                <pre id="control-import-preview" class="yaml-preview"></pre>
+                <div class="editor-actions">
+                  <button class="action-button" id="control-import-copy">Copy YAML</button>
+                  <button class="action-button" id="control-import-download">Download YAML</button>
+                </div>
+              </section>
+            </div>
+          </div>
+        `;
+        editorOverlay.classList.add('open');
+
+        const sourceArea = editorOverlay.querySelector('#control-import-source');
+        const fileInput = editorOverlay.querySelector('#control-import-file');
+        editorOverlay.querySelector('#control-import-close').addEventListener('click', closeEditor);
+        editorOverlay.querySelector('#control-import-reset').addEventListener('click', () => openControlImporter(object));
+        editorOverlay.querySelector('#control-import-add').addEventListener('click', () => {
+          controlImportState.controls.push(normalizeFrameworkControl({}));
+          renderImporter();
+        });
+        editorOverlay.querySelector('#control-import-parse').addEventListener('click', () => {
+          try {
+            const imported = parseImportedControlSeed(sourceArea.value);
+            controlImportState.controls = mergeImportedControls(controlImportState.controls, imported);
+            sourceArea.value = '';
+            renderImporter();
+          } catch (error) {
+            const errorNode = editorOverlay.querySelector('#control-import-error');
+            if (errorNode) {
+              errorNode.textContent = error instanceof Error ? error.message : String(error);
+            }
+          }
+        });
+        fileInput.addEventListener('change', async () => {
+          const file = fileInput.files?.[0];
+          if (!file) return;
+          try {
+            const text = await file.text();
+            sourceArea.value = text;
+            const imported = parseImportedControlSeed(text);
+            controlImportState.controls = mergeImportedControls(controlImportState.controls, imported);
+            sourceArea.value = '';
+            renderImporter();
+          } catch (error) {
+            const errorNode = editorOverlay.querySelector('#control-import-error');
+            if (errorNode) {
+              errorNode.textContent = error instanceof Error ? error.message : String(error);
+            }
+          }
+        });
+        editorOverlay.querySelector('#control-import-copy').addEventListener('click', async () => {
+          if (!controlImportState?.serialized) return;
+          const yamlText = jsyaml.dump(controlImportState.serialized, { lineWidth: 100, noRefs: true });
+          await navigator.clipboard.writeText(yamlText);
+        });
+        editorOverlay.querySelector('#control-import-download').addEventListener('click', () => {
+          if (!controlImportState?.serialized) return;
+          const yamlText = jsyaml.dump(controlImportState.serialized, { lineWidth: 100, noRefs: true });
+          const blob = new Blob([yamlText], { type: 'text/yaml;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = (object.source || `${object.id}.yaml`).split('/').pop();
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          URL.revokeObjectURL(url);
+        });
+
+        editorOverlay.querySelectorAll('[data-control-field]').forEach(input => {
+          const eventName = input.tagName === 'SELECT' ? 'change' : 'input';
+          input.addEventListener(eventName, () => {
+            const controlIndex = Number(input.dataset.controlIndex);
+            const field = input.dataset.controlField;
+            controlImportState.controls[controlIndex][field] = input.value;
+            if (field === 'requirementMode') {
+              controlImportState.controls[controlIndex].requirementMode = input.value === 'conditional' ? 'conditional' : 'mandatory';
+              renderImporter();
+              return;
+            }
+            updateControlImportPreview(object);
+          });
+        });
+
+        editorOverlay.querySelectorAll('[data-control-checkbox]').forEach(input => {
+          input.addEventListener('change', () => {
+            const controlIndex = Number(input.dataset.controlIndex);
+            const kind = input.dataset.controlCheckbox;
+            const bucket = controlImportState.controls[controlIndex][kind];
+            if (input.checked) {
+              if (!bucket.includes(input.value)) bucket.push(input.value);
+            } else {
+              controlImportState.controls[controlIndex][kind] = bucket.filter(value => value !== input.value);
+            }
+            updateControlImportPreview(object);
+          });
+        });
+
+        editorOverlay.querySelectorAll('[data-clause-field]').forEach(input => {
+          const eventName = input.tagName === 'SELECT' ? 'change' : 'input';
+          input.addEventListener(eventName, () => {
+            const controlIndex = Number(input.dataset.controlIndex);
+            const clauseIndex = Number(input.dataset.clauseIndex);
+            const field = input.dataset.clauseField;
+            controlImportState.controls[controlIndex].applicabilityClauses[clauseIndex][field] = input.value;
+            if (field === 'operator') {
+              renderImporter();
+              return;
+            }
+            updateControlImportPreview(object);
+          });
+        });
+
+        editorOverlay.querySelectorAll('[data-remove-control]').forEach(button => {
+          button.addEventListener('click', () => {
+            const controlIndex = Number(button.dataset.removeControl);
+            controlImportState.controls.splice(controlIndex, 1);
+            renderImporter();
+          });
+        });
+
+        editorOverlay.querySelectorAll('[data-add-clause]').forEach(button => {
+          button.addEventListener('click', () => {
+            const controlIndex = Number(button.dataset.addClause);
+            controlImportState.controls[controlIndex].applicabilityClauses.push(blankApplicabilityClause());
+            renderImporter();
+          });
+        });
+
+        editorOverlay.querySelectorAll('[data-remove-clause]').forEach(button => {
+          button.addEventListener('click', () => {
+            const controlIndex = Number(button.dataset.removeClause);
+            const clauseIndex = Number(button.dataset.removeClauseIndex);
+            const clauses = controlImportState.controls[controlIndex].applicabilityClauses;
+            clauses.splice(clauseIndex, 1);
+            if (!clauses.length) clauses.push(blankApplicabilityClause());
+            renderImporter();
+          });
+        });
+
+        editorOverlay.addEventListener('click', event => {
+          if (event.target === editorOverlay) {
+            closeEditor();
+          }
+        }, { once: true });
+
+        updateControlImportPreview(object);
+      };
+
+      renderImporter();
     }
 
     function showDetailView(id, pushHistory = true) {
@@ -3644,6 +4312,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const openEditorButton = document.getElementById('open-editor-button');
       if (openEditorButton) {
         openEditorButton.addEventListener('click', () => openEditor(object));
+      }
+      const openControlImportButton = document.getElementById('open-control-import-button');
+      if (openControlImportButton) {
+        openControlImportButton.addEventListener('click', () => openControlImporter(object));
       }
 
       attachTopNavHandlers();
