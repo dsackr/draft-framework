@@ -99,19 +99,30 @@ An RA should be generic enough to guide many products, not just one.
 1. Create the file in `compliance-frameworks/`.
 2. Define the framework metadata such as `id`, `name`, `frameworkKind`, and lifecycle fields.
 3. Add controls inline under `controls`.
-4. For each control, answer the `odc.compliance-framework` checklist:
-   - control identity
-   - authoritative source link
+4. For each control, record only:
+   - `controlId`
+   - `name`
+   - `externalReference`
+   - optional `notes`
+5. Run validation.
+
+## Add A Compliance Profile
+
+1. Create the file in `compliance-profiles/`.
+2. Reference the backing control catalog in `framework`.
+3. Add `controlSemantics`.
+4. For each semantic entry, answer the `odc.compliance-profile` checklist:
+   - control reference
    - requirement mode
    - DRAFT applicability
    - valid DRAFT answer types
    - conditional applicability when relevant
    - optional related concern
-5. Use `requirementMode: conditional` only when the framework is not always in scope and explicitly allow `N/A`.
+5. Use `requirementMode: conditional` only when the control is not always in scope and explicitly allow `N/A`.
 6. Run validation.
 
 An AI should be able to translate a source control catalog into this shape as
-long as the source provides control facts and the framework docs provide the
+long as the source provides control facts and the profile docs provide the
 DRAFT applicability rules.
 
 ## Run The Tools

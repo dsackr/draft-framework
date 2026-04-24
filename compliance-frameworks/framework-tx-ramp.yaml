@@ -1,11 +1,12 @@
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: framework.tx-ramp
 type: compliance_framework
 name: TX-RAMP
-description: >
-  Starter TX-RAMP control pack for DRAFT. This file is intended to map TX-RAMP
-  control expectations onto the existing DRAFT concern model without changing
+description: 'Starter TX-RAMP control pack for DRAFT. This file is intended to map
+  TX-RAMP control expectations onto the existing DRAFT concern model without changing
   the ODC files.
+
+  '
 version: 0.1.0
 catalogStatus: draft
 lifecycleStatus: invest
@@ -13,262 +14,51 @@ owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
 tags:
-  - compliance
-  - tx-ramp
-  - starter-pack
+- compliance
+- tx-ramp
+- starter-pack
 frameworkKind: common
 controlIdNamespace: TXRAMP
 defaultSelection: false
-notes: >
-  Starter mapping aligned to the public TX-RAMP program information. Replace
-  the shared program link with deeper authoritative links later if stable
-  per-control references become available.
+notes: 'Starter mapping aligned to the public TX-RAMP program information. Replace
+  the shared program link with deeper authoritative links later if stable per-control
+  references become available.
+
+  '
 controls:
-  - controlId: AC-2
-    name: Account Management and Centralized Authentication
-    description: >
-      Administrative identities must be governed through approved account
-      management and centralized authentication workflows.
-    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
-    appliesTo:
-      - rbb.host
-    relatedConcern: authentication
-    requirementMode: conditional
-    naAllowed: true
-    applicability:
-      anyOf:
-        - field: complianceContext.txRampInScope
-          equals: true
-        - field: complianceContext.soldInTexas
-          equals: true
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: AU-2
-    name: Auditable Event Logging
-    description: >
-      Hosts must generate, retain, and forward logs to an approved centralized
-      logging workflow.
-    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
-    appliesTo:
-      - rbb.host
-    relatedConcern: log-management
-    requirementMode: conditional
-    naAllowed: true
-    applicability:
-      anyOf:
-        - field: complianceContext.txRampInScope
-          equals: true
-        - field: complianceContext.soldInTexas
-          equals: true
-    validAnswerTypes:
-      - abbConfiguration
-      - externalInteraction
-      - architecturalDecision
-  - controlId: SI-4
-    name: Security Monitoring
-    description: >
-      Hosts must provide security telemetry to approved detection and response
-      workflows.
-    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
-    appliesTo:
-      - rbb.host
-    relatedConcern: security-monitoring
-    requirementMode: conditional
-    naAllowed: true
-    applicability:
-      anyOf:
-        - field: complianceContext.txRampInScope
-          equals: true
-        - field: complianceContext.soldInTexas
-          equals: true
-    validAnswerTypes:
-      - abb
-      - abbConfiguration
-      - externalInteraction
-      - architecturalDecision
-  - controlId: CM-3
-    name: Configuration Change Control and Patching
-    description: >
-      Infrastructure components must operate under approved configuration,
-      change, and patch management workflows.
-    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
-    appliesTo:
-      - rbb.host
-    relatedConcern: patch-management
-    requirementMode: conditional
-    naAllowed: true
-    applicability:
-      anyOf:
-        - field: complianceContext.txRampInScope
-          equals: true
-        - field: complianceContext.soldInTexas
-          equals: true
-    validAnswerTypes:
-      - abb
-      - externalInteraction
-      - architecturalDecision
-  - controlId: SC-28
-    name: Data Protection for Database Services
-    description: >
-      Database services must document protection mechanisms for stored data,
-      including encryption expectations where applicable.
-    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
-    appliesTo:
-      - rbb.service.database
-    relatedConcern: encryption-at-rest
-    requirementMode: conditional
-    naAllowed: true
-    applicability:
-      anyOf:
-        - field: complianceContext.txRampInScope
-          equals: true
-        - field: complianceContext.soldInTexas
-          equals: true
-    validAnswerTypes:
-      - field
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: AC-6
-    name: Least Privilege for Database Services
-    description: >
-      Database identity, role, and privilege design must be explicitly
-      documented.
-    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
-    appliesTo:
-      - rbb.service.database
-    relatedConcern: access-control-model
-    requirementMode: conditional
-    naAllowed: true
-    applicability:
-      anyOf:
-        - field: complianceContext.txRampInScope
-          equals: true
-        - field: complianceContext.soldInTexas
-          equals: true
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: CP-9
-    name: Backup and Recovery
-    description: >
-      Database services must define backup strategy, recovery targets, and
-      restoration expectations.
-    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
-    appliesTo:
-      - rbb.service.database
-    relatedConcern: backup-strategy
-    requirementMode: conditional
-    naAllowed: true
-    applicability:
-      anyOf:
-        - field: complianceContext.txRampInScope
-          equals: true
-        - field: complianceContext.soldInTexas
-          equals: true
-    validAnswerTypes:
-      - field
-      - architecturalDecision
-  - controlId: IA-5
-    name: Secrets and Authenticator Management
-    description: >
-      Services must document how secrets and authenticators are stored, rotated,
-      and accessed through approved mechanisms.
-    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
-    appliesTo:
-      - rbb.service.general
-    relatedConcern: secrets-management
-    requirementMode: conditional
-    naAllowed: true
-    applicability:
-      anyOf:
-        - field: complianceContext.txRampInScope
-          equals: true
-        - field: complianceContext.soldInTexas
-          equals: true
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: IA-5
-    name: Product Service Secrets and Authenticator Management
-    description: >
-      Product services must document how secrets and authenticators are stored,
-      rotated, and accessed through approved mechanisms.
-    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
-    appliesTo:
-      - rbb.service.product
-    requirementMode: conditional
-    naAllowed: true
-    applicability:
-      anyOf:
-        - field: complianceContext.txRampInScope
-          equals: true
-        - field: complianceContext.soldInTexas
-          equals: true
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: PL-2
-    name: Data Classification Declaration
-    description: >
-      Software distributions must declare governing data classification so the
-      correct control set can be applied.
-    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
-    appliesTo:
-      - sdm
-    relatedConcern: data-classification
-    requirementMode: conditional
-    naAllowed: true
-    applicability:
-      anyOf:
-        - field: complianceContext.txRampInScope
-          equals: true
-        - field: complianceContext.soldInTexas
-          equals: true
-    validAnswerTypes:
-      - field
-      - architecturalDecision
-  - controlId: CP-2
-    name: Availability and Recovery Objectives
-    description: >
-      Software distributions must declare the availability requirement and
-      recovery expectations they are designed to meet.
-    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
-    appliesTo:
-      - sdm
-    relatedConcern: availability-requirement
-    requirementMode: conditional
-    naAllowed: true
-    applicability:
-      anyOf:
-        - field: complianceContext.txRampInScope
-          equals: true
-        - field: complianceContext.soldInTexas
-          equals: true
-    validAnswerTypes:
-      - field
-      - architecturalDecision
-  - controlId: CA-2
-    name: Architecture and Control Conformance
-    description: >
-      Software distributions must document conformance to or deviation from the
-      selected reference architecture and control baseline.
-    externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
-    appliesTo:
-      - sdm
-    relatedConcern: ra-conformance
-    requirementMode: conditional
-    naAllowed: true
-    applicability:
-      anyOf:
-        - field: complianceContext.txRampInScope
-          equals: true
-        - field: complianceContext.soldInTexas
-          equals: true
-    validAnswerTypes:
-      - field
-      - architecturalDecision
+- controlId: AC-2
+  name: Account Management and Centralized Authentication
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: AU-2
+  name: Auditable Event Logging
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: SI-4
+  name: Security Monitoring
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: CM-3
+  name: Configuration Change Control and Patching
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: SC-28
+  name: Data Protection for Database Services
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: AC-6
+  name: Least Privilege for Database Services
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: CP-9
+  name: Backup and Recovery
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: IA-5
+  name: Secrets and Authenticator Management
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: IA-5
+  name: Product Service Secrets and Authenticator Management
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: PL-2
+  name: Data Classification Declaration
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: CP-2
+  name: Availability and Recovery Objectives
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: CA-2
+  name: Architecture and Control Conformance
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp

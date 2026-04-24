@@ -26,7 +26,8 @@ authoritative source for object shape.
 | Deployment Risk or Decision | `ards/` | [ard.schema.yaml](../../schemas/ard.schema.yaml) | Object type remains `ard`. |
 | SaaS Service | `rbbs/` | [saas-service.schema.yaml](../../schemas/saas-service.schema.yaml) | SaaS Services are RBBs with `category: service` and `serviceCategory: saas`. |
 | ODC | `odcs/` | [odc.schema.yaml](../../schemas/odc.schema.yaml) | ODCs are checklist objects. Their shape is enforced by schema and their satisfaction logic by the validator. |
-| Compliance Framework | `compliance-frameworks/` | [compliance-framework.schema.yaml](../../schemas/compliance-framework.schema.yaml) | Required controls live inline in `controls` and are shaped by `odc.compliance-framework`. |
+| Compliance Framework | `compliance-frameworks/` | [compliance-framework.schema.yaml](../../schemas/compliance-framework.schema.yaml) | Pure control catalog with control identity only. |
+| Compliance Profile | `compliance-profiles/` | [compliance-profile.schema.yaml](../../schemas/compliance-profile.schema.yaml) | DRAFT semantics for a control catalog: applicability, valid answer types, and conditionality. |
 
 ## Minimum Guidance By Type
 
@@ -86,16 +87,24 @@ SDMs use the dedicated schema file and the SDM guide.
 
 ### Compliance Framework
 
-Compliance frameworks are single-file objects. They carry both metadata and
-inline `controls`. Controls can be `mandatory` or `conditional`. Conditional
-controls can explicitly allow `N/A` responses and may carry `applicability`
-metadata for future scope evaluation. Every control entry is expected to answer
-the `odc.compliance-framework` checklist: identity, authoritative source,
-DRAFT applicability, valid answer types, requirement mode, and conditional
-scope metadata when relevant.
+Compliance frameworks are pure control catalogs. They carry metadata and a
+`controls` list containing only control identity fields.
 
 - Guide: [security-and-compliance-controls.md](security-and-compliance-controls.md)
 - Schema: [compliance-framework.schema.yaml](../../schemas/compliance-framework.schema.yaml)
+
+### Compliance Profile
+
+Compliance profiles carry the DRAFT-specific semantics for a control catalog.
+They define:
+
+- where a control applies
+- which answer mechanisms are valid
+- whether a control is mandatory or conditional
+- whether `N/A` is allowed and under what applicability rules
+
+- Guide: [security-and-compliance-controls.md](security-and-compliance-controls.md)
+- Schema: [compliance-profile.schema.yaml](../../schemas/compliance-profile.schema.yaml)
 
 ## Practical Rule
 

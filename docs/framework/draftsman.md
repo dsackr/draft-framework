@@ -58,6 +58,7 @@ These are the DRAFT objects a user may intentionally start with:
 - Software Distribution Manifest
 - Drafting Session
 - Security and Compliance Control framework
+- Compliance Profile
 
 Product Service is not a starting-point object. It emerges only when an SDM
 needs to express a distinct first-party runtime-behavior component deployed on
@@ -179,17 +180,33 @@ work. It records source material, generated YAML objects, assumptions,
 unresolved questions, and next steps so work can continue later without relying
 on prior chat memory.
 
-### SCC
+### Compliance Framework
 
-A Security and Compliance Control framework defines required controls that
-extend ODCs at runtime.
+A Compliance Framework is a pure control catalog. It records:
 
-Each control must define DRAFT-specific semantics such as:
+- `controlId`
+- `name`
+- `externalReference`
+
+### Compliance Profile
+
+A Compliance Profile applies a pure control catalog to DRAFT. It defines:
 
 - `appliesTo`
 - `validAnswerTypes`
 - `requirementMode`
 - `naAllowed` and `applicability` for conditional controls
+- `relatedConcern` when a control refines an ODC concern
+
+### Control Implementations
+
+Architecture artifacts can record explicit control implementations using:
+
+- `complianceProfiles`
+- `controlImplementations`
+
+If a profile is attached to an object, every applicable control from that
+profile must have a recorded implementation or the object is non-compliant.
 
 ## ODC Model
 

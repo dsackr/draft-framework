@@ -18,6 +18,8 @@ optionalFields:
   - serviceGroups
   - externalInteractions
   - architectureRisksAndDecisions
+  - complianceProfiles
+  - controlImplementations
 idPattern: "^sdm\\.[a-z0-9-]+$"
 enumFields:
   catalogStatus:
@@ -38,11 +40,14 @@ fieldTypes:
   serviceGroups: list
   externalInteractions: list
   architectureRisksAndDecisions: list
+  complianceProfiles: list
+  controlImplementations: list
 collectionSchemas:
   scalingUnits: scalingUnit
   serviceGroups: serviceGroup
   externalInteractions: externalInteraction
   architectureRisksAndDecisions: ardRef
+  controlImplementations: controlImplementation
 
 scalingUnit:
   requiredFields:
@@ -115,3 +120,30 @@ externalInteraction:
 ardRef:
   requiredFields:
     - ref
+
+controlImplementation:
+  requiredFields:
+    - profile
+    - controlId
+    - status
+  optionalFields:
+    - mechanism
+    - key
+    - equals
+    - criteria
+    - ref
+    - notes
+  enumFields:
+    status:
+      - satisfied
+      - not-applicable
+      - opted-out
+    mechanism:
+      - abb
+      - abbConfiguration
+      - deploymentConfiguration
+      - externalInteraction
+      - architecturalDecision
+      - field
+  fieldTypes:
+    criteria: dict

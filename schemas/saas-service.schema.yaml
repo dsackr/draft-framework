@@ -26,7 +26,8 @@ optionalFields:
   - complianceCerts
   - incidentNotificationProcess
   - notes
-  - controlReferences
+  - complianceProfiles
+  - controlImplementations
 idPattern: "^saas\\.[a-z0-9-]+$"
 enumFields:
   catalogStatus:
@@ -60,4 +61,34 @@ fieldTypes:
   tags: list
   dataLeavesInfrastructure: bool
   complianceCerts: list
-  controlReferences: list
+  complianceProfiles: list
+  controlImplementations: list
+collectionSchemas:
+  controlImplementations: controlImplementation
+
+controlImplementation:
+  requiredFields:
+    - profile
+    - controlId
+    - status
+  optionalFields:
+    - mechanism
+    - key
+    - equals
+    - criteria
+    - ref
+    - notes
+  enumFields:
+    status:
+      - satisfied
+      - not-applicable
+      - opted-out
+    mechanism:
+      - abb
+      - abbConfiguration
+      - deploymentConfiguration
+      - externalInteraction
+      - architecturalDecision
+      - field
+  fieldTypes:
+    criteria: dict

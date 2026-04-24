@@ -15,9 +15,8 @@ optionalFields:
   - tags
   - controlIdNamespace
   - defaultSelection  # boolean
-  - extends           # list of framework ids this framework inherits controls from
   - notes
-  - controls          # list of required control definitions
+  - controls          # pure control catalog entries
 idPattern: "^framework\\.[a-z0-9-]+$"
 enumFields:
   catalogStatus:
@@ -37,7 +36,6 @@ fieldTypes:
   owner: dict
   tags: list
   defaultSelection: bool
-  extends: list
   controls: list
 collectionSchemas:
   controls: control
@@ -47,53 +45,5 @@ control:
     - controlId
     - name
     - externalReference
-    - appliesTo
-    - requirementMode
-    - validAnswerTypes
   optionalFields:
-    - description
-    - relatedConcern
-    - naAllowed
-    - applicability
     - notes
-  enumFields:
-    requirementMode:
-      - mandatory
-      - conditional
-  enumListFields:
-    appliesTo:
-      - rbb.host
-      - rbb.service.general
-      - rbb.service.database
-      - rbb.service.product
-      - rbb.service.saas
-      - ra
-      - sdm
-      - abb.appliance
-    validAnswerTypes:
-      - abb
-      - abbConfiguration
-      - deploymentConfiguration
-      - externalInteraction
-      - architecturalDecision
-      - field
-  fieldTypes:
-    appliesTo: list
-    validAnswerTypes: list
-    naAllowed: bool
-    applicability: dict
-
-controls structure:
-  - controlId: CTRL-001
-    name: Password Policy
-    externalReference: https://example.com/security/controls/password-policy
-    appliesTo:
-      - rbb.host
-      - rbb.service.database
-    relatedConcern: authentication
-    requirementMode: mandatory
-    naAllowed: false
-    validAnswerTypes:
-      - abbConfiguration
-      - externalInteraction
-      - architecturalDecision

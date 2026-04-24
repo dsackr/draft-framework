@@ -475,6 +475,7 @@ def validate_abb(
             valid, message = validate_odc_requirement(obj, requirement, catalog_by_id)
             if not valid:
                 failures.append(f"{path}: {message}")
+    validate_control_implementations(obj, path, catalog_by_id, failures)
 
 
 def agent_interaction_exception(obj: dict[str, Any], abb_id: str) -> bool:
@@ -621,9 +622,16 @@ def validate_rbb(
                                 f"{path}: deploymentConfigurations[{index}].addressesQualities contains invalid values {invalid}"
                             )
     validate_architectural_decisions(obj, path, failures)
+    validate_control_implementations(obj, path, catalog_by_id, failures)
 
 
-def validate_ra(obj: dict[str, Any], path: Path, odcs: dict[str, dict[str, Any]], failures: list[str]) -> None:
+def validate_ra(
+    obj: dict[str, Any],
+    path: Path,
+    odcs: dict[str, dict[str, Any]],
+    catalog_by_id: dict[str, dict[str, Any]],
+    failures: list[str],
+) -> None:
     applicable = applicable_odc_ids(obj, odcs)
     if "odc.ra" not in applicable:
         return
@@ -654,9 +662,16 @@ def validate_ra(obj: dict[str, Any], path: Path, odcs: dict[str, dict[str, Any]]
         failures.append(
             f"{path}: [{object_id}] ODC requirement 'deployment-qualities' not satisfied — needs architecturalDecision(architecturalDecisions)"
         )
+    validate_control_implementations(obj, path, catalog_by_id, failures)
 
 
-def validate_sdm(obj: dict[str, Any], path: Path, odcs: dict[str, dict[str, Any]], failures: list[str]) -> None:
+def validate_sdm(
+    obj: dict[str, Any],
+    path: Path,
+    odcs: dict[str, dict[str, Any]],
+    catalog_by_id: dict[str, dict[str, Any]],
+    failures: list[str],
+) -> None:
     applicable = applicable_odc_ids(obj, odcs)
     if "odc.sdm" not in applicable:
         return
@@ -715,6 +730,7 @@ def validate_sdm(obj: dict[str, Any], path: Path, odcs: dict[str, dict[str, Any]
         failures.append(
             f"{path}: [{object_id}] ODC requirement 'pattern-deviations' not satisfied — needs architecturalDecision(patternDeviations) or architecturalDecision(noPatternDeviations)"
         )
+    validate_control_implementations(obj, path, catalog_by_id, failures)
 
 
 def validate_ard(obj: dict[str, Any], path: Path, failures: list[str], warnings: list[str]) -> None:
@@ -775,7 +791,125 @@ def validate_drafting_session(
                     )
 
 
-def validate_compliance_framework(
+def object_scope(obj: dict[str, Any]) -> str | None:
+    if obj.get("type") == "rbb":
+        if obj.get("category") == "host":
+            return "rbb.host"
+        if obj.get("category") == "service" and obj.get("serviceCategory") == "general":
+            return "rbb.service.general"
+        if obj.get("category") == "service" and obj.get("serviceCategory") == "database":
+            return "rbb.service.database"
+        if obj.get("category") == "service" and obj.get("serviceCategory") == "product":
+            return "rbb.service.product"
+        if obj.get("category") == "service" and obj.get("serviceCategory") == "saas":
+            return "rbb.service.saas"
+    if obj.get("type") == "reference_architecture":
+        return "ra"
+    if obj.get("type") == "software_distribution_manifest":
+        return "sdm"
+    if obj.get("type") == "abb" and obj.get("subtype") == "appliance":
+        return "abb.appliance"
+    return None
+
+
+def find_external_interaction(obj: dict[str, Any], implementation: dict[str, Any]) -> bool:
+    interactions = obj.get("externalInteractions", [])
+    if not isinstance(interactions, list):
+        return False
+    ref = implementation.get("ref")
+    criteria = implementation.get("criteria", {}) if isinstance(implementation.get("criteria"), dict) else {}
+    capability = criteria.get("capability")
+    for interaction in interactions:
+        if not isinstance(interaction, dict):
+            continue
+        if ref and ref in {interaction.get("ref"), interaction.get("name"), interaction.get("capability")}:
+            return True
+        if capability and interaction.get("capability") == capability:
+            return True
+    return False
+
+
+def find_deployment_configuration(obj: dict[str, Any], implementation: dict[str, Any]) -> bool:
+    configurations = obj.get("deploymentConfigurations", [])
+    if not isinstance(configurations, list):
+        return False
+    key = implementation.get("key")
+    ref = implementation.get("ref")
+    criteria = implementation.get("criteria", {}) if isinstance(implementation.get("criteria"), dict) else {}
+    quality = criteria.get("quality")
+    for configuration in configurations:
+        if not isinstance(configuration, dict):
+            continue
+        if key and key in {configuration.get("id"), configuration.get("name")}:
+            return True
+        if ref and ref in {configuration.get("id"), configuration.get("name")}:
+            return True
+        qualities = configuration.get("addressesQualities", [])
+        if quality and isinstance(qualities, list) and quality in qualities:
+            return True
+    return False
+
+
+def find_abb_reference(obj: dict[str, Any], implementation: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]]) -> bool:
+    ref = implementation.get("ref")
+    if not is_non_empty(ref):
+        return False
+    if obj.get("osAbb") == ref or obj.get("hardwareAbb") == ref or obj.get("functionAbb") == ref:
+        return True
+    for component in obj.get("internalComponents", []) or []:
+        if isinstance(component, dict) and component.get("ref") == ref:
+            return True
+    target = catalog_by_id.get(str(ref))
+    return bool(target and target.get("type") == "abb")
+
+
+def find_abb_configuration(obj: dict[str, Any], implementation: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]]) -> bool:
+    ref = implementation.get("ref")
+    key = implementation.get("key")
+    criteria = implementation.get("criteria", {}) if isinstance(implementation.get("criteria"), dict) else {}
+    concern = criteria.get("concern")
+    for abb in referenced_abbs(obj, catalog_by_id):
+        if ref and abb.get("id") != ref:
+            continue
+        configurations = abb.get("configurations", [])
+        if not isinstance(configurations, list):
+            continue
+        for configuration in configurations:
+            if not isinstance(configuration, dict):
+                continue
+            if key and key in {configuration.get("id"), configuration.get("name")}:
+                return True
+            concerns = configuration.get("addressesConcerns", [])
+            if concern and isinstance(concerns, list) and concern in concerns:
+                return True
+    return False
+
+
+def implementation_resolves(
+    obj: dict[str, Any],
+    implementation: dict[str, Any],
+    catalog_by_id: dict[str, dict[str, Any]],
+) -> bool:
+    mechanism = implementation.get("mechanism")
+    if mechanism == "field":
+        key = implementation.get("key")
+        return is_non_empty(key) and is_non_empty(get_nested_value(obj, str(key)))
+    if mechanism == "architecturalDecision":
+        key = implementation.get("key")
+        decisions = obj.get("architecturalDecisions", {})
+        return is_non_empty(key) and isinstance(decisions, dict) and is_non_empty(get_nested_value(decisions, str(key)))
+    if mechanism == "externalInteraction":
+        return find_external_interaction(obj, implementation)
+    if mechanism == "deploymentConfiguration":
+        return find_deployment_configuration(obj, implementation)
+    if mechanism == "abb":
+        return find_abb_reference(obj, implementation, catalog_by_id)
+    if mechanism == "abbConfiguration":
+        return find_abb_configuration(obj, implementation, catalog_by_id)
+    return False
+
+
+def validate_compliance_profile(
     obj: dict[str, Any],
     path: Path,
     catalog_by_id: dict[str, dict[str, Any]],
@@ -783,41 +917,39 @@ def validate_compliance_framework(
     failures: list[str],
 ) -> None:
     applicable = applicable_odc_ids(obj, odcs)
-    if "odc.compliance-framework" not in applicable:
-        failures.append(f"{path}: compliance framework is missing applicable ODC 'odc.compliance-framework'")
+    if "odc.compliance-profile" not in applicable:
+        failures.append(f"{path}: compliance profile is missing applicable ODC 'odc.compliance-profile'")
 
-    extends = obj.get("extends", [])
-    if extends and not isinstance(extends, list):
-        failures.append(f"{path}: extends must be a list of framework ids")
-    elif isinstance(extends, list):
-        for parent_id in extends:
-            target = catalog_by_id.get(parent_id)
-            if not target or target.get("type") != "compliance_framework":
-                failures.append(
-                    f"{path}: extends references unknown compliance framework '{parent_id}'"
-                )
+    framework_id = obj.get("framework")
+    framework = catalog_by_id.get(str(framework_id)) if is_non_empty(framework_id) else None
+    if not framework or framework.get("type") != "compliance_framework":
+        failures.append(f"{path}: framework must reference an existing compliance framework")
+        framework_controls = set()
+    else:
+        framework_controls = {
+            control.get("controlId")
+            for control in framework.get("controls", [])
+            if isinstance(control, dict) and is_non_empty(control.get("controlId"))
+        }
 
-    controls = obj.get("controls")
-    if controls is None:
+    semantics = obj.get("controlSemantics")
+    if semantics is None:
         return
-    if not isinstance(controls, list):
-        failures.append(f"{path}: controls must be a list of control definitions")
+    if not isinstance(semantics, list):
+        failures.append(f"{path}: controlSemantics must be a list of semantic entries")
         return
-    for index, control in enumerate(controls):
-        context = f"{path}: controls[{index}]"
-        if not isinstance(control, dict):
-            failures.append(f"{context}: control entry must be a mapping")
+    for index, semantic in enumerate(semantics):
+        context = f"{path}: controlSemantics[{index}]"
+        if not isinstance(semantic, dict):
+            failures.append(f"{context}: control semantic entry must be a mapping")
             continue
-        control_id = control.get("controlId")
-        if not is_non_empty(control_id) or not is_non_empty(control.get("name")):
+        control_id = semantic.get("controlId")
+        if not is_non_empty(control_id) or control_id not in framework_controls:
             failures.append(
-                f"{context}: ODC requirement 'control-identity' not satisfied — every control must declare controlId and name"
+                f"{context}: ODC requirement 'semantic-control-reference' not satisfied — controlId must exist in the referenced control catalog"
             )
-        if not is_non_empty(control.get("externalReference")):
-            failures.append(
-                f"{context}: ODC requirement 'authoritative-source' not satisfied — every control must declare externalReference"
-            )
-        applies_to = control.get("appliesTo")
+
+        applies_to = semantic.get("appliesTo")
         if not isinstance(applies_to, list) or not applies_to:
             failures.append(
                 f"{context}: ODC requirement 'draft-applicability' not satisfied — appliesTo must be a non-empty list"
@@ -828,7 +960,8 @@ def validate_compliance_framework(
             failures.append(
                 f"{context}: ODC requirement 'draft-applicability' not satisfied — invalid appliesTo values {invalid_scopes}"
             )
-        valid_answer_types = control.get("validAnswerTypes")
+
+        valid_answer_types = semantic.get("validAnswerTypes")
         if not isinstance(valid_answer_types, list) or not valid_answer_types:
             failures.append(
                 f"{context}: ODC requirement 'valid-answer-types' not satisfied — validAnswerTypes must be a non-empty list"
@@ -840,13 +973,13 @@ def validate_compliance_framework(
                     f"{context}: ODC requirement 'valid-answer-types' not satisfied — invalid validAnswerTypes values {invalid_answer_types}"
                 )
 
-        requirement_mode = control.get("requirementMode")
+        requirement_mode = semantic.get("requirementMode")
         if requirement_mode not in VALID_CONTROL_REQUIREMENT_MODES:
             failures.append(
                 f"{context}: ODC requirement 'requirement-mode' not satisfied — requirementMode must be one of {sorted(VALID_CONTROL_REQUIREMENT_MODES)}"
             )
 
-        na_allowed = control.get("naAllowed")
+        na_allowed = semantic.get("naAllowed")
         if na_allowed is not None and not isinstance(na_allowed, bool):
             failures.append(
                 f"{context}: ODC requirement 'conditional-applicability' not satisfied — naAllowed must be true or false"
@@ -855,12 +988,8 @@ def validate_compliance_framework(
             failures.append(
                 f"{context}: ODC requirement 'conditional-applicability' not satisfied — mandatory controls cannot allow N/A responses"
             )
-        if requirement_mode == "conditional" and na_allowed is False:
-            failures.append(
-                f"{context}: ODC requirement 'conditional-applicability' not satisfied — conditional controls must allow N/A responses"
-            )
 
-        applicability = control.get("applicability")
+        applicability = semantic.get("applicability")
         if applicability is not None:
             if not isinstance(applicability, dict):
                 failures.append(
@@ -911,20 +1040,13 @@ def validate_compliance_framework(
                 f"{context}: ODC requirement 'conditional-applicability' not satisfied — conditional controls must set naAllowed: true"
             )
 
-        related_concern = control.get("relatedConcern")
+        related_concern = semantic.get("relatedConcern")
         if is_non_empty(related_concern):
             for scope in applies_to:
                 odc_id = scope_to_odc_id(str(scope))
-                if not odc_id:
+                if not odc_id or odc_id not in odcs:
                     continue
-                if odc_id not in odcs:
-                    failures.append(f"{context}: appliesTo scope '{scope}' resolves to unknown ODC '{odc_id}'")
-                    continue
-                try:
-                    resolved = resolve_odc_requirements(odc_id, odcs)
-                except (KeyError, ValueError) as exc:
-                    failures.append(f"{context}: could not resolve ODC '{odc_id}': {exc}")
-                    continue
+                resolved = resolve_odc_requirements(odc_id, odcs)
                 valid_requirement_ids = {
                     requirement.get("id")
                     for requirement in resolved
@@ -934,6 +1056,121 @@ def validate_compliance_framework(
                     failures.append(
                         f"{context}: ODC requirement 'related-concern' not satisfied — relatedConcern '{related_concern}' is not defined on ODC '{odc_id}'"
                     )
+
+
+def validate_control_implementations(
+    obj: dict[str, Any],
+    path: Path,
+    catalog_by_id: dict[str, dict[str, Any]],
+    failures: list[str],
+) -> None:
+    scope = object_scope(obj)
+    if not scope:
+        return
+
+    implementations = obj.get("controlImplementations", [])
+    if implementations is None:
+        implementations = []
+    if not isinstance(implementations, list):
+        failures.append(f"{path}: controlImplementations must be a list")
+        return
+
+    implementations_by_key: dict[tuple[str, str], dict[str, Any]] = {}
+    for index, implementation in enumerate(implementations):
+        context = f"{path}: controlImplementations[{index}]"
+        if not isinstance(implementation, dict):
+            failures.append(f"{context}: control implementation must be a mapping")
+            continue
+        profile_id = implementation.get("profile")
+        control_id = implementation.get("controlId")
+        if not is_non_empty(profile_id) or not is_non_empty(control_id):
+            continue
+        profile = catalog_by_id.get(str(profile_id))
+        if not profile or profile.get("type") != "compliance_profile":
+            failures.append(f"{context}: profile must reference an existing compliance_profile")
+            continue
+        semantics = next(
+            (
+                semantic for semantic in profile.get("controlSemantics", [])
+                if isinstance(semantic, dict) and semantic.get("controlId") == control_id and scope in (semantic.get("appliesTo") or [])
+            ),
+            None,
+        )
+        if semantics is None:
+            failures.append(f"{context}: controlId '{control_id}' is not defined for scope '{scope}' on profile '{profile_id}'")
+            continue
+        status = implementation.get("status")
+        if status == "opted-out":
+            failures.append(f"{context}: opted-out controls are non-compliant and must be addressed or removed")
+            continue
+        if status == "not-applicable":
+            if semantics.get("requirementMode") != "conditional" or semantics.get("naAllowed") is not True:
+                failures.append(f"{context}: only conditional controls that allow N/A may use status 'not-applicable'")
+            implementations_by_key[(str(profile_id), str(control_id))] = implementation
+            continue
+        mechanism = implementation.get("mechanism")
+        valid_answer_types = semantics.get("validAnswerTypes", [])
+        if mechanism not in valid_answer_types:
+            failures.append(f"{context}: mechanism '{mechanism}' is not allowed by profile '{profile_id}' for control '{control_id}'")
+        elif not implementation_resolves(obj, implementation, catalog_by_id):
+            failures.append(f"{context}: mechanism '{mechanism}' does not resolve against the current object state")
+        implementations_by_key[(str(profile_id), str(control_id))] = implementation
+
+    profiles = obj.get("complianceProfiles", [])
+    if profiles is None:
+        profiles = []
+    if not isinstance(profiles, list):
+        failures.append(f"{path}: complianceProfiles must be a list")
+        return
+
+    for profile_id in profiles:
+        profile = catalog_by_id.get(str(profile_id))
+        if not profile or profile.get("type") != "compliance_profile":
+            failures.append(f"{path}: complianceProfiles references unknown compliance profile '{profile_id}'")
+            continue
+        semantics = [
+            semantic for semantic in profile.get("controlSemantics", [])
+            if isinstance(semantic, dict) and scope in (semantic.get("appliesTo") or [])
+        ]
+        for semantic in semantics:
+            key = (str(profile_id), str(semantic.get("controlId")))
+            if key not in implementations_by_key:
+                failures.append(
+                    f"{path}: applicable control '{semantic.get('controlId')}' from profile '{profile_id}' has no recorded implementation"
+                )
+
+
+def validate_compliance_framework(
+    obj: dict[str, Any],
+    path: Path,
+    catalog_by_id: dict[str, dict[str, Any]],
+    odcs: dict[str, dict[str, Any]],
+    failures: list[str],
+) -> None:
+    applicable = applicable_odc_ids(obj, odcs)
+    if "odc.compliance-framework" not in applicable:
+        failures.append(f"{path}: compliance framework is missing applicable ODC 'odc.compliance-framework'")
+
+    controls = obj.get("controls")
+    if controls is None:
+        return
+    if not isinstance(controls, list):
+        failures.append(f"{path}: controls must be a list of control definitions")
+        return
+    for index, control in enumerate(controls):
+        context = f"{path}: controls[{index}]"
+        if not isinstance(control, dict):
+            failures.append(f"{context}: control entry must be a mapping")
+            continue
+        control_id = control.get("controlId")
+        if not is_non_empty(control_id) or not is_non_empty(control.get("name")):
+            failures.append(
+                f"{context}: ODC requirement 'control-identity' not satisfied — every control must declare controlId and name"
+            )
+        if not is_non_empty(control.get("externalReference")):
+            failures.append(
+                f"{context}: ODC requirement 'authoritative-source' not satisfied — every control must declare externalReference"
+            )
 
 
 def validate_service_group_structure(
@@ -1090,10 +1327,12 @@ def main() -> int:
             validate_drafting_session(obj, path, odcs, catalog_by_id, failures)
         if obj.get("type") == "compliance_framework":
             validate_compliance_framework(obj, path, catalog_by_id, odcs, failures)
+        if obj.get("type") == "compliance_profile":
+            validate_compliance_profile(obj, path, catalog_by_id, odcs, failures)
         if obj.get("type") == "rbb":
             validate_rbb(obj, path, odcs, catalog_by_id, catalog_ids, failures, warnings)
         if obj.get("type") == "reference_architecture":
-            validate_ra(obj, path, odcs, failures)
+            validate_ra(obj, path, odcs, catalog_by_id, failures)
             validate_service_group_refs(
                 obj,
                 path,
@@ -1104,7 +1343,7 @@ def main() -> int:
                 require_deployment_target=False,
             )
         if obj.get("type") == "software_distribution_manifest":
-            validate_sdm(obj, path, odcs, failures)
+            validate_sdm(obj, path, odcs, catalog_by_id, failures)
             validate_service_group_refs(obj, path, ard_ids, appliance_abb_ids, catalog_by_id, failures)
 
     failing_paths = {entry.split(":", 1)[0] for entry in failures}

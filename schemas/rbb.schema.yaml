@@ -18,6 +18,8 @@ optionalFields:
   - serviceCategory
   - satisfiesODC
   - architecturalDecisions
+  - complianceProfiles
+  - controlImplementations
   - osAbb
   - hardwareAbb
   - hostRbb
@@ -49,6 +51,8 @@ fieldTypes:
   owner: dict
   satisfiesODC: list
   architecturalDecisions: dict
+  complianceProfiles: list
+  controlImplementations: list
   internalComponents: list
   externalInteractions: list
   deploymentConfigurations: list
@@ -75,6 +79,7 @@ collectionSchemas:
   internalComponents: internalComponent
   externalInteractions: externalInteraction
   deploymentConfigurations: deploymentConfiguration
+  controlImplementations: controlImplementation
 internalComponent:
   requiredFields:
     - ref
@@ -110,3 +115,30 @@ deploymentConfiguration:
     addsInternalComponents: list
     addsExternalInteractions: list
     addsArchitecturalDecisions: dict
+
+controlImplementation:
+  requiredFields:
+    - profile
+    - controlId
+    - status
+  optionalFields:
+    - mechanism
+    - key
+    - equals
+    - criteria
+    - ref
+    - notes
+  enumFields:
+    status:
+      - satisfied
+      - not-applicable
+      - opted-out
+    mechanism:
+      - abb
+      - abbConfiguration
+      - deploymentConfiguration
+      - externalInteraction
+      - architecturalDecision
+      - field
+  fieldTypes:
+    criteria: dict

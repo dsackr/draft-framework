@@ -1,0 +1,211 @@
+schemaVersion: '1.0'
+id: profile.tx-ramp
+type: compliance_profile
+name: TX-RAMP Profile
+framework: framework.tx-ramp
+description: DRAFT implementation profile for TX-RAMP.
+version: 0.1.0
+catalogStatus: draft
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- compliance
+- tx-ramp
+- starter-pack
+- profile
+notes: 'Starter mapping aligned to the public TX-RAMP program information. Replace
+  the shared program link with deeper authoritative links later if stable per-control
+  references become available.
+
+  '
+controlSemantics:
+- controlId: AC-2
+  appliesTo:
+  - rbb.host
+  relatedConcern: authentication
+  requirementMode: conditional
+  naAllowed: true
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  validAnswerTypes:
+  - externalInteraction
+  - abbConfiguration
+  - architecturalDecision
+- controlId: AU-2
+  appliesTo:
+  - rbb.host
+  relatedConcern: log-management
+  requirementMode: conditional
+  naAllowed: true
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  validAnswerTypes:
+  - abbConfiguration
+  - externalInteraction
+  - architecturalDecision
+- controlId: SI-4
+  appliesTo:
+  - rbb.host
+  relatedConcern: security-monitoring
+  requirementMode: conditional
+  naAllowed: true
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  validAnswerTypes:
+  - abb
+  - abbConfiguration
+  - externalInteraction
+  - architecturalDecision
+- controlId: CM-3
+  appliesTo:
+  - rbb.host
+  relatedConcern: patch-management
+  requirementMode: conditional
+  naAllowed: true
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  validAnswerTypes:
+  - abb
+  - externalInteraction
+  - architecturalDecision
+- controlId: SC-28
+  appliesTo:
+  - rbb.service.database
+  relatedConcern: encryption-at-rest
+  requirementMode: conditional
+  naAllowed: true
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  validAnswerTypes:
+  - field
+  - abbConfiguration
+  - architecturalDecision
+- controlId: AC-6
+  appliesTo:
+  - rbb.service.database
+  relatedConcern: access-control-model
+  requirementMode: conditional
+  naAllowed: true
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  validAnswerTypes:
+  - externalInteraction
+  - abbConfiguration
+  - architecturalDecision
+- controlId: CP-9
+  appliesTo:
+  - rbb.service.database
+  relatedConcern: backup-strategy
+  requirementMode: conditional
+  naAllowed: true
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: IA-5
+  appliesTo:
+  - rbb.service.general
+  relatedConcern: secrets-management
+  requirementMode: conditional
+  naAllowed: true
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  validAnswerTypes:
+  - externalInteraction
+  - abbConfiguration
+  - architecturalDecision
+- controlId: IA-5
+  appliesTo:
+  - rbb.service.product
+  requirementMode: conditional
+  naAllowed: true
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  validAnswerTypes:
+  - externalInteraction
+  - abbConfiguration
+  - architecturalDecision
+- controlId: PL-2
+  appliesTo:
+  - sdm
+  relatedConcern: data-classification
+  requirementMode: conditional
+  naAllowed: true
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: CP-2
+  appliesTo:
+  - sdm
+  relatedConcern: availability-requirement
+  requirementMode: conditional
+  naAllowed: true
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: CA-2
+  appliesTo:
+  - sdm
+  relatedConcern: ra-conformance
+  requirementMode: conditional
+  naAllowed: true
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  validAnswerTypes:
+  - field
+  - architecturalDecision

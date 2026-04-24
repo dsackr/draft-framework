@@ -17,6 +17,8 @@ optionalFields:
   - architecturalDecisions
   - applicableODC
   - scalingUnits
+  - complianceProfiles
+  - controlImplementations
 idPattern: "^ra\\.[a-z0-9.-]+$"
 enumFields:
   catalogStatus:
@@ -35,9 +37,12 @@ fieldTypes:
   architecturalDecisions: dict
   scalingUnits: list
   serviceGroups: list
+  complianceProfiles: list
+  controlImplementations: list
 collectionSchemas:
   scalingUnits: scalingUnit
   serviceGroups: serviceGroup
+  controlImplementations: controlImplementation
 
 scalingUnit:
   requiredFields:
@@ -106,3 +111,30 @@ externalInteraction:
     type:
       - internal
       - external
+
+controlImplementation:
+  requiredFields:
+    - profile
+    - controlId
+    - status
+  optionalFields:
+    - mechanism
+    - key
+    - equals
+    - criteria
+    - ref
+    - notes
+  enumFields:
+    status:
+      - satisfied
+      - not-applicable
+      - opted-out
+    mechanism:
+      - abb
+      - abbConfiguration
+      - deploymentConfiguration
+      - externalInteraction
+      - architecturalDecision
+      - field
+  fieldTypes:
+    criteria: dict

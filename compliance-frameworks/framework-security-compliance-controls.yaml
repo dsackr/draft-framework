@@ -1,11 +1,11 @@
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: framework.security-compliance-controls
 type: compliance_framework
 name: Security and Compliance Controls
-description: >
-  Baseline controls pack bundled with DRAFT. Required controls are defined
-  inline and are applied to matching ODCs at runtime based on their target
-  scope.
+description: 'Baseline controls pack bundled with DRAFT. Required controls are defined
+  inline and are applied to matching ODCs at runtime based on their target scope.
+
+  '
 version: 1.0.0
 catalogStatus: approved
 lifecycleStatus: maintain
@@ -13,198 +13,58 @@ owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
 tags:
-  - compliance
-  - controls
-  - baseline
+- compliance
+- controls
+- baseline
 frameworkKind: common
 controlIdNamespace: CC.SecurityCompliance
 defaultSelection: true
 controls:
-  - controlId: CC.SecurityCompliance.04.2.2
-    name: Centralized Administrative Authentication
-    description: Administrative access must use an approved centralized authentication service.
-    externalReference: https://controls.example.com/security-compliance/04.2.2
-    appliesTo:
-      - rbb.host
-    relatedConcern: authentication
-    requirementMode: mandatory
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.04.4.1
-    name: Password Policy
-    description: Password policy requirements must be defined and enforced for managed identities.
-    externalReference: https://controls.example.com/security-compliance/04.4.1
-    appliesTo:
-      - rbb.host
-    relatedConcern: authentication
-    requirementMode: mandatory
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.04.4.1
-    name: Database Password Policy
-    description: Password policy requirements must be defined and enforced for managed database identities.
-    externalReference: https://controls.example.com/security-compliance/04.4.1
-    appliesTo:
-      - rbb.service.database
-    relatedConcern: access-control-model
-    requirementMode: mandatory
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.06.1.1
-    name: Centralized Log Management
-    description: Logs must be retained and forwarded to an approved centralized logging platform.
-    externalReference: https://controls.example.com/security-compliance/06.1.1
-    appliesTo:
-      - rbb.host
-    relatedConcern: log-management
-    requirementMode: mandatory
-    validAnswerTypes:
-      - abbConfiguration
-      - externalInteraction
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.06.2.1
-    name: Host Health and Welfare Monitoring
-    description: Hosts must provide operational health telemetry to the approved monitoring workflow.
-    externalReference: https://controls.example.com/security-compliance/06.2.1
-    appliesTo:
-      - rbb.host
-    relatedConcern: health-welfare-monitoring
-    requirementMode: mandatory
-    validAnswerTypes:
-      - abb
-      - abbConfiguration
-      - externalInteraction
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.06.3.1
-    name: Security Event Monitoring
-    description: Security telemetry must feed the approved centralized detection and response workflow.
-    externalReference: https://controls.example.com/security-compliance/06.3.1
-    appliesTo:
-      - rbb.host
-    relatedConcern: security-monitoring
-    requirementMode: mandatory
-    validAnswerTypes:
-      - abb
-      - abbConfiguration
-      - externalInteraction
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.03.1.1
-    name: Patch Governance
-    description: Patch ownership and maintenance workflow must be explicitly defined.
-    externalReference: https://controls.example.com/security-compliance/03.1.1
-    appliesTo:
-      - rbb.host
-    relatedConcern: patch-management
-    requirementMode: mandatory
-    validAnswerTypes:
-      - abb
-      - externalInteraction
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.03.2.1
-    name: Patch Execution Workflow
-    description: Patch delivery and remediation workflow must be implemented and documented.
-    externalReference: https://controls.example.com/security-compliance/03.2.1
-    appliesTo:
-      - rbb.host
-    relatedConcern: patch-management
-    requirementMode: mandatory
-    validAnswerTypes:
-      - abb
-      - externalInteraction
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.10.1.1
-    name: Reference Architecture Conformance
-    description: The software distribution must declare how it conforms to or deviates from its reference architecture.
-    externalReference: https://controls.example.com/security-compliance/10.1.1
-    appliesTo:
-      - sdm
-    relatedConcern: ra-conformance
-    requirementMode: mandatory
-    validAnswerTypes:
-      - field
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.10.1.2
-    name: Availability Requirement
-    description: The software distribution must declare the availability target it is designed to meet.
-    externalReference: https://controls.example.com/security-compliance/10.1.2
-    appliesTo:
-      - sdm
-    relatedConcern: availability-requirement
-    requirementMode: mandatory
-    validAnswerTypes:
-      - field
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.00.2.1
-    name: Data Classification
-    description: Data classification must be declared so downstream controls can be selected correctly.
-    externalReference: https://controls.example.com/security-compliance/00.2.1
-    appliesTo:
-      - sdm
-    relatedConcern: data-classification
-    requirementMode: mandatory
-    validAnswerTypes:
-      - field
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.00.2.1
-    name: Database Data Classification Context
-    description: Database services must inherit and document the governing data classification context.
-    externalReference: https://controls.example.com/security-compliance/00.2.1
-    appliesTo:
-      - rbb.service.database
-    relatedConcern: access-control-model
-    requirementMode: mandatory
-    validAnswerTypes:
-      - field
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.10.2.1
-    name: Database Backup Strategy
-    description: Database services must define backup strategy, recovery targets, and restoration expectations.
-    externalReference: https://controls.example.com/security-compliance/10.2.1
-    appliesTo:
-      - rbb.service.database
-    relatedConcern: backup-strategy
-    requirementMode: mandatory
-    validAnswerTypes:
-      - field
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.04.1.1
-    name: Database Access Control Model
-    description: Database identity, access-control, and privilege model must be explicitly documented.
-    externalReference: https://controls.example.com/security-compliance/04.1.1
-    appliesTo:
-      - rbb.service.database
-    relatedConcern: access-control-model
-    requirementMode: mandatory
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.04.3.1
-    name: Secrets Management
-    description: Secrets must be stored, rotated, and accessed through an approved secrets management approach.
-    externalReference: https://controls.example.com/security-compliance/04.3.1
-    appliesTo:
-      - rbb.service.general
-    relatedConcern: secrets-management
-    requirementMode: mandatory
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: CC.SecurityCompliance.04.3.1
-    name: Product Service Secrets Management
-    description: Product services must document how secrets are stored, rotated, and accessed through an approved approach.
-    externalReference: https://controls.example.com/security-compliance/04.3.1
-    appliesTo:
-      - rbb.service.product
-    requirementMode: mandatory
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
+- controlId: CC.SecurityCompliance.04.2.2
+  name: Centralized Administrative Authentication
+  externalReference: https://controls.example.com/security-compliance/04.2.2
+- controlId: CC.SecurityCompliance.04.4.1
+  name: Password Policy
+  externalReference: https://controls.example.com/security-compliance/04.4.1
+- controlId: CC.SecurityCompliance.04.4.1
+  name: Database Password Policy
+  externalReference: https://controls.example.com/security-compliance/04.4.1
+- controlId: CC.SecurityCompliance.06.1.1
+  name: Centralized Log Management
+  externalReference: https://controls.example.com/security-compliance/06.1.1
+- controlId: CC.SecurityCompliance.06.2.1
+  name: Host Health and Welfare Monitoring
+  externalReference: https://controls.example.com/security-compliance/06.2.1
+- controlId: CC.SecurityCompliance.06.3.1
+  name: Security Event Monitoring
+  externalReference: https://controls.example.com/security-compliance/06.3.1
+- controlId: CC.SecurityCompliance.03.1.1
+  name: Patch Governance
+  externalReference: https://controls.example.com/security-compliance/03.1.1
+- controlId: CC.SecurityCompliance.03.2.1
+  name: Patch Execution Workflow
+  externalReference: https://controls.example.com/security-compliance/03.2.1
+- controlId: CC.SecurityCompliance.10.1.1
+  name: Reference Architecture Conformance
+  externalReference: https://controls.example.com/security-compliance/10.1.1
+- controlId: CC.SecurityCompliance.10.1.2
+  name: Availability Requirement
+  externalReference: https://controls.example.com/security-compliance/10.1.2
+- controlId: CC.SecurityCompliance.00.2.1
+  name: Data Classification
+  externalReference: https://controls.example.com/security-compliance/00.2.1
+- controlId: CC.SecurityCompliance.00.2.1
+  name: Database Data Classification Context
+  externalReference: https://controls.example.com/security-compliance/00.2.1
+- controlId: CC.SecurityCompliance.10.2.1
+  name: Database Backup Strategy
+  externalReference: https://controls.example.com/security-compliance/10.2.1
+- controlId: CC.SecurityCompliance.04.1.1
+  name: Database Access Control Model
+  externalReference: https://controls.example.com/security-compliance/04.1.1
+- controlId: CC.SecurityCompliance.04.3.1
+  name: Secrets Management
+  externalReference: https://controls.example.com/security-compliance/04.3.1
+- controlId: CC.SecurityCompliance.04.3.1
+  name: Product Service Secrets Management
+  externalReference: https://controls.example.com/security-compliance/04.3.1

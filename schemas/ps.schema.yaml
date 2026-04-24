@@ -20,6 +20,8 @@ optionalFields:
   - tags
   - notes
   - architecturalDecisions
+  - complianceProfiles
+  - controlImplementations
 idPattern: "^ps\\.[a-z0-9-]+\\.[a-z0-9-]+$"
 enumFields:
   catalogStatus:
@@ -36,3 +38,34 @@ fieldTypes:
   owner: dict
   tags: list
   architecturalDecisions: dict
+  complianceProfiles: list
+  controlImplementations: list
+collectionSchemas:
+  controlImplementations: controlImplementation
+
+controlImplementation:
+  requiredFields:
+    - profile
+    - controlId
+    - status
+  optionalFields:
+    - mechanism
+    - key
+    - equals
+    - criteria
+    - ref
+    - notes
+  enumFields:
+    status:
+      - satisfied
+      - not-applicable
+      - opted-out
+    mechanism:
+      - abb
+      - abbConfiguration
+      - deploymentConfiguration
+      - externalInteraction
+      - architecturalDecision
+      - field
+  fieldTypes:
+    criteria: dict

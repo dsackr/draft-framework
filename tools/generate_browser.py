@@ -201,6 +201,8 @@ def shape_for(obj: dict[str, Any]) -> str:
         return "barrel"
     if obj["type"] == "compliance_framework":
         return "hexagon"
+    if obj["type"] == "compliance_profile":
+        return "hexagon"
     if obj["type"] == "ard":
         return "round-rectangle"
     if obj["type"] == "abb":
@@ -233,6 +235,8 @@ def type_label_for(obj: dict[str, Any]) -> str:
         return "ODC"
     if obj["type"] == "compliance_framework":
         return "Compliance Framework"
+    if obj["type"] == "compliance_profile":
+        return "Compliance Profile"
     if obj["type"] == "ard":
         return f"ARD / {obj.get('category', 'risk')}"
     if obj["type"] == "reference_architecture":
@@ -286,61 +290,70 @@ def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, A
         key=lambda item: item.get("name", ""),
     )
     frameworks_by_id = {framework["id"]: framework for framework in frameworks}
-    local_controls: dict[str, list[dict[str, Any]]] = {}
+    profiles = sorted(
+        [obj for obj in registry.values() if obj.get("type") == "compliance_profile"],
+        key=lambda item: item.get("name", ""),
+    )
+
+    controls_by_framework: dict[str, list[dict[str, Any]]] = {}
     for framework in frameworks:
-        framework_id = framework["id"]
-        raw = framework.get("controls") or []
-        if not isinstance(raw, list):
-            continue
+        raw_controls = framework.get("controls") or []
         normalized_controls: list[dict[str, Any]] = []
-        for control in raw:
-            if not isinstance(control, dict):
-                continue
-            normalized_controls.append(
-                {
-                    "controlId": str(control.get("controlId", "")),
-                    "name": str(control.get("name", "")),
-                    "description": str(control.get("description", "")),
-                    "externalReference": str(control.get("externalReference", "")),
-                    "appliesTo": [str(scope) for scope in control.get("appliesTo", []) if str(scope).strip()],
-                    "relatedConcern": str(control.get("relatedConcern", "")),
-                    "requirementMode": str(control.get("requirementMode", "mandatory")),
-                    "naAllowed": bool(control.get("naAllowed", False)),
-                    "applicability": control.get("applicability", {}),
-                    "validAnswerTypes": [str(value) for value in control.get("validAnswerTypes", []) if str(value).strip()],
-                    "notes": str(control.get("notes", "")),
-                }
-            )
-        local_controls[framework_id] = normalized_controls
+        if isinstance(raw_controls, list):
+            for control in raw_controls:
+                if not isinstance(control, dict):
+                    continue
+                normalized_controls.append(
+                    {
+                        "controlId": str(control.get("controlId", "")),
+                        "name": str(control.get("name", "")),
+                        "externalReference": str(control.get("externalReference", "")),
+                        "notes": str(control.get("notes", "")),
+                    }
+                )
+        controls_by_framework[framework["id"]] = normalized_controls
 
-    resolved_cache: dict[str, list[dict[str, Any]]] = {}
-
-    def control_key(control: dict[str, Any]) -> str:
-        applies_to = ",".join(sorted(control.get("appliesTo", [])))
-        return f"{control.get('controlId', '')}|{control.get('relatedConcern', '')}|{applies_to}"
-
-    def resolve_framework_controls(framework_id: str, stack: set[str] | None = None) -> list[dict[str, Any]]:
-        if framework_id in resolved_cache:
-            return resolved_cache[framework_id]
-        stack = stack or set()
-        if framework_id in stack:
-            return []
-        stack.add(framework_id)
-        framework = frameworks_by_id.get(framework_id, {})
-        merged: dict[str, dict[str, Any]] = {}
-        for parent_id in framework.get("extends", []) if isinstance(framework.get("extends"), list) else []:
-            parent_controls = resolve_framework_controls(str(parent_id), stack)
-            for control in parent_controls:
-                merged[control_key(control)] = control
-        for control in local_controls.get(framework_id, []):
-            merged[control_key(control)] = control
-        resolved_cache[framework_id] = list(merged.values())
-        stack.remove(framework_id)
-        return resolved_cache[framework_id]
+    controls_by_profile: dict[str, list[dict[str, Any]]] = {}
+    for profile in profiles:
+        raw_semantics = profile.get("controlSemantics") or []
+        framework_controls = {
+            control.get("controlId"): control
+            for control in controls_by_framework.get(str(profile.get("framework", "")), [])
+            if isinstance(control, dict)
+        }
+        normalized_controls: list[dict[str, Any]] = []
+        if isinstance(raw_semantics, list):
+            for semantic in raw_semantics:
+                if not isinstance(semantic, dict):
+                    continue
+                catalog_control = framework_controls.get(semantic.get("controlId"), {})
+                normalized_controls.append(
+                    {
+                        "controlId": str(semantic.get("controlId", "")),
+                        "name": str(catalog_control.get("name", "")),
+                        "externalReference": str(catalog_control.get("externalReference", "")),
+                        "appliesTo": [str(scope) for scope in semantic.get("appliesTo", []) if str(scope).strip()],
+                        "relatedConcern": str(semantic.get("relatedConcern", "")),
+                        "requirementMode": str(semantic.get("requirementMode", "mandatory")),
+                        "naAllowed": bool(semantic.get("naAllowed", False)),
+                        "applicability": semantic.get("applicability", {}),
+                        "validAnswerTypes": [str(value) for value in semantic.get("validAnswerTypes", []) if str(value).strip()],
+                        "notes": str(semantic.get("notes", "")),
+                    }
+                )
+        controls_by_profile[profile["id"]] = normalized_controls
 
     default_framework_id = next(
         (framework["id"] for framework in frameworks if framework.get("defaultSelection") is True),
         frameworks[0]["id"] if frameworks else "",
+    )
+    default_profile_id = next(
+        (
+            profile["id"]
+            for profile in profiles
+            if frameworks_by_id.get(str(profile.get("framework", "")), {}).get("defaultSelection") is True
+        ),
+        profiles[0]["id"] if profiles else "",
     )
 
     return {
@@ -352,14 +365,27 @@ def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, A
                 "catalogStatus": framework.get("catalogStatus", ""),
                 "lifecycleStatus": framework.get("lifecycleStatus", ""),
                 "defaultSelection": framework.get("defaultSelection", False),
-                "extends": framework.get("extends", []),
                 "description": framework.get("description", ""),
-                "controlCount": len(resolve_framework_controls(framework["id"])),
+                "controlCount": len(controls_by_framework.get(framework["id"], [])),
             }
             for framework in frameworks
         ],
+        "profiles": [
+            {
+                "id": profile["id"],
+                "name": profile.get("name", profile["id"]),
+                "framework": profile.get("framework", ""),
+                "catalogStatus": profile.get("catalogStatus", ""),
+                "lifecycleStatus": profile.get("lifecycleStatus", ""),
+                "description": profile.get("description", ""),
+                "controlCount": len(controls_by_profile.get(profile["id"], [])),
+            }
+            for profile in profiles
+        ],
         "defaultFrameworkId": default_framework_id,
-        "controlsByFramework": {framework["id"]: resolve_framework_controls(framework["id"]) for framework in frameworks},
+        "defaultProfileId": default_profile_id,
+        "controlsByFramework": controls_by_framework,
+        "controlsByProfile": controls_by_profile,
     }
 
 
@@ -451,6 +477,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "frameworkKind": obj.get("frameworkKind", ""),
                 "defaultSelection": obj.get("defaultSelection", False),
                 "controlCount": len(obj.get("controls", [])) if obj.get("type") == "compliance_framework" and isinstance(obj.get("controls"), list) else 0,
+                "semanticCount": len(obj.get("controlSemantics", [])) if obj.get("type") == "compliance_profile" and isinstance(obj.get("controlSemantics"), list) else 0,
                 "hasRiskRef": obj.get("id") in risk_marked_rbb_ids,
                 "outboundRefs": outbound_refs.get(object_id, []),
                 "referencedBy": referenced_by.get(object_id, []),
@@ -2026,18 +2053,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         id: 'framework',
         label: 'Framework Content',
         filters: [
-          { id: 'all', label: 'All', types: ['odc', 'compliance_framework'] },
+          { id: 'all', label: 'All', types: ['odc', 'compliance_framework', 'compliance_profile'] },
           { id: 'odc', label: 'ODCs', types: ['odc'] },
-          { id: 'compliance_framework', label: 'Compliance Frameworks', types: ['compliance_framework'] }
+          { id: 'compliance_framework', label: 'Compliance Frameworks', types: ['compliance_framework'] },
+          { id: 'compliance_profile', label: 'Compliance Profiles', types: ['compliance_profile'] }
         ],
         rows: [
           { id: 'odc', label: 'ODCs', types: ['odc'] },
-          { id: 'compliance_framework', label: 'Compliance Frameworks', types: ['compliance_framework'] }
+          { id: 'compliance_framework', label: 'Compliance Frameworks', types: ['compliance_framework'] },
+          { id: 'compliance_profile', label: 'Compliance Profiles', types: ['compliance_profile'] }
         ]
       }
     ];
     const lifecycleValues = browserData.lifecycleValues || [];
-    const complianceFrameworks = complianceData.frameworks || [];
+    const complianceProfiles = complianceData.profiles || [];
     const CONTROL_SCOPE_OPTIONS = [
       { value: 'rbb.host', label: 'Host RBB' },
       { value: 'rbb.service.general', label: 'General Service RBB' },
@@ -2065,7 +2094,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     ];
     const deployableTypes = new Set(
       allObjects
-        .filter(object => !['odc', 'ard', 'compliance_framework'].includes(object.type))
+        .filter(object => !['odc', 'ard', 'compliance_framework', 'compliance_profile'].includes(object.type))
         .map(object => object.type)
     );
     const impactOrder = ['software_distribution_manifest', 'reference_architecture', 'rbb', 'abb'];
@@ -2088,7 +2117,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           return saved;
         }
       } catch (error) {}
-      return complianceData.defaultFrameworkId || complianceFrameworks[0]?.id || null;
+      return complianceData.defaultProfileId || complianceProfiles[0]?.id || null;
     })();
     let impactLifecycleFilters = Object.fromEntries(
       impactLifecycleOrder.map(status => [status, status !== 'exit'])
@@ -2145,6 +2174,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (normalized === 'software_distribution_manifest') return 'Software Distribution Manifest';
       if (normalized === 'reference_architecture') return 'Reference Architecture';
       if (normalized === 'compliance_framework') return 'Compliance Framework';
+      if (normalized === 'compliance_profile') return 'Compliance Profile';
       return formatTitleCase(normalized.replace(/[._-]/g, ' '));
     }
 
@@ -2311,11 +2341,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function selectedFramework() {
-      return (selectedFrameworkId && objectLookup[selectedFrameworkId]) || complianceFrameworks[0] || null;
+      return (selectedFrameworkId && objectLookup[selectedFrameworkId]) || complianceProfiles[0] || null;
     }
 
     function selectedFrameworkControls() {
-      return complianceData.controlsByFramework?.[selectedFrameworkId] || [];
+      return complianceData.controlsByProfile?.[selectedFrameworkId] || [];
     }
 
     function controlModeLabel(control) {
@@ -2373,19 +2403,19 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function complianceFrameworkMarkup() {
-      if (!complianceFrameworks.length) {
+      if (!complianceProfiles.length) {
         return '';
       }
       const current = selectedFramework();
       return `
         <div class="sidebar-block">
-          <div class="legend-title">Compliance Framework</div>
+          <div class="legend-title">Compliance Profile</div>
           <select id="framework-select" class="sidebar-select">
-            ${complianceFrameworks.map(framework => `
-              <option value="${framework.id}" ${framework.id === current?.id ? 'selected' : ''}>${escapeHtml(framework.name)}</option>
+            ${complianceProfiles.map(profile => `
+              <option value="${profile.id}" ${profile.id === current?.id ? 'selected' : ''}>${escapeHtml(profile.name)}</option>
             `).join('')}
           </select>
-          <div class="sidebar-help">${escapeHtml(current?.description || 'Select the security and compliance controls used to extend the effective ODC checklist.')}</div>
+          <div class="sidebar-help">${escapeHtml(current?.description || 'Select the DRAFT compliance profile used to extend the effective ODC checklist.')}</div>
         </div>
       `;
     }
@@ -2421,7 +2451,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         return;
       }
       frameworkSelect.addEventListener('change', event => {
-        selectedFrameworkId = event.target.value || complianceData.defaultFrameworkId || complianceFrameworks[0]?.id || null;
+        selectedFrameworkId = event.target.value || complianceData.defaultProfileId || complianceProfiles[0]?.id || null;
         try {
           window.localStorage.setItem('draft-framework:selected-framework', selectedFrameworkId || '');
         } catch (error) {}
@@ -2927,28 +2957,36 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function complianceFrameworkDetailMarkup(object) {
-      const parents = Array.isArray(object.extends) ? object.extends : [];
-      const frameworkSummary = complianceFrameworks.find(item => item.id === object.id);
+      const frameworkSummary = (complianceData.frameworks || []).find(item => item.id === object.id);
       return `
         <section class="section-card">
           <h3>Compliance Framework</h3>
           <div class="section-stack">
             <div class="badges">
               <div class="badge">${escapeHtml(object.frameworkKind || 'common')}</div>
-              ${object.defaultSelection ? '<div class="badge">Default Selection</div>' : ''}
               <div class="badge">${escapeHtml(String(frameworkSummary?.controlCount || object.controlCount || 0))} Controls</div>
               ${lifecycleBadge(object.lifecycleStatus)}
             </div>
             <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
-            ${parents.length ? `
-              <div><strong>Extends:</strong> ${parents.map(parentId => objectLookup[parentId]
-                ? `<span class="ard-link" data-object-link="${parentId}">${escapeHtml(parentId)}</span>`
-                : escapeHtml(parentId)
-              ).join(', ')}</div>
-            ` : ''}
-            <div class="header-actions">
-              <button class="action-button secondary" id="open-control-import-button">Import Controls</button>
+          </div>
+        </section>
+      `;
+    }
+
+    function complianceProfileDetailMarkup(object) {
+      const profileSummary = (complianceData.profiles || []).find(item => item.id === object.id);
+      const framework = objectLookup[object.framework];
+      return `
+        <section class="section-card">
+          <h3>Compliance Profile</h3>
+          <div class="section-stack">
+            <div class="badges">
+              <div class="badge">${escapeHtml(String(profileSummary?.controlCount || object.semanticCount || 0))} Semantic Controls</div>
+              ${lifecycleBadge(object.lifecycleStatus)}
+              ${catalogBadge(object.catalogStatus)}
             </div>
+            <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
+            <div><strong>Framework:</strong> ${framework ? `<span class="ard-link" data-object-link="${framework.id}">${escapeHtml(framework.name)}</span>` : escapeHtml(object.framework || 'Unknown')}</div>
           </div>
         </section>
       `;
@@ -4272,6 +4310,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           ${complianceFrameworkDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
+      } else if (object.type === 'compliance_profile') {
+        detailBody = `
+          ${headerMarkup}
+          ${complianceProfileDetailMarkup(object)}
+          ${usedByMarkup(object)}
+        `;
       } else if (object.type === 'ard') {
         detailBody = `
           ${ardDetailMarkup(object)}
@@ -4486,7 +4530,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         renderTopologyIntoCanvas();
       }
-      if (!['odc', 'ard', 'software_distribution_manifest', 'compliance_framework'].includes(object.type) && !(object.type === 'abb' && object.subtype === 'appliance') && !(object.type === 'rbb' && object.serviceCategory === 'saas')) {
+      if (!['odc', 'ard', 'software_distribution_manifest', 'compliance_framework', 'compliance_profile'].includes(object.type) && !(object.type === 'abb' && object.subtype === 'appliance') && !(object.type === 'rbb' && object.serviceCategory === 'saas')) {
         renderInternalDiagram(detailDiagramSource);
       }
     }

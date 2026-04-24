@@ -1,11 +1,12 @@
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: framework.soc2
 type: compliance_framework
 name: SOC 2
-description: >
-  Initial SOC 2 control pack based on the AICPA Trust Services Criteria.
-  These controls use DRAFT applicability metadata so they can extend the
-  relevant ODCs without changing the ODC files themselves.
+description: 'Initial SOC 2 control pack based on the AICPA Trust Services Criteria.
+  These controls use DRAFT applicability metadata so they can extend the relevant
+  ODCs without changing the ODC files themselves.
+
+  '
 version: 2017.0.0
 catalogStatus: stub
 lifecycleStatus: invest
@@ -13,166 +14,52 @@ owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
 tags:
-  - compliance
-  - soc2
-  - starter-pack
+- compliance
+- soc2
+- starter-pack
 frameworkKind: common
-notes: >
-  These entries are DRAFT applicability mappings for the public AICPA Trust
-  Services Criteria. The authoritative criteria remain in the linked AICPA
-  source material.
+notes: 'These entries are DRAFT applicability mappings for the public AICPA Trust
+  Services Criteria. The authoritative criteria remain in the linked AICPA source
+  material.
+
+  '
 controls:
-  - controlId: CC6
-    name: Logical and Physical Access Controls
-    externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
-    description: SOC 2 Common Criteria CC6 for logical and physical access controls.
-    appliesTo:
-      - rbb.host
-    relatedConcern: authentication
-    requirementMode: mandatory
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: CC7
-    name: System Operations
-    externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
-    description: SOC 2 Common Criteria CC7 for system operations and monitoring.
-    appliesTo:
-      - rbb.host
-    relatedConcern: log-management
-    requirementMode: mandatory
-    validAnswerTypes:
-      - abb
-      - abbConfiguration
-      - externalInteraction
-      - architecturalDecision
-  - controlId: CC7
-    name: System Operations
-    externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
-    description: SOC 2 Common Criteria CC7 for system operations and monitoring.
-    appliesTo:
-      - rbb.host
-    relatedConcern: health-welfare-monitoring
-    requirementMode: mandatory
-    validAnswerTypes:
-      - abb
-      - abbConfiguration
-      - externalInteraction
-      - architecturalDecision
-  - controlId: CC7
-    name: System Operations
-    externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
-    description: SOC 2 Common Criteria CC7 for system operations and monitoring.
-    appliesTo:
-      - rbb.host
-    relatedConcern: security-monitoring
-    requirementMode: mandatory
-    validAnswerTypes:
-      - abb
-      - abbConfiguration
-      - externalInteraction
-      - architecturalDecision
-  - controlId: CC8
-    name: Change Management
-    externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
-    description: SOC 2 Common Criteria CC8 for change management.
-    appliesTo:
-      - rbb.host
-    relatedConcern: patch-management
-    requirementMode: mandatory
-    validAnswerTypes:
-      - abb
-      - externalInteraction
-      - architecturalDecision
-  - controlId: CC6
-    name: Logical and Physical Access Controls
-    externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
-    description: SOC 2 Common Criteria CC6 for logical and physical access controls.
-    appliesTo:
-      - rbb.service.database
-    relatedConcern: access-control-model
-    requirementMode: mandatory
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: CC7
-    name: System Operations
-    externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
-    description: SOC 2 Common Criteria CC7 for system operations and monitoring.
-    appliesTo:
-      - rbb.service.database
-    relatedConcern: backup-strategy
-    requirementMode: mandatory
-    validAnswerTypes:
-      - field
-      - architecturalDecision
-  - controlId: C1
-    name: Confidentiality
-    externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
-    description: SOC 2 additional criteria for confidentiality.
-    appliesTo:
-      - rbb.service.database
-    relatedConcern: encryption-at-rest
-    requirementMode: mandatory
-    validAnswerTypes:
-      - field
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: CC6
-    name: Logical and Physical Access Controls
-    externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
-    description: SOC 2 Common Criteria CC6 for logical and physical access controls.
-    appliesTo:
-      - rbb.service.general
-    relatedConcern: secrets-management
-    requirementMode: mandatory
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: CC6
-    name: Product Service Access and Secrets Controls
-    externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
-    description: SOC 2 Common Criteria CC6 applied to product-service access and secrets handling.
-    appliesTo:
-      - rbb.service.product
-    requirementMode: mandatory
-    validAnswerTypes:
-      - externalInteraction
-      - abbConfiguration
-      - architecturalDecision
-  - controlId: A1
-    name: Availability
-    externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
-    description: SOC 2 additional criteria for availability commitments and service capacity.
-    appliesTo:
-      - sdm
-    relatedConcern: availability-requirement
-    requirementMode: mandatory
-    validAnswerTypes:
-      - field
-      - architecturalDecision
-  - controlId: C1
-    name: Confidentiality
-    externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
-    description: SOC 2 additional criteria for confidentiality.
-    appliesTo:
-      - sdm
-    relatedConcern: data-classification
-    requirementMode: mandatory
-    validAnswerTypes:
-      - field
-      - architecturalDecision
-  - controlId: CC9
-    name: Risk Mitigation
-    externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
-    description: SOC 2 Common Criteria CC9 for risk mitigation.
-    appliesTo:
-      - sdm
-    relatedConcern: ra-conformance
-    requirementMode: mandatory
-    validAnswerTypes:
-      - field
-      - architecturalDecision
+- controlId: CC6
+  name: Logical and Physical Access Controls
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC7
+  name: System Operations
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC7
+  name: System Operations
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC7
+  name: System Operations
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC8
+  name: Change Management
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC6
+  name: Logical and Physical Access Controls
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC7
+  name: System Operations
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: C1
+  name: Confidentiality
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC6
+  name: Logical and Physical Access Controls
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC6
+  name: Product Service Access and Secrets Controls
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: A1
+  name: Availability
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: C1
+  name: Confidentiality
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC9
+  name: Risk Mitigation
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022

@@ -342,17 +342,18 @@ An Architecture Decision should reference the thing that triggered it:
 ## Security And Compliance Controls
 
 Required controls do not live inside the ODC files themselves. DRAFT models
-security and compliance as a separate framework layer. A selected framework can
-add required controls to an ODC at runtime without modifying the ODC YAML.
+security and compliance as a separate profile layer. A selected compliance
+profile can add required controls to an ODC at runtime without modifying the
+ODC YAML.
 
 That separation matters because the same ODC can be viewed under multiple
 control catalogs. One organization might want to use the baseline Security and
 Compliance Controls pack. Another might want to extend the same ODC with NIST
 CSF, SOC 2, or an internal controls overlay. The concern does not change. The
-selected framework adds the required controls that apply.
+selected profile adds the required controls that apply.
 
-In practice, the browser lets the architect select a compliance framework. The
-framework selector then drives which required controls are displayed under each
+In practice, the browser lets the architect select a compliance profile. The
+profile selector then drives which required controls are displayed under each
 concern and in each RBB ODC-satisfaction panel.
 
 ## Inheritance

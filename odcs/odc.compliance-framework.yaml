@@ -3,9 +3,8 @@ id: odc.compliance-framework
 type: odc
 name: Compliance Framework ODC
 description: >
-  Structured checklist for defining a compliance framework in DRAFT. This ODC
-  is aimed at translating control source material into DRAFT-specific control
-  semantics rather than restating the underlying framework text.
+  Structured checklist for defining a pure control catalog in DRAFT. This ODC
+  is focused on the control facts themselves, not on how DRAFT applies them.
 version: 1.0.0
 catalogStatus: draft
 lifecycleStatus: invest
@@ -35,58 +34,6 @@ requirements:
     rationale: >
       DRAFT should not restate the source framework text when the original
       control definition can be linked directly.
-    canBeSatisfiedBy:
-      - mechanism: field
-        key: controls
-  - id: requirement-mode
-    description: >
-      Every control must declare whether it is always required or only applies
-      conditionally.
-    rationale: >
-      DRAFT must distinguish mandatory frameworks such as organization-wide
-      controls from conditional frameworks such as TX-RAMP, PCI, or HIPAA.
-    canBeSatisfiedBy:
-      - mechanism: field
-        key: controls
-  - id: draft-applicability
-    description: >
-      Every control must declare which DRAFT object scopes it can apply to.
-    rationale: >
-      Source security specialists may know the control, but DRAFT needs an
-      architecture-specific applicability mapping to place the control onto the
-      correct ODCs and objects.
-    canBeSatisfiedBy:
-      - mechanism: field
-        key: controls
-  - id: valid-answer-types
-    description: >
-      Every control must declare which DRAFT answer mechanisms are valid for
-      satisfying the control.
-    rationale: >
-      Controls are only useful in DRAFT if the framework tells the architect
-      whether the answer should come from an ABB, ABB configuration, deployment
-      configuration, external interaction, direct field, or architectural
-      decision.
-    canBeSatisfiedBy:
-      - mechanism: field
-        key: controls
-  - id: conditional-applicability
-    description: >
-      Conditional controls must explicitly declare N/A handling and the
-      applicability metadata used to decide when the control is in scope.
-    rationale: >
-      Conditional frameworks should not burden users with controls that are out
-      of scope for the product or deployment being defined.
-    canBeSatisfiedBy:
-      - mechanism: field
-        key: controls
-  - id: related-concern
-    description: >
-      When the control refines an existing ODC concern, it should identify that
-      related concern explicitly.
-    rationale: >
-      This helps DRAFT merge the control into the effective checklist instead
-      of rendering it as an orphaned control.
     canBeSatisfiedBy:
       - mechanism: field
         key: controls

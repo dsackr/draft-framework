@@ -1,0 +1,158 @@
+schemaVersion: '1.0'
+id: profile.security-compliance-controls
+type: compliance_profile
+name: Security and Compliance Controls Profile
+framework: framework.security-compliance-controls
+description: DRAFT implementation profile for Security and Compliance Controls.
+version: 1.0.0
+catalogStatus: approved
+lifecycleStatus: maintain
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- compliance
+- controls
+- baseline
+- profile
+controlSemantics:
+- controlId: CC.SecurityCompliance.04.2.2
+  appliesTo:
+  - rbb.host
+  relatedConcern: authentication
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - abbConfiguration
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.04.4.1
+  appliesTo:
+  - rbb.host
+  relatedConcern: authentication
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - abbConfiguration
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.04.4.1
+  appliesTo:
+  - rbb.service.database
+  relatedConcern: access-control-model
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - abbConfiguration
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.06.1.1
+  appliesTo:
+  - rbb.host
+  relatedConcern: log-management
+  requirementMode: mandatory
+  validAnswerTypes:
+  - abbConfiguration
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.06.2.1
+  appliesTo:
+  - rbb.host
+  relatedConcern: health-welfare-monitoring
+  requirementMode: mandatory
+  validAnswerTypes:
+  - abb
+  - abbConfiguration
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.06.3.1
+  appliesTo:
+  - rbb.host
+  relatedConcern: security-monitoring
+  requirementMode: mandatory
+  validAnswerTypes:
+  - abb
+  - abbConfiguration
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.03.1.1
+  appliesTo:
+  - rbb.host
+  relatedConcern: patch-management
+  requirementMode: mandatory
+  validAnswerTypes:
+  - abb
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.03.2.1
+  appliesTo:
+  - rbb.host
+  relatedConcern: patch-management
+  requirementMode: mandatory
+  validAnswerTypes:
+  - abb
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.10.1.1
+  appliesTo:
+  - sdm
+  relatedConcern: ra-conformance
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.10.1.2
+  appliesTo:
+  - sdm
+  relatedConcern: availability-requirement
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.00.2.1
+  appliesTo:
+  - sdm
+  relatedConcern: data-classification
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.00.2.1
+  appliesTo:
+  - rbb.service.database
+  relatedConcern: access-control-model
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.10.2.1
+  appliesTo:
+  - rbb.service.database
+  relatedConcern: backup-strategy
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.04.1.1
+  appliesTo:
+  - rbb.service.database
+  relatedConcern: access-control-model
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - abbConfiguration
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.04.3.1
+  appliesTo:
+  - rbb.service.general
+  relatedConcern: secrets-management
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - abbConfiguration
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.04.3.1
+  appliesTo:
+  - rbb.service.product
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - abbConfiguration
+  - architecturalDecision

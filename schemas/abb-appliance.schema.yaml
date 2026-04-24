@@ -24,7 +24,8 @@ optionalFields:
   - networkPlacement
   - patchingOwner
   - complianceCerts
-  - controlReferences
+  - complianceProfiles
+  - controlImplementations
 idPattern: "^abb\\.appliance\\.[a-z0-9-]+$"
 enumFields:
   catalogStatus:
@@ -64,9 +65,11 @@ fieldTypes:
   addressesConcerns: list
   configurations: list
   complianceCerts: list
-  controlReferences: list
+  complianceProfiles: list
+  controlImplementations: list
 collectionSchemas:
   configurations: configuration
+  controlImplementations: controlImplementation
 configuration:
   requiredFields:
     - id
@@ -75,3 +78,30 @@ configuration:
     - addressesConcerns
   fieldTypes:
     addressesConcerns: list
+
+controlImplementation:
+  requiredFields:
+    - profile
+    - controlId
+    - status
+  optionalFields:
+    - mechanism
+    - key
+    - equals
+    - criteria
+    - ref
+    - notes
+  enumFields:
+    status:
+      - satisfied
+      - not-applicable
+      - opted-out
+    mechanism:
+      - abb
+      - abbConfiguration
+      - deploymentConfiguration
+      - externalInteraction
+      - architecturalDecision
+      - field
+  fieldTypes:
+    criteria: dict
