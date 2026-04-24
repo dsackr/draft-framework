@@ -13,6 +13,7 @@ linked below.
 ### Framework Basics
 
 - [Framework overview](docs/framework/overview.md)
+- [Draftsman instructions for AI](docs/framework/draftsman.md)
 - [YAML schema reference](docs/framework/yaml-schema-reference.md)
 - [Naming conventions](docs/framework/naming-conventions.md)
 - [How to add objects](docs/framework/how-to-add-objects.md)

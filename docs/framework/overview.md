@@ -3,6 +3,9 @@
 This page is the object map for the framework. It groups the catalog object
 types by the role they play in the model.
 
+If an AI assistant is using this repo directly to author content, start with
+[Draftsman instructions](draftsman.md).
+
 ## Architecture Content
 
 | Object Type | Purpose |

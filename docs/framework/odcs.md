@@ -6,6 +6,9 @@ An Object Definition Checklist, or ODC, is **a structured checklist of
 required questions and answers used to define a complete and correct
 architecture object.**
 
+For a repo-level AI interviewing workflow that uses the ODCs together with the
+current catalog inventory, see [Draftsman instructions](draftsman.md).
+
 An ODC exists to help build an object correctly while it is being authored. It
 does not redefine the taxonomy of the object. Type, classification, and
 structure come from the object schema and the object itself. The ODC tells the

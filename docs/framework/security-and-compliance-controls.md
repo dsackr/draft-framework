@@ -5,6 +5,9 @@
 DRAFT treats compliance as a pluggable layer rather than a fixed property of
 the ODC files.
 
+For the AI-facing interview and translation rules that turn external control
+catalogs into SCC YAML in this repo, see [Draftsman instructions](draftsman.md).
+
 The ODCs define the required concerns for the architecture object. Compliance
 framework objects define required controls that extend those ODCs at runtime.
 
