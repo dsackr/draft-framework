@@ -221,6 +221,7 @@ def scope_to_odc_id(scope: str) -> str | None:
         "ra": "odc.ra",
         "sdm": "odc.sdm",
         "abb.appliance": "odc.appliance-abb",
+        "drafting_session": "odc.drafting-session",
     }.get(scope)
 
 
@@ -721,6 +722,59 @@ def validate_ard(obj: dict[str, Any], path: Path, failures: list[str], warnings:
         warnings.append(f"{path}: decision ARDs should include decisionRationale")
 
 
+def validate_drafting_session(
+    obj: dict[str, Any],
+    path: Path,
+    odcs: dict[str, dict[str, Any]],
+    catalog_by_id: dict[str, dict[str, Any]],
+    failures: list[str],
+) -> None:
+    applicable = applicable_odc_ids(obj, odcs)
+    for odc_id in applicable:
+        if odc_id not in odcs:
+            failures.append(f"{path}: referenced ODC '{odc_id}' does not exist")
+            continue
+        for requirement in resolve_odc_requirements(odc_id, odcs):
+            valid, message = validate_odc_requirement(obj, requirement, catalog_by_id)
+            if not valid:
+                failures.append(f"{path}: {message}")
+
+    primary_object_id = obj.get("primaryObjectId")
+    if primary_object_id and primary_object_id not in catalog_by_id:
+        failures.append(f"{path}: primaryObjectId references unknown object '{primary_object_id}'")
+
+    generated_objects = obj.get("generatedObjects", [])
+    if isinstance(generated_objects, list):
+        for index, entry in enumerate(generated_objects):
+            if not isinstance(entry, dict):
+                continue
+            ref = entry.get("ref")
+            proposed_id = entry.get("proposedId")
+            if not is_non_empty(ref) and not is_non_empty(proposed_id):
+                failures.append(f"{path}: generatedObjects[{index}] must declare either ref or proposedId")
+            if ref and ref not in catalog_by_id:
+                failures.append(f"{path}: generatedObjects[{index}] references unknown object '{ref}'")
+
+    for field_name in ("unresolvedQuestions", "assumptions", "nextSteps"):
+        entries = obj.get(field_name, [])
+        if not isinstance(entries, list):
+            continue
+        for index, entry in enumerate(entries):
+            if not isinstance(entry, dict):
+                continue
+            related_objects = entry.get("relatedObjects", [])
+            if not isinstance(related_objects, list):
+                continue
+            for ref_index, ref_entry in enumerate(related_objects):
+                if not isinstance(ref_entry, dict):
+                    continue
+                ref = ref_entry.get("ref")
+                if ref and ref not in catalog_by_id:
+                    failures.append(
+                        f"{path}: {field_name}[{index}].relatedObjects[{ref_index}] references unknown object '{ref}'"
+                    )
+
+
 def validate_compliance_framework(
     obj: dict[str, Any],
     path: Path,
@@ -1032,6 +1086,8 @@ def main() -> int:
             validate_abb(obj, path, odcs, catalog_by_id, failures)
         if obj.get("type") == "ard":
             validate_ard(obj, path, failures, warnings)
+        if obj.get("type") == "drafting_session":
+            validate_drafting_session(obj, path, odcs, catalog_by_id, failures)
         if obj.get("type") == "compliance_framework":
             validate_compliance_framework(obj, path, catalog_by_id, odcs, failures)
         if obj.get("type") == "rbb":

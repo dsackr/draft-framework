@@ -30,6 +30,7 @@ If an AI assistant is using this repo directly to author content, start with
 |---|---|
 | ABB | A discrete third-party product object used to compose RBBs. Every ABB declares vendor, product name, product version, and exactly one ABB classification. Appliance ABBs remain a subtype of ABB, not a separate peer architecture content type. |
 | Deployment Risk / Decision | A deployment-scoped record of a known risk or accepted decision attached to an SDM or deployed service. The current machine-readable object type remains `ard`. |
+| Drafting Session | A machine-readable work-in-progress session record that captures partial authoring state, generated objects, assumptions, and unresolved follow-up questions so the work can be resumed later. |
 
 ## Extensible Framework Content
 

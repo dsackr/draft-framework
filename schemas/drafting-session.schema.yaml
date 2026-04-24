@@ -1,0 +1,134 @@
+schemaVersion: "1.0"
+type: drafting_session
+requiredFields:
+  - schemaVersion
+  - id
+  - type
+  - name
+  - catalogStatus
+  - lifecycleStatus
+  - sessionStatus
+  - primaryObjectType
+  - sourceArtifacts
+  - generatedObjects
+  - unresolvedQuestions
+optionalFields:
+  - description
+  - version
+  - owner
+  - tags
+  - primaryObjectId
+  - assumptions
+  - nextSteps
+  - architecturalDecisions
+idPattern: "^session\\.[a-z0-9.-]+$"
+enumFields:
+  catalogStatus:
+    - stub
+    - draft
+    - approved
+  lifecycleStatus:
+    - pre-invest
+    - invest
+    - maintain
+    - disinvest
+    - exit
+  sessionStatus:
+    - open
+    - blocked
+    - resolved
+fieldTypes:
+  owner: dict
+  tags: list
+  sourceArtifacts: list
+  generatedObjects: list
+  unresolvedQuestions: list
+  assumptions: list
+  nextSteps: list
+  architecturalDecisions: dict
+collectionSchemas:
+  sourceArtifacts: sourceArtifact
+  generatedObjects: generatedObject
+  unresolvedQuestions: unresolvedQuestion
+  assumptions: assumption
+  nextSteps: nextStep
+
+sourceArtifact:
+  requiredFields:
+    - name
+  optionalFields:
+    - type
+    - location
+    - notes
+
+generatedObject:
+  requiredFields:
+    - name
+    - type
+    - status
+  optionalFields:
+    - ref
+    - proposedId
+    - notes
+  enumFields:
+    status:
+      - created
+      - proposed
+      - stubbed
+      - deferred
+
+objectRef:
+  requiredFields:
+    - ref
+
+unresolvedQuestion:
+  requiredFields:
+    - id
+    - question
+    - status
+  optionalFields:
+    - reason
+    - currentBestGuess
+    - impact
+    - relatedObjects
+  enumFields:
+    status:
+      - open
+      - answered
+      - deferred
+  fieldTypes:
+    relatedObjects: list
+  collectionSchemas:
+    relatedObjects: objectRef
+
+assumption:
+  requiredFields:
+    - id
+    - statement
+  optionalFields:
+    - rationale
+    - impact
+    - relatedObjects
+  fieldTypes:
+    relatedObjects: list
+  collectionSchemas:
+    relatedObjects: objectRef
+
+nextStep:
+  requiredFields:
+    - id
+    - action
+    - status
+  optionalFields:
+    - owner
+    - notes
+    - relatedObjects
+  enumFields:
+    status:
+      - open
+      - blocked
+      - done
+  fieldTypes:
+    relatedObjects: list
+  collectionSchemas:
+    relatedObjects: objectRef

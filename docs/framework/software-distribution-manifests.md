@@ -176,6 +176,19 @@ The v1 catalog contains example SDMs in this central repository because the fram
 
 Long term, that is not the target operating model. Product-specific software distribution manifests belong closest to the product that owns them, which usually means the product repository. The central catalog should define reusable building blocks and reference patterns. Product repos should eventually own the declarations that map those standards to live product estates.
 
+## Partial SDM Drafting
+
+When an SDM interview is incomplete, do not force every unresolved note into the
+SDM itself. Use a Drafting Session to hold:
+
+- source pages and interview context
+- provisional assumptions that let the SDM validate
+- unresolved questions that still need answers
+- next steps for the follow-up pass
+
+That lets the SDM stay deployable and reviewable while the open questions remain
+easy to revisit later.
+
 ## FAQ
 
 ### Does every product need an SDM?

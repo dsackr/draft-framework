@@ -33,6 +33,7 @@ linked below.
 
 - [Architecture Building Blocks (ABBs)](docs/framework/abbs.md)
 - [Deployment Risks and Decisions (DRDs)](docs/framework/deployment-risks-and-decisions.md)
+- [Drafting Sessions](docs/framework/drafting-sessions.md)
 
 ### Extensible Framework Content
 

@@ -83,6 +83,17 @@ An RA should be generic enough to guide many products, not just one.
 7. Use `intent` only when the architect is explicitly deviating from the Reference Architecture or when no Reference Architecture exists.
 8. Add product-level `architecturalDecisions`, including availability requirement and data classification, so the SDM satisfies `odc.sdm`.
 
+## Add A Drafting Session
+
+1. Create the file in `sessions/`.
+2. Choose a stable `session.<topic>` ID.
+3. Record the target object type in `primaryObjectType` and, if it already exists, `primaryObjectId`.
+4. Add the source material that informed the current work under `sourceArtifacts`.
+5. Record the YAML objects that were created, proposed, or stubbed under `generatedObjects`.
+6. Record every unresolved question explicitly, including the current best guess and impact when useful.
+7. Add `nextSteps` so the session can be resumed later without re-reading the entire intake.
+8. Run validation.
+
 ## Add A Compliance Framework
 
 1. Create the file in `compliance-frameworks/`.

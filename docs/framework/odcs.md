@@ -258,6 +258,26 @@ In interview form, ask:
 - Which DRAFT object scopes does it apply to?
 - What answer types are valid in DRAFT?
 - If conditional, when is it in scope and is `N/A` allowed?
+
+### `odc.drafting-session`
+
+This ODC applies to drafting-session objects. It exists to make partial
+authoring state machine-readable and easy to revisit later. In plain language,
+it requires the session to document:
+
+- what object it is trying to build
+- what source material informed the session
+- what YAML objects were created or proposed
+- what questions remain unresolved
+- what next steps are needed to continue
+
+In interview form, ask:
+
+- What object is this session trying to produce?
+- What source artifacts or interviews informed the current draft?
+- What objects were created, proposed, or stubbed in this session?
+- What questions remain open?
+- What follow-up actions are needed to close the gaps?
 - If it refines an existing ODC concern, which one?
 
 ### `odc.ra`

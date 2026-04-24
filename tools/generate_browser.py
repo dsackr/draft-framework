@@ -27,6 +27,7 @@ CATALOG_FOLDERS = [
     "abbs",
     "ards",
     "compliance-frameworks",
+    "sessions",
     "sdms",
     "rbbs",
     "reference-architectures",
@@ -50,10 +51,11 @@ REF_CONTAINER_KEYS = {
     "inherits",
     "platformDependency",
     "linkedSDM",
+    "primaryObjectId",
     "riskRef",
     "framework",
 }
-CATALOG_ID_PREFIXES = ("abb.", "rbb.", "odc.", "ard.", "ps.", "ra.", "sdm.", "framework.", "saas.")
+CATALOG_ID_PREFIXES = ("abb.", "rbb.", "odc.", "ard.", "ps.", "ra.", "sdm.", "framework.", "saas.", "session.")
 
 
 def is_product_service_classification(obj: dict[str, Any]) -> bool:
@@ -193,6 +195,8 @@ def shape_for(obj: dict[str, Any]) -> str:
         return "hexagon"
     if obj["type"] == "software_distribution_manifest":
         return "star"
+    if obj["type"] == "drafting_session":
+        return "round-rectangle"
     if obj["type"] == "odc":
         return "barrel"
     if obj["type"] == "compliance_framework":
@@ -235,6 +239,8 @@ def type_label_for(obj: dict[str, Any]) -> str:
         return "Reference Architecture"
     if obj["type"] == "software_distribution_manifest":
         return "Software Distribution Manifest"
+    if obj["type"] == "drafting_session":
+        return "Drafting Session"
     if obj["type"] == "rbb":
         if obj.get("category") == "host":
             return "Host RBB"
@@ -3280,6 +3286,106 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
+    function draftingSessionDetailMarkup(object) {
+      const generatedObjects = object.generatedObjects || [];
+      const unresolvedQuestions = object.unresolvedQuestions || [];
+      const assumptions = object.assumptions || [];
+      const nextSteps = object.nextSteps || [];
+      const sourceArtifacts = object.sourceArtifacts || [];
+      const primaryObject = object.primaryObjectId && objectLookup[object.primaryObjectId] ? objectLookup[object.primaryObjectId] : null;
+
+      return `
+        <section class="section-card">
+          <h3>Session Scope</h3>
+          <dl class="definition-list">
+            <dt>Session Status</dt>
+            <dd>${escapeHtml(object.sessionStatus || 'unknown')}</dd>
+            <dt>Primary Object Type</dt>
+            <dd>${escapeHtml(object.primaryObjectType || 'unknown')}</dd>
+            <dt>Primary Object</dt>
+            <dd>${primaryObject ? `<span class="ard-link" data-object-link="${primaryObject.id}">${escapeHtml(primaryObject.id)}</span>` : escapeHtml(object.primaryObjectId || 'Not created yet')}</dd>
+          </dl>
+        </section>
+        <section class="section-card">
+          <h3>Source Artifacts</h3>
+          <div class="section-stack">
+            ${sourceArtifacts.length ? sourceArtifacts.map(source => `
+              <article class="odc-card">
+                <div class="odc-name">${escapeHtml(source.name || 'Unnamed source')}</div>
+                <div class="interaction-notes">${escapeHtml(source.type || 'source')}</div>
+                ${source.location ? `<div class="object-id">${escapeHtml(source.location)}</div>` : ''}
+                ${source.notes ? `<div class="interaction-notes">${escapeHtml(source.notes)}</div>` : ''}
+              </article>
+            `).join('') : '<div class="empty-card">No source artifacts are recorded for this session.</div>'}
+          </div>
+        </section>
+        <section class="section-card">
+          <h3>Generated Objects</h3>
+          <div class="section-stack">
+            ${generatedObjects.length ? generatedObjects.map(entry => `
+              <article class="odc-card">
+                <div class="odc-name">${escapeHtml(entry.name || 'Generated object')}</div>
+                <div class="interaction-notes">${escapeHtml(entry.type || 'unknown')} / ${escapeHtml(entry.status || 'unknown')}</div>
+                ${entry.ref && objectLookup[entry.ref] ? `<div class="object-id"><span class="ard-link" data-object-link="${entry.ref}">${escapeHtml(entry.ref)}</span></div>` : entry.ref ? `<div class="object-id">${escapeHtml(entry.ref)}</div>` : entry.proposedId ? `<div class="object-id">${escapeHtml(entry.proposedId)}</div>` : ''}
+                ${entry.notes ? `<div class="interaction-notes">${escapeHtml(entry.notes)}</div>` : ''}
+              </article>
+            `).join('') : '<div class="empty-card">No generated objects are recorded for this session.</div>'}
+          </div>
+        </section>
+        <section class="section-card">
+          <h3>Unresolved Questions</h3>
+          <div class="section-stack">
+            ${unresolvedQuestions.length ? unresolvedQuestions.map(item => `
+              <article class="decision-card">
+                <h4>${escapeHtml(item.id || 'question')}</h4>
+                <p>${escapeHtml(item.question || '')}</p>
+                <dl class="definition-list">
+                  <dt>Status</dt>
+                  <dd>${escapeHtml(item.status || 'open')}</dd>
+                  ${item.reason ? `<dt>Reason</dt><dd>${escapeHtml(item.reason)}</dd>` : ''}
+                  ${item.currentBestGuess ? `<dt>Current Best Guess</dt><dd>${escapeHtml(item.currentBestGuess)}</dd>` : ''}
+                  ${item.impact ? `<dt>Impact</dt><dd>${escapeHtml(item.impact)}</dd>` : ''}
+                </dl>
+                ${(item.relatedObjects || []).length ? `<div class="section-stack">${item.relatedObjects.map(refEntry => refEntry.ref && objectLookup[refEntry.ref] ? `<span class="ard-link" data-object-link="${refEntry.ref}">${escapeHtml(refEntry.ref)}</span>` : refEntry.ref ? `<span>${escapeHtml(refEntry.ref)}</span>` : '').join('')}</div>` : ''}
+              </article>
+            `).join('') : '<div class="empty-card">No unresolved questions are recorded for this session.</div>'}
+          </div>
+        </section>
+        <section class="middle-grid">
+          <div class="section-card">
+            <h3>Assumptions</h3>
+            <div class="section-stack">
+              ${assumptions.length ? assumptions.map(item => `
+                <article class="decision-card">
+                  <h4>${escapeHtml(item.id || 'assumption')}</h4>
+                  <p>${escapeHtml(item.statement || '')}</p>
+                  ${item.rationale ? `<div class="interaction-notes">${escapeHtml(item.rationale)}</div>` : ''}
+                  ${item.impact ? `<div class="interaction-notes">${escapeHtml(item.impact)}</div>` : ''}
+                </article>
+              `).join('') : '<div class="empty-card">No assumptions are recorded for this session.</div>'}
+            </div>
+          </div>
+          <div class="section-card">
+            <h3>Next Steps</h3>
+            <div class="section-stack">
+              ${nextSteps.length ? nextSteps.map(item => `
+                <article class="decision-card">
+                  <h4>${escapeHtml(item.id || 'next-step')}</h4>
+                  <p>${escapeHtml(item.action || '')}</p>
+                  <dl class="definition-list">
+                    <dt>Status</dt>
+                    <dd>${escapeHtml(item.status || 'open')}</dd>
+                    ${item.owner ? `<dt>Owner</dt><dd>${escapeHtml(item.owner)}</dd>` : ''}
+                    ${item.notes ? `<dt>Notes</dt><dd>${escapeHtml(item.notes)}</dd>` : ''}
+                  </dl>
+                </article>
+              `).join('') : '<div class="empty-card">No next steps are recorded for this session.</div>'}
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
     function usedByMarkup(object) {
       const inbound = object.referencedBy || [];
       if (!inbound.length) {
@@ -4169,6 +4275,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       } else if (object.type === 'ard') {
         detailBody = `
           ${ardDetailMarkup(object)}
+          ${usedByMarkup(object)}
+        `;
+      } else if (object.type === 'drafting_session') {
+        detailBody = `
+          ${headerMarkup}
+          ${draftingSessionDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
       } else if (object.type === 'rbb' && object.serviceCategory === 'product') {

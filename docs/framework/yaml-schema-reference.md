@@ -22,6 +22,7 @@ authoritative source for object shape.
 | Reference Architecture | `reference-architectures/` | [reference-architecture.schema.yaml](../../schemas/reference-architecture.schema.yaml) | RA validation is enforced in `tools/validate.py` and `odc.ra`. |
 | Product Service | `rbbs/` | [ps.schema.yaml](../../schemas/ps.schema.yaml) | Product Services are RBBs with `category: service` and `serviceCategory: product`. They emerge in an SDM rather than as starting-point ODC objects. |
 | Software Distribution Manifest | `sdms/` | [sdm.schema.yaml](../../schemas/sdm.schema.yaml) | Includes `serviceGroups`, optional `scalingUnits`, and service-first topology metadata. |
+| Drafting Session | `sessions/` | [drafting-session.schema.yaml](../../schemas/drafting-session.schema.yaml) | Stores partial authoring state, generated objects, assumptions, and unresolved questions so work can be resumed later. |
 | Deployment Risk or Decision | `ards/` | [ard.schema.yaml](../../schemas/ard.schema.yaml) | Object type remains `ard`. |
 | SaaS Service | `rbbs/` | [saas-service.schema.yaml](../../schemas/saas-service.schema.yaml) | SaaS Services are RBBs with `category: service` and `serviceCategory: saas`. |
 | ODC | `odcs/` | [odc.schema.yaml](../../schemas/odc.schema.yaml) | ODCs are checklist objects. Their shape is enforced by schema and their satisfaction logic by the validator. |
@@ -63,6 +64,11 @@ SDMs use the dedicated schema file and the SDM guide.
 
 - Guide: [software-distribution-manifests.md](software-distribution-manifests.md)
 - Schema: [sdm.schema.yaml](../../schemas/sdm.schema.yaml)
+
+### Drafting Session
+
+- Guide: [drafting-sessions.md](drafting-sessions.md)
+- Schema: [drafting-session.schema.yaml](../../schemas/drafting-session.schema.yaml)
 
 ### Deployment Risks and Decisions
 

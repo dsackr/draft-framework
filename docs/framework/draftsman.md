@@ -56,6 +56,7 @@ These are the DRAFT objects a user may intentionally start with:
 - SaaS Service RBB
 - Reference Architecture
 - Software Distribution Manifest
+- Drafting Session
 - Security and Compliance Control framework
 
 Product Service is not a starting-point object. It emerges only when an SDM
@@ -170,6 +171,13 @@ An SDM should:
 - express service groups, deployment targets, failure domains, and deviations
 - expose first-party deployed runtime-behavior components when needed
 - avoid inventing new reusable architecture inside the manifest
+
+### Drafting Session
+
+A Drafting Session is the machine-readable wrapper for incomplete authoring
+work. It records source material, generated YAML objects, assumptions,
+unresolved questions, and next steps so work can continue later without relying
+on prior chat memory.
 
 ### SCC
 
