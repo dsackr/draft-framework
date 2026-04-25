@@ -3230,15 +3230,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         `;
       }
 
-      const targets = new Map();
-      serviceGroups.forEach(group => {
-        const target = group.deploymentTarget || (object.type === 'reference_architecture' ? 'Reference Pattern' : 'Unspecified');
-        if (!targets.has(target)) {
-          targets.set(target, []);
-        }
-        targets.get(target).push(group);
-      });
-
       const scalingUnits = [...new Set(serviceGroups.map(group => group.scalingUnit).filter(Boolean))];
       const topologyToolbar = object.type === 'software_distribution_manifest' ? `
         <div class="topology-toolbar">
@@ -3250,26 +3241,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         </div>
       ` : '';
 
-      const deploymentTargetMarkup = [...targets.entries()].map(([target, grouped]) => {
-        const meta = deploymentTargetPresentation(target);
-        return `
-          <section class="deployment-target-cluster">
-            <div class="deployment-target-header">
-              <div class="deployment-target-title">${escapeHtml(target)}</div>
-              <span class="location-badge ${escapeHtml(meta.cls)}">${meta.icon} ${escapeHtml(meta.badge)}</span>
-            </div>
-            <div class="deployment-target-content">
-              ${tierColumnsMarkup(grouped)}
-            </div>
-          </section>
-        `;
-      }).join('');
-
       return `
         <div class="topology-layout">
           ${topologyToolbar}
           <div class="topology-scaling-units">
-            ${deploymentTargetMarkup}
+            ${tierColumnsMarkup(serviceGroups)}
           </div>
         </div>
       `;

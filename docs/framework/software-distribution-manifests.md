@@ -121,8 +121,11 @@ Current state concerns belong in ARDs and notes.
 
 ## Structure Rules
 
-`deploymentTarget` is the primary placement container. It answers where a
-service runs.
+`serviceGroup` is the primary structural and visual container. It answers what
+role a cluster of deployed components plays in the product.
+
+`deploymentTarget` is metadata on the service group. It answers where that
+group runs.
 
 `diagramTier` places deployed RBBs into one of four columns:
 
@@ -131,16 +134,13 @@ service runs.
 - `data`
 - `utility`
 
-`serviceGroup` remains a structural construct in YAML, but it is not the
-dominant visual object in the topology.
-
 `scalingUnit` is secondary and optional. It should be used only when a set of
 service groups truly scales together. It is not a generic visual container.
 
-If two services share a deployment target but declare different `diagramTier`
-values, they render in different columns. If two services share a scaling-unit
-name but live in different deployment targets, they still render in separate
-deployment-target containers because placement is primary.
+If two services share a deployment target but play different roles, they should
+still live in different service groups. Do not use deployment targets as group
+names. Good group names describe function, such as `Web Edge Services`,
+`Application Services`, or `Data Services`.
 
 Internal and external interactions remain attached to the owning service group:
 
@@ -155,20 +155,19 @@ they should not be hoisted to the SDM top level.
 
 The SDM topology is a service-first placement view.
 
-- `deploymentTarget` is the primary container because it answers where a
-  service runs.
+- `serviceGroup` is the primary container because it answers what a set of
+  deployed components does.
+- `deploymentTarget` stays visible as metadata on that group.
 - `diagramTier` places deployed RBBs into the
   `presentation`, `application`, `data`, or `utility` column.
-- `serviceGroup` remains a structural construct in YAML, but it is not the
-  dominant visual object in the topology.
 - `scalingUnit` is secondary and optional. It should be treated as an overlay
   or highlight concept that answers which services scale together, not as the
   primary layout primitive.
 
-That means services in the same deployment target can land in different columns
-even when they belong to the same service group. It also means a scaling unit
-can be highlighted across multiple services without taking over the base
-placement model.
+That means one deployment target can host multiple service groups, and each
+group can still place its runtime components into different tiers. Scaling
+units can be highlighted across multiple groups without taking over the base
+layout.
 
 ## Long-Term Placement
 
