@@ -53,6 +53,7 @@ These are the DRAFT objects a user may intentionally start with:
 - General Service RBB
 - Database Service RBB
 - Appliance ABB
+- PaaS Service RBB
 - SaaS Service RBB
 - Reference Architecture
 - Software Distribution Manifest
@@ -139,6 +140,7 @@ RBB classifications are:
 - Host
 - General Service
 - Database Service
+- PaaS Service
 - SaaS Service
 - Product Service
 

@@ -46,6 +46,7 @@ The framework taxonomy organizes RBBs into these classifications:
 | Host | The runtime substrate on which reusable or product-specific services run. |
 | General Service | A reusable non-database service pattern that runs on a host or equivalent managed substrate. |
 | Database Service | A reusable data-platform service pattern with durability, recovery, and access-control concerns. |
+| PaaS Service | A vendor-managed platform service classification used when the managed capability stays inside the organization's cloud boundary. It is modeled as an RBB with `category: service` and `serviceCategory: paas`. |
 | SaaS Service | A vendor-managed service classification used when traffic or data may leave the infrastructure boundary. It is modeled as an RBB with `category: service` and `serviceCategory: saas`. |
 | Product Service | A first-party service classification used when an SDM needs to express a distinct runtime-behavior component deployed on an RBB or blackbox host pattern. It is modeled as an RBB with `category: service` and `serviceCategory: product`. |
 
@@ -158,12 +159,14 @@ Architecture Decisions or by selecting a named `deploymentConfiguration` on the
 RBB. Failure domain is treated as an explicit architectural property rather
 than a deployment configuration.
 
-## Product Service And SaaS Service Classifications
+## Product Service, PaaS Service, And SaaS Service Classifications
 
-Product Service and SaaS Service are also RBB classifications.
+Product Service, PaaS Service, and SaaS Service are also RBB classifications.
 
 - Product Service is used when an SDM needs to express a distinct first-party
   runtime-behavior component deployed on an RBB or blackbox host pattern.
+- PaaS Service is used when a vendor-managed platform capability is adopted
+  inside the organization's cloud boundary.
 - SaaS Service is used when a vendor-managed service may route data or traffic
   outside the infrastructure boundary.
 
@@ -207,11 +210,13 @@ because this is where the checklist and compliance model are enforced.
 If the thing is deployed on or inside the object, it is an internal component.
 If the object talks to it across a boundary, it is an external interaction.
 
-### Where do Product Services and SaaS Services fit?
+### Where do Product Services, PaaS Services, and SaaS Services fit?
 
 They are RBB classifications.
 
 - Use Product Service when the object represents organization-authored code.
+- Use PaaS Service when the object represents a managed cloud platform adopted
+  inside the organization's boundary.
 - Use SaaS Service when the object represents a vendor-managed service that may
   carry data or traffic outside the infrastructure boundary.
 - Use the other RBB classifications for reusable host and reusable service

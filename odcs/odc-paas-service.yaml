@@ -1,0 +1,60 @@
+schemaVersion: "1.0"
+id: odc.paas-service
+type: odc
+name: PaaS Service Object Definition Checklist
+description: >
+  Structured checklist of required questions and answers used to define a
+  complete and correct PaaS Service. A PaaS Service is a vendor-managed
+  platform component deployed within the organization's cloud boundary.
+version: 1.0.0
+catalogStatus: approved
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+  - paas
+  - checklist
+  - definition
+appliesTo:
+  type: rbb
+  category: service
+  serviceCategory: paas
+requirements:
+  - id: function
+    description: What capability does this PaaS service provide?
+    rationale: The capability is the core reason the service exists.
+    canBeSatisfiedBy:
+      - mechanism: field
+        key: capability
+        example: "capability: data-persistence"
+  - id: resilience-model
+    description: >
+      What is the resilience model of this service — is it inherently highly
+      available within the region, or does it require multi-region config?
+    rationale: Adopters must know the managed availability baseline.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: resilienceModel
+        example: Inherently multi-AZ within the AWS region.
+  - id: authentication-model
+    description: How is access to this service authenticated?
+    rationale: Defines the identity and security integration, for example IAM.
+    canBeSatisfiedBy:
+      - mechanism: field
+        key: authenticationModel
+        example: "authenticationModel: iam"
+  - id: configurable-surface
+    description: What configuration surface does the organization control?
+    rationale: Captures the customer-managed portion of the managed platform.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: configurableSurface
+        example: Bucket policies, encryption settings, and lifecycle rules.
+  - id: failure-domain
+    description: What is the failure domain of this platform dependency?
+    rationale: Required to understand the blast radius of a vendor-managed outage.
+    canBeSatisfiedBy:
+      - mechanism: architecturalDecision
+        key: failureDomain
+        example: Scoped to the AWS region and account.

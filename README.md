@@ -30,6 +30,7 @@ linked below.
 ### RBB Classifications
 
 - [Product Service](docs/framework/product-service.md)
+- [PaaS Service](docs/framework/paas-services.md)
 - [SaaS Service](docs/framework/saas-services.md)
 
 ### Supporting Model Objects

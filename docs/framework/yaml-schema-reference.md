@@ -21,6 +21,7 @@ authoritative source for object shape.
 | RBB | `rbbs/` | [rbb.schema.yaml](../../schemas/rbb.schema.yaml) | RBB is the reusable building-block type. The schema defines the shared contract, including optional `deploymentConfigurations`; the validator applies relationship checks. |
 | Reference Architecture | `reference-architectures/` | [reference-architecture.schema.yaml](../../schemas/reference-architecture.schema.yaml) | RA validation is enforced in `tools/validate.py` and `odc.ra`. |
 | Product Service | `rbbs/` | [ps.schema.yaml](../../schemas/ps.schema.yaml) | Product Services are RBBs with `category: service` and `serviceCategory: product`. They emerge in an SDM rather than as starting-point ODC objects. |
+| PaaS Service | `rbbs/` | [paas-service.schema.yaml](../../schemas/paas-service.schema.yaml) | PaaS Services are RBBs with `category: service` and `serviceCategory: paas`. |
 | Software Distribution Manifest | `sdms/` | [sdm.schema.yaml](../../schemas/sdm.schema.yaml) | Includes `serviceGroups`, optional `scalingUnits`, and service-first topology metadata. |
 | Drafting Session | `sessions/` | [drafting-session.schema.yaml](../../schemas/drafting-session.schema.yaml) | Stores partial authoring state, generated objects, assumptions, and unresolved questions so work can be resumed later. |
 | Deployment Risk or Decision | `ards/` | [ard.schema.yaml](../../schemas/ard.schema.yaml) | Object type remains `ard`. |
@@ -58,6 +59,11 @@ classification with product metadata. They do not have a dedicated ODC.
 
 - Guide: [product-service.md](product-service.md)
 - Schema: [ps.schema.yaml](../../schemas/ps.schema.yaml)
+
+### PaaS Service
+
+- Guide: [paas-services.md](paas-services.md)
+- Schema: [paas-service.schema.yaml](../../schemas/paas-service.schema.yaml)
 
 ### Software Distribution Manifest
 

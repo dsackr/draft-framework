@@ -1,0 +1,89 @@
+schemaVersion: "1.0"
+type: rbb
+category: service
+serviceCategory: paas
+requiredFields:
+  - schemaVersion
+  - id          # format: paas.<vendor>-<product>
+  - type
+  - category
+  - serviceCategory
+  - name
+  - vendor
+  - capability
+  - catalogStatus
+  - lifecycleStatus
+optionalFields:
+  - description
+  - version
+  - owner
+  - tags
+  - notes
+  - vendorSLA
+  - authenticationModel
+  - complianceCerts
+  - complianceProfiles
+  - controlImplementations
+  - architecturalDecisions
+idPattern: "^paas\\.[a-z0-9-]+$"
+enumFields:
+  catalogStatus:
+    - stub
+    - draft
+    - approved
+  lifecycleStatus:
+    - pre-invest
+    - invest
+    - maintain
+    - disinvest
+    - exit
+  capability:
+    - data-persistence
+    - file-storage
+    - messaging
+    - compute
+    - security
+    - analytics
+    - orchestration
+    - cdn
+    - other
+  authenticationModel:
+    - iam
+    - api-key
+    - other
+fieldTypes:
+  owner: dict
+  tags: list
+  complianceCerts: list
+  complianceProfiles: list
+  controlImplementations: list
+  architecturalDecisions: dict
+collectionSchemas:
+  controlImplementations: controlImplementation
+
+controlImplementation:
+  requiredFields:
+    - profile
+    - controlId
+    - status
+  optionalFields:
+    - mechanism
+    - key
+    - equals
+    - criteria
+    - ref
+    - notes
+  enumFields:
+    status:
+      - satisfied
+      - not-applicable
+      - opted-out
+    mechanism:
+      - abb
+      - abbConfiguration
+      - deploymentConfiguration
+      - externalInteraction
+      - architecturalDecision
+      - field
+  fieldTypes:
+    criteria: dict

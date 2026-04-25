@@ -55,6 +55,7 @@ controlSemantic:
       - rbb.service.general
       - rbb.service.database
       - rbb.service.product
+      - rbb.service.paas
       - rbb.service.saas
       - ra
       - sdm

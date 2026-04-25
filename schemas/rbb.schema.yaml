@@ -45,6 +45,7 @@ enumFields:
     - general
     - database
     - product
+    - paas
     - saas
 fieldTypes:
   tags: list

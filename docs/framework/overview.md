@@ -21,6 +21,7 @@ If an AI assistant is using this repo directly to author content, start with
 | Host | The runtime substrate on which reusable or product-specific services run. |
 | General Service | A reusable non-database service pattern that runs on a host or equivalent managed substrate. |
 | Database Service | A reusable data-platform service pattern with durability, recovery, and access-control concerns. |
+| PaaS Service | A vendor-managed platform service that runs inside the organization's cloud boundary. It is modeled as an RBB with `category: service` and `serviceCategory: paas`. |
 | SaaS Service | A vendor-managed service classification used when traffic or data may leave the infrastructure boundary. It is modeled as an RBB with `category: service` and `serviceCategory: saas`. |
 | Product Service | A first-party service classification used when an SDM needs to express a distinct runtime-behavior component deployed on an RBB or blackbox host pattern. It is modeled as an RBB with `category: service` and `serviceCategory: product`. |
 

@@ -55,7 +55,7 @@ REF_CONTAINER_KEYS = {
     "riskRef",
     "framework",
 }
-CATALOG_ID_PREFIXES = ("abb.", "rbb.", "odc.", "ard.", "ps.", "ra.", "sdm.", "framework.", "saas.", "session.")
+CATALOG_ID_PREFIXES = ("abb.", "rbb.", "odc.", "ard.", "ps.", "ra.", "sdm.", "framework.", "saas.", "paas.", "session.")
 
 
 def is_product_service_classification(obj: dict[str, Any]) -> bool:
@@ -64,6 +64,10 @@ def is_product_service_classification(obj: dict[str, Any]) -> bool:
 
 def is_saas_service_classification(obj: dict[str, Any]) -> bool:
     return obj.get("type") == "rbb" and obj.get("category") == "service" and obj.get("serviceCategory") == "saas"
+
+
+def is_paas_service_classification(obj: dict[str, Any]) -> bool:
+    return obj.get("type") == "rbb" and obj.get("category") == "service" and obj.get("serviceCategory") == "paas"
 
 
 def is_database_service(obj: dict[str, Any]) -> bool:
@@ -208,7 +212,7 @@ def shape_for(obj: dict[str, Any]) -> str:
     if obj["type"] == "abb":
         return "ellipse"
     if obj["type"] == "rbb":
-        if is_product_service_classification(obj) or is_saas_service_classification(obj):
+        if is_product_service_classification(obj) or is_paas_service_classification(obj) or is_saas_service_classification(obj):
             return "round-rectangle"
         return "round-rectangle" if obj.get("category") == "host" else "diamond"
     return "round-rectangle"
@@ -250,6 +254,8 @@ def type_label_for(obj: dict[str, Any]) -> str:
             return "Host RBB"
         if is_product_service_classification(obj):
             return "Product Service"
+        if is_paas_service_classification(obj):
+            return "PaaS Service"
         if is_saas_service_classification(obj):
             return "SaaS Service"
         if is_database_service(obj):
@@ -764,6 +770,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border-color: rgba(168,85,247,0.45);
       color: #e9d5ff;
       background: rgba(168,85,247,0.14);
+    }
+    .paas-badge {
+      border-color: rgba(59,130,246,0.45);
+      color: #bfdbfe;
+      background: rgba(59,130,246,0.14);
     }
     .appliance-badge {
       border-color: rgba(245,158,11,0.45);
@@ -2072,6 +2083,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       { value: 'rbb.service.general', label: 'General Service RBB' },
       { value: 'rbb.service.database', label: 'Database Service RBB' },
       { value: 'rbb.service.product', label: 'Product Service RBB' },
+      { value: 'rbb.service.paas', label: 'PaaS Service RBB' },
       { value: 'rbb.service.saas', label: 'SaaS Service RBB' },
       { value: 'ra', label: 'Reference Architecture' },
       { value: 'sdm', label: 'Software Distribution Manifest' },
@@ -2222,6 +2234,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return '<span class="badge saas-badge">SaaS</span>';
     }
 
+    function paasBadge() {
+      return '<span class="badge paas-badge">PaaS</span>';
+    }
+
     function applianceBadge() {
       return '<span class="badge appliance-badge">appliance</span>';
     }
@@ -2364,6 +2380,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           if (appliesTo.category === 'service' && appliesTo.serviceCategory === 'general') return 'rbb.service.general';
           if (appliesTo.category === 'service' && appliesTo.serviceCategory === 'database') return 'rbb.service.database';
           if (appliesTo.category === 'service' && appliesTo.serviceCategory === 'product') return 'rbb.service.product';
+          if (appliesTo.category === 'service' && appliesTo.serviceCategory === 'paas') return 'rbb.service.paas';
           if (appliesTo.category === 'service' && appliesTo.serviceCategory === 'saas') return 'rbb.service.saas';
         }
         if (appliesTo.type === 'reference_architecture') return 'ra';
@@ -2376,6 +2393,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         if (object.category === 'service' && object.serviceCategory === 'general') return 'rbb.service.general';
         if (object.category === 'service' && object.serviceCategory === 'database') return 'rbb.service.database';
         if (object.category === 'service' && object.serviceCategory === 'product') return 'rbb.service.product';
+        if (object.category === 'service' && object.serviceCategory === 'paas') return 'rbb.service.paas';
         if (object.category === 'service' && object.serviceCategory === 'saas') return 'rbb.service.saas';
       }
       if (object.type === 'reference_architecture') return 'ra';
@@ -2801,10 +2819,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               const internalInteractions = (group.externalInteractions || []).filter(item => (item.type || 'external') === 'internal');
               const rbbEntries = group.rbbs || [];
               const productCount = rbbEntries.filter(entry => objectLookup[entry.ref]?.serviceCategory === 'product').length;
+              const paasCount = rbbEntries.filter(entry => objectLookup[entry.ref]?.serviceCategory === 'paas').length;
               const saasCount = rbbEntries.filter(entry => objectLookup[entry.ref]?.serviceCategory === 'saas').length;
               const reusableCount = rbbEntries.filter(entry => {
                 const serviceCategory = objectLookup[entry.ref]?.serviceCategory;
-                return !['product', 'saas'].includes(serviceCategory || '');
+                return !['product', 'paas', 'saas'].includes(serviceCategory || '');
               }).length;
               return `
                 <article class="odc-card">
@@ -2814,6 +2833,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     ${group.scalingUnit ? `<span class="badge">${escapeHtml(group.scalingUnit)}</span>` : '<span class="badge">unscoped</span>'}
                     ${scalingUnit?.type ? `<span class="badge">${escapeHtml(scalingUnit.type)}</span>` : ''}
                     ${productCount ? `<span class="badge ps-badge">${productCount} PS</span>` : ''}
+                    ${paasCount ? `<span class="badge paas-badge">${paasCount} PaaS</span>` : ''}
                     ${reusableCount ? `<span class="badge">${reusableCount} RBB</span>` : ''}
                     ${(group.applianceAbbs || []).length ? applianceBadge() : ''}
                     ${saasCount ? saasBadge() : ''}
@@ -2956,6 +2976,29 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
+    function paasServiceDetailMarkup(object) {
+      return `
+        <section class="section-card">
+          <h3>PaaS Service Classification</h3>
+          <div class="section-stack">
+            <div class="badges">
+              ${paasBadge()}
+              ${lifecycleBadge(object.lifecycleStatus)}
+              ${catalogBadge(object.catalogStatus)}
+            </div>
+            <dl class="definition-list">
+              <dt>Vendor</dt><dd>${escapeHtml(object.vendor || '')}</dd>
+              <dt>Capability</dt><dd>${escapeHtml(object.capability || '')}</dd>
+              <dt>Authentication Model</dt><dd>${escapeHtml(object.authenticationModel || 'Not documented')}</dd>
+              <dt>Vendor SLA</dt><dd>${escapeHtml(object.vendorSLA || 'Not documented')}</dd>
+              <dt>Compliance Certs</dt><dd>${escapeHtml((object.complianceCerts || []).join(', ') || 'None documented')}</dd>
+            </dl>
+          </div>
+        </section>
+        ${objectLookup['odc.paas-service'] ? odcRequirementsMarkup(objectLookup['odc.paas-service']) : ''}
+      `;
+    }
+
     function complianceFrameworkDetailMarkup(object) {
       const frameworkSummary = (complianceData.frameworks || []).find(item => item.id === object.id);
       return `
@@ -3022,16 +3065,21 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const ref = entry.ref || '';
       const object = objectLookup[ref];
       const serviceObject = object?.serviceCategory === 'product' && object?.runsOn ? objectLookup[object.runsOn] : object;
-      if (objectType === 'appliance') return { icon: '🔧', cls: '' };
+      if (objectType === 'appliance') {
+        const capability = object?.capability || '';
+        if (['file-storage', 'data-persistence', 'storage'].includes(capability)) return { icon: '💾', cls: '' };
+        return { icon: '🔧', cls: '' };
+      }
       if (object?.serviceCategory === 'saas') return { icon: '☁', cls: 'cloud' };
+      if (object?.serviceCategory === 'paas') return { icon: '☁', cls: 'cloud' };
       if (object?.serviceCategory === 'product' && isContainerHostObject(objectLookup[object?.runsOn])) {
         return { icon: '⬢', cls: 'pod' };
       }
       if (ref.startsWith('rbb.service.web.')) return { icon: '🖥', cls: '' };
       if (ref.startsWith('rbb.service.app.')) return { icon: '🗂', cls: '' };
-      if (ref.startsWith('rbb.service.dbms.')) return { icon: '🛢', cls: '' };
+      if (ref.startsWith('rbb.service.dbms.')) return { icon: '🗄', cls: '' };
       if (ref.startsWith('rbb.service.messaging.')) return { icon: '📬', cls: '' };
-      if (serviceObject?.serviceCategory === 'database') return { icon: '🛢', cls: '' };
+      if (serviceObject?.serviceCategory === 'database') return { icon: '🗄', cls: '' };
       return { icon: '🖧', cls: '' };
     }
 
@@ -3111,6 +3159,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (objectType === 'product') classes.push('ps-node');
       if (objectType === 'rbb') classes.push('rbb-node');
       if (objectType === 'appliance') classes.push('appliance-node');
+      if (objectType === 'paas') classes.push('cloud');
       if (objectType === 'saas') classes.push('saas-node');
       if (icon.cls) classes.push(icon.cls);
       return `
@@ -3143,10 +3192,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           const serviceCategory = target.serviceCategory || '';
           const objectType = serviceCategory === 'product'
             ? 'product'
-            : (serviceCategory === 'saas' ? 'saas' : 'rbb');
+            : (serviceCategory === 'paas' ? 'paas' : (serviceCategory === 'saas' ? 'saas' : 'rbb'));
           const badgeLabel = serviceCategory === 'product'
             ? 'PS'
-            : (serviceCategory === 'saas' ? 'SaaS' : 'RBB');
+            : (serviceCategory === 'paas' ? 'PaaS' : (serviceCategory === 'saas' ? 'SaaS' : 'RBB'));
           cards.push(topologyNodeMarkup(entry, {
             objectType,
             badgeLabel,
@@ -4331,6 +4380,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           ${saasServiceDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
+      } else if (object.type === 'rbb' && object.serviceCategory === 'paas') {
+        detailBody = `
+          ${headerMarkup}
+          ${paasServiceDetailMarkup(object)}
+          ${usedByMarkup(object)}
+        `;
       } else if (object.type === 'software_distribution_manifest') {
         detailBody = `
           ${headerMarkup}
@@ -4506,7 +4561,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         renderTopologyIntoCanvas();
       }
-      if (!['odc', 'ard', 'software_distribution_manifest', 'compliance_framework', 'compliance_profile'].includes(object.type) && !(object.type === 'abb' && object.subtype === 'appliance') && !(object.type === 'rbb' && object.serviceCategory === 'saas')) {
+      if (!['odc', 'ard', 'software_distribution_manifest', 'compliance_framework', 'compliance_profile'].includes(object.type) && !(object.type === 'abb' && object.subtype === 'appliance') && !(object.type === 'rbb' && ['saas', 'paas'].includes(object.serviceCategory || ''))) {
         renderInternalDiagram(detailDiagramSource);
       }
     }
@@ -4840,7 +4895,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function serviceRbbNodesSorted(nodes) {
-      const order = ['product', 'general', 'saas', 'database'];
+      const order = ['product', 'general', 'paas', 'saas', 'database'];
       return nodes
         .filter(node => node.data('type') === 'rbb' && node.data('category') === 'service')
         .sort((a, b) => {

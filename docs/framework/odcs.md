@@ -236,6 +236,26 @@ In interview form, ask:
 - What data, residency, authentication, audit visibility, and health visibility commitments are known?
 - What failure domain and SLA does the dependency create?
 
+### `odc.paas-service`
+
+This ODC applies to PaaS Service objects. It treats the managed platform as a
+black-box service that remains inside the organization's cloud boundary and
+requires the architect to document:
+
+- what capability the platform provides
+- what resilience model the platform gives by default
+- how access to the platform is authenticated
+- what configuration surface the adopter controls
+- what failure domain the dependency creates
+
+In interview form, ask:
+
+- What capability is being consumed from the managed platform?
+- What resilience model does the platform provide?
+- How is the service authenticated?
+- What can the adopter configure directly?
+- What failure domain does the dependency create?
+
 ### `odc.compliance-framework`
 
 This ODC applies to Security and Compliance Control catalogs. It requires a

@@ -41,6 +41,7 @@ VALID_CONTROL_SCOPES = {
     "rbb.service.general",
     "rbb.service.database",
     "rbb.service.product",
+    "rbb.service.paas",
     "rbb.service.saas",
     "ra",
     "sdm",
@@ -217,6 +218,7 @@ def scope_to_odc_id(scope: str) -> str | None:
         "rbb.host": "odc.host",
         "rbb.service.general": "odc.service",
         "rbb.service.database": "odc.service.dbms",
+        "rbb.service.paas": "odc.paas-service",
         "rbb.service.saas": "odc.saas-service",
         "ra": "odc.ra",
         "sdm": "odc.sdm",
@@ -801,6 +803,8 @@ def object_scope(obj: dict[str, Any]) -> str | None:
             return "rbb.service.database"
         if obj.get("category") == "service" and obj.get("serviceCategory") == "product":
             return "rbb.service.product"
+        if obj.get("category") == "service" and obj.get("serviceCategory") == "paas":
+            return "rbb.service.paas"
         if obj.get("category") == "service" and obj.get("serviceCategory") == "saas":
             return "rbb.service.saas"
     if obj.get("type") == "reference_architecture":
