@@ -89,12 +89,14 @@ internalComponent:
     - notes
 externalInteraction:
   requiredFields:
-    - capability
+    - capabilities
   optionalFields:
     - name
     - ref
     - notes
     - enabledBy
+  fieldTypes:
+    capabilities: list
 deploymentConfiguration:
   requiredFields:
     - id

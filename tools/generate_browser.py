@@ -31,6 +31,7 @@ CATALOG_FOLDERS = [
     "sdms",
     "rbbs",
     "reference-architectures",
+    "domains",
 ]
 LIFECYCLE_COLORS = {
     "invest": "10b981",
@@ -263,7 +264,9 @@ def type_label_for(obj: dict[str, Any]) -> str:
         if is_general_service(obj):
             return "General Service RBB"
         return "Host RBB"
-    return obj.get("type", "Unknown")
+    if obj["type"] == "domain":
+        return "Strategy Domain"
+    return str(obj.get("type", "unknown")).replace("_", " ").title()
 
 
 def internal_component_refs(obj: dict[str, Any]) -> list[dict[str, str]]:
@@ -339,7 +342,7 @@ def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, A
                         "name": str(catalog_control.get("name", "")),
                         "externalReference": str(catalog_control.get("externalReference", "")),
                         "appliesTo": [str(scope) for scope in semantic.get("appliesTo", []) if str(scope).strip()],
-                        "relatedConcern": str(semantic.get("relatedConcern", "")),
+                        "relatedCapability": str(semantic.get("relatedCapability", "")),
                         "requirementMode": str(semantic.get("requirementMode", "mandatory")),
                         "naAllowed": bool(semantic.get("naAllowed", False)),
                         "applicability": semantic.get("applicability", {}),
@@ -444,10 +447,8 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "productVersion": obj.get("productVersion", ""),
                 "classification": obj.get("classification", ""),
                 "platformDependency": obj.get("platformDependency", ""),
-                "addressesConcerns": obj.get("addressesConcerns", []),
+                "capabilities": obj.get("capabilities", []),
                 "configurations": obj.get("configurations", []),
-                "deploymentConfigurations": obj.get("deploymentConfigurations", []),
-                "capability": obj.get("capability", ""),
                 "networkPlacement": obj.get("networkPlacement", ""),
                 "patchingOwner": obj.get("patchingOwner", ""),
                 "complianceCerts": obj.get("complianceCerts", []),
@@ -2064,15 +2065,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         id: 'framework',
         label: 'Framework Content',
         filters: [
-          { id: 'all', label: 'All', types: ['odc', 'compliance_framework', 'compliance_profile'] },
+          { id: 'all', label: 'All', types: ['odc', 'compliance_framework', 'compliance_profile', 'domain'] },
           { id: 'odc', label: 'ODCs', types: ['odc'] },
           { id: 'compliance_framework', label: 'Compliance Frameworks', types: ['compliance_framework'] },
-          { id: 'compliance_profile', label: 'Compliance Profiles', types: ['compliance_profile'] }
+          { id: 'compliance_profile', label: 'Compliance Profiles', types: ['compliance_profile'] },
+          { id: 'domain', label: 'Strategy Map', types: ['domain'] }
         ],
         rows: [
           { id: 'odc', label: 'ODCs', types: ['odc'] },
           { id: 'compliance_framework', label: 'Compliance Frameworks', types: ['compliance_framework'] },
-          { id: 'compliance_profile', label: 'Compliance Profiles', types: ['compliance_profile'] }
+          { id: 'compliance_profile', label: 'Compliance Profiles', types: ['compliance_profile'] },
+          { id: 'domain', label: 'Strategy Domains', types: ['domain'] }
         ]
       }
     ];
@@ -2163,7 +2166,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return formatTitleCase(String(value || '').replace(/\./g, '-'));
     }
 
-    function relatedConcernOptions() {
+    function relatedCapabilityOptions() {
       const values = new Set();
       allObjects
         .filter(object => object.type === 'odc')
@@ -2407,7 +2410,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (!scope || !requirementId) return [];
       return selectedFrameworkControls().filter(control =>
         (control.appliesTo || []).includes(scope) &&
-        (control.relatedConcern || '') === requirementId
+        (control.relatedCapability || '') === requirementId
       );
     }
 
@@ -2416,7 +2419,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (!scope) return [];
       return selectedFrameworkControls().filter(control =>
         (control.appliesTo || []).includes(scope) &&
-        !(control.relatedConcern || '').trim()
+        !(control.relatedCapability || '').trim()
       );
     }
 
@@ -2676,7 +2679,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <article class="interaction-card">
               <div class="interaction-top">
                 <div class="interaction-name">${escapeHtml(interaction.name || 'External Interaction')}</div>
-                <span class="badge ${capabilityClass(interaction.capability)}">${escapeHtml(interaction.capability || 'other')}</span>
+                ${(interaction.capabilities || []).map(cap => `<span class="badge ${capabilityClass(cap)}">${escapeHtml(cap)}</span>`).join(' ')}
               </div>
               ${interaction.notes ? `<div class="interaction-notes">${escapeHtml(interaction.notes)}</div>` : ''}
               ${interaction.ref ? `<div class="interaction-ref">${escapeHtml(interaction.ref)}</div>` : ''}
@@ -2903,9 +2906,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <dt>Product Name</dt><dd>${escapeHtml(object.productName || '')}</dd>
               <dt>Product Version</dt><dd>${escapeHtml(object.productVersion || '')}</dd>
               <dt>Classification</dt><dd>${escapeHtml(abbClassificationLabel(object.classification))}</dd>
-              ${object.addressesConcerns?.length ? `<dt>Addresses Concerns</dt><dd>${escapeHtml(object.addressesConcerns.map(abbClassificationLabel).join(', '))}</dd>` : ''}
+              ${object.capabilities?.length ? `<dt>Capabilities</dt><dd>${escapeHtml(object.capabilities.map(abbClassificationLabel).join(', '))}</dd>` : ''}
               ${object.platformDependency ? `<dt>Platform Dependency</dt><dd>${escapeHtml(object.platformDependency)}</dd>` : ''}
-              ${object.capability ? `<dt>Capability</dt><dd>${escapeHtml(object.capability || '')}</dd>` : ''}
               ${object.networkPlacement ? `<dt>Network Placement</dt><dd>${escapeHtml(object.networkPlacement || '')}</dd>` : ''}
               ${object.patchingOwner ? `<dt>Patching Owner</dt><dd>${escapeHtml(object.patchingOwner || '')}</dd>` : ''}
               <dt>Compliance Certs</dt><dd>${escapeHtml((object.complianceCerts || []).join(', ') || 'None documented')}</dd>
@@ -2917,7 +2919,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                   <article class="odc-card">
                     <div class="odc-name">${escapeHtml(configuration.name || configuration.id || 'Configuration')}</div>
                     <div class="interaction-notes">${escapeHtml(configuration.description || '')}</div>
-                    <div class="object-id">${escapeHtml((configuration.addressesConcerns || []).map(abbClassificationLabel).join(', '))}</div>
+                    <div class="object-id">${escapeHtml((configuration.capabilities || []).map(abbClassificationLabel).join(', '))}</div>
                   </article>
                 `).join('')}
               </div>
@@ -2962,7 +2964,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </div>
             <dl class="definition-list">
               <dt>Vendor</dt><dd>${escapeHtml(object.vendor || '')}</dd>
-              <dt>Capability</dt><dd>${escapeHtml(object.capability || '')}</dd>
+              ${object.capabilities?.length ? `<dt>Capabilities</dt><dd>${escapeHtml(object.capabilities.join(', '))}</dd>` : ''}
               <dt>Data Residency</dt><dd>${escapeHtml(object.dataResidencyCommitment || 'Not documented')}</dd>
               <dt>DPA Notes</dt><dd>${escapeHtml(object.dpaNotes || 'Not documented')}</dd>
               <dt>Vendor SLA</dt><dd>${escapeHtml(object.vendorSLA || 'Not documented')}</dd>
@@ -2988,7 +2990,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </div>
             <dl class="definition-list">
               <dt>Vendor</dt><dd>${escapeHtml(object.vendor || '')}</dd>
-              <dt>Capability</dt><dd>${escapeHtml(object.capability || '')}</dd>
+              ${object.capabilities?.length ? `<dt>Capabilities</dt><dd>${escapeHtml(object.capabilities.join(', '))}</dd>` : ''}
               <dt>Authentication Model</dt><dd>${escapeHtml(object.authenticationModel || 'Not documented')}</dd>
               <dt>Vendor SLA</dt><dd>${escapeHtml(object.vendorSLA || 'Not documented')}</dd>
               <dt>Compliance Certs</dt><dd>${escapeHtml((object.complianceCerts || []).join(', ') || 'None documented')}</dd>
@@ -2996,6 +2998,38 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           </div>
         </section>
         ${objectLookup['odc.paas-service'] ? odcRequirementsMarkup(objectLookup['odc.paas-service']) : ''}
+      `;
+    }
+
+    function domainDetailMarkup(object) {
+      const domainCaps = object.capabilities || [];
+      return `
+        <section class="section-card">
+          <h3>Capability Map: ${escapeHtml(object.name)}</h3>
+          <div class="section-stack">
+            ${domainCaps.map(cap => {
+              const satisfyingObjects = allObjects.filter(obj => 
+                (obj.capabilities || []).includes(cap.id) || 
+                (obj.configurations || []).some(config => (config.capabilities || []).includes(cap.id))
+              );
+              return `
+                <article class="odc-card">
+                  <div class="odc-name">${escapeHtml(cap.name || cap.id)}</div>
+                  <div class="header-description">${escapeHtml(cap.description || '')}</div>
+                  <div class="interaction-notes"><strong>Satisfied by:</strong></div>
+                  <div class="related-list">
+                    ${satisfyingObjects.length ? satisfyingObjects.map(obj => `
+                      <a href="#${obj.id}" class="related-link">
+                        <span class="related-icon">${topologyNodeIcon({ref: obj.id}, obj.subtype === 'appliance' ? 'appliance' : 'rbb').icon}</span>
+                        ${escapeHtml(obj.name)}
+                      </a>
+                    `).join('') : '<div class="empty-card">No architectural artifacts currently address this capability.</div>'}
+                  </div>
+                </article>
+              `;
+            }).join('')}
+          </div>
+        </section>
       `;
     }
 
@@ -3066,8 +3100,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const object = objectLookup[ref];
       const serviceObject = object?.serviceCategory === 'product' && object?.runsOn ? objectLookup[object.runsOn] : object;
       if (objectType === 'appliance') {
-        const capability = object?.capability || '';
-        if (['file-storage', 'data-persistence', 'storage'].includes(capability)) return { icon: '💾', cls: '' };
+        const caps = object?.capabilities || [];
+        if (caps.some(c => ['file-storage', 'data-persistence', 'storage'].includes(c))) return { icon: '💾', cls: '' };
         return { icon: '🔧', cls: '' };
       }
       if (object?.serviceCategory === 'saas') return { icon: '☁', cls: 'cloud' };
@@ -3080,7 +3114,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (ref.startsWith('rbb.service.dbms.')) return { icon: '🗄', cls: '' };
       if (ref.startsWith('rbb.service.messaging.')) return { icon: '📬', cls: '' };
       if (serviceObject?.serviceCategory === 'database') return { icon: '🗄', cls: '' };
-      return { icon: '🖧', cls: '' };
+      return { icon: '⚙', cls: '' };
     }
 
     function deploymentTargetPresentation(location) {
@@ -3694,7 +3728,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         controlId: String(control.controlId || ''),
         name: String(control.name || ''),
         externalReference: String(control.externalReference || ''),
-        relatedConcern: String(control.relatedConcern || ''),
+        relatedCapability: String(control.relatedCapability || ''),
         requirementMode: control.requirementMode === 'conditional' ? 'conditional' : 'mandatory',
         appliesTo: Array.isArray(control.appliesTo) ? control.appliesTo.map(value => String(value)) : [],
         validAnswerTypes: Array.isArray(control.validAnswerTypes) ? control.validAnswerTypes.map(value => String(value)) : [],
@@ -3771,9 +3805,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           requirementMode: control.requirementMode === 'conditional' ? 'conditional' : 'mandatory',
           validAnswerTypes: [...control.validAnswerTypes]
         };
-        const relatedConcern = String(control.relatedConcern || '').trim();
-        if (relatedConcern) {
-          serialized.relatedConcern = relatedConcern;
+        const relatedCapability = String(control.relatedCapability || '').trim();
+        if (relatedCapability) {
+          serialized.relatedCapability = relatedCapability;
         }
         if (control.description) {
           serialized.description = control.description;
@@ -4002,8 +4036,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function controlCardMarkup(control, controlIndex) {
-      const concernOptions = ['<option value=""></option>']
-        .concat(relatedConcernOptions().map(option => `<option value="${escapeHtml(option)}" ${control.relatedConcern === option ? 'selected' : ''}>${escapeHtml(option)}</option>`))
+      const capabilityOptions = ['<option value=""></option>']
+        .concat(relatedCapabilityOptions().map(option => `<option value="${escapeHtml(option)}" ${control.relatedCapability === option ? 'selected' : ''}>${escapeHtml(option)}</option>`))
         .join('');
       const conditional = control.requirementMode === 'conditional';
       return `
@@ -4038,9 +4072,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               </select>
             </div>
             <div class="editor-field">
-              <label>Related Concern</label>
-              <select data-control-field="relatedConcern" data-control-index="${controlIndex}">
-                ${concernOptions}
+              <label>Related Capability</label>
+              <select data-control-field="relatedCapability" data-control-index="${controlIndex}">
+                ${capabilityOptions}
               </select>
             </div>
           </div>
@@ -4339,6 +4373,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         detailBody = `
           ${headerMarkup}
           ${complianceProfileDetailMarkup(object)}
+          ${usedByMarkup(object)}
+        `;
+      } else if (object.type === 'domain') {
+        detailBody = `
+          ${headerMarkup}
+          ${domainDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
       } else if (object.type === 'ard') {

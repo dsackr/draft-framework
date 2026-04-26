@@ -14,14 +14,37 @@ SCHEMA_ROOT = REPO_ROOT / "schemas"
 SKIP_DIRS = {"tools", "schemas", "docs", "adrs", ".github", ".git"}
 VALID_DIAGRAM_TIERS = {"presentation", "application", "data", "utility"}
 VALID_ABB_CLASSIFICATIONS = {"operating-system", "compute-platform", "software", "agent"}
-VALID_HOST_CONCERNS = {
-    "authentication",
-    "log-management",
-    "health-welfare-monitoring",
-    "security-monitoring",
-    "patch-management",
-    "secrets-management",
-}
+
+def load_valid_capabilities() -> set[str]:
+    # Fallback to current concerns to allow transition
+    capabilities = {
+        "authentication",
+        "log-management",
+        "health-welfare-monitoring",
+        "security-monitoring",
+        "patch-management",
+        "secrets-management",
+        "test-authoring",
+        "test-execution",
+        "quality-gates",
+        "performance-testing"
+    }
+    domain_dir = REPO_ROOT / "domains"
+    if not domain_dir.exists():
+        return capabilities
+    for domain_file in domain_dir.glob("*.yaml"):
+        with domain_file.open("r") as f:
+            try:
+                data = yaml.safe_load(f)
+                if data and "capabilities" in data:
+                    for cap in data["capabilities"]:
+                        if isinstance(cap, dict) and "id" in cap:
+                            capabilities.add(cap["id"])
+            except Exception:
+                continue
+    return capabilities
+
+VALID_CAPABILITIES = load_valid_capabilities()
 VALID_DEPLOYMENT_QUALITIES = {"availability", "scalability", "recoverability"}
 DECISION_ENUMS = {
     "autoscaling": {"required", "optional", "none"},
@@ -316,21 +339,25 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any], catalog_
         return is_non_empty(value)
     if mechanism_type == "externalInteraction":
         capability = mechanism.get("criteria", {}).get("capability")
-        return any(
-            isinstance(interaction, dict) and interaction.get("capability") == capability
-            for interaction in obj.get("externalInteractions", [])
-        )
+        # Check if any interaction has the required capability in its capabilities list
+        for interaction in obj.get("externalInteractions", []) or []:
+            if not isinstance(interaction, dict):
+                continue
+            caps = interaction.get("capabilities", [])
+            if isinstance(caps, list) and capability in caps:
+                return True
+        return False
     if mechanism_type == "internalComponent":
         criteria = mechanism.get("criteria", {})
-        concern = criteria.get("concern")
+        capability = criteria.get("capability") or criteria.get("concern")
         role = criteria.get("role")
         classification = criteria.get("classification")
-        if concern:
+        if capability:
             for abb in referenced_abbs(obj, catalog_by_id):
                 if classification and abb.get("classification") != classification:
                     continue
-                concerns = abb.get("addressesConcerns", [])
-                if isinstance(concerns, list) and concern in concerns:
+                caps = abb.get("capabilities", [])
+                if isinstance(caps, list) and capability in caps:
                     return True
             return False
         return any(
@@ -338,7 +365,7 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any], catalog_
             for component in obj.get("internalComponents", [])
         )
     if mechanism_type == "abbConfiguration":
-        concern = mechanism.get("criteria", {}).get("concern")
+        capability = mechanism.get("criteria", {}).get("capability") or mechanism.get("criteria", {}).get("concern")
         classification = mechanism.get("criteria", {}).get("classification")
         for abb in referenced_abbs(obj, catalog_by_id):
             if classification and abb.get("classification") != classification:
@@ -349,8 +376,8 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any], catalog_
             for configuration in configurations:
                 if not isinstance(configuration, dict):
                     continue
-                concerns = configuration.get("addressesConcerns", [])
-                if isinstance(concerns, list) and concern in concerns:
+                caps = configuration.get("capabilities", [])
+                if isinstance(caps, list) and capability in caps:
                     return True
         return False
     if mechanism_type == "architecturalDecision":
@@ -439,15 +466,15 @@ def validate_abb(
         failures.append(
             f"{path}: ABB classification must be one of {sorted(VALID_ABB_CLASSIFICATIONS)}"
         )
-    concerns = obj.get("addressesConcerns", [])
-    if concerns is not None:
-        if not isinstance(concerns, list):
-            failures.append(f"{path}: addressesConcerns must be a list")
+    capabilities = obj.get("capabilities", [])
+    if capabilities is not None:
+        if not isinstance(capabilities, list):
+            failures.append(f"{path}: capabilities must be a list")
         else:
-            invalid = [concern for concern in concerns if concern not in VALID_HOST_CONCERNS]
+            invalid = [cap for cap in capabilities if cap not in VALID_CAPABILITIES]
             if invalid:
                 failures.append(
-                    f"{path}: addressesConcerns contains invalid concern ids {invalid} — expected values from {sorted(VALID_HOST_CONCERNS)}"
+                    f"{path}: capabilities contains invalid ids {invalid} — expected values from {sorted(VALID_CAPABILITIES)}"
                 )
     configurations = obj.get("configurations", [])
     if configurations is not None:
@@ -458,14 +485,14 @@ def validate_abb(
                 if not isinstance(configuration, dict):
                     failures.append(f"{path}: configurations[{index}] must be a mapping")
                     continue
-                config_concerns = configuration.get("addressesConcerns", [])
-                if not isinstance(config_concerns, list):
-                    failures.append(f"{path}: configurations[{index}].addressesConcerns must be a list")
+                config_caps = configuration.get("capabilities", [])
+                if not isinstance(config_caps, list):
+                    failures.append(f"{path}: configurations[{index}].capabilities must be a list")
                     continue
-                invalid = [concern for concern in config_concerns if concern not in VALID_HOST_CONCERNS]
+                invalid = [cap for cap in config_caps if cap not in VALID_CAPABILITIES]
                 if invalid:
                     failures.append(
-                        f"{path}: configurations[{index}].addressesConcerns contains invalid concern ids {invalid} — expected values from {sorted(VALID_HOST_CONCERNS)}"
+                        f"{path}: configurations[{index}].capabilities contains invalid ids {invalid} — expected values from {sorted(VALID_CAPABILITIES)}"
                     )
 
     applicable = applicable_odc_ids(obj, odcs)
@@ -822,13 +849,14 @@ def find_external_interaction(obj: dict[str, Any], implementation: dict[str, Any
         return False
     ref = implementation.get("ref")
     criteria = implementation.get("criteria", {}) if isinstance(implementation.get("criteria"), dict) else {}
-    capability = criteria.get("capability")
+    capabilities = criteria.get("capabilities") or ([criteria.get("capability")] if criteria.get("capability") else [])
     for interaction in interactions:
         if not isinstance(interaction, dict):
             continue
-        if ref and ref in {interaction.get("ref"), interaction.get("name"), interaction.get("capability")}:
+        interaction_caps = interaction.get("capabilities", [])
+        if ref and ref in {interaction.get("ref"), interaction.get("name")} | set(interaction_caps):
             return True
-        if capability and interaction.get("capability") == capability:
+        if capabilities and any(cap in interaction_caps for cap in capabilities):
             return True
     return False
 
@@ -871,7 +899,7 @@ def find_abb_configuration(obj: dict[str, Any], implementation: dict[str, Any], 
     ref = implementation.get("ref")
     key = implementation.get("key")
     criteria = implementation.get("criteria", {}) if isinstance(implementation.get("criteria"), dict) else {}
-    concern = criteria.get("concern")
+    capability = criteria.get("capability") or criteria.get("concern")
     for abb in referenced_abbs(obj, catalog_by_id):
         if ref and abb.get("id") != ref:
             continue
@@ -883,8 +911,8 @@ def find_abb_configuration(obj: dict[str, Any], implementation: dict[str, Any], 
                 continue
             if key and key in {configuration.get("id"), configuration.get("name")}:
                 return True
-            concerns = configuration.get("addressesConcerns", [])
-            if concern and isinstance(concerns, list) and concern in concerns:
+            caps = configuration.get("capabilities", [])
+            if capability and isinstance(caps, list) and capability in caps:
                 return True
     return False
 

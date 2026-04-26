@@ -70,10 +70,10 @@ requirements:
     canBeSatisfiedBy:
       - mechanism: field
         key: controlSemantics
-  - id: related-concern
+  - id: related-capability
     description: >
-      When the control refines an existing ODC concern, it should identify that
-      related concern explicitly.
+      When the control refines an existing ODC capability, it should identify that
+      related capability explicitly.
     rationale: >
       This helps DRAFT merge the control into the effective checklist instead
       of rendering it as an orphaned control.

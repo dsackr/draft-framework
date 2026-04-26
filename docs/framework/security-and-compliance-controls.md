@@ -8,7 +8,7 @@ the ODC files.
 For the AI-facing interview and translation rules that turn external control
 catalogs into SCC YAML in this repo, see [Draftsman instructions](draftsman.md).
 
-The ODCs define the required concerns for the architecture object. Compliance
+The ODCs define the required capabilitys for the architecture object. Compliance
 profiles define the required controls that extend those ODCs at runtime.
 
 That split exists so the same architecture model can be reused under multiple compliance regimes. One team may want to work from a baseline controls pack. Another may want to align the same requirements to NIST CSF, SOC 2, or an internal control framework that is specific to their organization.
@@ -34,7 +34,7 @@ Each profile semantic entry defines:
 
 - `controlId`
 - `appliesTo`
-- `relatedConcern` when the control refines an existing ODC concern
+- `relatedCapability` when the control refines an existing ODC capability
 - `requirementMode` as `mandatory` or `conditional`
 - `naAllowed` so conditional frameworks can explicitly permit `N/A`
 - optional `applicability` rules for scope handling
@@ -53,7 +53,7 @@ profile ODC then tells the AI what DRAFT-specific metadata it still has to deriv
 - which DRAFT object scopes the control applies to
 - which DRAFT answer types are valid
 - whether the control is mandatory or conditional
-- whether the control refines an existing ODC concern
+- whether the control refines an existing ODC capability
 
 ## What Ships In The Repo
 
@@ -78,7 +78,7 @@ signal that `N/A` is an acceptable response when the product or deployment is
 out of scope for that control set. This is the intended model for frameworks
 such as TX-RAMP, PCI, HIPAA, and FedRAMP.
 
-If the selected profile has no controls for a given scope or concern, the
+If the selected profile has no controls for a given scope or capability, the
 browser shows that no required controls were added by that framework. That is
 intentional. Missing controls are data gaps to fill, not rendering failures.
 

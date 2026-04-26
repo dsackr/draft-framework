@@ -1,14 +1,15 @@
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: rbb.host.serverless.lambda
 type: rbb
 category: host
 subtype: host
 name: AWS Lambda Serverless Host
-description: >
-  Serverless execution environment provided by AWS Lambda. The host is entirely
-  AWS-managed and blackbox to the organization. Function code is deployed as a
-  Product Service. No OS management, no agent installation, and no patching
-  responsibility exist at this layer.
+description: 'Serverless execution environment provided by AWS Lambda. The host is
+  entirely AWS-managed and blackbox to the organization. Function code is deployed
+  as a Product Service. No OS management, no agent installation, and no patching responsibility
+  exist at this layer.
+
+  '
 version: 1.0.0
 catalogStatus: draft
 lifecycleStatus: invest
@@ -16,18 +17,21 @@ owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
 tags:
-  - lambda
-  - serverless
+- lambda
+- serverless
 architecturalDecisions:
   authenticationApproach: IAM-based invocation and execution roles managed by AWS
   loggingApproach: Function and platform logs emitted to CloudWatch Logs
-  securityMonitoringApproach: AWS-native monitoring and audit integration for the managed runtime
-  patchManagementApproach: Runtime patching is handled by AWS as part of the managed platform
+  securityMonitoringApproach: AWS-native monitoring and audit integration for the
+    managed runtime
+  patchManagementApproach: Runtime patching is handled by AWS as part of the managed
+    platform
 internalComponents:
-  - ref: abb.appliance.aws-lambda-runtime
-    role: appliance
-    notes: AWS-managed serverless execution environment. Blackbox host.
+- ref: abb.appliance.aws-lambda-runtime
+  role: appliance
+  notes: AWS-managed serverless execution environment. Blackbox host.
 externalInteractions:
-  - name: AWS Lambda Service
-    capability: compute
-    notes: The Lambda service itself provides the execution environment.
+- name: AWS Lambda Service
+  notes: The Lambda service itself provides the execution environment.
+  capabilities:
+  - compute

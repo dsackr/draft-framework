@@ -1,0 +1,27 @@
+schemaVersion: "1.0"
+type: domain
+requiredFields:
+  - schemaVersion
+  - id
+  - type
+  - name
+  - capabilities
+optionalFields:
+  - description
+  - version
+  - owner
+  - tags
+idPattern: "^domain\\.[a-z0-9-]+$"
+fieldTypes:
+  owner: dict
+  tags: list
+  capabilities: list
+collectionSchemas:
+  capabilities: capabilityDefinition
+
+capabilityDefinition:
+  requiredFields:
+    - id
+    - name
+  optionalFields:
+    - description

@@ -76,7 +76,7 @@ Use SaaS when:
 
 - the dependency is outside the organization's boundary
 - vendor-side data handling, residency, DPA, and external attestations are the
-  primary concerns
+  primary capabilitys
 
 ## Practical Rule
 

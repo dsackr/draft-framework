@@ -43,7 +43,7 @@ document:
 - what failure domain the dependency creates
 - what SLA the vendor commits to
 
-These are not optional concerns. They are the minimum information needed before
+These are not optional capabilitys. They are the minimum information needed before
 the service can be treated as an understood architecture dependency.
 
 ## Architecture Decisions

@@ -41,7 +41,7 @@ controlSemantic:
     - requirementMode
     - validAnswerTypes
   optionalFields:
-    - relatedConcern
+    - relatedCapability
     - naAllowed
     - applicability
     - notes

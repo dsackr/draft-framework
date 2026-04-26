@@ -28,11 +28,11 @@ requirements:
         example: Centralized identity or authentication service used by the workload.
       - mechanism: internalComponent
         criteria:
-          concern: authentication
+          capability: authentication
         example: A function ABB or installed component that provides the service authentication capability.
       - mechanism: abbConfiguration
         criteria:
-          concern: authentication
+          capability: authentication
         example: A named configuration on the function ABB that defines the service authentication model.
       - mechanism: architecturalDecision
         key: serviceAuthentication
@@ -40,7 +40,7 @@ requirements:
     minimumSatisfactions: 1
   - id: secrets-management
     description: The service must address how service-level secrets, keys, tokens, or certificates are stored and accessed.
-    rationale: Secret handling is a baseline service concern and cannot be left implicit.
+    rationale: Secret handling is a baseline service capability and cannot be left implicit.
     canBeSatisfiedBy:
       - mechanism: externalInteraction
         criteria:
@@ -48,11 +48,11 @@ requirements:
         example: A secrets platform or certificate-management service used by the workload.
       - mechanism: internalComponent
         criteria:
-          concern: secrets-management
+          capability: secrets-management
         example: A component that locally provides the service secrets-management behavior.
       - mechanism: abbConfiguration
         criteria:
-          concern: secrets-management
+          capability: secrets-management
         example: A function ABB configuration that defines how service secrets are sourced.
       - mechanism: architecturalDecision
         key: secretsManagement
@@ -68,11 +68,11 @@ requirements:
         example: Centralized logging pipeline for application or service logs.
       - mechanism: internalComponent
         criteria:
-          concern: log-management
+          capability: log-management
         example: A local logging component that handles service log forwarding or collection.
       - mechanism: abbConfiguration
         criteria:
-          concern: log-management
+          capability: log-management
         example: A function ABB configuration that defines service log collection and export.
       - mechanism: architecturalDecision
         key: serviceLogging
@@ -88,11 +88,11 @@ requirements:
         example: Centralized monitoring platform used for service telemetry and health evaluation.
       - mechanism: internalComponent
         criteria:
-          concern: health-welfare-monitoring
+          capability: health-welfare-monitoring
         example: A component that exports service health and operational telemetry.
       - mechanism: abbConfiguration
         criteria:
-          concern: health-welfare-monitoring
+          capability: health-welfare-monitoring
         example: A function ABB configuration that enables service-level health telemetry.
       - mechanism: architecturalDecision
         key: healthWelfareMonitoring

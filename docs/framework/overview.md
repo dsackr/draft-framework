@@ -20,7 +20,7 @@ If an AI assistant is using this repo directly to author content, start with
 |---|---|
 | Host | The runtime substrate on which reusable or product-specific services run. |
 | General Service | A reusable non-database service pattern that runs on a host or equivalent managed substrate. |
-| Database Service | A reusable data-platform service pattern with durability, recovery, and access-control concerns. |
+| Database Service | A reusable data-platform service pattern with durability, recovery, and access-control capabilitys. |
 | PaaS Service | A vendor-managed platform service that runs inside the organization's cloud boundary. It is modeled as an RBB with `category: service` and `serviceCategory: paas`. |
 | SaaS Service | A vendor-managed service classification used when traffic or data may leave the infrastructure boundary. It is modeled as an RBB with `category: service` and `serviceCategory: saas`. |
 | Product Service | A first-party service classification used when an SDM needs to express a distinct runtime-behavior component deployed on an RBB or blackbox host pattern. It is modeled as an RBB with `category: service` and `serviceCategory: product`. |
@@ -38,4 +38,4 @@ If an AI assistant is using this repo directly to author content, start with
 | Object Type | Purpose |
 |---|---|
 | ODCs | Structured checklists of required questions and answers used to define a complete and correct architecture object. They are written to work as human or AI interview checklists once the object taxonomy has been chosen. |
-| Security and Compliance Controls | The selectable control catalogs that sit beside the architecture model. They let the same ODC concern set be extended with framework-specific required controls without changing the architecture objects themselves. Compliance frameworks are themselves governed by `odc.compliance-framework`. |
+| Security and Compliance Controls | The selectable control catalogs that sit beside the architecture model. They let the same ODC capability set be extended with framework-specific required controls without changing the architecture objects themselves. Compliance frameworks are themselves governed by `odc.compliance-framework`. |

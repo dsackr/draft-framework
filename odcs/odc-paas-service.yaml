@@ -26,8 +26,9 @@ requirements:
     rationale: The capability is the core reason the service exists.
     canBeSatisfiedBy:
       - mechanism: field
-        key: capability
-        example: "capability: data-persistence"
+        key: capabilities
+        example: "capabilities: [data-persistence]"
+
   - id: resilience-model
     description: >
       What is the resilience model of this service — is it inherently highly

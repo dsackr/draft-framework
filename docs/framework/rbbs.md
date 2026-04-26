@@ -45,7 +45,7 @@ The framework taxonomy organizes RBBs into these classifications:
 |---|---|
 | Host | The runtime substrate on which reusable or product-specific services run. |
 | General Service | A reusable non-database service pattern that runs on a host or equivalent managed substrate. |
-| Database Service | A reusable data-platform service pattern with durability, recovery, and access-control concerns. |
+| Database Service | A reusable data-platform service pattern with durability, recovery, and access-control capabilitys. |
 | PaaS Service | A vendor-managed platform service classification used when the managed capability stays inside the organization's cloud boundary. It is modeled as an RBB with `category: service` and `serviceCategory: paas`. |
 | SaaS Service | A vendor-managed service classification used when traffic or data may leave the infrastructure boundary. It is modeled as an RBB with `category: service` and `serviceCategory: saas`. |
 | Product Service | A first-party service classification used when an SDM needs to express a distinct runtime-behavior component deployed on an RBB or blackbox host pattern. It is modeled as an RBB with `category: service` and `serviceCategory: product`. |
@@ -116,12 +116,12 @@ records the exception. The machine-readable exception path is
 `architecturalDecisions.agentInteractionExceptions`. Software ABBs do not carry
 that requirement.
 
-Required host concerns such as logging, monitoring, security monitoring, and
+Required host capabilitys such as logging, monitoring, security monitoring, and
 patch management may be satisfied through an Agent ABB, a Software ABB, a
 named ABB configuration, an external interaction, or an architectural decision.
 
 Host ODCs should define the host itself and its baseline controls. They should
-not force service or data concerns such as backup strategy onto the host object.
+not force service or data capabilitys such as backup strategy onto the host object.
 
 ## General Service And Database Service Classifications
 
@@ -136,7 +136,7 @@ the same reusable building-block concept. The difference is scope:
 
 - General Service captures reusable non-database service patterns.
 - Database Service captures reusable database patterns with explicit data
-  durability and protection concerns.
+  durability and protection capabilitys.
 
 For a General Service, the structural baseline is:
 

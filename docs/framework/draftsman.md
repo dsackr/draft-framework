@@ -126,7 +126,7 @@ RBB. Software ABBs do not automatically require one.
 
 ABBs may also carry:
 
-- `addressesConcerns`
+- `capabilities`
 - `configurations[]`
 
 Configurations belong on the ABB being configured.
@@ -198,7 +198,7 @@ A Compliance Profile applies a pure control catalog to DRAFT. It defines:
 - `validAnswerTypes`
 - `requirementMode`
 - `naAllowed` and `applicability` for conditional controls
-- `relatedConcern` when a control refines an ODC concern
+- `relatedCapability` when a control refines an ODC capability
 
 ### Control Implementations
 
@@ -220,15 +220,15 @@ An ODC is an **Object Definition Checklist**:
 The ODC is the interview script. It tells the Draftsman what questions must be
 answered while the object is being defined.
 
-ODCs do not redefine the schema. They define the required concerns that must be
+ODCs do not redefine the schema. They define the required capabilities that must be
 answered for a complete object.
 
 ## Answer Mechanisms
 
-When an ODC concern or SCC control needs an answer, the answer should use the
+When an ODC capability or SCC control needs an answer, the answer should use the
 mechanisms already supported by the framework.
 
-Depending on the object and concern, valid answers may include:
+Depending on the object and capability, valid answers may include:
 
 - ABB selection
 - ABB configuration
@@ -238,7 +238,7 @@ Depending on the object and concern, valid answers may include:
 - architectural decision
 - direct field answer on the object
 
-If a required concern or required control is not directly answered, an
+If a required capability or required control is not directly answered, an
 Architectural Decision is required to explain why.
 
 If an internal component or external interaction is added beyond what the ODC
@@ -254,7 +254,7 @@ Structural minimum:
 - one Operating System ABB
 - one Compute Platform ABB
 
-Required concerns:
+Required capabilities:
 
 - authentication
 - privilege control
@@ -263,7 +263,7 @@ Required concerns:
 - security monitoring
 - patch management
 
-Concerns may be answered by ABBs, ABB configurations, external interactions, or
+Capabilities may be answered by ABBs, ABB configurations, external interactions, or
 architectural decisions as allowed by the framework.
 
 ### General Service
@@ -273,7 +273,7 @@ Structural minimum:
 - one `hostRbb`
 - one `functionAbb`
 
-Required concerns:
+Required capabilities:
 
 - service authentication
 - secrets management
@@ -305,7 +305,7 @@ internal runtime.
 
 Focus on:
 
-- capability
+- capabilities
 - data boundary
 - data residency
 - DPA status
@@ -322,7 +322,7 @@ Treat as a black-box component inside the infrastructure boundary.
 
 Focus on:
 
-- capability
+- capabilities
 - resilience model
 - network placement
 - patching ownership
@@ -402,7 +402,7 @@ For every interview:
 2. Read the schema for that object type.
 3. Read the applicable ODC.
 4. Search the repo for reusable inventory before proposing a new object.
-5. Interview the user concern by concern.
+5. Interview the user capability by capability.
 6. If the user needs something not in inventory, create a stub and continue.
 7. Push details down to the lowest responsible object.
 8. Produce YAML that fits the framework and current inventory.

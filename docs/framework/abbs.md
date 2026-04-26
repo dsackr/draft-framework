@@ -66,13 +66,14 @@ the right kinds of ABBs.
 
 ABBs may also carry reusable host-control metadata:
 
-- `addressesConcerns` when the ABB itself satisfies one or more host concerns
+- `capabilities` when the ABB itself satisfies one or more host capabilities
 - `configurations` when a named ABB configuration satisfies one or more host
-  concerns
+  capabilities
 
 A good example is the CrowdStrike Falcon agent. The ABB captures the fact that
 the agent is installed locally on a host, but it also acknowledges that the
-agent exists to connect the host to the CrowdStrike platform.
+agent exists to connect the host to the CrowdStrike platform by providing
+the `security-monitoring` capability.
 
 ## What An ABB Is Not
 
@@ -121,7 +122,7 @@ corresponding `externalInteractions` that the agent depends on, unless an
 Architecture Decision explains why the interaction is intentionally omitted.
 That requirement does not apply to Software ABBs.
 
-When a concern is satisfied by configuration rather than by a separate product,
+When a capability is satisfied by configuration rather than by a separate product,
 the configuration should be named on the ABB itself. For example, an Operating
 System ABB may declare a log-management configuration that redirects system
 generated logs to a dedicated log volume.
@@ -146,9 +147,9 @@ Do not use an Appliance ABB for a subscribed vendor service where traffic or
 data leaves the adopter's infrastructure boundary and is processed in the
 vendor's environment. That is a SaaS Service, not an Appliance ABB.
 
-Good examples of Appliance ABB concerns are load balancers, blackbox runtime
+Good examples of Appliance ABBs are load balancers, blackbox runtime
 hosts, managed file appliances, or vendor appliances with opaque host internals.
-The catalog captures capability, network placement, patching ownership, the
+The catalog captures capabilities, network placement, patching ownership, the
 configuration surface the adopter controls, failure domain, and compliance
 posture instead of trying to invent a host model the architect does not
 actually control.
@@ -160,8 +161,8 @@ actually control.
 3. Create the YAML file in the correct folder.
 4. Fill in the shared base fields: schema version, ID, type, name, description, version, catalog status, lifecycle status, owner, and tags.
 5. Fill in the ABB-specific fields: `classification`, `vendor`, `productName`, `productVersion`, optional `platformDependency`, and vendor lifecycle.
-6. Add `addressesConcerns` if the ABB itself satisfies reusable host concerns.
-7. Add `configurations` if a named ABB configuration satisfies reusable host concerns.
+6. Add `capabilities` if the ABB itself satisfies reusable host capabilities.
+7. Add `configurations` if a named ABB configuration satisfies reusable host capabilities.
 8. If the vendor publishes lifecycle dates, include them. If the vendor does not publish them, say so explicitly in `vendorLifecycle.notes` and leave the dates null rather than guessing.
 9. Run `python3 tools/validate.py`.
 

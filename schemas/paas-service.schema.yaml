@@ -10,7 +10,6 @@ requiredFields:
   - serviceCategory
   - name
   - vendor
-  - capability
   - catalogStatus
   - lifecycleStatus
 optionalFields:
@@ -19,6 +18,7 @@ optionalFields:
   - owner
   - tags
   - notes
+  - capabilities
   - vendorSLA
   - authenticationModel
   - complianceCerts
@@ -37,16 +37,6 @@ enumFields:
     - maintain
     - disinvest
     - exit
-  capability:
-    - data-persistence
-    - file-storage
-    - messaging
-    - compute
-    - security
-    - analytics
-    - orchestration
-    - cdn
-    - other
   authenticationModel:
     - iam
     - api-key
@@ -54,6 +44,7 @@ enumFields:
 fieldTypes:
   owner: dict
   tags: list
+  capabilities: list
   complianceCerts: list
   complianceProfiles: list
   controlImplementations: list

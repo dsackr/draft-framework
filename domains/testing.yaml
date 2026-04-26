@@ -1,0 +1,20 @@
+schemaVersion: "1.0"
+id: domain.testing
+type: domain
+name: "Testing & Quality"
+description: >
+  Strategic domain covering all aspects of software testing, quality assurance, 
+  and release gates.
+capabilities:
+  - id: test-authoring
+    name: "Test Authoring"
+    description: "Tools and frameworks for creating automated tests (unit, integration, E2E)."
+  - id: test-execution
+    name: "Test Execution & Automation"
+    description: "Orchestration and runtime environments for running tests."
+  - id: quality-gates
+    name: "Quality Gates"
+    description: "Promotion criteria and automated checks (static analysis, coverage) required for lifecycle transitions."
+  - id: performance-testing
+    name: "Performance & Load Testing"
+    description: "Capabilities to simulate load and measure system behavior under stress."

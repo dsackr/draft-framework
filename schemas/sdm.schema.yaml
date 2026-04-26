@@ -110,12 +110,14 @@ externalInteraction:
   optionalFields:
     - type
     - ref
-    - capability
+    - capabilities
     - notes
   enumFields:
     type:
       - internal
       - external
+  fieldTypes:
+    capabilities: list
 
 ardRef:
   requiredFields:

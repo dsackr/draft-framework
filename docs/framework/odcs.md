@@ -106,7 +106,7 @@ forcing one implementation pattern.
 An ODC should not say that authentication must always be modeled as an external
 platform dependency. In some cases that is the right representation. In others,
 the answer may come from a local ABB, a named ABB configuration, or a clear
-architectural decision. The ODC's job is to say that the concern must be
+architectural decision. The ODC's job is to say that the capability must be
 addressed. It is not the ODC's job to prescribe the only acceptable shape of
 the answer.
 
@@ -126,12 +126,12 @@ address:
 - patch management
 
 Backup is intentionally not a host-baseline requirement. Recovery and
-protection concerns belong to the service or data layer unless a selected
+protection capabilitys belong to the service or data layer unless a selected
 security or compliance framework adds stricter expectations through control
 requirements.
 
 For managed hosts, Operating System and Compute Platform are expected to be
-answered by selecting the correct ABBs. The other concerns may be answered
+answered by selecting the correct ABBs. The other capabilitys may be answered
 through Agent ABBs, Software ABBs, ABB configurations, external interactions,
 or architectural decisions.
 
@@ -267,7 +267,7 @@ metadata:
 - mandatory vs conditional scope
 - DRAFT object applicability
 - valid DRAFT answer types
-- optional related ODC concern
+- optional related ODC capability
 - conditional applicability metadata when the control is not always in scope
 
 In interview form, ask:
@@ -298,7 +298,7 @@ In interview form, ask:
 - What objects were created, proposed, or stubbed in this session?
 - What questions remain open?
 - What follow-up actions are needed to close the gaps?
-- If it refines an existing ODC concern, which one?
+- If it refines an existing ODC capability, which one?
 
 ### `odc.ra`
 
@@ -369,12 +369,12 @@ ODC YAML.
 That separation matters because the same ODC can be viewed under multiple
 control catalogs. One organization might want to use the baseline Security and
 Compliance Controls pack. Another might want to extend the same ODC with NIST
-CSF, SOC 2, or an internal controls overlay. The concern does not change. The
+CSF, SOC 2, or an internal controls overlay. The capability does not change. The
 selected profile adds the required controls that apply.
 
 In practice, the browser lets the architect select a compliance profile. The
 profile selector then drives which required controls are displayed under each
-concern and in each RBB ODC-satisfaction panel.
+capability and in each RBB ODC-satisfaction panel.
 
 ## Inheritance
 
@@ -397,11 +397,11 @@ types.
   `externalInteractions` entry whose capability matches the requirement
   criteria.
 - An `internalComponent` mechanism is satisfied when the object has a
-  referenced ABB whose concern metadata matches the requirement criteria, or an
+  referenced ABB whose capability metadata matches the requirement criteria, or an
   `internalComponents` entry whose role matches the requirement criteria when
   the ODC uses role-based matching.
 - An `abbConfiguration` mechanism is satisfied when a referenced ABB has a
-  named configuration whose concern metadata matches the requirement criteria.
+  named configuration whose capability metadata matches the requirement criteria.
 - An `architecturalDecision` mechanism is satisfied when the required key
   exists and is non-empty in the object's `architecturalDecisions` map.
 - A `field` mechanism is satisfied when the specified object field is

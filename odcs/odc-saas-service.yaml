@@ -29,8 +29,9 @@ requirements:
     rationale: Capability is the core architectural reason the service exists.
     canBeSatisfiedBy:
       - mechanism: field
-        key: capability
-        example: "capability: waf"
+        key: capabilities
+        example: "capabilities: [waf]"
+
   - id: data-boundary
     description: Does data leave the infrastructure boundary through this service?
     rationale: The data boundary determines whether the service is modeled as SaaS and what governance obligations follow.

@@ -20,8 +20,8 @@ Many mistakes happen because engineers skip that decision and start writing fiel
 3. Create the YAML file in `abbs/`.
 4. Fill in the shared base fields.
 5. Fill in the required ABB fields: `vendor`, `productName`, `productVersion`, and `classification`.
-6. Add `addressesConcerns` if the ABB itself satisfies reusable host concerns.
-7. Add `configurations` if a named ABB configuration satisfies reusable host concerns.
+6. Add `capabilities` if the ABB itself satisfies reusable host capabilitys.
+7. Add `configurations` if a named ABB configuration satisfies reusable host capabilitys.
 8. Fill in any remaining ABB-specific metadata such as vendor lifecycle and optional platform dependency.
 9. If the ABB is classified as `agent`, make sure any RBB that uses it also documents the corresponding external interaction or an Architecture Decision exception under `architecturalDecisions.agentInteractionExceptions`.
 10. Run validation.
@@ -53,7 +53,7 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 1. Create the YAML file in `odcs/`.
 2. Define the `appliesTo` scope clearly.
 3. Write requirements in the mechanism-based model.
-4. For each requirement, explain what concern must be addressed, why it exists, which mechanisms are allowed, and how many satisfactions are required.
+4. For each requirement, explain what capability must be addressed, why it exists, which mechanisms are allowed, and how many satisfactions are required.
 5. If the ODC extends another ODC, use `inherits`.
 
 An ODC can target more than RBBs. The current catalog includes ODCs for RBBs, reference architectures, and software distribution manifests. The `appliesTo` block is what tells the validator which object type the ODC governs.
@@ -117,7 +117,7 @@ An RA should be generic enough to guide many products, not just one.
    - DRAFT applicability
    - valid DRAFT answer types
    - conditional applicability when relevant
-   - optional related concern
+   - optional related capability
 5. Use `requirementMode: conditional` only when the control is not always in scope and explicitly allow `N/A`.
 6. Run validation.
 

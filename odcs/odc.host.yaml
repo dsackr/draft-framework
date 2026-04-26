@@ -43,11 +43,11 @@ requirements:
         example: Active Directory or another enterprise identity platform.
       - mechanism: internalComponent
         criteria:
-          concern: authentication
+          capability: authentication
         example: An ABB installed locally that provides host authentication behavior.
       - mechanism: abbConfiguration
         criteria:
-          concern: authentication
+          capability: authentication
         example: An Operating System ABB configuration that defines the authentication model.
       - mechanism: architecturalDecision
         key: authenticationApproach
@@ -63,11 +63,11 @@ requirements:
         example: Centralized Logging or a managed SIEM pipeline.
       - mechanism: internalComponent
         criteria:
-          concern: log-management
+          capability: log-management
         example: A locally installed ABB that implements host log management.
       - mechanism: abbConfiguration
         criteria:
-          concern: log-management
+          capability: log-management
         example: An Operating System ABB configuration that redirects logs to a dedicated volume or forwarding path.
       - mechanism: architecturalDecision
         key: loggingApproach
@@ -83,11 +83,11 @@ requirements:
         example: Dynatrace, Nagios, or another host monitoring platform.
       - mechanism: internalComponent
         criteria:
-          concern: health-welfare-monitoring
+          capability: health-welfare-monitoring
         example: A locally installed ABB that exports host health telemetry.
       - mechanism: abbConfiguration
         criteria:
-          concern: health-welfare-monitoring
+          capability: health-welfare-monitoring
         example: An ABB configuration that enables local health telemetry or metrics export.
       - mechanism: architecturalDecision
         key: healthWelfareMonitoringApproach
@@ -103,11 +103,11 @@ requirements:
         example: CrowdStrike Falcon Platform or Wiz Cloud Security.
       - mechanism: internalComponent
         criteria:
-          concern: security-monitoring
+          capability: security-monitoring
         example: An installed ABB that provides endpoint or runtime security monitoring.
       - mechanism: abbConfiguration
         criteria:
-          concern: security-monitoring
+          capability: security-monitoring
         example: An ABB configuration that enables local security telemetry or runtime protection behavior.
       - mechanism: architecturalDecision
         key: securityMonitoringApproach
@@ -123,11 +123,11 @@ requirements:
         example: Automox Patch Management.
       - mechanism: internalComponent
         criteria:
-          concern: patch-management
+          capability: patch-management
         example: An installed ABB that performs or coordinates patch execution.
       - mechanism: abbConfiguration
         criteria:
-          concern: patch-management
+          capability: patch-management
         example: An ABB configuration that defines how the platform is patched without a separate external orchestrator.
       - mechanism: architecturalDecision
         key: patchManagementApproach

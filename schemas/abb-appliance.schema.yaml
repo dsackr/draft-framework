@@ -10,7 +10,6 @@ requiredFields:
   - productName
   - productVersion
   - classification
-  - capability
   - catalogStatus
   - lifecycleStatus
 optionalFields:
@@ -19,7 +18,7 @@ optionalFields:
   - owner
   - tags
   - notes
-  - addressesConcerns
+  - capabilities
   - configurations
   - networkPlacement
   - patchingOwner
@@ -38,14 +37,6 @@ enumFields:
     - maintain
     - disinvest
     - exit
-  capability:
-    - load-balancing
-    - file-storage
-    - data-persistence
-    - compute
-    - container-orchestration
-    - security
-    - other
   networkPlacement:
     - public-facing
     - internal
@@ -62,7 +53,7 @@ enumFields:
 fieldTypes:
   owner: dict
   tags: list
-  addressesConcerns: list
+  capabilities: list
   configurations: list
   complianceCerts: list
   complianceProfiles: list
@@ -75,9 +66,9 @@ configuration:
     - id
     - name
     - description
-    - addressesConcerns
+    - capabilities
   fieldTypes:
-    addressesConcerns: list
+    capabilities: list
 
 controlImplementation:
   requiredFields:

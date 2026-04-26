@@ -117,7 +117,7 @@ deviating from the Reference Architecture, or when no Reference Architecture
 exists.
 
 It should not be used as a shorthand way to restate current production state.
-Current state concerns belong in ARDs and notes.
+Current state capabilitys belong in ARDs and notes.
 
 ## Structure Rules
 

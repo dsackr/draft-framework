@@ -24,12 +24,12 @@ appliesTo:
   subtype: appliance
 requirements:
   - id: function
-    description: What capability does this appliance provide?
-    rationale: The capability is the reason the appliance exists in the architecture.
+    description: What capabilities does this appliance provide?
+    rationale: The capabilities are the reason the appliance exists in the architecture.
     canBeSatisfiedBy:
       - mechanism: field
-        key: capability
-        example: "capability: load-balancing"
+        key: capabilities
+        example: "capabilities: [load-balancing]"
   - id: resilience-model
     description: >
       What is the resilience model of this appliance — is it inherently
