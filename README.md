@@ -1,3 +1,5 @@
+![DRAFT Logo](./draftlogo.png)
+
 # Deployable Reference Architecture Framework Toolkit (DRAFT)
 
 DRAFT — Deployable Reference Architecture Framework Toolkit — is a Git-based
