@@ -8,6 +8,8 @@ discovery.
 Use this page as the entry point. The framework details live in the documents
 linked below.
 
+![DRAFT Logo](./draftlogo.png)
+
 ## Start Here
 
 ### Framework Basics
