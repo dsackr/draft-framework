@@ -13,6 +13,17 @@ Are you documenting:
 
 Many mistakes happen because engineers skip that decision and start writing fields immediately.
 
+## AI-First Authoring Workflow
+
+When an AI assistant is connected to this repo, it should start from
+[AGENTS.md](../../AGENTS.md), then use [AI_INDEX.md](../../AI_INDEX.md) for
+repository discovery.
+
+When creating a new object, prefer the closest file in
+[templates/](../../templates/) as a starting point, then replace placeholders
+with real architecture facts and run validation. Template files use the
+`.yaml.tmpl` extension so they are not treated as live catalog objects.
+
 ## Add An ABB
 
 1. Decide whether the object is an Operating System, Compute Platform, Software, or Agent ABB.
@@ -131,6 +142,13 @@ Validate locally:
 
 ```bash
 python3 tools/validate.py
+```
+
+Regenerate the AI framework index after framework docs, schemas, ODCs,
+templates, or catalog YAML change:
+
+```bash
+python3 tools/generate_ai_index.py
 ```
 
 Regenerate the browser when needed:

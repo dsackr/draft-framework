@@ -1,0 +1,31 @@
+# Template for a SaaS Service RBB.
+schemaVersion: "1.0"
+id: saas.<vendor-product>
+type: rbb
+category: service
+serviceCategory: saas
+name: <SaaS Service Name>
+description: <Vendor-managed external service description.>
+version: 1.0.0
+catalogStatus: stub
+lifecycleStatus: pre-invest
+owner:
+  team: <owning-team>
+  contact: <team-or-person@example.com>
+tags:
+  - saas
+vendor: <Vendor>
+capabilities:
+  - <capability-id>
+dataLeavesInfrastructure: true
+dataResidencyCommitment: <Residency commitment or TBD.>
+dpaNotes: <DPA or contractual data protection notes.>
+vendorSLA: <Vendor SLA or support posture.>
+authenticationModel: <api-key|oauth|saml|other|TBD>
+complianceCerts:
+  - <certification-name>
+incidentNotificationProcess: <How vendor incidents are communicated.>
+architecturalDecisions:
+  auditVisibility: <Logging, audit, or event visibility available to the adopter.>
+  healthStatusVisibility: <How vendor health, status, or incidents are observed.>
+  failureDomain: <Failure domain introduced by this SaaS dependency.>

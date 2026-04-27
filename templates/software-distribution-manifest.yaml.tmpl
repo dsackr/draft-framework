@@ -1,0 +1,36 @@
+# Template for a Software Distribution Manifest.
+schemaVersion: "1.0"
+id: sdm.<product-slug>
+type: software_distribution_manifest
+name: <Product or System Name>
+description: <Product-specific deployment reality description.>
+version: 1.0.0
+catalogStatus: stub
+lifecycleStatus: pre-invest
+owner:
+  team: <owning-team>
+  contact: <team-or-person@example.com>
+tags:
+  - <product-slug>
+appliesPattern: ra.<pattern-slug>
+architecturalDecisions:
+  availabilityRequirement: <Business availability requirement.>
+  dataClassification: <Data classification.>
+  failureDomain: <Product-level failure domain.>
+  patternDeviations: <Intentional deviations from the selected RA, or none.>
+serviceGroups:
+  - name: <Service Group Name>
+    deploymentTarget: <Actual deployment target.>
+    rbbs:
+      - ref: rbb.<existing-building-block-id>
+        diagramTier: <presentation|application|data|utility>
+        intent: <ha|sa>
+        notes: <How this block is used by the product.>
+    externalInteractions:
+      - name: <External System>
+        type: external
+        capabilities:
+          - <capability-id>
+        notes: <Runtime dependency or interaction.>
+architectureRisksAndDecisions:
+  - ref: ard.<product-slug>.001

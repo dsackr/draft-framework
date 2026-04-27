@@ -23,3 +23,8 @@ jobs:
 
       - name: Validate catalog
         run: python tools/validate.py
+
+      - name: Verify generated AI index
+        run: |
+          python tools/generate_ai_index.py
+          git diff --exit-code AI_INDEX.md

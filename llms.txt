@@ -1,0 +1,36 @@
+# DRAFT Framework
+
+DRAFT is the Deployable Reference Architecture Framework Toolkit. This
+repository is a framework template for creating machine-readable architecture
+catalogs in downstream company-owned clones.
+
+## AI Bootstrap
+
+- Canonical AI instructions: AGENTS.md
+- Draftsman role: docs/framework/draftsman.md
+- Framework index: AI_INDEX.md
+- Schema reference: docs/framework/yaml-schema-reference.md
+- Object Definition Checklists: docs/framework/odcs.md
+- Validation command: python3 tools/validate.py
+
+## Core Concepts
+
+- ABB: Architecture Building Block, a third-party product or appliance object.
+- RBB: Reference Building Block, the reusable runtime or service building block.
+- RA: Reference Architecture, a reusable deployment pattern.
+- SDM: Software Distribution Manifest, a product-specific deployed reality.
+- ODC: Object Definition Checklist, the interview and completeness model.
+- DRD/ARD: Deployment Risk or Decision, stored as object type `ard`.
+- Drafting Session: resumable state for incomplete authoring work.
+
+## Important Paths
+
+- README.md
+- AGENTS.md
+- AI_INDEX.md
+- docs/framework/
+- schemas/
+- odcs/
+- templates/
+- tools/validate.py
+- tools/generate_ai_index.py

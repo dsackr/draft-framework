@@ -1,0 +1,25 @@
+# Template for a Compliance Profile that maps controls to DRAFT semantics.
+schemaVersion: "1.0"
+id: profile.<profile-slug>
+type: compliance_profile
+name: <Profile Name>
+description: <How the control framework applies to DRAFT objects.>
+version: 1.0.0
+framework: framework.<framework-slug>
+catalogStatus: stub
+lifecycleStatus: pre-invest
+owner:
+  team: <owning-team>
+  contact: <team-or-person@example.com>
+tags:
+  - compliance-profile
+controlSemantics:
+  - controlId: <CONTROL-ID>
+    appliesTo:
+      - <rbb.host|rbb.service.general|rbb.service.database|rbb.service.product|rbb.service.paas|rbb.service.saas|ra|sdm|abb.appliance>
+    requirementMode: <mandatory|conditional>
+    validAnswerTypes:
+      - <abb|abbConfiguration|deploymentConfiguration|externalInteraction|architecturalDecision|field>
+    relatedCapability: <optional-capability-id>
+    naAllowed: false
+    notes: <How this control should be answered in DRAFT.>

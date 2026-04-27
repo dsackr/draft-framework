@@ -25,6 +25,7 @@ optionalFields:
   - complianceCerts
   - complianceProfiles
   - controlImplementations
+  - architecturalDecisions
 idPattern: "^abb\\.appliance\\.[a-z0-9-]+$"
 enumFields:
   catalogStatus:
@@ -58,6 +59,7 @@ fieldTypes:
   complianceCerts: list
   complianceProfiles: list
   controlImplementations: list
+  architecturalDecisions: dict
 collectionSchemas:
   configurations: configuration
   controlImplementations: controlImplementation

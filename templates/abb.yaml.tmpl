@@ -1,0 +1,30 @@
+# Template for a standard Architecture Building Block.
+schemaVersion: "1.0"
+id: abb.<classification-or-domain>.<vendor-product-version>
+type: abb
+name: <Product Name And Version>
+description: <Third-party product definition.>
+version: 1.0.0
+catalogStatus: stub
+lifecycleStatus: pre-invest
+owner:
+  team: <owning-team>
+  contact: <team-or-person@example.com>
+tags:
+  - abb
+vendor: <Vendor>
+productName: <Product name>
+productVersion: <Version>
+classification: <operating-system|compute-platform|software|agent>
+vendorLifecycle:
+  mainstreamSupportEnd: <YYYY-MM-DD or TBD>
+  extendedSupportEnd: <YYYY-MM-DD or TBD>
+  notes: <Lifecycle notes.>
+capabilities:
+  - <capability-id>
+configurations:
+  - id: <configuration-slug>
+    name: <Configuration Name>
+    description: <Reusable configuration description.>
+    capabilities:
+      - <capability-id>

@@ -28,6 +28,7 @@ optionalFields:
   - notes
   - complianceProfiles
   - controlImplementations
+  - architecturalDecisions
 idPattern: "^saas\\.[a-z0-9-]+$"
 enumFields:
   catalogStatus:
@@ -54,6 +55,7 @@ fieldTypes:
   complianceCerts: list
   complianceProfiles: list
   controlImplementations: list
+  architecturalDecisions: dict
 collectionSchemas:
   controlImplementations: controlImplementation
 

@@ -79,6 +79,7 @@ SDMs use the dedicated schema file and the SDM guide.
 
 ### Deployment Risks and Decisions
 
+- Guide: [deployment-risks-and-decisions.md](deployment-risks-and-decisions.md)
 - Schema: [ard.schema.yaml](../../schemas/ard.schema.yaml)
 
 ### SaaS Service

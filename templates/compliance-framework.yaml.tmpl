@@ -1,0 +1,22 @@
+# Template for a pure Compliance Framework control catalog.
+schemaVersion: "1.0"
+id: framework.<framework-slug>
+type: compliance_framework
+name: <Framework Name>
+description: <Control catalog description.>
+version: 1.0.0
+frameworkKind: <common|organizational>
+catalogStatus: stub
+lifecycleStatus: pre-invest
+owner:
+  team: <owning-team>
+  contact: <team-or-person@example.com>
+tags:
+  - compliance-framework
+controlIdNamespace: <namespace>
+defaultSelection: false
+controls:
+  - controlId: <CONTROL-ID>
+    name: <Control name>
+    externalReference: <URL or source reference>
+    notes: <Optional control notes.>
