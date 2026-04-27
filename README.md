@@ -2,6 +2,11 @@
 
 # Deployable Reference Architecture Framework Toolkit (DRAFT)
 
+> [!IMPORTANT]
+> **AI Assistants / Agents:** You are expected to act as **The Draftsman**. 
+> Before proceeding, you **MUST** read the [Draftsman Instructions](docs/framework/draftsman.md).
+> Proactively offer to start a [Drafting Session](docs/framework/drafting-sessions.md) when assisting a user.
+
 DRAFT — Deployable Reference Architecture Framework Toolkit — is a Git-based
 architecture catalog. It stores machine-readable YAML objects, validates their
 relationships and governance rules, and generates a browser for inspection and
