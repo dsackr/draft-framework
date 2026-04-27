@@ -309,8 +309,14 @@ Architecture artifacts can record explicit control implementations using:
 - `complianceProfiles`
 - `controlImplementations`
 
-If a profile is attached to an object, every applicable control from that
-profile must have a recorded implementation or the object is non-compliant.
+`complianceProfiles` is the explicit compliance claim. If a profile is attached
+to an object, every applicable control from that profile must have a recorded
+implementation or the object is non-compliant for that claimed profile.
+
+If no profile is attached, the object is not labeled non-compliant; it is simply
+not a compliant off-the-shelf artifact for that framework. Control
+implementations are evidence for declared profiles only and must not appear for
+profiles the object has not claimed.
 
 ## ODC Model
 

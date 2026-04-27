@@ -19,7 +19,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.04.2.2
   appliesTo:
   - rbb.host
-  relatedConcern: authentication
+  relatedCapability: authentication
   requirementMode: mandatory
   validAnswerTypes:
   - externalInteraction
@@ -28,7 +28,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.04.4.1
   appliesTo:
   - rbb.host
-  relatedConcern: authentication
+  relatedCapability: authentication
   requirementMode: mandatory
   validAnswerTypes:
   - externalInteraction
@@ -37,7 +37,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.04.4.1
   appliesTo:
   - rbb.service.database
-  relatedConcern: access-control-model
+  relatedCapability: access-control-model
   requirementMode: mandatory
   validAnswerTypes:
   - externalInteraction
@@ -46,7 +46,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.06.1.1
   appliesTo:
   - rbb.host
-  relatedConcern: log-management
+  relatedCapability: log-management
   requirementMode: mandatory
   validAnswerTypes:
   - abbConfiguration
@@ -55,7 +55,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.06.2.1
   appliesTo:
   - rbb.host
-  relatedConcern: health-welfare-monitoring
+  relatedCapability: health-welfare-monitoring
   requirementMode: mandatory
   validAnswerTypes:
   - abb
@@ -65,7 +65,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.06.3.1
   appliesTo:
   - rbb.host
-  relatedConcern: security-monitoring
+  relatedCapability: security-monitoring
   requirementMode: mandatory
   validAnswerTypes:
   - abb
@@ -75,7 +75,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.03.1.1
   appliesTo:
   - rbb.host
-  relatedConcern: patch-management
+  relatedCapability: patch-management
   requirementMode: mandatory
   validAnswerTypes:
   - abb
@@ -84,7 +84,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.03.2.1
   appliesTo:
   - rbb.host
-  relatedConcern: patch-management
+  relatedCapability: patch-management
   requirementMode: mandatory
   validAnswerTypes:
   - abb
@@ -93,7 +93,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.10.1.1
   appliesTo:
   - sdm
-  relatedConcern: ra-conformance
+  relatedCapability: ra-conformance
   requirementMode: mandatory
   validAnswerTypes:
   - field
@@ -101,7 +101,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.10.1.2
   appliesTo:
   - sdm
-  relatedConcern: availability-requirement
+  relatedCapability: availability-requirement
   requirementMode: mandatory
   validAnswerTypes:
   - field
@@ -109,7 +109,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.00.2.1
   appliesTo:
   - sdm
-  relatedConcern: data-classification
+  relatedCapability: data-classification
   requirementMode: mandatory
   validAnswerTypes:
   - field
@@ -117,7 +117,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.00.2.1
   appliesTo:
   - rbb.service.database
-  relatedConcern: access-control-model
+  relatedCapability: access-control-model
   requirementMode: mandatory
   validAnswerTypes:
   - field
@@ -125,7 +125,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.10.2.1
   appliesTo:
   - rbb.service.database
-  relatedConcern: backup-strategy
+  relatedCapability: backup-strategy
   requirementMode: mandatory
   validAnswerTypes:
   - field
@@ -133,7 +133,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.04.1.1
   appliesTo:
   - rbb.service.database
-  relatedConcern: access-control-model
+  relatedCapability: access-control-model
   requirementMode: mandatory
   validAnswerTypes:
   - externalInteraction
@@ -142,7 +142,7 @@ controlSemantics:
 - controlId: CC.SecurityCompliance.04.3.1
   appliesTo:
   - rbb.service.general
-  relatedConcern: secrets-management
+  relatedCapability: secrets-management
   requirementMode: mandatory
   validAnswerTypes:
   - externalInteraction

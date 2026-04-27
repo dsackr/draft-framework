@@ -1072,8 +1072,8 @@ def validate_compliance_profile(
                 f"{context}: ODC requirement 'conditional-applicability' not satisfied — conditional controls must set naAllowed: true"
             )
 
-        related_concern = semantic.get("relatedConcern")
-        if is_non_empty(related_concern):
+        related_capability = semantic.get("relatedCapability")
+        if is_non_empty(related_capability):
             for scope in applies_to:
                 odc_id = scope_to_odc_id(str(scope))
                 if not odc_id or odc_id not in odcs:
@@ -1084,9 +1084,9 @@ def validate_compliance_profile(
                     for requirement in resolved
                     if isinstance(requirement, dict) and is_non_empty(requirement.get("id"))
                 }
-                if related_concern not in valid_requirement_ids:
+                if related_capability not in valid_requirement_ids:
                     failures.append(
-                        f"{context}: ODC requirement 'related-concern' not satisfied — relatedConcern '{related_concern}' is not defined on ODC '{odc_id}'"
+                        f"{context}: relatedCapability '{related_capability}' is not defined on ODC '{odc_id}'"
                     )
 
 
@@ -1099,6 +1099,14 @@ def validate_control_implementations(
     scope = object_scope(obj)
     if not scope:
         return
+
+    profiles = obj.get("complianceProfiles", [])
+    if profiles is None:
+        profiles = []
+    if not isinstance(profiles, list):
+        failures.append(f"{path}: complianceProfiles must be a list")
+        return
+    declared_profile_ids = {str(profile_id) for profile_id in profiles}
 
     implementations = obj.get("controlImplementations", [])
     if implementations is None:
@@ -1116,6 +1124,12 @@ def validate_control_implementations(
         profile_id = implementation.get("profile")
         control_id = implementation.get("controlId")
         if not is_non_empty(profile_id) or not is_non_empty(control_id):
+            continue
+        if str(profile_id) not in declared_profile_ids:
+            failures.append(
+                f"{context}: profile '{profile_id}' is not declared in complianceProfiles; "
+                "control implementations are evidence for an explicit compliance claim"
+            )
             continue
         profile = catalog_by_id.get(str(profile_id))
         if not profile or profile.get("type") != "compliance_profile":
@@ -1147,13 +1161,6 @@ def validate_control_implementations(
         elif not implementation_resolves(obj, implementation, catalog_by_id):
             failures.append(f"{context}: mechanism '{mechanism}' does not resolve against the current object state")
         implementations_by_key[(str(profile_id), str(control_id))] = implementation
-
-    profiles = obj.get("complianceProfiles", [])
-    if profiles is None:
-        profiles = []
-    if not isinstance(profiles, list):
-        failures.append(f"{path}: complianceProfiles must be a list")
-        return
 
     for profile_id in profiles:
         profile = catalog_by_id.get(str(profile_id))

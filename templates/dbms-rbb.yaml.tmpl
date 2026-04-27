@@ -18,6 +18,9 @@ serviceCategory: database
 satisfiesODC:
   - odc.service
   - odc.service.dbms
+# Declare only profiles this RBB explicitly claims.
+complianceProfiles: []
+controlImplementations: []
 hostRbb: rbb.host.<os>.<platform>.<variant>
 functionAbb: abb.software.<database-engine-version>
 architecturalDecisions:

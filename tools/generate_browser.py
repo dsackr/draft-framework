@@ -27,6 +27,7 @@ CATALOG_FOLDERS = [
     "abbs",
     "ards",
     "compliance-frameworks",
+    "compliance-profiles",
     "sessions",
     "sdms",
     "rbbs",
@@ -56,7 +57,7 @@ REF_CONTAINER_KEYS = {
     "riskRef",
     "framework",
 }
-CATALOG_ID_PREFIXES = ("abb.", "rbb.", "odc.", "ard.", "ps.", "ra.", "sdm.", "framework.", "saas.", "paas.", "session.")
+CATALOG_ID_PREFIXES = ("abb.", "rbb.", "odc.", "ard.", "ps.", "ra.", "sdm.", "framework.", "profile.", "saas.", "paas.", "session.")
 
 
 def is_product_service_classification(obj: dict[str, Any]) -> bool:
@@ -452,6 +453,8 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
                 "networkPlacement": obj.get("networkPlacement", ""),
                 "patchingOwner": obj.get("patchingOwner", ""),
                 "complianceCerts": obj.get("complianceCerts", []),
+                "complianceProfiles": obj.get("complianceProfiles", []),
+                "controlImplementations": obj.get("controlImplementations", []),
                 "dataLeavesInfrastructure": obj.get("dataLeavesInfrastructure", None),
                 "dataResidencyCommitment": obj.get("dataResidencyCommitment", ""),
                 "dpaNotes": obj.get("dpaNotes", ""),
@@ -4341,6 +4344,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <span class="badge">${escapeHtml(object.typeLabel)}</span>
               ${lifecycleBadge(object.lifecycleStatus)}
               ${catalogBadge(object.catalogStatus)}
+              ${(object.complianceProfiles || []).map(profileId => `<span class="badge">Complies: ${escapeHtml(shortRefLabel(profileId))}</span>`).join('')}
             </div>
           </div>
           <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>

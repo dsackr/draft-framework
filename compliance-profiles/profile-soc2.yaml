@@ -24,7 +24,7 @@ controlSemantics:
 - controlId: CC6
   appliesTo:
   - rbb.host
-  relatedConcern: authentication
+  relatedCapability: authentication
   requirementMode: mandatory
   validAnswerTypes:
   - externalInteraction
@@ -33,17 +33,7 @@ controlSemantics:
 - controlId: CC7
   appliesTo:
   - rbb.host
-  relatedConcern: log-management
-  requirementMode: mandatory
-  validAnswerTypes:
-  - abb
-  - abbConfiguration
-  - externalInteraction
-  - architecturalDecision
-- controlId: CC7
-  appliesTo:
-  - rbb.host
-  relatedConcern: health-welfare-monitoring
+  relatedCapability: log-management
   requirementMode: mandatory
   validAnswerTypes:
   - abb
@@ -53,7 +43,17 @@ controlSemantics:
 - controlId: CC7
   appliesTo:
   - rbb.host
-  relatedConcern: security-monitoring
+  relatedCapability: health-welfare-monitoring
+  requirementMode: mandatory
+  validAnswerTypes:
+  - abb
+  - abbConfiguration
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC7
+  appliesTo:
+  - rbb.host
+  relatedCapability: security-monitoring
   requirementMode: mandatory
   validAnswerTypes:
   - abb
@@ -63,7 +63,7 @@ controlSemantics:
 - controlId: CC8
   appliesTo:
   - rbb.host
-  relatedConcern: patch-management
+  relatedCapability: patch-management
   requirementMode: mandatory
   validAnswerTypes:
   - abb
@@ -72,7 +72,7 @@ controlSemantics:
 - controlId: CC6
   appliesTo:
   - rbb.service.database
-  relatedConcern: access-control-model
+  relatedCapability: access-control-model
   requirementMode: mandatory
   validAnswerTypes:
   - externalInteraction
@@ -81,7 +81,7 @@ controlSemantics:
 - controlId: CC7
   appliesTo:
   - rbb.service.database
-  relatedConcern: backup-strategy
+  relatedCapability: backup-strategy
   requirementMode: mandatory
   validAnswerTypes:
   - field
@@ -89,7 +89,7 @@ controlSemantics:
 - controlId: C1
   appliesTo:
   - rbb.service.database
-  relatedConcern: encryption-at-rest
+  relatedCapability: encryption-at-rest
   requirementMode: mandatory
   validAnswerTypes:
   - field
@@ -98,7 +98,7 @@ controlSemantics:
 - controlId: CC6
   appliesTo:
   - rbb.service.general
-  relatedConcern: secrets-management
+  relatedCapability: secrets-management
   requirementMode: mandatory
   validAnswerTypes:
   - externalInteraction
@@ -115,7 +115,7 @@ controlSemantics:
 - controlId: A1
   appliesTo:
   - sdm
-  relatedConcern: availability-requirement
+  relatedCapability: availability-requirement
   requirementMode: mandatory
   validAnswerTypes:
   - field
@@ -123,7 +123,7 @@ controlSemantics:
 - controlId: C1
   appliesTo:
   - sdm
-  relatedConcern: data-classification
+  relatedCapability: data-classification
   requirementMode: mandatory
   validAnswerTypes:
   - field
@@ -131,7 +131,7 @@ controlSemantics:
 - controlId: CC9
   appliesTo:
   - sdm
-  relatedConcern: ra-conformance
+  relatedCapability: ra-conformance
   requirementMode: mandatory
   validAnswerTypes:
   - field

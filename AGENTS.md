@@ -51,6 +51,13 @@ When sources disagree, follow this order:
 4. Framework documentation in `docs/framework/`
 5. Generated indexes and browser output
 
+## Compliance Claims
+
+Treat `complianceProfiles` on an artifact as the explicit compliance claim.
+`controlImplementations` are evidence for declared profiles only. If a profile
+is not declared, the artifact is not non-compliant; it is simply not eligible
+as compliant off-the-shelf inventory for that framework.
+
 ## Editing Rules
 
 - Keep generated files current by running `python3 tools/generate_ai_index.py`

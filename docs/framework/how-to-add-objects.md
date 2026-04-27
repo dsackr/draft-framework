@@ -46,8 +46,11 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 3. Add any Agent ABBs or other internal components that physically live on the host.
 4. Document `externalInteractions` for identity, logging, security, monitoring, patching, or other platforms.
 5. Add `architecturalDecisions` when the host must answer an ODC or compliance question that is not expressed directly in the object.
-6. Add `satisfiesODC: [odc.host]`.
-7. Run validation.
+6. Add `complianceProfiles` only for frameworks the host explicitly claims to
+   satisfy, then add valid `controlImplementations` for every applicable
+   control in each declared profile.
+7. Add `satisfiesODC: [odc.host]`.
+8. Run validation.
 
 ## Add A Service RBB
 
@@ -56,8 +59,11 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 3. Add service-level external interactions that go beyond the host baseline.
 4. Document the decisions that describe scaling, health, secrets handling, and, for DBMS services, durability and protection.
 5. Use `architecturalDecisions` whenever the service must answer an ODC or compliance question that is not expressed directly in the object.
-6. Set `satisfiesODC` to the correct ODC list.
-7. Run validation.
+6. Add `complianceProfiles` only for frameworks the service explicitly claims
+   to satisfy, then add valid `controlImplementations` for every applicable
+   control in each declared profile.
+7. Set `satisfiesODC` to the correct ODC list.
+8. Run validation.
 
 ## Add An ODC
 
@@ -135,6 +141,22 @@ An RA should be generic enough to guide many products, not just one.
 An AI should be able to translate a source control catalog into this shape as
 long as the source provides control facts and the profile docs provide the
 DRAFT applicability rules.
+
+## Add Object-Level Compliance Claims
+
+1. Add `complianceProfiles` only for the profiles the artifact explicitly
+   claims.
+2. Add one `controlImplementations` entry for every control in each declared
+   profile that applies to the artifact's DRAFT scope.
+3. Use `not-applicable` only when the profile marks the control conditional and
+   allows `N/A`.
+4. Do not add `controlImplementations` for profiles the artifact has not
+   declared.
+5. Run validation.
+
+Artifacts with no declared profile are unclaimed inventory, not failed
+inventory. They should not be selected as compliant off-the-shelf building
+blocks when a solution requires a specific framework.
 
 ## Run The Tools
 

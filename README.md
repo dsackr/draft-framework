@@ -72,6 +72,17 @@ updating, or validating DRAFT artifacts.
 - [Object Definition Checklists (ODCs)](docs/framework/odcs.md)
 - [Security and Compliance Controls (SCCs)](docs/framework/security-and-compliance-controls.md)
 
+## Compliance Claims
+
+Architecture artifacts declare framework compliance explicitly with
+`complianceProfiles`. When a profile is declared, every applicable control from
+that profile must have a valid `controlImplementations` entry or validation
+fails.
+
+Artifacts without a declared profile are not labeled non-compliant. They are
+unclaimed inventory and should not be treated as compliant off-the-shelf
+building blocks for solutions that require that framework.
+
 ## Browser
 
 The generated browser is published at:

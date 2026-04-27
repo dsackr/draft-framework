@@ -44,7 +44,10 @@ To add a new control group cleanly:
 
 1. add or update the pure control catalog in `compliance-frameworks/`
 2. add or update the DRAFT implementation profile in `compliance-profiles/`
-3. record object-level control implementations on the affected artifacts
+3. declare object-level `complianceProfiles` on artifacts that explicitly claim
+   compliance with the profile
+4. record object-level `controlImplementations` for each applicable control on
+   those claimed artifacts
 
 This is intentionally AI-friendly. A security specialist or uploaded source
 document may give the AI the control ID, friendly name, and source link. The
@@ -77,6 +80,16 @@ selected. Conditional controls stay visible, but the framework can explicitly
 signal that `N/A` is an acceptable response when the product or deployment is
 out of scope for that control set. This is the intended model for frameworks
 such as TX-RAMP, PCI, HIPAA, and FedRAMP.
+
+At the object level, `complianceProfiles` is the compliance claim. An artifact
+that declares a profile must provide valid `controlImplementations` for every
+applicable control in that profile. An artifact that does not declare a profile
+is not labeled non-compliant; it is simply not counted as compliant inventory
+for that framework. Control implementations are evidence for declared profiles
+only.
+
+Artifact detail headers also show declared compliance profiles so architects
+can identify claimed compliant inventory directly.
 
 If the selected profile has no controls for a given scope or capability, the
 browser shows that no required controls were added by that framework. That is

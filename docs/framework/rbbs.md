@@ -197,8 +197,11 @@ cataloged.
 5. If it is a service, specify the host or managed substrate it runs on and the
    function-defining component that gives the service its purpose.
 6. Add any Architecture Decisions required by the ODC or attached compliance
-  framework when the object does not answer the question directly.
-7. Set `satisfiesODC` and run validation.
+   profile when the object does not answer the question directly.
+7. Add `complianceProfiles` only for frameworks the RBB explicitly claims to
+   satisfy, then add valid `controlImplementations` for every applicable
+   control in each declared profile.
+8. Set `satisfiesODC` and run validation.
 
 The validation step matters more for RBBs than for any other object type
 because this is where the checklist and compliance model are enforced.

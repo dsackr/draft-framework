@@ -113,6 +113,13 @@ They define:
 - Guide: [security-and-compliance-controls.md](security-and-compliance-controls.md)
 - Schema: [compliance-profile.schema.yaml](../../schemas/compliance-profile.schema.yaml)
 
+### Object-Level Compliance Claims
+
+Architecture artifacts use `complianceProfiles` to claim compliance with a
+profile. Each declared profile requires matching `controlImplementations` for
+every applicable control. A missing profile is an absence of a compliance claim,
+not a failed control state.
+
 ## Practical Rule
 
 If you are unsure how to build a YAML object correctly:

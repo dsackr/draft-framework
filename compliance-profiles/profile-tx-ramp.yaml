@@ -24,7 +24,7 @@ controlSemantics:
 - controlId: AC-2
   appliesTo:
   - rbb.host
-  relatedConcern: authentication
+  relatedCapability: authentication
   requirementMode: conditional
   naAllowed: true
   applicability:
@@ -40,7 +40,7 @@ controlSemantics:
 - controlId: AU-2
   appliesTo:
   - rbb.host
-  relatedConcern: log-management
+  relatedCapability: log-management
   requirementMode: conditional
   naAllowed: true
   applicability:
@@ -56,7 +56,7 @@ controlSemantics:
 - controlId: SI-4
   appliesTo:
   - rbb.host
-  relatedConcern: security-monitoring
+  relatedCapability: security-monitoring
   requirementMode: conditional
   naAllowed: true
   applicability:
@@ -73,7 +73,7 @@ controlSemantics:
 - controlId: CM-3
   appliesTo:
   - rbb.host
-  relatedConcern: patch-management
+  relatedCapability: patch-management
   requirementMode: conditional
   naAllowed: true
   applicability:
@@ -89,7 +89,7 @@ controlSemantics:
 - controlId: SC-28
   appliesTo:
   - rbb.service.database
-  relatedConcern: encryption-at-rest
+  relatedCapability: encryption-at-rest
   requirementMode: conditional
   naAllowed: true
   applicability:
@@ -105,7 +105,7 @@ controlSemantics:
 - controlId: AC-6
   appliesTo:
   - rbb.service.database
-  relatedConcern: access-control-model
+  relatedCapability: access-control-model
   requirementMode: conditional
   naAllowed: true
   applicability:
@@ -121,7 +121,7 @@ controlSemantics:
 - controlId: CP-9
   appliesTo:
   - rbb.service.database
-  relatedConcern: backup-strategy
+  relatedCapability: backup-strategy
   requirementMode: conditional
   naAllowed: true
   applicability:
@@ -136,7 +136,7 @@ controlSemantics:
 - controlId: IA-5
   appliesTo:
   - rbb.service.general
-  relatedConcern: secrets-management
+  relatedCapability: secrets-management
   requirementMode: conditional
   naAllowed: true
   applicability:
@@ -167,7 +167,7 @@ controlSemantics:
 - controlId: PL-2
   appliesTo:
   - sdm
-  relatedConcern: data-classification
+  relatedCapability: data-classification
   requirementMode: conditional
   naAllowed: true
   applicability:
@@ -182,7 +182,7 @@ controlSemantics:
 - controlId: CP-2
   appliesTo:
   - sdm
-  relatedConcern: availability-requirement
+  relatedCapability: availability-requirement
   requirementMode: conditional
   naAllowed: true
   applicability:
@@ -197,7 +197,7 @@ controlSemantics:
 - controlId: CA-2
   appliesTo:
   - sdm
-  relatedConcern: ra-conformance
+  relatedCapability: ra-conformance
   requirementMode: conditional
   naAllowed: true
   applicability:
