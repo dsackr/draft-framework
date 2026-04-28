@@ -83,6 +83,7 @@ function Test-AppRoutes {
 
 $repoRoot = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
 $requirements = Join-Path $repoRoot "app\api\requirements.txt"
+$appApiRoot = Join-Path $repoRoot "app\api"
 $venvDir = Join-Path $repoRoot "app\api\.venv"
 $venvPython = Join-Path $venvDir "Scripts\python.exe"
 
@@ -156,7 +157,7 @@ if (-not $NoBrowser) {
     }
 }
 
-$uvicornArgs = @("-m", "uvicorn", "app.api.draft_app.main:app", "--host", $BindHost, "--port", [string]$Port)
+$uvicornArgs = @("-m", "uvicorn", "draft_app.main:app", "--app-dir", $appApiRoot, "--host", $BindHost, "--port", [string]$Port)
 if ($Reload) {
     $uvicornArgs += "--reload"
 }

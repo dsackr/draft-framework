@@ -80,7 +80,7 @@ cd app/api
 python -m venv .venv
 . .venv/bin/activate
 python -m pip install -r requirements.txt
-DRAFT_WORKSPACE=/path/to/company-draft-workspace uvicorn draft_app.main:app --reload
+DRAFT_WORKSPACE=/path/to/company-draft-workspace uvicorn draft_app.main:app --app-dir app/api --reload
 ```
 
 For local mode, GitHub operations expect the user to already be authenticated

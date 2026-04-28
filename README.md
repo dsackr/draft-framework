@@ -159,7 +159,7 @@ cd app/api
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -r requirements.txt
-DRAFT_WORKSPACE=/path/to/company-draft-workspace uvicorn draft_app.main:app --reload
+DRAFT_WORKSPACE=/path/to/company-draft-workspace uvicorn draft_app.main:app --app-dir app/api --reload
 ```
 
 Then open:
