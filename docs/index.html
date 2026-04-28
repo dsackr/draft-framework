@@ -2039,6 +2039,60 @@
       return new URL(`${apiRoot}${normalizedPath}`, window.location.origin).toString();
     }
 
+    function rootApiUrl(path) {
+      const normalizedPath = String(path || '').replace(/^\/+/, '');
+      return new URL(`/api/${normalizedPath}`, window.location.origin).toString();
+    }
+
+    function uniqueUrls(urls) {
+      return Array.from(new Set(urls));
+    }
+
+    function draftsmanChatUrls() {
+      return uniqueUrls([
+        appApiUrl('draftsman/chat'),
+        appApiUrl('draftsman/chat/'),
+        rootApiUrl('draftsman/chat'),
+        rootApiUrl('draftsman/chat/')
+      ]);
+    }
+
+    async function fetchDraftsmanJson(url, payload) {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const contentType = response.headers.get('content-type') || '';
+      const data = contentType.includes('application/json')
+        ? await response.json()
+        : { ok: response.ok, message: await response.text() };
+      return { response, data, url };
+    }
+
+    async function describeDraftsmanApiMiss(triedUrls) {
+      const providerUrls = uniqueUrls([
+        appApiUrl('draftsman/providers'),
+        rootApiUrl('draftsman/providers')
+      ]);
+      const providerChecks = [];
+      for (const url of providerUrls) {
+        try {
+          const response = await fetch(url);
+          providerChecks.push(`${url} -> ${response.status}`);
+        } catch (error) {
+          providerChecks.push(`${url} -> unreachable`);
+        }
+      }
+      return [
+        'Draftsman chat API was not found on this app server.',
+        `Current page: ${window.location.href}`,
+        `Tried: ${triedUrls.join(', ')}`,
+        `Draftsman provider check: ${providerChecks.join(', ')}`,
+        'Run git pull in the same framework folder that starts the app, then restart the app and open Architecture from the Welcome screen.'
+      ].join('\n');
+    }
+
     async function askDraftsmanFromBrowser() {
       const input = document.getElementById('draftsman-request');
       const output = document.getElementById('draftsman-output');
@@ -2049,24 +2103,21 @@
       }
       output.textContent = 'Draftsman is reviewing the catalog.';
       try {
-        const response = await fetch(appApiUrl('draftsman/chat'), {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            workspace: workspaceParam,
-            contextObjectId: currentDetailId || null,
-            message
-          })
-        });
-        if (response.status === 404) {
-          output.textContent = 'Draftsman API was not found. Restart the DRAFT App from the updated framework repo, then open the catalog from the app.';
-          return;
+        const payload = {
+          workspace: workspaceParam,
+          contextObjectId: currentDetailId || null,
+          message
+        };
+        const triedUrls = [];
+        for (const url of draftsmanChatUrls()) {
+          triedUrls.push(url);
+          const { response, data } = await fetchDraftsmanJson(url, payload);
+          if (response.status !== 404) {
+            output.textContent = humanDraftsmanMessage(data);
+            return;
+          }
         }
-        const contentType = response.headers.get('content-type') || '';
-        const data = contentType.includes('application/json')
-          ? await response.json()
-          : { ok: response.ok, message: await response.text() };
-        output.textContent = humanDraftsmanMessage(data);
+        output.textContent = await describeDraftsmanApiMiss(triedUrls);
       } catch (error) {
         output.textContent = 'The Draftsman is not reachable from this browser session.';
       }

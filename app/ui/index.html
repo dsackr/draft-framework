@@ -465,6 +465,9 @@
         const data = contentType.includes('application/json')
           ? await response.json()
           : {ok: response.ok, status: response.status, body: await response.text()};
+        if (response.status === 404 && url.includes('/api/draftsman/chat')) {
+          data.message = 'Draftsman chat API was not found on this app server. Run git pull in the framework folder that starts the app, then restart the app.';
+        }
         show(output, data);
         return data;
       }
