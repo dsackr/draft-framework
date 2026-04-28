@@ -17,6 +17,19 @@ same operations:
 Local development starts the API against a workspace path:
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install.sh | bash
+```
+
+For a custom workspace path:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install.sh | \
+  bash -s -- --workspace-dir /path/to/company-draft-workspace
+```
+
+Manual setup:
+
+```bash
 cd app/api
 python -m venv .venv
 . .venv/bin/activate

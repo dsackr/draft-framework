@@ -72,6 +72,29 @@ The app is a FastAPI service with a bundled browser UI. It runs against a
 company workspace path, or the example workspace when `DRAFT_WORKSPACE` is not
 set.
 
+Quick install:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install.sh | bash
+```
+
+The installer clones or updates the framework, creates a private workspace
+skeleton at `~/draft-workspace`, installs app dependencies in a local Python
+virtual environment, and starts the app. To inspect before running:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install.sh -o install.sh
+less install.sh
+bash install.sh
+```
+
+Customize paths or install without starting the app:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install.sh | \
+  bash -s -- --install-dir ~/draft-framework --workspace-dir ~/my-draft-workspace --no-start
+```
+
 Local install:
 
 ```bash

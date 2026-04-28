@@ -22,6 +22,7 @@ Draftsman role defined in `framework/docs/draftsman.md`, then use this index,
 | Path | Purpose |
 |---|---|
 | AGENTS.md | Canonical AI bootstrap instructions for this repository. |
+| install.sh | Company-friendly installer for the DRAFT App and workspace skeleton. |
 | framework/docs/draftsman.md | Draftsman role, intent routing, and authoring rules. |
 | framework/docs/overview.md | Framework concepts and object family overview. |
 | framework/docs/yaml-schema-reference.md | Quick map from object families to schemas. |
