@@ -86,7 +86,8 @@ function Test-RunningAppRoutes {
         [string]$PythonCommand,
         [string[]]$UvicornArgs,
         [string]$BindHost,
-        [int]$ProbePort
+        [int]$ProbePort,
+        [string]$AppApiRoot
     )
     $probeArgs = @($UvicornArgs)
     for ($index = 0; $index -lt $probeArgs.Count; $index++) {
@@ -97,7 +98,9 @@ function Test-RunningAppRoutes {
 
     $probeUrl = "http://${BindHost}:$ProbePort"
     Write-Host "DRAFT route runtime check: $probeUrl/openapi.json"
-    $process = Start-Process -FilePath $PythonCommand -ArgumentList $probeArgs -PassThru -NoNewWindow
+    
+    # Start probe server from the AppApiRoot
+    $process = Start-Process -FilePath $PythonCommand -ArgumentList $probeArgs -PassThru -NoNewWindow -WorkingDirectory $AppApiRoot
     try {
         $openapi = $null
         for ($attempt = 0; $attempt -lt 40; $attempt++) {
@@ -197,22 +200,22 @@ Write-Host "Press Ctrl+C to stop the app."
 Write-Host ""
 
 $env:DRAFT_WORKSPACE = $WorkspaceDir
-Set-Location $repoRoot
 
-$baseUvicornArgs = @("-m", "uvicorn", "draft_app.main:app", "--app-dir", $appApiRoot, "--host", $BindHost, "--port", [string]$Port)
+# Simplify uvicorn arguments and run from the app\api directory
+$baseUvicornArgs = @("-m", "uvicorn", "draft_app.main:app", "--host", $BindHost, "--port", [string]$Port)
 $uvicornArgs = @($baseUvicornArgs)
 if ($Reload) {
     $uvicornArgs += "--reload"
 }
 
 Write-Host "Uvicorn app:     draft_app.main:app"
-Write-Host "Uvicorn app dir: $appApiRoot"
+Write-Host "Uvicorn root:    $appApiRoot"
 Write-Host "Uvicorn args:    $($uvicornArgs -join ' ')"
 Write-Host ""
 
 Write-Step "Checking running DRAFT app routes"
 $probePort = if ($Port -lt 55000) { $Port + 10000 } else { $Port - 10000 }
-Test-RunningAppRoutes -PythonCommand $venvPython -UvicornArgs $baseUvicornArgs -BindHost $BindHost -ProbePort $probePort
+Test-RunningAppRoutes -PythonCommand $venvPython -UvicornArgs $baseUvicornArgs -BindHost $BindHost -ProbePort $probePort -AppApiRoot $appApiRoot
 
 if (-not $NoBrowser) {
     try {
@@ -223,4 +226,6 @@ if (-not $NoBrowser) {
     }
 }
 
+# Run the real app from the AppApiRoot
+Set-Location $appApiRoot
 & $venvPython @uvicornArgs

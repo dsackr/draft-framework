@@ -1078,9 +1078,11 @@ def diagnostics_routes() -> dict[str, Any]:
         if path:
             routes.append({"path": path, "methods": methods})
     return {
+        "mainFile": __file__,
         "appRoot": str(APP_ROOT),
         "repoRoot": str(REPO_ROOT),
         "frameworkRoot": str(FRAMEWORK_ROOT),
+        "sysPath": sys.path,
         "routes": routes,
         "draftsmanRoutes": [route for route in routes if "draft" in route["path"]],
     }

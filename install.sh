@@ -467,15 +467,15 @@ Workspace: $DRAFT_WORKSPACE_DIR
 App URL:   http://$DRAFT_HOST:$DRAFT_PORT
 
 To start later:
-  cd "$DRAFT_INSTALL_DIR"
-  DRAFT_WORKSPACE="$DRAFT_WORKSPACE_DIR" "$VENV_DIR/bin/python" -m uvicorn draft_app.main:app --app-dir "$DRAFT_INSTALL_DIR/app/api" --host "$DRAFT_HOST" --port "$DRAFT_PORT"
+  cd "$DRAFT_INSTALL_DIR/app/api"
+  DRAFT_WORKSPACE="$DRAFT_WORKSPACE_DIR" "$VENV_DIR/bin/python" -m uvicorn draft_app.main:app --host "$DRAFT_HOST" --port "$DRAFT_PORT"
 
 EOF
 
 if [[ "$DRAFT_START_APP" == "1" ]]; then
   log "Starting DRAFT App"
-  cd "$DRAFT_INSTALL_DIR"
-  env DRAFT_WORKSPACE="$DRAFT_WORKSPACE_DIR" "$VENV_DIR/bin/python" -m uvicorn draft_app.main:app --app-dir "$DRAFT_INSTALL_DIR/app/api" --host "$DRAFT_HOST" --port "$DRAFT_PORT" &
+  cd "$DRAFT_INSTALL_DIR/app/api"
+  env DRAFT_WORKSPACE="$DRAFT_WORKSPACE_DIR" "$VENV_DIR/bin/python" -m uvicorn draft_app.main:app --host "$DRAFT_HOST" --port "$DRAFT_PORT" &
   APP_PID=$!
   if wait_for_app; then
     if [[ "$DRAFT_SETUP_DRAFTSMAN" == "1" ]]; then

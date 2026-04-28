@@ -478,10 +478,12 @@ Write-Host ""
 
 if ($StartApp) {
     Write-Step "Starting DRAFT App"
-    Set-Location $InstallDir
     $env:DRAFT_WORKSPACE = $WorkspaceDir
     $appApiRoot = Join-Path $InstallDir "app\api"
-    $app = Start-Process -FilePath $venvPython -ArgumentList @("-m", "uvicorn", "draft_app.main:app", "--app-dir", $appApiRoot, "--host", $BindHost, "--port", [string]$Port) -PassThru -NoNewWindow
+    
+    # Run uvicorn from the app\api directory to avoid module resolution issues
+    $app = Start-Process -FilePath $venvPython -ArgumentList @("-m", "uvicorn", "draft_app.main:app", "--host", $BindHost, "--port", [string]$Port) -WorkingDirectory $appApiRoot -PassThru -NoNewWindow
+    
     if (Wait-App) {
         if ($SetupDraftsmanNow) {
             Start-DraftsmanOAuth
