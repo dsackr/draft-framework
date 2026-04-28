@@ -66,11 +66,29 @@ The app/API is the intended authoring path for company workspaces. It can
 initialize workspace folders, write catalog objects, create object patches,
 validate the effective model, and run the configured Git/GitHub workflow.
 
-## Run The DRAFT App
+## Install And Run The DRAFT App
 
-The app is a FastAPI service with a bundled browser UI. It runs against a
-company workspace path, or the example workspace when `DRAFT_WORKSPACE` is not
-set.
+The app is a FastAPI service with a bundled browser UI. First-run setup is a
+text-based installer flow so a company can connect DRAFT to its private GitHub
+content repo before the browser opens.
+
+Before installing, authenticate the GitHub CLI with access to the private
+content repo:
+
+```bash
+gh auth login
+```
+
+The installer asks:
+
+- what GitHub repo DRAFT should use for company content
+- whether to set up the AI Draftsman now
+- if yes, whether to use OpenAI OAuth for the embedded Draftsman
+
+After repo access is confirmed, the installer clones the content repo, creates
+or checks the required `catalog/`, `configurations/`, and `.draft/` folders,
+commits setup to the configured working branch, starts the app, initiates
+OpenAI OAuth when selected, and opens the browser.
 
 Quick install:
 
@@ -84,9 +102,7 @@ PowerShell on Windows:
 irm https://raw.githubusercontent.com/dsackr/draft-framework/main/install.ps1 | iex
 ```
 
-The installer clones or updates the framework, creates a private workspace
-skeleton at `~/draft-workspace`, installs app dependencies in a local Python
-virtual environment, and starts the app. To inspect before running:
+To inspect before running:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install.sh -o install.sh
@@ -103,17 +119,24 @@ Set-ExecutionPolicy -Scope Process Bypass -Force
 .\install.ps1
 ```
 
+Non-interactive install:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install.sh | \
+  bash -s -- --content-repo owner/private-draft-catalog --setup-draftsman
+```
+
 Customize paths or install without starting the app:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install.sh | \
-  bash -s -- --install-dir ~/draft-framework --workspace-dir ~/my-draft-workspace --no-start
+  bash -s -- --content-repo owner/private-draft-catalog --install-dir ~/draft-framework --workspace-dir ~/my-draft-workspace --no-start
 ```
 
 PowerShell with custom paths:
 
 ```powershell
-.\install.ps1 -InstallDir "$HOME\draft-framework" -WorkspaceDir "$HOME\my-draft-workspace" -NoStart
+.\install.ps1 -ContentRepo "owner/private-draft-catalog" -InstallDir "$HOME\draft-framework" -WorkspaceDir "$HOME\my-draft-workspace" -NoStart
 ```
 
 Restart after install:
@@ -160,10 +183,11 @@ and normal Git credentials. Shared internal deployments should use a GitHub App
 or OAuth integration. More detail lives in [app/README.md](app/README.md) and
 [app/DEPLOYMENT.md](app/DEPLOYMENT.md).
 
-The app opens in a dark theme by default. The Configuration tab includes an
-AI Draftsman setup panel for per-user ChatGPT/Codex sign-in. Tokens are stored
-outside the workspace repo under the user's home directory, and API keys are
-not supported for the embedded Draftsman.
+The app opens in a dark theme by default. The Welcome screen leads users to the
+Drafting Table and the Architecture browser. The Setup tab covers runtime
+status, per-user ChatGPT/Codex sign-in, and Git publishing controls. Tokens are
+stored outside the workspace repo under the user's home directory, and API keys
+are not supported for the embedded Draftsman.
 
 ## Start Here
 
@@ -214,11 +238,13 @@ Artifacts without a declared profile are not labeled non-compliant. They are
 unclaimed inventory and should not be treated as compliant off-the-shelf
 building blocks for solutions that require that framework.
 
-## Browser
+## Catalog Browsing
 
-The generated browser is published at:
+The generated static browser is published at:
 
 [https://dsackr.github.io/draft-framework/](https://dsackr.github.io/draft-framework/)
 
-The generated browser is a static example view. The deployable app lives in
-[`app/`](app/) and provides the API/UI layer intended for company workspaces.
+GitHub Pages is for read-only browsing. It does not run the Draftsman and does
+not update workspace content. The local/shared DRAFT App embeds the same
+generated browser shape in its Architecture tab, then lets a user carry a
+selected artifact into the Drafting Table for changes.

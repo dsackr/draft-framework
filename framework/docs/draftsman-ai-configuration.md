@@ -48,7 +48,8 @@ user-only file permissions. This file is outside the company workspace repo.
 
 The DRAFT App uses an OpenAI Codex-style OAuth/PKCE flow:
 
-1. The user selects `Embedded ChatGPT Sign-In` in the Configuration tab.
+1. During install, the user chooses to set up the AI Draftsman and selects
+   OpenAI OAuth. The Setup tab can also start sign-in later.
 2. The app starts a local callback listener on `127.0.0.1:1455`.
 3. The user signs in with ChatGPT in the browser.
 4. OpenAI redirects to `http://localhost:1455/auth/callback`.
@@ -56,8 +57,8 @@ The DRAFT App uses an OpenAI Codex-style OAuth/PKCE flow:
 6. `POST /api/draftsman/chat` can call the embedded Draftsman using that user's
    signed-in ChatGPT/Codex account.
 
-The Configuration tab also provides `Use Existing Codex Login`, which imports a
-local `~/.codex/auth.json` session into DRAFT's `~/.draft/` token store.
+The Setup tab also provides `Use Existing Codex Login`, which imports a local
+`~/.codex/auth.json` session into DRAFT's `~/.draft/` token store.
 
 ## Shared App Boundary
 

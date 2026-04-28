@@ -7,39 +7,36 @@
     <style>
       :root {
         color-scheme: dark;
-        --border: #334155;
-        --border-strong: #526171;
-        --ink: #e7edf4;
-        --muted: #98a6b7;
-        --page: #101215;
-        --panel: #171a1f;
-        --panel-raised: #1f242b;
-        --primary: #22a7b8;
-        --primary-dark: #7bd8e4;
-        --success: #73d18b;
-        --warning: #f1ba55;
+        --page: #0f1115;
+        --panel: #171b22;
+        --panel-raised: #202630;
+        --border: #333d4b;
+        --border-strong: #536174;
+        --ink: #eef3f8;
+        --muted: #9aa8b8;
+        --primary: #27a6b7;
+        --primary-ink: #dffbff;
+        --success: #78d28b;
+        --warning: #e8b64f;
         --danger: #f97066;
-        --soft-blue: #102f3a;
-        --soft-green: #132f22;
-        --soft-gold: #372a10;
       }
       * {
         box-sizing: border-box;
       }
       body {
-        margin: 0;
         background: var(--page);
         color: var(--ink);
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        margin: 0;
       }
       header {
         align-items: center;
-        background: var(--panel);
+        background: #151922;
         border-bottom: 1px solid var(--border);
         display: flex;
         gap: 18px;
         justify-content: space-between;
-        min-height: 74px;
+        min-height: 72px;
         padding: 12px 24px;
       }
       .brand {
@@ -49,21 +46,20 @@
         min-width: 0;
       }
       .brand img {
-        display: block;
-        height: 52px;
+        height: 50px;
         object-fit: contain;
-        width: 52px;
+        width: 50px;
       }
       h1, h2, h3, p {
         margin: 0;
       }
       h1 {
-        font-size: 23px;
+        font-size: 22px;
         line-height: 1.1;
       }
       h2 {
-        font-size: 20px;
-        line-height: 1.2;
+        font-size: 24px;
+        line-height: 1.15;
       }
       h3 {
         font-size: 15px;
@@ -73,34 +69,13 @@
         color: var(--muted);
         font-size: 13px;
       }
-      .status-pill {
-        align-items: center;
-        border: 1px solid var(--border);
-        border-radius: 999px;
-        display: inline-flex;
-        font-size: 12px;
-        font-weight: 700;
-        gap: 6px;
-        min-height: 28px;
-        padding: 5px 10px;
-      }
-      .status-pill.ok {
-        background: var(--soft-green);
-        border-color: #2d6f46;
-        color: var(--success);
-      }
-      .status-pill.warn {
-        background: var(--soft-gold);
-        border-color: #8b6b24;
-        color: var(--warning);
-      }
       .shell {
         display: grid;
         gap: 18px;
-        grid-template-columns: 250px minmax(0, 1fr);
+        grid-template-columns: 220px minmax(0, 1fr);
         padding: 18px 24px 24px;
       }
-      nav, main, aside, section {
+      nav, main, .panel, .notice {
         background: var(--panel);
         border: 1px solid var(--border);
         border-radius: 8px;
@@ -109,34 +84,101 @@
         align-self: start;
         display: grid;
         gap: 8px;
-        padding: 12px;
+        padding: 10px;
       }
       main {
+        min-height: calc(100vh - 114px);
         min-width: 0;
         padding: 18px;
+      }
+      button, input, select, textarea {
+        font: inherit;
+      }
+      button {
+        background: var(--primary);
+        border: 1px solid var(--primary);
+        border-radius: 6px;
+        color: #ffffff;
+        cursor: pointer;
+        font-weight: 750;
+        min-height: 38px;
+        padding: 8px 12px;
+      }
+      button.secondary {
+        background: #252c36;
+        border-color: #465466;
+        color: var(--ink);
+      }
+      button.ghost {
+        background: transparent;
+        border-color: transparent;
+        color: var(--primary-ink);
+      }
+      button:disabled {
+        cursor: not-allowed;
+        opacity: .55;
       }
       .nav-button {
         align-items: center;
         background: transparent;
         border: 1px solid transparent;
-        border-radius: 6px;
         color: var(--ink);
-        cursor: pointer;
         display: flex;
-        font-weight: 700;
         justify-content: space-between;
-        min-height: 40px;
-        padding: 8px 10px;
         text-align: left;
         width: 100%;
       }
       .nav-button.active {
-        background: var(--soft-blue);
-        border-color: #2e7182;
-        color: var(--primary-dark);
+        background: #12323c;
+        border-color: #2a7180;
+        color: var(--primary-ink);
       }
-      .nav-button:hover {
-        border-color: var(--border-strong);
+      input, select, textarea {
+        background: #0f1319;
+        border: 1px solid #465466;
+        border-radius: 6px;
+        color: var(--ink);
+        min-height: 38px;
+        padding: 8px 10px;
+        width: 100%;
+      }
+      textarea {
+        min-height: 220px;
+        resize: vertical;
+      }
+      label {
+        color: var(--ink);
+        display: block;
+        font-size: 12px;
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+      pre {
+        background: #090c11;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: #dbe5ef;
+        margin: 0;
+        max-height: 420px;
+        overflow: auto;
+        padding: 12px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .status-pill {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        color: var(--muted);
+        display: inline-flex;
+        font-size: 12px;
+        font-weight: 800;
+        min-height: 28px;
+        padding: 5px 10px;
+      }
+      .status-pill.ok {
+        background: #132d21;
+        border-color: #2f7c48;
+        color: var(--success);
       }
       .tab-panel {
         display: none;
@@ -151,218 +193,77 @@
         gap: 16px;
         justify-content: space-between;
       }
-      .headline-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: flex-end;
-      }
-      .summary-grid {
-        display: grid;
-        gap: 12px;
-        grid-template-columns: repeat(4, minmax(130px, 1fr));
-      }
-      .metric {
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        min-height: 82px;
-        padding: 12px;
-      }
-      .metric strong {
-        display: block;
-        font-size: 26px;
-        line-height: 1.1;
-        margin-bottom: 4px;
-      }
-      .split {
-        display: grid;
-        gap: 16px;
-        grid-template-columns: minmax(0, 1fr) minmax(300px, 430px);
-      }
-      .work-area {
-        display: grid;
-        gap: 12px;
-      }
-      .inline-fields {
-        display: grid;
-        gap: 10px;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      label {
-        color: var(--ink);
-        display: block;
-        font-size: 12px;
-        font-weight: 750;
-        margin-bottom: 6px;
-      }
-      input, select, textarea {
-        background: #0f1318;
-        border: 1px solid #445063;
-        border-radius: 6px;
-        color: var(--ink);
-        font: inherit;
-        font-size: 14px;
-        min-height: 36px;
-        padding: 8px 10px;
-        width: 100%;
-      }
-      textarea {
-        min-height: 132px;
-        resize: vertical;
-      }
-      button {
-        background: var(--primary);
-        border: 1px solid var(--primary);
-        border-radius: 6px;
-        color: #ffffff;
-        cursor: pointer;
-        font-weight: 750;
-        min-height: 36px;
-        padding: 8px 12px;
-      }
-      button.secondary {
-        background: #232932;
-        border-color: #445063;
-        color: var(--ink);
-      }
-      button.ghost {
-        background: transparent;
-        border-color: transparent;
-        color: var(--primary-dark);
-      }
-      button:disabled {
-        cursor: not-allowed;
-        opacity: .55;
-      }
       .actions {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
       }
-      .notice {
-        border: 1px solid var(--border);
-        border-left: 4px solid var(--primary);
-        border-radius: 8px;
+      .grid {
         display: grid;
-        gap: 6px;
-        padding: 12px;
+        gap: 14px;
       }
-      .notice.warning {
-        border-left-color: var(--warning);
-      }
-      .catalog-tools {
+      .welcome-grid {
         display: grid;
-        gap: 10px;
-        grid-template-columns: minmax(220px, 1fr) 180px 160px;
+        gap: 14px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
-      .table-wrap {
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        max-height: 520px;
-        overflow: auto;
-      }
-      table {
-        border-collapse: collapse;
-        font-size: 14px;
-        width: 100%;
-      }
-      th, td {
-        border-bottom: 1px solid #27313d;
-        padding: 9px;
-        text-align: left;
-        vertical-align: top;
-      }
-      th {
-        background: #1c222a;
-        color: #b3becb;
-        font-size: 12px;
-        font-weight: 800;
-        position: sticky;
-        text-transform: uppercase;
-        top: 0;
-      }
-      tr.selectable {
-        cursor: pointer;
-      }
-      tr.selectable:hover {
-        background: #1d2b33;
-      }
-      tr.selected {
-        background: var(--soft-blue);
-      }
-      .detail {
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        min-height: 180px;
-        padding: 12px;
-      }
-      .detail dl {
-        display: grid;
-        gap: 8px;
-        grid-template-columns: 92px minmax(0, 1fr);
-        margin: 0;
-      }
-      .detail dt {
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 750;
-        text-transform: uppercase;
-      }
-      .detail dd {
-        margin: 0;
-        overflow-wrap: anywhere;
-      }
-      pre {
-        background: #080b10;
-        border-radius: 8px;
-        color: #e5e7eb;
-        margin: 0;
-        max-height: 360px;
-        overflow: auto;
-        padding: 12px;
-        white-space: pre-wrap;
-        word-break: break-word;
-      }
-      .config-grid {
+      .split {
         display: grid;
         gap: 16px;
-        grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+        grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr);
       }
-      .workspace-bar {
-        align-items: end;
-        border-top: 1px solid var(--border);
+      .panel, .notice {
         display: grid;
         gap: 10px;
-        grid-template-columns: minmax(260px, 1fr) auto;
-        margin-top: 8px;
-        padding-top: 12px;
+        padding: 14px;
       }
-      .field-stack {
-        display: grid;
-        gap: 10px;
+      .notice {
+        border-left: 4px solid var(--primary);
       }
-      .provider-panel {
+      .metric {
         background: var(--panel-raised);
         border: 1px solid var(--border);
         border-radius: 8px;
-        display: grid;
-        gap: 10px;
-        padding: 12px;
+        min-height: 100px;
+        padding: 14px;
       }
-      .provider-grid {
+      .metric strong {
+        display: block;
+        font-size: 30px;
+        line-height: 1;
+        margin-bottom: 6px;
+      }
+      .form-grid {
         display: grid;
         gap: 10px;
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
+      .browser-frame {
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        height: calc(100vh - 220px);
+        min-height: 620px;
+        overflow: hidden;
+        width: 100%;
+      }
+      .browser-frame iframe {
+        border: 0;
+        height: 100%;
+        width: 100%;
+      }
+      .upload-list {
+        color: var(--muted);
+        display: grid;
+        font-size: 12px;
+        gap: 4px;
+      }
       @media (max-width: 1050px) {
-        .shell, .split, .config-grid, .summary-grid, .provider-grid {
+        .shell, .split, .welcome-grid, .form-grid {
           grid-template-columns: 1fr;
         }
         nav {
           grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-        .catalog-tools, .workspace-bar, .inline-fields {
-          grid-template-columns: 1fr;
         }
       }
     </style>
@@ -381,26 +282,26 @@
 
     <div class="shell">
       <nav aria-label="Primary">
-        <button class="nav-button active" data-tab="start">Start Here</button>
-        <button class="nav-button" data-tab="catalog">Catalog</button>
+        <button class="nav-button active" data-tab="welcome">Welcome</button>
         <button class="nav-button" data-tab="drafting">Drafting Table</button>
-        <button class="nav-button" data-tab="config">Configuration</button>
+        <button class="nav-button" data-tab="architecture">Architecture</button>
+        <button class="nav-button" data-tab="setup">Setup</button>
       </nav>
 
       <main>
-        <section class="tab-panel active" id="tab-start">
+        <section class="tab-panel active" id="tab-welcome">
           <div class="headline">
             <div>
-              <h2>Welcome to the Drafting Table</h2>
+              <h2>Welcome to DRAFT</h2>
               <p class="muted" id="workspace-label">Loading workspace</p>
             </div>
-            <div class="headline-actions">
-              <button id="start-validate">Validate</button>
-              <button id="start-status" class="secondary">Git Status</button>
+            <div class="actions">
+              <button data-go="drafting">Start Drafting</button>
+              <button data-go="architecture" class="secondary">Surf Architecture</button>
             </div>
           </div>
 
-          <div class="summary-grid">
+          <div class="welcome-grid">
             <div class="metric">
               <strong id="metric-total">0</strong>
               <span class="muted">Effective objects</span>
@@ -413,216 +314,136 @@
               <strong id="metric-config">0</strong>
               <span class="muted">Configuration objects</span>
             </div>
-            <div class="metric">
-              <strong id="metric-framework">0</strong>
-              <span class="muted">Framework objects</span>
-            </div>
           </div>
 
           <div class="split">
-            <div class="work-area">
-              <div class="notice">
-                <h3>Start with the catalog</h3>
-                <p class="muted">Browse existing artifacts before creating new ones.</p>
-                <div class="actions">
-                  <button data-go="catalog">Browse Catalog</button>
-                  <button data-go="drafting" class="secondary">Open Drafting Table</button>
-                </div>
-              </div>
-              <div class="notice warning" id="draftsman-mode">
-                <h3>Draftsman</h3>
-                <p class="muted">Loading Draftsman configuration.</p>
+            <div class="notice">
+              <h3>Workspace Flow</h3>
+              <p class="muted">The Drafting Table gives the Draftsman the effective DRAFT model. The app/API owns validation, writes, commits to the configured working branch, and pull-request publishing for protected branches.</p>
+              <div class="actions">
+                <button data-go="drafting">Open Drafting Table</button>
+                <button id="welcome-validate" class="secondary">Validate Workspace</button>
               </div>
             </div>
-            <pre id="start-output"></pre>
-          </div>
-        </section>
-
-        <section class="tab-panel" id="tab-catalog">
-          <div class="headline">
-            <div>
-              <h2>Catalog</h2>
-              <p class="muted">Read-only browsing for the current effective model.</p>
-            </div>
-            <div class="headline-actions">
-              <button id="reload-catalog" class="secondary">Reload</button>
+            <div class="notice" id="draftsman-status">
+              <h3>Draftsman</h3>
+              <p class="muted">Loading sign-in state.</p>
             </div>
           </div>
-
-          <div class="catalog-tools">
-            <input id="catalog-search" placeholder="Search ID, name, type, source" />
-            <select id="type-filter">
-              <option value="">All types</option>
-            </select>
-            <select id="layer-filter">
-              <option value="">All layers</option>
-              <option value="catalog">Catalog</option>
-              <option value="configuration">Configuration</option>
-              <option value="framework">Framework</option>
-            </select>
-          </div>
-
-          <div class="split">
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr><th>ID</th><th>Name</th><th>Type</th><th>Layer</th></tr>
-                </thead>
-                <tbody id="objects"></tbody>
-              </table>
-            </div>
-            <div class="detail" id="object-detail">
-              <h3>No object selected</h3>
-              <p class="muted">Select a row to inspect an artifact.</p>
-            </div>
-          </div>
+          <pre id="welcome-output"></pre>
         </section>
 
         <section class="tab-panel" id="tab-drafting">
           <div class="headline">
             <div>
               <h2>Drafting Table</h2>
-              <p class="muted">Create a change request for an existing artifact or a new architecture object.</p>
+              <p class="muted">Upload diagrams, paste notes, or describe the architecture change you want DRAFT to model.</p>
             </div>
-            <div class="headline-actions">
-              <button id="engage-draftsman">Engage Draftsman</button>
-              <button id="write-patch" class="secondary">Write Patch</button>
+            <div class="actions">
+              <button id="ask-draftsman">Ask Draftsman</button>
+              <button id="draft-validate" class="secondary">Validate</button>
             </div>
           </div>
 
           <div class="split">
-            <div class="work-area">
-              <div class="inline-fields">
+            <div class="grid">
+              <div class="form-grid">
                 <div>
                   <label for="target">Target Object ID</label>
-                  <input id="target" placeholder="Select from catalog or enter an ID" />
+                  <input id="target" placeholder="Optional existing object ID" />
                 </div>
                 <div>
-                  <label for="purpose">Change Purpose</label>
-                  <input id="purpose" value="override" />
+                  <label for="draft-files">Source Material</label>
+                  <input id="draft-files" type="file" multiple accept="image/*,.txt,.md,.markdown,.yaml,.yml,.json,.csv" />
                 </div>
               </div>
+              <div class="upload-list" id="upload-list">No files selected.</div>
               <div>
-                <label for="draft-request">Draft Request</label>
-                <textarea id="draft-request" placeholder="Describe the architecture artifact or change you want to make."></textarea>
-              </div>
-              <div>
-                <label for="patch">Patch JSON</label>
-                <textarea id="patch">{
-  "catalogStatus": "draft"
-}</textarea>
+                <label for="draft-request">What do you want to build or change?</label>
+                <textarea id="draft-request" placeholder="Describe the system, product, diagram, requirement, or change. Include what should be reused off the shelf and what constraints or compliance needs matter."></textarea>
               </div>
             </div>
             <pre id="draft-output"></pre>
           </div>
         </section>
 
-        <section class="tab-panel" id="tab-config">
+        <section class="tab-panel" id="tab-architecture">
           <div class="headline">
             <div>
-              <h2>Configuration</h2>
-              <p class="muted">Workspace settings, Draftsman mode, validation, and publishing.</p>
-            </div>
-            <div class="headline-actions">
-              <button id="save-config">Save Config</button>
-              <button id="load-config" class="secondary">Reload</button>
-            </div>
-          </div>
-
-          <div class="workspace-bar">
-            <div>
-              <label for="workspace">Workspace Path</label>
-              <input id="workspace" placeholder="/path/to/company-draft-workspace" />
+              <h2>Architecture Catalog</h2>
+              <p class="muted">Read-only catalog browsing, using the same generated browser shape as GitHub Pages.</p>
             </div>
             <div class="actions">
-              <button id="init" class="secondary">Initialize</button>
-              <button id="load" class="secondary">Load</button>
+              <button id="draft-selected-object">Draft Change</button>
+              <button id="reload-browser" class="secondary">Reload Browser</button>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div>
+              <label for="selected-object">Selected Object ID</label>
+              <input id="selected-object" readonly placeholder="Open an object detail in the browser, then draft a change." />
+            </div>
+            <div class="notice">
+              <h3>Browse before drafting</h3>
+              <p class="muted">Select an artifact in the catalog browser, then use Draft Change to continue at the Drafting Table.</p>
+            </div>
+          </div>
+          <div class="browser-frame">
+            <iframe id="browser-frame" title="DRAFT architecture browser"></iframe>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="tab-setup">
+          <div class="headline">
+            <div>
+              <h2>Setup</h2>
+              <p class="muted">Runtime status, Draftsman sign-in, and Git publishing controls.</p>
+            </div>
+            <div class="actions">
+              <button id="reload-setup" class="secondary">Reload</button>
             </div>
           </div>
 
-          <div class="config-grid">
-            <div>
-              <label for="config">Workspace Config JSON</label>
-              <textarea id="config"></textarea>
-            </div>
-            <div class="work-area">
-              <div class="notice" id="config-draftsman">
-                <h3>Draftsman Mode</h3>
-                <p class="muted">Loading.</p>
-              </div>
-              <div class="notice field-stack" id="openai-draftsman-setup">
-                <h3>AI Draftsman Setup</h3>
-                <div class="provider-grid">
-                  <div>
-                    <label for="draftsman-mode-select">Mode</label>
-                    <select id="draftsman-mode-select">
-                      <option value="external">External Agent</option>
-                      <option value="embedded">Embedded ChatGPT Sign-In</option>
-                      <option value="disabled">Disabled</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="openai-provider">Provider</label>
-                    <select id="openai-provider">
-                      <option value="openai">OpenAI</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="provider-panel">
-                  <div class="provider-grid">
-                    <div>
-                      <label for="openai-model">OpenAI Model</label>
-                      <input id="openai-model" placeholder="gpt-5.5" />
-                    </div>
-                    <div>
-                      <label for="openai-redirect-uri">Local OAuth Callback</label>
-                      <input id="openai-redirect-uri" readonly />
-                    </div>
-                    <div>
-                      <label for="openai-client-id-ref">OAuth Client ID</label>
-                      <input id="openai-client-id-ref" readonly />
-                    </div>
-                    <div>
-                      <label for="openai-token-store">Token Store</label>
-                      <input id="openai-token-store" readonly />
-                    </div>
-                    <div>
-                      <label for="openai-account">Signed-In Account</label>
-                      <input id="openai-account" readonly />
-                    </div>
-                    <div>
-                      <label for="openai-plan">Plan</label>
-                      <input id="openai-plan" readonly />
-                    </div>
-                    <div style="display: none;">
-                      <label for="openai-client-secret-ref">Unused Secret Ref</label>
-                      <input id="openai-client-secret-ref" />
-                    </div>
-                  </div>
-                  <div class="actions">
-                    <button id="use-openai-oauth">Sign In with ChatGPT</button>
-                    <button id="save-draftsman-setup" class="secondary">Save Setup</button>
-                    <button id="import-codex-auth" class="secondary">Use Existing Codex Login</button>
-                    <button id="check-openai-oauth" class="secondary">Check Sign-In</button>
-                    <button id="logout-openai-oauth" class="secondary">Sign Out</button>
-                  </div>
-                  <p class="muted">Each user signs in separately. Tokens are stored under that user's home directory and never in the workspace repo.</p>
-                </div>
-              </div>
+          <div class="split">
+            <div class="grid">
               <div>
+                <label for="workspace">Workspace Path</label>
+                <input id="workspace" />
+              </div>
+              <div class="panel">
+                <h3>Draftsman Sign-In</h3>
+                <p class="muted">OpenAI ChatGPT/Codex is available now. Other providers are coming soon.</p>
+                <div class="form-grid">
+                  <div>
+                    <label for="openai-account">Signed-In Account</label>
+                    <input id="openai-account" readonly />
+                  </div>
+                  <div>
+                    <label for="openai-token-store">Token Store</label>
+                    <input id="openai-token-store" readonly />
+                  </div>
+                </div>
+                <div class="actions">
+                  <button id="sign-in">Sign In with ChatGPT</button>
+                  <button id="import-codex-auth" class="secondary">Use Existing Codex Login</button>
+                  <button id="check-sign-in" class="secondary">Check Sign-In</button>
+                  <button id="sign-out" class="secondary">Sign Out</button>
+                </div>
+              </div>
+              <div class="panel">
+                <h3>Git Workflow</h3>
+                <p class="muted">DRAFT commits app-generated changes to the configured working branch and opens a pull request when publishing to protected branches.</p>
                 <label for="message">Commit Message</label>
                 <input id="message" value="Update DRAFT workspace" />
+                <div class="actions">
+                  <button id="status" class="secondary">Git Status</button>
+                  <button id="commit" class="secondary">Commit</button>
+                  <button id="push" class="secondary">Push</button>
+                  <button id="publish" class="secondary">Publish PR</button>
+                </div>
               </div>
-              <div class="actions">
-                <button id="validate">Validate</button>
-                <button id="status" class="secondary">Git Status</button>
-                <button id="commit" class="secondary">Commit</button>
-                <button id="push" class="secondary">Push</button>
-                <button id="publish" class="secondary">Publish</button>
-                <button id="updates" class="ghost">Framework Check</button>
-              </div>
-              <pre id="config-output"></pre>
             </div>
+            <pre id="setup-output"></pre>
           </div>
         </section>
       </main>
@@ -631,37 +452,15 @@
     <script>
       const state = {
         model: {objects: [], layers: []},
-        filtered: [],
-        selected: null,
-        draftsman: null
+        draftsman: null,
+        attachments: []
       };
 
       const workspaceInput = document.getElementById('workspace');
-      const config = document.getElementById('config');
-      const objects = document.getElementById('objects');
-      const objectDetail = document.getElementById('object-detail');
-      const typeFilter = document.getElementById('type-filter');
-      const layerFilter = document.getElementById('layer-filter');
-      const catalogSearch = document.getElementById('catalog-search');
-      const draftsmanModeSelect = document.getElementById('draftsman-mode-select');
-      const openaiProvider = document.getElementById('openai-provider');
-      const openaiModel = document.getElementById('openai-model');
-      const openaiRedirectUri = document.getElementById('openai-redirect-uri');
-      const openaiClientIdRef = document.getElementById('openai-client-id-ref');
-      const openaiClientSecretRef = document.getElementById('openai-client-secret-ref');
-      const openaiTokenStore = document.getElementById('openai-token-store');
-      const openaiAccount = document.getElementById('openai-account');
-      const openaiPlan = document.getElementById('openai-plan');
-
-      function escapeHtml(value) {
-        return String(value ?? '').replace(/[&<>"']/g, character => ({
-          '&': '&amp;',
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#39;'
-        }[character]));
-      }
+      const browserFrame = document.getElementById('browser-frame');
+      const draftFiles = document.getElementById('draft-files');
+      const uploadList = document.getElementById('upload-list');
+      const selectedObject = document.getElementById('selected-object');
 
       function workspaceValue() {
         return workspaceInput.value.trim() || null;
@@ -676,56 +475,13 @@
         document.getElementById(target).textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
       }
 
-      function deepMerge(base, patch) {
-        if (base && patch && typeof base === 'object' && typeof patch === 'object' && !Array.isArray(base) && !Array.isArray(patch)) {
-          return Object.fromEntries(Array.from(new Set([...Object.keys(base), ...Object.keys(patch)])).map(key => [
-            key,
-            key in patch ? deepMerge(base[key], patch[key]) : base[key]
-          ]));
-        }
-        return patch === undefined ? base : patch;
-      }
-
-      function defaultDraftsmanConfig() {
-        return {
-          mode: 'external',
-          external: {
-            enabled: true,
-            description: 'Use an external AI agent with AGENTS.md, AI_INDEX.md, and the DRAFT App API.',
-            entrypoints: ['AGENTS.md', 'AI_INDEX.md', 'framework/docs/draftsman.md', 'app/api']
-          },
-          embedded: {
-            enabled: false,
-            provider: 'openai',
-            model: 'gpt-5.5',
-            auth: {
-              type: 'oauth',
-              clientId: 'app_EMoamEEZ73f0CkXaXp7hrann',
-              redirectUri: 'http://localhost:1455/auth/callback',
-              tokenStorage: 'user-local',
-              apiKeysAllowed: false
-            }
-          },
-          security: {
-            storeSecretsInWorkspace: false,
-            sendGitCredentialsToModel: false,
-            writeRequiresAppValidation: true
-          }
-        };
-      }
-
-      function normalizedDraftsmanConfig(value) {
-        return deepMerge(defaultDraftsmanConfig(), value || {});
-      }
-
-      async function requestJson(url, options = {}, output = 'config-output') {
+      async function requestJson(url, options = {}, output = 'setup-output') {
         const response = await fetch(url, options);
-        const data = await response.json();
-        if (!response.ok) {
-          show(output, data);
-          return data;
-        }
-        show(output, data);
+        const contentType = response.headers.get('content-type') || '';
+        const data = contentType.includes('application/json')
+          ? await response.json()
+          : {ok: response.ok, status: response.status, body: await response.text()};
+        show(output, response.ok ? data : data);
         return data;
       }
 
@@ -736,6 +492,9 @@
         document.querySelectorAll('.tab-panel').forEach(panel => {
           panel.classList.toggle('active', panel.id === `tab-${tab}`);
         });
+        if (tab === 'architecture') {
+          loadBrowser();
+        }
       }
 
       function layerCount(name) {
@@ -743,207 +502,165 @@
         return layer ? layer.count : 0;
       }
 
-      function updateMetrics() {
+      function renderMetrics() {
         document.getElementById('metric-total').textContent = (state.model.objects || []).length;
         document.getElementById('metric-catalog').textContent = layerCount('catalog');
         document.getElementById('metric-config').textContent = layerCount('configuration');
-        document.getElementById('metric-framework').textContent = layerCount('framework');
         document.getElementById('workspace-label').textContent = state.model.workspace || 'No workspace loaded';
       }
 
-      function renderDraftsmanStatus() {
-        const status = state.draftsman?.status;
-        const mode = status?.mode || 'external';
-        const available = mode === 'embedded'
-          ? (status?.embeddedDraftsmanAvailable ? 'Embedded Draftsman ready' : 'ChatGPT sign-in required')
-          : (mode === 'disabled' ? 'Draftsman disabled' : 'External Draftsman mode');
-        const issues = (status?.issues || []).map(item => `<div>${escapeHtml(item)}</div>`).join('');
-        const account = status?.auth?.email || status?.auth?.accountId || 'not signed in';
-        const body = `
+      function renderDraftsman() {
+        const status = state.draftsman?.status || {};
+        const account = status.auth?.email || status.auth?.accountId || 'Not signed in';
+        const ready = status.embeddedDraftsmanAvailable ? 'ready' : 'sign-in required';
+        document.getElementById('draftsman-status').innerHTML = `
           <h3>Draftsman</h3>
-          <p class="muted">${escapeHtml(available)}</p>
-          <p class="muted">Mode: ${escapeHtml(mode)}; provider: ${escapeHtml(status?.embeddedProvider || 'openai')}; account: ${escapeHtml(account)}.</p>
-          ${issues ? `<div class="muted">${issues}</div>` : ''}
+          <p class="muted">Embedded Draftsman is ${ready}.</p>
+          <p class="muted">Account: ${account}</p>
         `;
-        document.getElementById('draftsman-mode').innerHTML = body;
-        document.getElementById('config-draftsman').innerHTML = body;
+        document.getElementById('openai-account').value = account;
+        document.getElementById('openai-token-store').value = status.auth?.tokenStore || '';
       }
 
-      function renderDraftsmanControls() {
-        const draftConfig = normalizedDraftsmanConfig(state.draftsman?.config);
-        draftsmanModeSelect.value = draftConfig.mode || 'external';
-        openaiProvider.value = draftConfig.embedded?.provider || 'openai';
-        openaiModel.value = draftConfig.embedded?.model || '';
-        openaiRedirectUri.value = draftConfig.embedded?.auth?.redirectUri || 'http://localhost:1455/auth/callback';
-        openaiClientIdRef.value = draftConfig.embedded?.auth?.clientId || 'app_EMoamEEZ73f0CkXaXp7hrann';
-        openaiClientSecretRef.value = '';
-        openaiTokenStore.value = state.draftsman?.status?.auth?.tokenStore || '';
-        openaiAccount.value = state.draftsman?.status?.auth?.email || state.draftsman?.status?.auth?.accountId || 'Not signed in';
-        openaiPlan.value = state.draftsman?.status?.auth?.planType || '';
-      }
-
-      function draftsmanConfigFromControls() {
-        const mode = draftsmanModeSelect.value || 'external';
-        return normalizedDraftsmanConfig({
-          mode,
-          external: {
-            enabled: mode !== 'disabled'
-          },
-          embedded: {
-            enabled: mode === 'embedded',
-            provider: openaiProvider.value || 'openai',
-            model: openaiModel.value.trim(),
-            auth: {
-              type: 'oauth',
-              clientId: openaiClientIdRef.value.trim() || 'app_EMoamEEZ73f0CkXaXp7hrann',
-              redirectUri: openaiRedirectUri.value.trim() || 'http://localhost:1455/auth/callback',
-              tokenStorage: 'user-local',
-              apiKeysAllowed: false
-            }
-          },
-          security: {
-            storeSecretsInWorkspace: false,
-            sendGitCredentialsToModel: false,
-            writeRequiresAppValidation: true
-          }
-        });
-      }
-
-      function populateFilters() {
-        const current = typeFilter.value;
-        const types = Array.from(new Set((state.model.objects || []).map(item => item.type).filter(Boolean))).sort();
-        typeFilter.innerHTML = '<option value="">All types</option>' + types.map(type => (
-          `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`
-        )).join('');
-        typeFilter.value = types.includes(current) ? current : '';
-      }
-
-      function filterObjects() {
-        const query = catalogSearch.value.trim().toLowerCase();
-        const type = typeFilter.value;
-        const layer = layerFilter.value;
-        state.filtered = (state.model.objects || []).filter(item => {
-          const text = [item.id, item.name, item.type, item.layer, item.source].join(' ').toLowerCase();
-          return (!query || text.includes(query)) && (!type || item.type === type) && (!layer || item.layer === layer);
-        });
-        renderCatalog();
-      }
-
-      function renderCatalog() {
-        objects.innerHTML = state.filtered.map(item => `
-          <tr class="selectable ${state.selected?.id === item.id ? 'selected' : ''}" data-id="${escapeHtml(item.id)}">
-            <td>${escapeHtml(item.id)}</td>
-            <td>${escapeHtml(item.name)}</td>
-            <td>${escapeHtml(item.type)}</td>
-            <td>${escapeHtml(item.layer)}</td>
-          </tr>
-        `).join('');
-        objects.querySelectorAll('tr').forEach(row => {
-          row.addEventListener('click', () => selectObject(row.dataset.id));
-        });
-      }
-
-      function selectObject(id) {
-        state.selected = (state.model.objects || []).find(item => item.id === id) || null;
-        if (!state.selected) {
-          return;
-        }
-        document.getElementById('target').value = state.selected.id;
-        objectDetail.innerHTML = `
-          <h3>${escapeHtml(state.selected.name || state.selected.id)}</h3>
-          <dl>
-            <dt>ID</dt><dd>${escapeHtml(state.selected.id)}</dd>
-            <dt>Type</dt><dd>${escapeHtml(state.selected.type)}</dd>
-            <dt>Layer</dt><dd>${escapeHtml(state.selected.layer)}</dd>
-            <dt>Source</dt><dd>${escapeHtml(state.selected.source)}</dd>
-          </dl>
-          <div class="actions" style="margin-top: 12px;">
-            <button data-action="draft-selected">Engage Draftsman</button>
-            <button data-action="copy-json" class="secondary">Show JSON</button>
-          </div>
-        `;
-        objectDetail.querySelector('[data-action="draft-selected"]').addEventListener('click', () => {
-          document.getElementById('draft-request').value = `Update ${state.selected.id}: `;
-          setTab('drafting');
-        });
-        objectDetail.querySelector('[data-action="copy-json"]').addEventListener('click', () => {
-          show('start-output', state.selected);
-          setTab('start');
-        });
-        renderCatalog();
-      }
-
-      async function loadModel() {
-        const data = await requestJson(`/api/workspace/effective-model${workspaceQuery()}`, {}, 'start-output');
-        state.model = data.objects ? data : {objects: [], layers: []};
-        updateMetrics();
-        populateFilters();
-        filterObjects();
-      }
-
-      async function loadConfig() {
-        const data = await requestJson(`/api/workspace/config${workspaceQuery()}`, {}, 'config-output');
+      async function loadWorkspaceConfig() {
+        const data = await requestJson(`/api/workspace/config${workspaceQuery()}`, {}, 'setup-output');
         if (data.workspace && !workspaceInput.value.trim()) {
           workspaceInput.value = data.workspace;
         }
-        config.value = JSON.stringify(data.config || {}, null, 2);
+      }
+
+      async function loadModel() {
+        const data = await requestJson(`/api/workspace/effective-model${workspaceQuery()}`, {}, 'welcome-output');
+        state.model = data.objects ? data : {objects: [], layers: []};
+        renderMetrics();
       }
 
       async function loadDraftsman() {
-        const data = await requestJson(`/api/draftsman/config${workspaceQuery()}`, {}, 'config-output');
+        const data = await requestJson(`/api/draftsman/config${workspaceQuery()}`, {}, 'setup-output');
         state.draftsman = data;
-        renderDraftsmanStatus();
-        renderDraftsmanControls();
+        renderDraftsman();
       }
 
-      async function initializeWorkspace() {
+      async function refreshAll() {
+        await loadWorkspaceConfig();
+        await loadModel();
+        await loadDraftsman();
+      }
+
+      function browserUrl() {
+        const params = new URLSearchParams();
         const workspace = workspaceValue();
-        if (!workspace) {
-          show('config-output', {ok: false, error: 'Workspace path is required'});
+        if (workspace) {
+          params.set('workspace', workspace);
+        }
+        params.set('ts', String(Date.now()));
+        return `/api/catalog/browser?${params.toString()}`;
+      }
+
+      function loadBrowser() {
+        browserFrame.src = browserUrl();
+      }
+
+      function selectedBrowserObjectId() {
+        try {
+          const hash = browserFrame.contentWindow.location.hash.replace(/^#/, '');
+          const params = new URLSearchParams(hash);
+          return params.get('view') === 'detail' ? params.get('id') : '';
+        } catch (error) {
+          return '';
+        }
+      }
+
+      function syncSelectedObject() {
+        const objectId = selectedBrowserObjectId();
+        if (objectId) {
+          selectedObject.value = objectId;
+        }
+        return objectId;
+      }
+
+      function draftSelectedObject() {
+        const objectId = syncSelectedObject();
+        if (!objectId) {
+          selectedObject.value = '';
+          show('welcome-output', {ok: false, message: 'Open an object detail in the Architecture browser before drafting a change.'});
           return;
         }
-        await requestJson('/api/workspace/init', {
+        document.getElementById('target').value = objectId;
+        document.getElementById('draft-request').value = `Update ${objectId}: `;
+        setTab('drafting');
+      }
+
+      async function validateWorkspace(output = 'setup-output') {
+        const data = await requestJson('/api/workspace/validate', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({workspace})
-        }, 'config-output');
-        await refreshAll();
+          body: JSON.stringify({workspace: workspaceValue()})
+        }, output);
+        show(output, data.stdout || data.stderr || data);
       }
 
-      async function saveConfig() {
-        await requestJson('/api/workspace/config', {
-          method: 'PUT',
+      async function gitStatus() {
+        const data = await requestJson(`/api/git/status${workspaceQuery()}`, {}, 'setup-output');
+        show('setup-output', data.stdout || data.stderr || data);
+      }
+
+      async function commitWorkspace() {
+        await requestJson('/api/git/commit', {
+          method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({workspace: workspaceValue(), config: JSON.parse(config.value || '{}')})
-        }, 'config-output');
-        await loadDraftsman();
+          body: JSON.stringify({workspace: workspaceValue(), message: document.getElementById('message').value})
+        }, 'setup-output');
       }
 
-      async function saveDraftsmanSetup() {
-        const data = await requestJson('/api/draftsman/config', {
-          method: 'PUT',
+      async function pushWorkspace() {
+        await requestJson('/api/git/push', {
+          method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({workspace: workspaceValue(), config: draftsmanConfigFromControls()})
-        }, 'config-output');
-        if (data.config) {
-          state.draftsman = data;
-        }
-        await loadConfig();
-        await loadDraftsman();
+          body: JSON.stringify({workspace: workspaceValue()})
+        }, 'setup-output');
       }
 
-      async function useOpenAiOauth() {
+      async function publishWorkspace() {
+        await requestJson('/api/publish', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({workspace: workspaceValue()})
+        }, 'setup-output');
+      }
+
+      async function signIn() {
         const signInWindow = window.open('about:blank', '_blank');
-        draftsmanModeSelect.value = 'embedded';
-        await saveDraftsmanSetup();
-        const data = await requestJson(`/api/draftsman/oauth/openai/start${workspaceQuery()}`, {}, 'config-output');
+        await requestJson('/api/draftsman/config', {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            workspace: workspaceValue(),
+            config: {
+              mode: 'embedded',
+              embedded: {
+                enabled: true,
+                provider: 'openai',
+                model: 'gpt-5.5',
+                auth: {
+                  type: 'oauth',
+                  clientId: 'app_EMoamEEZ73f0CkXaXp7hrann',
+                  redirectUri: 'http://localhost:1455/auth/callback',
+                  tokenStorage: 'user-local',
+                  apiKeysAllowed: false
+                }
+              }
+            }
+          })
+        }, 'setup-output');
+        const data = await requestJson(`/api/draftsman/oauth/openai/start${workspaceQuery()}`, {}, 'setup-output');
         if (data.authUrl) {
           if (signInWindow) {
             signInWindow.location = data.authUrl;
           } else {
             window.location.href = data.authUrl;
           }
-          show('config-output', {
+          show('setup-output', {
             ok: true,
             message: 'Continue sign-in in the browser window. Return here and click Check Sign-In when complete.',
             callbackListener: data.callbackListener,
@@ -954,110 +671,74 @@
         }
       }
 
-      async function checkOpenAiOauth() {
-        await requestJson(`/api/draftsman/oauth/openai/status${workspaceQuery()}`, {}, 'config-output');
-        await loadDraftsman();
-      }
-
       async function importCodexAuth() {
         await requestJson('/api/draftsman/oauth/openai/import-codex', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({workspace: workspaceValue()})
-        }, 'config-output');
-        draftsmanModeSelect.value = 'embedded';
-        await saveDraftsmanSetup();
+        }, 'setup-output');
         await loadDraftsman();
       }
 
-      async function logoutOpenAiOauth() {
+      async function checkSignIn() {
+        await requestJson(`/api/draftsman/oauth/openai/status${workspaceQuery()}`, {}, 'setup-output');
+        await loadDraftsman();
+      }
+
+      async function signOut() {
         await requestJson('/api/draftsman/oauth/openai/logout', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({workspace: workspaceValue()})
-        }, 'config-output');
+        }, 'setup-output');
         await loadDraftsman();
       }
 
-      async function validateWorkspace(output = 'config-output') {
-        const data = await requestJson('/api/workspace/validate', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({workspace: workspaceValue()})
-        }, output);
-        show(output, data.stdout || data.stderr || data);
+      async function readAttachment(file) {
+        if (file.type.startsWith('image/')) {
+          const dataUrl = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+          return {name: file.name, type: file.type, dataUrl};
+        }
+        const text = await file.text();
+        return {name: file.name, type: file.type || 'text/plain', text};
       }
 
-      async function gitStatus(output = 'config-output') {
-        const data = await requestJson(`/api/git/status${workspaceQuery()}`, {}, output);
-        show(output, data.stdout || data.stderr || data);
+      async function updateAttachments() {
+        const files = Array.from(draftFiles.files || []);
+        state.attachments = await Promise.all(files.map(readAttachment));
+        uploadList.textContent = files.length ? files.map(file => `${file.name} (${file.type || 'file'})`).join('\n') : 'No files selected.';
       }
 
-      async function commitWorkspace() {
-        await requestJson('/api/git/commit', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({workspace: workspaceValue(), message: document.getElementById('message').value})
-        }, 'config-output');
-      }
-
-      async function pushWorkspace() {
-        await requestJson('/api/git/push', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({workspace: workspaceValue()})
-        }, 'config-output');
-      }
-
-      async function publishWorkspace() {
-        await requestJson('/api/publish', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({workspace: workspaceValue()})
-        }, 'config-output');
-      }
-
-      async function writePatch() {
-        await requestJson('/api/object-patches/upsert', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            workspace: workspaceValue(),
-            target: document.getElementById('target').value.trim(),
-            purpose: document.getElementById('purpose').value.trim() || 'override',
-            patch: JSON.parse(document.getElementById('patch').value || '{}')
-          })
-        }, 'draft-output');
-        await loadModel();
-      }
-
-      async function engageDraftsman() {
-        await requestJson('/api/draftsman/chat', {
+      async function askDraftsman() {
+        await updateAttachments();
+        const message = document.getElementById('draft-request').value.trim();
+        if (!message && !state.attachments.length) {
+          show('draft-output', {ok: false, error: 'Describe what you want to build or upload source material.'});
+          return;
+        }
+        const data = await requestJson('/api/draftsman/chat', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             workspace: workspaceValue(),
             contextObjectId: document.getElementById('target').value.trim() || null,
-            message: document.getElementById('draft-request').value.trim() || 'Start a drafting session.'
+            message: message || 'Use the uploaded source material to start a drafting session.',
+            attachments: state.attachments
           })
         }, 'draft-output');
-      }
-
-      async function frameworkCheck() {
-        await requestJson(`/api/framework/updates${workspaceQuery()}`, {}, 'config-output');
+        show('draft-output', data.message || data.detail || data);
       }
 
       async function health() {
-        const data = await requestJson('/api/health', {}, 'start-output');
-        const health = document.getElementById('health');
-        health.textContent = data.status || 'unknown';
-        health.classList.toggle('ok', data.status === 'ok');
-      }
-
-      async function refreshAll() {
-        await loadConfig();
-        await loadModel();
-        await loadDraftsman();
+        const data = await requestJson('/api/health', {}, 'welcome-output');
+        const pill = document.getElementById('health');
+        pill.textContent = data.status || 'unknown';
+        pill.classList.toggle('ok', data.status === 'ok');
       }
 
       document.querySelectorAll('.nav-button').forEach(button => {
@@ -1067,29 +748,29 @@
         button.addEventListener('click', () => setTab(button.dataset.go));
       });
 
-      document.getElementById('init').addEventListener('click', initializeWorkspace);
-      document.getElementById('load').addEventListener('click', refreshAll);
-      document.getElementById('load-config').addEventListener('click', loadConfig);
-      document.getElementById('save-config').addEventListener('click', saveConfig);
-      document.getElementById('use-openai-oauth').addEventListener('click', useOpenAiOauth);
-      document.getElementById('save-draftsman-setup').addEventListener('click', saveDraftsmanSetup);
+      document.getElementById('welcome-validate').addEventListener('click', () => validateWorkspace('welcome-output'));
+      document.getElementById('draft-validate').addEventListener('click', () => validateWorkspace('draft-output'));
+      document.getElementById('ask-draftsman').addEventListener('click', askDraftsman);
+      document.getElementById('draft-selected-object').addEventListener('click', draftSelectedObject);
+      document.getElementById('reload-browser').addEventListener('click', loadBrowser);
+      document.getElementById('reload-setup').addEventListener('click', refreshAll);
+      document.getElementById('sign-in').addEventListener('click', signIn);
       document.getElementById('import-codex-auth').addEventListener('click', importCodexAuth);
-      document.getElementById('check-openai-oauth').addEventListener('click', checkOpenAiOauth);
-      document.getElementById('logout-openai-oauth').addEventListener('click', logoutOpenAiOauth);
-      document.getElementById('validate').addEventListener('click', () => validateWorkspace('config-output'));
-      document.getElementById('start-validate').addEventListener('click', () => validateWorkspace('start-output'));
-      document.getElementById('status').addEventListener('click', () => gitStatus('config-output'));
-      document.getElementById('start-status').addEventListener('click', () => gitStatus('start-output'));
+      document.getElementById('check-sign-in').addEventListener('click', checkSignIn);
+      document.getElementById('sign-out').addEventListener('click', signOut);
+      document.getElementById('status').addEventListener('click', gitStatus);
       document.getElementById('commit').addEventListener('click', commitWorkspace);
       document.getElementById('push').addEventListener('click', pushWorkspace);
       document.getElementById('publish').addEventListener('click', publishWorkspace);
-      document.getElementById('updates').addEventListener('click', frameworkCheck);
-      document.getElementById('write-patch').addEventListener('click', writePatch);
-      document.getElementById('engage-draftsman').addEventListener('click', engageDraftsman);
-      document.getElementById('reload-catalog').addEventListener('click', loadModel);
-      catalogSearch.addEventListener('input', filterObjects);
-      typeFilter.addEventListener('change', filterObjects);
-      layerFilter.addEventListener('change', filterObjects);
+      draftFiles.addEventListener('change', updateAttachments);
+      browserFrame.addEventListener('load', () => {
+        syncSelectedObject();
+        try {
+          browserFrame.contentWindow.addEventListener('hashchange', syncSelectedObject);
+        } catch (error) {
+          // The iframe is same-origin for the local app; ignore if a browser blocks access.
+        }
+      });
 
       health();
       refreshAll();

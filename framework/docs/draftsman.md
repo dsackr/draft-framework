@@ -29,8 +29,8 @@ same contract as the UI.
 
 Draftsman AI execution is configurable per workspace. External-agent mode lets
 an AI assistant act as the Draftsman from outside the app. Embedded mode is
-reserved for a future in-app Draftsman conversation and is limited to approved
-OAuth-based provider configurations. See
+available for the in-app Drafting Table through approved OAuth-based provider
+configurations. See
 [Draftsman AI configuration](draftsman-ai-configuration.md).
 
 When a user says "I need a draftsman", "act as draftsman", or otherwise asks

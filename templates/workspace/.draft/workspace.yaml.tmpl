@@ -7,8 +7,8 @@ repository:
   provider: github
   owner: <github-org>
   name: <private-repo>
-  defaultBranch: main
-  devBranch: dev
+  defaultBranch: <default-branch>
+  devBranch: <dev-branch>
   publishMode: pull-request
 
 framework:
@@ -39,13 +39,12 @@ draftsman:
   embedded:
     enabled: false
     provider: openai
-    model: <openai-model-id>
+    model: gpt-5.5
     auth:
       type: oauth
-      clientIdRef: DRAFT_OPENAI_OAUTH_CLIENT_ID
-      clientSecretRef: DRAFT_OPENAI_OAUTH_CLIENT_SECRET
-      redirectUri: http://127.0.0.1:8000/api/draftsman/oauth/openai/callback
-      tokenStorage: runtime
+      clientId: app_EMoamEEZ73f0CkXaXp7hrann
+      redirectUri: http://localhost:1455/auth/callback
+      tokenStorage: user-local
       apiKeysAllowed: false
   security:
     storeSecretsInWorkspace: false

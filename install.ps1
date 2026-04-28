@@ -6,6 +6,9 @@ param(
     [string]$Ref = "",
     [string]$BindHost = "",
     [int]$Port = 0,
+    [string]$ContentRepo = "",
+    [string]$DevBranch = "",
+    [switch]$SetupDraftsman,
     [switch]$NoStart,
     [switch]$NoWorkspace
 )
@@ -25,6 +28,12 @@ if ([string]::IsNullOrWhiteSpace($BindHost)) {
 if ($Port -eq 0) {
     $Port = if ($env:DRAFT_PORT) { [int]$env:DRAFT_PORT } else { 8000 }
 }
+if ([string]::IsNullOrWhiteSpace($ContentRepo)) {
+    $ContentRepo = if ($env:DRAFT_CONTENT_REPO) { $env:DRAFT_CONTENT_REPO } else { "" }
+}
+if ([string]::IsNullOrWhiteSpace($DevBranch)) {
+    $DevBranch = if ($env:DRAFT_DEV_BRANCH) { $env:DRAFT_DEV_BRANCH } else { "draft-dev" }
+}
 
 $StartApp = -not $NoStart
 if ($env:DRAFT_START_APP -match "^(0|false|no)$") {
@@ -35,6 +44,15 @@ $CreateWorkspace = -not $NoWorkspace
 if ($env:DRAFT_CREATE_WORKSPACE -match "^(0|false|no)$") {
     $CreateWorkspace = $false
 }
+
+$SetupDraftsmanNow = [bool]$SetupDraftsman
+if ($env:DRAFT_SETUP_DRAFTSMAN -match "^(1|true|yes)$") {
+    $SetupDraftsmanNow = $true
+}
+
+$script:ContentOwner = "github-org"
+$script:ContentName = ""
+$script:DefaultBranch = "main"
 
 function Write-Step {
     param([string]$Message)
@@ -51,6 +69,37 @@ function Require-Command {
     return $command.Source
 }
 
+function Read-Answer {
+    param(
+        [string]$Prompt,
+        [string]$Default = ""
+    )
+    if ([string]::IsNullOrWhiteSpace($Default)) {
+        return Read-Host $Prompt
+    }
+    $answer = Read-Host "$Prompt [$Default]"
+    if ([string]::IsNullOrWhiteSpace($answer)) {
+        return $Default
+    }
+    return $answer
+}
+
+function Read-YesNo {
+    param(
+        [string]$Prompt,
+        [string]$Default = "y"
+    )
+    $answer = Read-Answer -Prompt "$Prompt (y/n)" -Default $Default
+    return $answer -match "^[Yy]"
+}
+
+function Select-DraftsmanProvider {
+    $answer = Read-Answer -Prompt "Draftsman provider. OpenAI OAuth is available now; other models are coming soon" -Default "OpenAI OAuth"
+    if ($answer -notmatch "^[Oo]pen[Aa][Ii](\s+[Oo][Aa]uth)?$") {
+        Write-Host "Only OpenAI OAuth is available in this version; continuing with OpenAI OAuth."
+    }
+}
+
 function Invoke-Native {
     param(
         [string]$Command,
@@ -60,6 +109,18 @@ function Invoke-Native {
     if ($LASTEXITCODE -ne 0) {
         throw "Command failed: $Command $($Arguments -join ' ')"
     }
+}
+
+function Invoke-NativeCapture {
+    param(
+        [string]$Command,
+        [string[]]$Arguments
+    )
+    $output = & $Command @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "Command failed: $Command $($Arguments -join ' ')"
+    }
+    return ($output -join "`n").Trim()
 }
 
 function Expand-PathValue {
@@ -127,7 +188,10 @@ function Render-Template {
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $Target) | Out-Null
     $content = Get-Content -LiteralPath $Source -Raw
     $content = $content.Replace("<company-draft-workspace>", $WorkspaceName)
-    $content = $content.Replace("<private-repo>", $WorkspaceName)
+    $content = $content.Replace("<github-org>", $script:ContentOwner)
+    $content = $content.Replace("<private-repo>", $(if ($script:ContentName) { $script:ContentName } else { $WorkspaceName }))
+    $content = $content.Replace("<default-branch>", $script:DefaultBranch)
+    $content = $content.Replace("<dev-branch>", $DevBranch)
     $content = $content.Replace("<tag-or-branch>", $Ref)
     $content = $content.Replace("<resolved-sha>", $FrameworkCommit)
     $content = $content.Replace("<iso-8601-timestamp>", $Timestamp)
@@ -178,7 +242,150 @@ function Copy-WorkspaceTemplate {
 
     if (-not (Test-Path -LiteralPath (Join-Path $WorkspaceRoot ".git"))) {
         Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceRoot, "init")
-        Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceRoot, "symbolic-ref", "HEAD", "refs/heads/dev")
+        Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceRoot, "symbolic-ref", "HEAD", "refs/heads/$DevBranch")
+    }
+}
+
+function Resolve-RepoSlug {
+    param([string]$RepoValue)
+    $slug = $RepoValue.Trim()
+    $slug = $slug -replace "^https://github.com/", ""
+    $slug = $slug -replace "^http://github.com/", ""
+    $slug = $slug -replace "^git@github.com:", ""
+    $slug = $slug -replace "\.git$", ""
+    return $slug
+}
+
+function Configure-ContentRepo {
+    if ([string]::IsNullOrWhiteSpace($ContentRepo)) {
+        $script:ContentRepo = Read-Answer -Prompt "What GitHub repo will you use with DRAFT? Use owner/repo or a GitHub URL"
+    }
+    if ([string]::IsNullOrWhiteSpace($ContentRepo)) {
+        throw "A company content repo is required. Pass -ContentRepo owner/repo or set DRAFT_CONTENT_REPO."
+    }
+
+    $script:GhCommand = Require-Command "gh"
+    Invoke-Native -Command $script:GhCommand -Arguments @("auth", "status")
+
+    $slug = Resolve-RepoSlug -RepoValue $ContentRepo
+    Write-Step "Checking GitHub repo access: $slug"
+    $infoJson = Invoke-NativeCapture -Command $script:GhCommand -Arguments @("repo", "view", $slug, "--json", "nameWithOwner,defaultBranchRef")
+    $info = $infoJson | ConvertFrom-Json
+    $script:ContentOwner = ($info.nameWithOwner -split "/")[0]
+    $script:ContentName = ($info.nameWithOwner -split "/")[1]
+    if ($info.defaultBranchRef -and $info.defaultBranchRef.name) {
+        $script:DefaultBranch = $info.defaultBranchRef.name
+    }
+
+    if (Test-Path -LiteralPath (Join-Path $WorkspaceDir ".git")) {
+        Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceDir, "fetch", "origin")
+    }
+    elseif ((Test-Path -LiteralPath $WorkspaceDir) -and (Get-ChildItem -LiteralPath $WorkspaceDir -Force | Select-Object -First 1)) {
+        throw "Workspace path exists but is not an empty Git checkout: $WorkspaceDir"
+    }
+    else {
+        $workspaceParent = Split-Path -Parent $WorkspaceDir
+        if (-not [string]::IsNullOrWhiteSpace($workspaceParent)) {
+            New-Item -ItemType Directory -Force -Path $workspaceParent | Out-Null
+        }
+        Invoke-Native -Command $script:GhCommand -Arguments @("repo", "clone", $slug, $WorkspaceDir)
+    }
+
+    Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceDir, "fetch", "origin")
+    & $script:GitCommand -C $WorkspaceDir show-ref --verify --quiet "refs/remotes/origin/$DevBranch"
+    if ($LASTEXITCODE -eq 0) {
+        Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceDir, "checkout", $DevBranch)
+        Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceDir, "pull", "--ff-only", "origin", $DevBranch)
+    }
+    else {
+        & $script:GitCommand -C $WorkspaceDir rev-parse --verify HEAD | Out-Null
+        if ($LASTEXITCODE -eq 0) {
+            Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceDir, "checkout", "-B", $DevBranch)
+        }
+        else {
+            Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceDir, "checkout", "--orphan", $DevBranch)
+        }
+    }
+}
+
+function Commit-WorkspaceSetup {
+    Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceDir, "add", ".gitignore", ".draft", "catalog", "configurations")
+    & $script:GitCommand -C $WorkspaceDir diff --cached --quiet
+    if ($LASTEXITCODE -eq 0) {
+        return
+    }
+    Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceDir, "commit", "-m", "Initialize DRAFT workspace")
+    Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceDir, "push", "-u", "origin", $DevBranch)
+}
+
+function Wait-App {
+    $url = "http://${BindHost}:$Port/api/health"
+    for ($i = 0; $i -lt 40; $i++) {
+        try {
+            Invoke-RestMethod -Uri $url -TimeoutSec 1 | Out-Null
+            return $true
+        }
+        catch {
+            Start-Sleep -Milliseconds 500
+        }
+    }
+    return $false
+}
+
+function Start-DraftsmanOAuth {
+    $encodedWorkspace = [System.Uri]::EscapeDataString($WorkspaceDir)
+    $url = "http://${BindHost}:$Port/api/draftsman/oauth/openai/start?workspace=$encodedWorkspace"
+    $response = Invoke-RestMethod -Uri $url -TimeoutSec 10
+    Write-Host ""
+    Write-Host "Opening ChatGPT sign-in for DRAFT Draftsman."
+    Start-Process $response.authUrl | Out-Null
+}
+
+function Enable-EmbeddedDraftsman {
+    $configPath = Join-Path $WorkspaceDir ".draft\workspace.yaml"
+    $pythonCode = @'
+from pathlib import Path
+import sys
+import yaml
+
+path = Path(sys.argv[1])
+config = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+draftsman = config.setdefault("draftsman", {})
+draftsman["mode"] = "embedded"
+embedded = draftsman.setdefault("embedded", {})
+embedded["enabled"] = True
+embedded["provider"] = "openai"
+embedded["model"] = embedded.get("model") or "gpt-5.5"
+auth = embedded.setdefault("auth", {})
+for key in (
+    "accessToken",
+    "access_token",
+    "apiKey",
+    "api_key",
+    "apiKeyRef",
+    "api_key_ref",
+    "clientSecret",
+    "client_secret",
+    "clientSecretRef",
+    "client_secret_ref",
+    "refreshToken",
+    "refresh_token",
+):
+    auth.pop(key, None)
+auth.update(
+    {
+        "type": "oauth",
+        "clientId": "app_EMoamEEZ73f0CkXaXp7hrann",
+        "redirectUri": "http://localhost:1455/auth/callback",
+        "tokenStorage": "user-local",
+        "apiKeysAllowed": False,
+    }
+)
+path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+'@
+    $pythonCode | & $venvPython - $configPath
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to update Draftsman configuration in $configPath"
     }
 }
 
@@ -241,8 +448,20 @@ if (-not (Test-Path -LiteralPath $venvPython)) {
 Invoke-Native -Command $venvPython -Arguments @("-m", "pip", "install", "-r", (Join-Path $InstallDir "app\api\requirements.txt"))
 
 if ($CreateWorkspace) {
-    Write-Step "Creating DRAFT workspace"
+    Write-Step "Configuring company content repo"
+    Configure-ContentRepo
+    if (-not $SetupDraftsmanNow -and -not $env:DRAFT_SETUP_DRAFTSMAN) {
+        $SetupDraftsmanNow = Read-YesNo -Prompt "Set up the AI Draftsman now? OpenAI OAuth is available; other models are coming soon" -Default "y"
+        if ($SetupDraftsmanNow) {
+            Select-DraftsmanProvider
+        }
+    }
+    Write-Step "Checking DRAFT workspace folders"
     Copy-WorkspaceTemplate -FrameworkDir $InstallDir -WorkspaceRoot $WorkspaceDir -FrameworkCommit $frameworkCommit
+    if ($SetupDraftsmanNow) {
+        Enable-EmbeddedDraftsman
+    }
+    Commit-WorkspaceSetup
 }
 
 Write-Host ""
@@ -261,5 +480,15 @@ if ($StartApp) {
     Write-Step "Starting DRAFT App"
     Set-Location $InstallDir
     $env:DRAFT_WORKSPACE = $WorkspaceDir
-    & $venvPython -m uvicorn app.api.draft_app.main:app --host $BindHost --port $Port
+    $app = Start-Process -FilePath $venvPython -ArgumentList @("-m", "uvicorn", "app.api.draft_app.main:app", "--host", $BindHost, "--port", [string]$Port) -PassThru -NoNewWindow
+    if (Wait-App) {
+        if ($SetupDraftsmanNow) {
+            Start-DraftsmanOAuth
+        }
+        Start-Process "http://${BindHost}:$Port" | Out-Null
+    }
+    else {
+        Write-Warning "DRAFT App did not become ready on http://${BindHost}:$Port"
+    }
+    Wait-Process -Id $app.Id
 }

@@ -5,23 +5,29 @@ company DRAFT workspace. It is designed so the browser UI and AI agents use the
 same operations:
 
 - start from a branded Drafting Table workspace
-- browse the effective catalog before making changes
-- inspect and select artifacts for change requests
+- browse the effective catalog with the same generated browser shape used by
+  GitHub Pages
+- carry selected artifacts from browsing into Drafting Table change requests
 - resolve the effective framework model
 - inspect catalog and configuration objects
-- initialize private workspace structure
+- use installer-created private workspace structure
 - write catalog objects and patch-style configuration overrides
 - validate workspace changes
 - commit and publish through Git/GitHub workflows
 - detect pinned framework update opportunities
-- expose Draftsman AI mode configuration from the Configuration tab without
-  storing API keys or OAuth token values in workspace files
+- expose Draftsman runtime status without storing API keys or OAuth token
+  values in workspace files
 
-The browser UI uses a dark theme by default. The Configuration tab has an
-AI Draftsman setup panel for selecting external-agent mode, embedded
-ChatGPT/Codex sign-in, or disabled mode. Embedded mode uses the signed-in
-user's ChatGPT/Codex account. Tokens are stored under `~/.draft/`, outside the
-workspace repo.
+The browser UI uses a dark theme by default and opens to a Welcome screen. The
+Drafting Table accepts text prompts and uploaded source material. The
+Architecture tab embeds the generated catalog browser. The Setup tab handles
+runtime status, per-user ChatGPT/Codex sign-in, and Git publishing controls.
+
+First-run configuration is intentionally text based. The installer asks which
+private GitHub repo DRAFT should use for company content, validates access with
+`gh auth`, clones that repo, populates required folders, commits setup to the
+configured working branch, optionally starts OpenAI OAuth for the embedded
+Draftsman, then starts the app and opens the browser.
 
 Local development starts the API against a workspace path:
 
@@ -39,14 +45,14 @@ For a custom workspace path:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install.sh | \
-  bash -s -- --workspace-dir /path/to/company-draft-workspace
+  bash -s -- --content-repo owner/private-draft-catalog --workspace-dir /path/to/company-draft-workspace
 ```
 
 PowerShell custom workspace path:
 
 ```powershell
 irm https://raw.githubusercontent.com/dsackr/draft-framework/main/install.ps1 -OutFile install.ps1
-.\install.ps1 -WorkspaceDir "C:\DRAFT\workspace"
+.\install.ps1 -ContentRepo "owner/private-draft-catalog" -WorkspaceDir "C:\DRAFT\workspace"
 ```
 
 After install, restart the app from the framework repo:
@@ -80,6 +86,7 @@ Useful API routes:
 
 - `POST /api/workspace/init`
 - `GET /api/workspace/effective-model`
+- `GET /api/catalog/browser`
 - `POST /api/objects/upsert`
 - `POST /api/object-patches/upsert`
 - `POST /api/workspace/validate`
