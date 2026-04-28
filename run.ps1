@@ -81,6 +81,57 @@ function Test-AppRoutes {
     }
 }
 
+function Test-RunningAppRoutes {
+    param(
+        [string]$PythonCommand,
+        [string[]]$UvicornArgs,
+        [string]$BindHost,
+        [int]$ProbePort
+    )
+    $probeArgs = @($UvicornArgs)
+    for ($index = 0; $index -lt $probeArgs.Count; $index++) {
+        if ($probeArgs[$index] -eq "--port" -and ($index + 1) -lt $probeArgs.Count) {
+            $probeArgs[$index + 1] = [string]$ProbePort
+        }
+    }
+
+    $probeUrl = "http://${BindHost}:$ProbePort"
+    Write-Host "DRAFT route runtime check: $probeUrl/openapi.json"
+    $process = Start-Process -FilePath $PythonCommand -ArgumentList $probeArgs -PassThru -NoNewWindow
+    try {
+        $openapi = $null
+        for ($attempt = 0; $attempt -lt 40; $attempt++) {
+            if ($process.HasExited) {
+                throw "DRAFT probe server exited before route validation completed."
+            }
+            try {
+                $openapi = Invoke-RestMethod -Uri "$probeUrl/openapi.json" -TimeoutSec 1
+                break
+            }
+            catch {
+                Start-Sleep -Milliseconds 250
+            }
+        }
+        if ($null -eq $openapi) {
+            throw "DRAFT probe server did not become ready at $probeUrl."
+        }
+        $paths = @($openapi.paths.PSObject.Properties.Name)
+        $draftRoutes = $paths | Where-Object { $_ -like "*draft*" } | Sort-Object
+        Write-Host "DRAFT runtime routes:"
+        foreach ($route in $draftRoutes) {
+            Write-Host "  $route"
+        }
+        if (-not ($paths -contains "/api/draftsman/chat")) {
+            throw "Running DRAFT app does not expose /api/draftsman/chat. Uvicorn is loading the wrong app module."
+        }
+    }
+    finally {
+        if ($process -and -not $process.HasExited) {
+            Stop-Process -Id $process.Id -Force
+        }
+    }
+}
+
 $repoRoot = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
 $requirements = Join-Path $repoRoot "app\api\requirements.txt"
 $appApiRoot = Join-Path $repoRoot "app\api"
@@ -148,6 +199,21 @@ Write-Host ""
 $env:DRAFT_WORKSPACE = $WorkspaceDir
 Set-Location $repoRoot
 
+$baseUvicornArgs = @("-m", "uvicorn", "draft_app.main:app", "--app-dir", $appApiRoot, "--host", $BindHost, "--port", [string]$Port)
+$uvicornArgs = @($baseUvicornArgs)
+if ($Reload) {
+    $uvicornArgs += "--reload"
+}
+
+Write-Host "Uvicorn app:     draft_app.main:app"
+Write-Host "Uvicorn app dir: $appApiRoot"
+Write-Host "Uvicorn args:    $($uvicornArgs -join ' ')"
+Write-Host ""
+
+Write-Step "Checking running DRAFT app routes"
+$probePort = if ($Port -lt 55000) { $Port + 10000 } else { $Port - 10000 }
+Test-RunningAppRoutes -PythonCommand $venvPython -UvicornArgs $baseUvicornArgs -BindHost $BindHost -ProbePort $probePort
+
 if (-not $NoBrowser) {
     try {
         Start-Process $url | Out-Null
@@ -155,11 +221,6 @@ if (-not $NoBrowser) {
     catch {
         Write-Host "Open $url in your browser."
     }
-}
-
-$uvicornArgs = @("-m", "uvicorn", "draft_app.main:app", "--app-dir", $appApiRoot, "--host", $BindHost, "--port", [string]$Port)
-if ($Reload) {
-    $uvicornArgs += "--reload"
 }
 
 & $venvPython @uvicornArgs
