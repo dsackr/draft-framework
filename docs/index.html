@@ -2161,7 +2161,12 @@
         for (const url of draftsmanChatUrls()) {
           triedUrls.push(url);
           const { response, data } = await fetchDraftsmanJson(url, payload);
-          if (response.status !== 404) {
+          
+          // Differentiate between "Route not found" (generic 404) 
+          // and "Resource not found" (app-level 404 for missing workspace, etc)
+          const isAppLevelError = response.status === 404 && (data?.detail || data?.message);
+
+          if (response.status !== 404 || isAppLevelError) {
             output.textContent = humanDraftsmanMessage(data);
             return;
           }
