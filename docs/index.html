@@ -2044,6 +2044,15 @@
       return new URL(`/api/${normalizedPath}`, window.location.origin).toString();
     }
 
+    function appRootUrl(path) {
+      const normalizedPath = String(path || '').replace(/^\/+/, '');
+      const browserPath = '/api/catalog/browser';
+      const currentPath = window.location.pathname;
+      const browserIndex = currentPath.indexOf(browserPath);
+      const prefix = browserIndex >= 0 ? currentPath.slice(0, browserIndex) : '';
+      return new URL(`${prefix}/${normalizedPath}`, window.location.origin).toString();
+    }
+
     function uniqueUrls(urls) {
       return Array.from(new Set(urls));
     }
@@ -2052,8 +2061,12 @@
       return uniqueUrls([
         appApiUrl('draftsman/chat'),
         appApiUrl('draftsman/chat/'),
+        appApiUrl('draftman/chat'),
+        appApiUrl('draftman/chat/'),
         rootApiUrl('draftsman/chat'),
-        rootApiUrl('draftsman/chat/')
+        rootApiUrl('draftsman/chat/'),
+        rootApiUrl('draftman/chat'),
+        rootApiUrl('draftman/chat/')
       ]);
     }
 
@@ -2070,6 +2083,28 @@
       return { response, data, url };
     }
 
+    async function fetchJsonDiagnostic(url) {
+      try {
+        const response = await fetch(url);
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+          return { url, status: response.status, data: null };
+        }
+        return { url, status: response.status, data: await response.json() };
+      } catch (error) {
+        return { url, status: 'unreachable', data: null };
+      }
+    }
+
+    function routeListFromOpenApi(openApiData) {
+      if (!openApiData?.paths || typeof openApiData.paths !== 'object') {
+        return [];
+      }
+      return Object.keys(openApiData.paths)
+        .filter(path => path.toLowerCase().includes('draft'))
+        .sort();
+    }
+
     async function describeDraftsmanApiMiss(triedUrls) {
       const providerUrls = uniqueUrls([
         appApiUrl('draftsman/providers'),
@@ -2084,11 +2119,25 @@
           providerChecks.push(`${url} -> unreachable`);
         }
       }
+      const manifestChecks = [];
+      for (const url of uniqueUrls([appApiUrl('framework/manifest'), rootApiUrl('framework/manifest')])) {
+        const result = await fetchJsonDiagnostic(url);
+        const frameworkRoot = result.data?.frameworkRoot ? `; frameworkRoot=${result.data.frameworkRoot}` : '';
+        manifestChecks.push(`${url} -> ${result.status}${frameworkRoot}`);
+      }
+      const routeChecks = [];
+      for (const url of uniqueUrls([appRootUrl('openapi.json'), new URL('/openapi.json', window.location.origin).toString()])) {
+        const result = await fetchJsonDiagnostic(url);
+        const draftRoutes = routeListFromOpenApi(result.data);
+        routeChecks.push(`${url} -> ${result.status}; draft routes=${draftRoutes.length ? draftRoutes.join(', ') : 'none'}`);
+      }
       return [
         'Draftsman chat API was not found on this app server.',
         `Current page: ${window.location.href}`,
         `Tried: ${triedUrls.join(', ')}`,
         `Draftsman provider check: ${providerChecks.join(', ')}`,
+        `Framework manifest check: ${manifestChecks.join(', ')}`,
+        `OpenAPI route check: ${routeChecks.join(', ')}`,
         'Run git pull in the same framework folder that starts the app, then restart the app and open Architecture from the Welcome screen.'
       ].join('\n');
     }

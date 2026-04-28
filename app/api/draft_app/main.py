@@ -1069,6 +1069,23 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/api/diagnostics/routes")
+def diagnostics_routes() -> dict[str, Any]:
+    routes = []
+    for route in app.routes:
+        path = getattr(route, "path", "")
+        methods = sorted(getattr(route, "methods", []) or [])
+        if path:
+            routes.append({"path": path, "methods": methods})
+    return {
+        "appRoot": str(APP_ROOT),
+        "repoRoot": str(REPO_ROOT),
+        "frameworkRoot": str(FRAMEWORK_ROOT),
+        "routes": routes,
+        "draftsmanRoutes": [route for route in routes if "draft" in route["path"]],
+    }
+
+
 @app.get("/api/framework/manifest")
 def framework_manifest() -> dict[str, Any]:
     return {
@@ -1162,6 +1179,16 @@ def draftsman_chat(request: DraftsmanChatRequest) -> dict[str, Any]:
 
 @app.post("/api/draftsman/chat/", include_in_schema=False)
 def draftsman_chat_trailing_slash(request: DraftsmanChatRequest) -> dict[str, Any]:
+    return handle_draftsman_chat(request)
+
+
+@app.post("/api/draftman/chat", include_in_schema=False)
+def draftman_chat_typo_alias(request: DraftsmanChatRequest) -> dict[str, Any]:
+    return handle_draftsman_chat(request)
+
+
+@app.post("/api/draftman/chat/", include_in_schema=False)
+def draftman_chat_typo_alias_trailing_slash(request: DraftsmanChatRequest) -> dict[str, Any]:
     return handle_draftsman_chat(request)
 
 
