@@ -1157,6 +1157,15 @@ def update_draftsman_config(request: DraftsmanConfigRequest) -> dict[str, Any]:
 
 @app.post("/api/draftsman/chat")
 def draftsman_chat(request: DraftsmanChatRequest) -> dict[str, Any]:
+    return handle_draftsman_chat(request)
+
+
+@app.post("/api/draftsman/chat/", include_in_schema=False)
+def draftsman_chat_trailing_slash(request: DraftsmanChatRequest) -> dict[str, Any]:
+    return handle_draftsman_chat(request)
+
+
+def handle_draftsman_chat(request: DraftsmanChatRequest) -> dict[str, Any]:
     root = resolve_workspace(request.workspace)
     config_path = workspace_config_path(root)
     config = read_yaml(config_path) if config_path.exists() else {}

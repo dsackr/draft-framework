@@ -2664,6 +2664,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return data.ok === false ? 'The Draftsman could not complete that request.' : 'Done.';
     }
 
+    function appApiUrl(path) {
+      const normalizedPath = String(path || '').replace(/^\/+/, '');
+      const browserPath = '/api/catalog/browser';
+      const currentPath = window.location.pathname;
+      const browserIndex = currentPath.indexOf(browserPath);
+      const apiRoot = browserIndex >= 0
+        ? `${currentPath.slice(0, browserIndex)}/api/`
+        : '/api/';
+      return new URL(`${apiRoot}${normalizedPath}`, window.location.origin).toString();
+    }
+
     async function askDraftsmanFromBrowser() {
       const input = document.getElementById('draftsman-request');
       const output = document.getElementById('draftsman-output');
@@ -2674,7 +2685,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
       output.textContent = 'Draftsman is reviewing the catalog.';
       try {
-        const response = await fetch('/api/draftsman/chat', {
+        const response = await fetch(appApiUrl('draftsman/chat'), {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
@@ -2683,7 +2694,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             message
           })
         });
-        const data = await response.json();
+        if (response.status === 404) {
+          output.textContent = 'Draftsman API was not found. Restart the DRAFT App from the updated framework repo, then open the catalog from the app.';
+          return;
+        }
+        const contentType = response.headers.get('content-type') || '';
+        const data = contentType.includes('application/json')
+          ? await response.json()
+          : { ok: response.ok, message: await response.text() };
         output.textContent = humanDraftsmanMessage(data);
       } catch (error) {
         output.textContent = 'The Draftsman is not reachable from this browser session.';
