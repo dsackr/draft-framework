@@ -178,7 +178,7 @@ function Copy-WorkspaceTemplate {
 
     if (-not (Test-Path -LiteralPath (Join-Path $WorkspaceRoot ".git"))) {
         Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceRoot, "init")
-        & $script:GitCommand -C $WorkspaceRoot checkout -b dev *> $null
+        Invoke-Native -Command $script:GitCommand -Arguments @("-C", $WorkspaceRoot, "symbolic-ref", "HEAD", "refs/heads/dev")
     }
 }
 
@@ -212,8 +212,9 @@ if (Test-Path -LiteralPath (Join-Path $InstallDir ".git")) {
         throw "Install directory has uncommitted changes: $InstallDir. Commit or stash those changes, or choose another -InstallDir."
     }
     Invoke-Native -Command $script:GitCommand -Arguments @("-C", $InstallDir, "fetch", "origin")
-    & $script:GitCommand -C $InstallDir rev-parse --verify "origin/$Ref" *> $null
-    if ($LASTEXITCODE -eq 0) {
+    & $script:GitCommand -C $InstallDir show-ref --verify --quiet "refs/remotes/origin/$Ref"
+    $remoteBranchExists = $LASTEXITCODE -eq 0
+    if ($remoteBranchExists) {
         Invoke-Native -Command $script:GitCommand -Arguments @("-C", $InstallDir, "checkout", $Ref)
         Invoke-Native -Command $script:GitCommand -Arguments @("-C", $InstallDir, "pull", "--ff-only", "origin", $Ref)
     }
