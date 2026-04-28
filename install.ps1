@@ -254,8 +254,7 @@ Write-Host "App URL:   http://${BindHost}:$Port"
 Write-Host ""
 Write-Host "To start later:"
 Write-Host "  cd `"$InstallDir`""
-Write-Host "  `$env:DRAFT_WORKSPACE = `"$WorkspaceDir`""
-Write-Host "  `"$venvPython`" -m uvicorn app.api.draft_app.main:app --host `"$BindHost`" --port `"$Port`""
+Write-Host "  .\run.ps1 -WorkspaceDir `"$WorkspaceDir`""
 Write-Host ""
 
 if ($StartApp) {

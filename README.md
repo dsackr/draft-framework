@@ -116,6 +116,19 @@ PowerShell with custom paths:
 .\install.ps1 -InstallDir "$HOME\draft-framework" -WorkspaceDir "$HOME\my-draft-workspace" -NoStart
 ```
 
+Restart after install:
+
+```powershell
+cd "$HOME\draft-framework"
+.\run.ps1
+```
+
+Run against a custom workspace:
+
+```powershell
+.\run.ps1 -WorkspaceDir "C:\DRAFT\workspace"
+```
+
 Local install:
 
 ```bash

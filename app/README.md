@@ -43,6 +43,18 @@ irm https://raw.githubusercontent.com/dsackr/draft-framework/main/install.ps1 -O
 .\install.ps1 -WorkspaceDir "C:\DRAFT\workspace"
 ```
 
+After install, restart the app from the framework repo:
+
+```powershell
+.\run.ps1
+```
+
+or with a custom workspace:
+
+```powershell
+.\run.ps1 -WorkspaceDir "C:\DRAFT\workspace"
+```
+
 Manual setup:
 
 ```bash
