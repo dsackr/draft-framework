@@ -147,28 +147,30 @@ function Copy-WorkspaceTemplate {
     New-Item -ItemType Directory -Force -Path $WorkspaceRoot | Out-Null
 
     Get-ChildItem -LiteralPath $templateRoot -Force -Recurse -Directory | ForEach-Object {
-        $relative = Get-RelativePath -BasePath $templateRoot -TargetPath $_.FullName
+        $templateDirectory = $_
+        $relative = Get-RelativePath -BasePath $templateRoot -TargetPath $templateDirectory.FullName
         New-Item -ItemType Directory -Force -Path (Join-Path $WorkspaceRoot $relative) | Out-Null
     }
 
     Get-ChildItem -LiteralPath $templateRoot -Force -Recurse -File | ForEach-Object {
-        $relative = Get-RelativePath -BasePath $templateRoot -TargetPath $_.FullName
+        $templateFile = $_
+        $relative = Get-RelativePath -BasePath $templateRoot -TargetPath $templateFile.FullName
         switch -Wildcard ($relative) {
             ".draft\workspace.yaml.tmpl" {
-                Render-Template -Source $_.FullName -Target (Join-Path $WorkspaceRoot ".draft\workspace.yaml") -WorkspaceName $workspaceName -FrameworkCommit $FrameworkCommit -Timestamp $timestamp
+                Render-Template -Source $templateFile.FullName -Target (Join-Path $WorkspaceRoot ".draft\workspace.yaml") -WorkspaceName $workspaceName -FrameworkCommit $FrameworkCommit -Timestamp $timestamp
             }
             ".draft\framework.lock.tmpl" {
-                Render-Template -Source $_.FullName -Target (Join-Path $WorkspaceRoot ".draft\framework.lock") -WorkspaceName $workspaceName -FrameworkCommit $FrameworkCommit -Timestamp $timestamp
+                Render-Template -Source $templateFile.FullName -Target (Join-Path $WorkspaceRoot ".draft\framework.lock") -WorkspaceName $workspaceName -FrameworkCommit $FrameworkCommit -Timestamp $timestamp
             }
             ".gitignore.tmpl" {
-                Render-Template -Source $_.FullName -Target (Join-Path $WorkspaceRoot ".gitignore") -WorkspaceName $workspaceName -FrameworkCommit $FrameworkCommit -Timestamp $timestamp
+                Render-Template -Source $templateFile.FullName -Target (Join-Path $WorkspaceRoot ".gitignore") -WorkspaceName $workspaceName -FrameworkCommit $FrameworkCommit -Timestamp $timestamp
             }
             "*.tmpl" {}
             default {
                 $target = Join-Path $WorkspaceRoot $relative
                 if (-not (Test-Path -LiteralPath $target)) {
                     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $target) | Out-Null
-                    Copy-Item -LiteralPath $_.FullName -Destination $target
+                    Copy-Item -LiteralPath $templateFile.FullName -Destination $target
                 }
             }
         }
