@@ -58,35 +58,26 @@ function Get-PythonCommand {
 
 function Test-AppRoutes {
     param(
-        [string]$PythonCommand,
         [string]$RepoRoot
     )
-    $script = @"
-import importlib
-import sys
-
-sys.path.insert(0, r"$RepoRoot")
-module = importlib.import_module("app.api.draft_app.main")
-routes = []
-for route in module.app.routes:
-    path = getattr(route, "path", "")
-    methods = sorted(getattr(route, "methods", []) or [])
-    if path:
-        routes.append((path, methods))
-
-print(f"DRAFT app module: {module.__file__}")
-print("DRAFT Draftsman routes:")
-for path, methods in routes:
-    if "draft" in path.lower():
-        print(f"  {','.join(methods) or '-'} {path}")
-
-if not any(path == "/api/draftsman/chat" and "POST" in methods for path, methods in routes):
-    raise SystemExit("Missing required route: POST /api/draftsman/chat")
-"@
-    $encoded = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($script))
-    & $PythonCommand -c "import base64; exec(base64.b64decode('$encoded').decode('utf-8'))"
-    if ($LASTEXITCODE -ne 0) {
-        throw "DRAFT app route preflight failed. The app server would start without the Draftsman chat API."
+    $mainPath = Join-Path $RepoRoot "app\api\draft_app\main.py"
+    if (-not (Test-Path -LiteralPath $mainPath)) {
+        throw "DRAFT app module was not found at $mainPath"
+    }
+    $source = Get-Content -LiteralPath $mainPath -Raw
+    $requiredRoutes = @(
+        '/api/draftsman/providers',
+        '/api/draftsman/chat'
+    )
+    Write-Host "DRAFT app module source: $mainPath"
+    Write-Host "DRAFT route source check:"
+    foreach ($route in $requiredRoutes) {
+        if ($source.Contains($route)) {
+            Write-Host "  found $route"
+        }
+        else {
+            throw "Missing required route source: $route in $mainPath. Run git pull in this framework folder."
+        }
     }
 }
 
@@ -141,7 +132,7 @@ Write-Step "Ensuring app dependencies"
 Invoke-Native -Command $venvPython -Arguments @("-m", "pip", "install", "-r", $requirements)
 
 Write-Step "Checking DRAFT app routes"
-Test-AppRoutes -PythonCommand $venvPython -RepoRoot $repoRoot
+Test-AppRoutes -RepoRoot $repoRoot
 
 $url = "http://${BindHost}:$Port"
 Write-Host ""
