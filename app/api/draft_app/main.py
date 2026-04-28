@@ -200,11 +200,30 @@ def run(command: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
 
 
 def resolve_workspace(workspace: Optional[str] = None, must_exist: bool = True) -> Path:
-    raw = workspace or os.environ.get("DRAFT_WORKSPACE") or str(DEFAULT_WORKSPACE)
+    # Handle both None and empty strings from JSON bodies
+    workspace_str = (workspace or "").strip()
+    raw = workspace_str or os.environ.get("DRAFT_WORKSPACE") or str(DEFAULT_WORKSPACE)
+    
+    # Normalize Windows paths
     root = Path(raw).expanduser().resolve()
+    
     if must_exist and not root.exists():
+        # Log the exact path that failed to help debug Windows resolution
+        print(f"DEBUG: Workspace not found. raw='{raw}', resolved='{root}'")
         raise HTTPException(status_code=404, detail=f"Workspace does not exist: {root}")
     return root
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    import traceback
+    if isinstance(exc, HTTPException):
+        print(f"DEBUG: HTTPException {exc.status_code}: {exc.detail}")
+        return await app.default_exception_handler(request, exc)
+    
+    print(f"DEBUG: Unhandled error: {exc}")
+    traceback.print_exc()
+    return HTTPException(status_code=500, detail=str(exc))
 
 
 def workspace_config_path(workspace: Path) -> Path:
@@ -1077,12 +1096,22 @@ def diagnostics_routes() -> dict[str, Any]:
         methods = sorted(getattr(route, "methods", []) or [])
         if path:
             routes.append({"path": path, "methods": methods})
+            
+    # Redact potential secrets from environment
+    safe_env = {}
+    for key, value in os.environ.items():
+        if any(secret in key.lower() for secret in ["key", "token", "secret", "auth", "pwd", "password"]):
+            safe_env[key] = "[REDACTED]"
+        else:
+            safe_env[key] = value
+
     return {
         "mainFile": __file__,
         "appRoot": str(APP_ROOT),
         "repoRoot": str(REPO_ROOT),
         "frameworkRoot": str(FRAMEWORK_ROOT),
         "sysPath": sys.path,
+        "env": safe_env,
         "routes": routes,
         "draftsmanRoutes": [route for route in routes if "draft" in route["path"]],
     }
