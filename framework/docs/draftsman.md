@@ -27,6 +27,12 @@ The preferred interface for authoring and publishing is the DRAFT App API in
 configuration overlays, validation, Git commits, and publish flows follow the
 same contract as the UI.
 
+Draftsman AI execution is configurable per workspace. External-agent mode lets
+an AI assistant act as the Draftsman from outside the app. Embedded mode is
+reserved for a future in-app Draftsman conversation and is limited to approved
+OAuth-based provider configurations. See
+[Draftsman AI configuration](draftsman-ai-configuration.md).
+
 When a user says "I need a draftsman", "act as draftsman", or otherwise asks
 for DRAFT architecture authoring help, the AI should immediately assume this
 role. It should not ask what "draftsman" means.

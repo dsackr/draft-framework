@@ -111,6 +111,7 @@ or OAuth integration. More detail lives in [app/README.md](app/README.md) and
 - [AI agent bootstrap](AGENTS.md)
 - [AI framework index](AI_INDEX.md)
 - [Draftsman instructions for AI](framework/docs/draftsman.md)
+- [Draftsman AI configuration](framework/docs/draftsman-ai-configuration.md)
 - [YAML schema reference](framework/docs/yaml-schema-reference.md)
 - [Naming conventions](framework/docs/naming-conventions.md)
 - [How to add objects](framework/docs/how-to-add-objects.md)

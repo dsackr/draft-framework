@@ -32,6 +32,18 @@
         min-height: 64px;
         padding: 14px 24px;
       }
+      .brand {
+        align-items: center;
+        display: flex;
+        gap: 12px;
+        min-width: 0;
+      }
+      .brand img {
+        display: block;
+        height: 42px;
+        object-fit: contain;
+        width: 42px;
+      }
       h1, h2 {
         margin: 0;
       }
@@ -164,7 +176,10 @@
   </head>
   <body>
     <header>
-      <h1>DRAFT App</h1>
+      <div class="brand">
+        <img src="/assets/draftlogo.png" alt="DRAFT" />
+        <h1>DRAFT App</h1>
+      </div>
       <div class="status" id="health">checking</div>
     </header>
     <main>

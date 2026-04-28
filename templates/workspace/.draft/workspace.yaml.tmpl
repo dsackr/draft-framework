@@ -23,3 +23,31 @@ paths:
 auth:
   localMode: gh
   sharedAppMode: github-app
+
+draftsman:
+  mode: external  # external | embedded | disabled
+  external:
+    enabled: true
+    description: >
+      Use an external AI agent with AGENTS.md, AI_INDEX.md, and the DRAFT App
+      API. This mode does not require the app to store AI provider credentials.
+    entrypoints:
+      - AGENTS.md
+      - AI_INDEX.md
+      - framework/docs/draftsman.md
+      - app/api
+  embedded:
+    enabled: false
+    provider: openai
+    model: <openai-model-id>
+    auth:
+      type: oauth
+      clientIdRef: DRAFT_OPENAI_OAUTH_CLIENT_ID
+      clientSecretRef: DRAFT_OPENAI_OAUTH_CLIENT_SECRET
+      redirectUri: http://127.0.0.1:8000/api/draftsman/oauth/openai/callback
+      tokenStorage: runtime
+      apiKeysAllowed: false
+  security:
+    storeSecretsInWorkspace: false
+    sendGitCredentialsToModel: false
+    writeRequiresAppValidation: true

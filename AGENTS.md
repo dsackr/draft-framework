@@ -65,6 +65,10 @@ AI agents should treat DRAFT as a deterministic authoring system:
   workspace catalog.
 - Use schemas and ODCs to determine required facts.
 - Propose object or configuration changes through the app/API contract.
+- Respect the workspace Draftsman AI mode: external agent, embedded app
+  Draftsman, or disabled.
+- Never place AI provider API keys or OAuth token values in tracked workspace
+  files.
 - Run validation before committing.
 - Preserve unresolved facts in Drafting Sessions.
 - Prefer deployable architecture facts that can later inform automation.

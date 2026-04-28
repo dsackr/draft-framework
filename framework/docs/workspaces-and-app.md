@@ -49,6 +49,20 @@ Direct YAML editing is acceptable for framework development and recovery, but
 company authoring should prefer the app/API so overrides, validation, and Git
 workflow rules stay consistent.
 
+## Draftsman AI Modes
+
+Draftsman behavior is workspace configuration, not hardcoded to one AI vendor.
+
+- `external` mode lets the user point an external AI agent at the repo and app
+  API. This is available now.
+- `embedded` mode will let the app host the Draftsman conversation. The first
+  allowed embedded provider is OpenAI with OAuth, and API keys are explicitly
+  disallowed in tracked files.
+- `disabled` mode turns Draftsman features off for the workspace.
+
+See [Draftsman AI configuration](draftsman-ai-configuration.md) for the full
+configuration contract and current implementation boundary.
+
 ## Git Workflow
 
 The default workspace workflow is:

@@ -11,6 +11,8 @@ same operations:
 - validate workspace changes
 - commit and publish through Git/GitHub workflows
 - detect pinned framework update opportunities
+- expose Draftsman AI mode configuration without storing API keys in workspace
+  files
 
 Local development starts the API against a workspace path:
 
@@ -37,5 +39,8 @@ Useful API routes:
 - `POST /api/git/commit`
 - `POST /api/publish`
 - `GET /api/framework/updates`
+- `GET /api/draftsman/providers`
+- `GET /api/draftsman/config`
+- `POST /api/draftsman/chat`
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for the container entrypoint.

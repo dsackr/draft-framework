@@ -9,6 +9,7 @@ workspaces.
 
 - Canonical AI instructions: AGENTS.md
 - Draftsman role: framework/docs/draftsman.md
+- Draftsman AI configuration: framework/docs/draftsman-ai-configuration.md
 - Framework index: AI_INDEX.md
 - Schema reference: framework/docs/yaml-schema-reference.md
 - Object Definition Checklists: framework/docs/odcs.md
