@@ -22,9 +22,9 @@ jobs:
         run: python -m pip install pyyaml
 
       - name: Validate catalog
-        run: python tools/validate.py
+        run: python framework/tools/validate.py
 
       - name: Verify generated AI index
         run: |
-          python tools/generate_ai_index.py
+          python framework/tools/generate_ai_index.py
           git diff --exit-code AI_INDEX.md

@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DRAFT App</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --border: #d8dde7;
+        --muted: #5f6b7a;
+        --panel: #ffffff;
+        --page: #f5f7fa;
+        --primary: #1f6feb;
+        --text: #111827;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--page);
+        color: var(--text);
+      }
+      header {
+        align-items: center;
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        min-height: 64px;
+        padding: 14px 24px;
+      }
+      h1, h2 {
+        margin: 0;
+      }
+      h1 {
+        font-size: 22px;
+        line-height: 1.2;
+      }
+      h2 {
+        font-size: 16px;
+      }
+      main {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+        padding: 18px 24px 24px;
+      }
+      aside, section {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      aside {
+        align-self: start;
+        display: grid;
+        gap: 16px;
+        padding: 16px;
+      }
+      section {
+        display: grid;
+        gap: 14px;
+        padding: 16px;
+      }
+      .stack {
+        display: grid;
+        gap: 10px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
+      }
+      label {
+        color: #263241;
+        display: block;
+        font-size: 13px;
+        font-weight: 650;
+        margin-bottom: 6px;
+      }
+      input, textarea {
+        background: #ffffff;
+        border: 1px solid #c6cfdc;
+        border-radius: 6px;
+        color: var(--text);
+        font: inherit;
+        font-size: 14px;
+        padding: 9px 10px;
+        width: 100%;
+      }
+      textarea {
+        min-height: 132px;
+        resize: vertical;
+      }
+      button {
+        background: var(--primary);
+        border: 1px solid var(--primary);
+        border-radius: 6px;
+        color: #ffffff;
+        cursor: pointer;
+        font-weight: 650;
+        min-height: 36px;
+        padding: 8px 11px;
+      }
+      button.secondary {
+        background: #ffffff;
+        border-color: #c6cfdc;
+        color: #1f2937;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .status {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .table-wrap {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        max-height: 460px;
+        overflow: auto;
+      }
+      table {
+        border-collapse: collapse;
+        font-size: 14px;
+        width: 100%;
+      }
+      th, td {
+        border-bottom: 1px solid #e8ecf2;
+        padding: 8px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: #f9fafc;
+        color: #4d5a69;
+        font-size: 12px;
+        font-weight: 750;
+        position: sticky;
+        text-transform: uppercase;
+        top: 0;
+      }
+      pre {
+        background: #101827;
+        border-radius: 8px;
+        color: #e5e7eb;
+        margin: 0;
+        max-height: 360px;
+        overflow: auto;
+        padding: 12px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      @media (max-width: 900px) {
+        main, .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>DRAFT App</h1>
+      <div class="status" id="health">checking</div>
+    </header>
+    <main>
+      <aside>
+        <div class="stack">
+          <label for="workspace">Workspace Path</label>
+          <input id="workspace" placeholder="/path/to/company-draft-workspace" />
+          <div class="actions">
+            <button id="init">Init</button>
+            <button id="load" class="secondary">Load</button>
+            <button id="validate" class="secondary">Validate</button>
+          </div>
+        </div>
+        <div class="stack">
+          <label for="message">Commit Message</label>
+          <input id="message" value="Update DRAFT workspace" />
+          <div class="actions">
+            <button id="status" class="secondary">Status</button>
+            <button id="commit">Commit</button>
+            <button id="push" class="secondary">Push</button>
+            <button id="publish" class="secondary">Publish</button>
+          </div>
+        </div>
+        <div class="stack">
+          <h2>Workspace Config</h2>
+          <textarea id="config"></textarea>
+          <div class="actions">
+            <button id="load-config" class="secondary">Reload</button>
+            <button id="save-config">Save</button>
+          </div>
+        </div>
+      </aside>
+      <div class="grid">
+        <section>
+          <h2>Effective Model</h2>
+          <div class="status" id="summary"></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Type</th><th>Layer</th><th>Source</th></tr>
+              </thead>
+              <tbody id="objects"></tbody>
+            </table>
+          </div>
+        </section>
+        <section>
+          <h2>Object Patch</h2>
+          <div class="stack">
+            <label for="target">Target Object ID</label>
+            <input id="target" placeholder="rbb.host.example" />
+          </div>
+          <div class="stack">
+            <label for="purpose">Purpose</label>
+            <input id="purpose" value="override" />
+          </div>
+          <div class="stack">
+            <label for="patch">Patch JSON</label>
+            <textarea id="patch">{
+  "catalogStatus": "draft"
+}</textarea>
+          </div>
+          <div class="actions">
+            <button id="write-patch">Write Patch</button>
+            <button id="updates" class="secondary">Framework Check</button>
+          </div>
+          <pre id="output"></pre>
+        </section>
+      </div>
+    </main>
+    <script>
+      const workspaceInput = document.getElementById('workspace');
+      const output = document.getElementById('output');
+      const summary = document.getElementById('summary');
+      const objects = document.getElementById('objects');
+      const config = document.getElementById('config');
+
+      function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, character => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        }[character]));
+      }
+
+      function workspaceValue() {
+        return workspaceInput.value.trim() || null;
+      }
+
+      function workspaceQuery() {
+        const value = workspaceValue();
+        return value ? `?workspace=${encodeURIComponent(value)}` : '';
+      }
+
+      function show(data) {
+        output.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      }
+
+      async function requestJson(url, options = {}) {
+        const response = await fetch(url, options);
+        const data = await response.json();
+        show(data);
+        return data;
+      }
+
+      async function loadModel() {
+        const data = await requestJson(`/api/workspace/effective-model${workspaceQuery()}`);
+        summary.textContent = `${(data.objects || []).length} effective objects`;
+        objects.innerHTML = (data.objects || []).map(item => `
+          <tr>
+            <td>${escapeHtml(item.id)}</td>
+            <td>${escapeHtml(item.type)}</td>
+            <td>${escapeHtml(item.layer)}</td>
+            <td>${escapeHtml(item.source)}</td>
+          </tr>
+        `).join('');
+      }
+
+      async function initWorkspace() {
+        const workspace = workspaceValue();
+        if (!workspace) {
+          show({ok: false, error: 'Workspace path is required'});
+          return;
+        }
+        await requestJson('/api/workspace/init', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({workspace})
+        });
+        await loadConfig();
+        await loadModel();
+      }
+
+      async function loadConfig() {
+        const data = await requestJson(`/api/workspace/config${workspaceQuery()}`);
+        config.value = JSON.stringify(data.config || {}, null, 2);
+      }
+
+      async function saveConfig() {
+        await requestJson('/api/workspace/config', {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({workspace: workspaceValue(), config: JSON.parse(config.value || '{}')})
+        });
+      }
+
+      async function validateWorkspace() {
+        const data = await requestJson('/api/workspace/validate', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({workspace: workspaceValue()})
+        });
+        show(data.stdout || data.stderr || data);
+      }
+
+      async function gitStatus() {
+        const data = await requestJson(`/api/git/status${workspaceQuery()}`);
+        show(data.stdout || data.stderr || data);
+      }
+
+      async function commitWorkspace() {
+        await requestJson('/api/git/commit', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({workspace: workspaceValue(), message: document.getElementById('message').value})
+        });
+      }
+
+      async function pushWorkspace() {
+        await requestJson('/api/git/push', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({workspace: workspaceValue()})
+        });
+      }
+
+      async function publishWorkspace() {
+        await requestJson('/api/publish', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({workspace: workspaceValue()})
+        });
+      }
+
+      async function writePatch() {
+        await requestJson('/api/object-patches/upsert', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            workspace: workspaceValue(),
+            target: document.getElementById('target').value.trim(),
+            purpose: document.getElementById('purpose').value.trim() || 'override',
+            patch: JSON.parse(document.getElementById('patch').value || '{}')
+          })
+        });
+        await loadModel();
+      }
+
+      async function frameworkCheck() {
+        await requestJson(`/api/framework/updates${workspaceQuery()}`);
+      }
+
+      async function health() {
+        const data = await requestJson('/api/health');
+        document.getElementById('health').textContent = data.status || 'unknown';
+      }
+
+      document.getElementById('init').addEventListener('click', initWorkspace);
+      document.getElementById('load').addEventListener('click', loadModel);
+      document.getElementById('validate').addEventListener('click', validateWorkspace);
+      document.getElementById('status').addEventListener('click', gitStatus);
+      document.getElementById('commit').addEventListener('click', commitWorkspace);
+      document.getElementById('push').addEventListener('click', pushWorkspace);
+      document.getElementById('publish').addEventListener('click', publishWorkspace);
+      document.getElementById('load-config').addEventListener('click', loadConfig);
+      document.getElementById('save-config').addEventListener('click', saveConfig);
+      document.getElementById('write-patch').addEventListener('click', writePatch);
+      document.getElementById('updates').addEventListener('click', frameworkCheck);
+      health();
+      loadModel();
+      loadConfig();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+schemaVersion: "1.0"
+workspace:
+  name: <company-draft-workspace>
+  mode: shared-app
+
+repository:
+  provider: github
+  owner: <github-org>
+  name: <private-repo>
+  defaultBranch: main
+  devBranch: dev
+  publishMode: pull-request
+
+framework:
+  source: https://github.com/dsackr/draft-framework.git
+  pinnedRef: <tag-or-branch>
+  pinnedCommit: <resolved-sha>
+
+paths:
+  catalog: catalog
+  configurations: configurations
+
+auth:
+  localMode: gh
+  sharedAppMode: github-app

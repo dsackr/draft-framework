@@ -6,9 +6,10 @@ on:
       - main
     paths:
       - "**/*.yaml"
-      - "docs/framework/**"
+      - "framework/docs/**"
       - "templates/**"
-      - "tools/generate_ai_index.py"
+      - "framework/tools/generate_ai_index.py"
+      - "framework/tools/generate_browser.py"
       - "AGENTS.md"
       - "README.md"
       - "llms.txt"
@@ -33,10 +34,10 @@ jobs:
         run: python -m pip install pyyaml
 
       - name: Generate browser
-        run: python tools/generate_browser.py
+        run: python framework/tools/generate_browser.py
 
       - name: Generate AI index
-        run: python tools/generate_ai_index.py
+        run: python framework/tools/generate_ai_index.py
 
       - name: Commit generated assets
         run: |

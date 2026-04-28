@@ -1,17 +1,19 @@
 # DRAFT Framework
 
 DRAFT is the Deployable Reference Architecture Framework Toolkit. This
-repository is a framework template for creating machine-readable architecture
-catalogs in downstream company-owned clones.
+repository is the public framework and shared app runtime for creating
+machine-readable, deployable architecture catalogs in downstream private
+workspaces.
 
 ## AI Bootstrap
 
 - Canonical AI instructions: AGENTS.md
-- Draftsman role: docs/framework/draftsman.md
+- Draftsman role: framework/docs/draftsman.md
 - Framework index: AI_INDEX.md
-- Schema reference: docs/framework/yaml-schema-reference.md
-- Object Definition Checklists: docs/framework/odcs.md
-- Validation command: python3 tools/validate.py
+- Schema reference: framework/docs/yaml-schema-reference.md
+- Object Definition Checklists: framework/docs/odcs.md
+- Validation command: python3 framework/tools/validate.py
+- Effective model API: app/api, endpoint /api/workspace/effective-model
 
 ## Core Concepts
 
@@ -24,15 +26,19 @@ catalogs in downstream company-owned clones.
   implementations are evidence for declared profiles only.
 - DRD/ARD: Deployment Risk or Decision, stored as object type `ard`.
 - Drafting Session: resumable state for incomplete authoring work.
+- Effective Model: framework base configurations plus private workspace
+  configurations plus private workspace catalog content.
 
 ## Important Paths
 
 - README.md
 - AGENTS.md
 - AI_INDEX.md
-- docs/framework/
-- schemas/
-- odcs/
+- framework/docs/
+- framework/schemas/
+- framework/configurations/
+- examples/catalog/
+- app/
 - templates/
-- tools/validate.py
-- tools/generate_ai_index.py
+- framework/tools/validate.py
+- framework/tools/generate_ai_index.py

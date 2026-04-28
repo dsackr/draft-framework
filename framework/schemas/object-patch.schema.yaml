@@ -1,0 +1,33 @@
+schemaVersion: "1.0"
+type: object_patch
+requiredFields:
+  - schemaVersion
+  - id
+  - type
+  - name
+  - target
+  - patch
+  - catalogStatus
+  - lifecycleStatus
+optionalFields:
+  - description
+  - version
+  - owner
+  - tags
+  - notes
+idPattern: "^patch\\.[a-z0-9.-]+$"
+enumFields:
+  catalogStatus:
+    - stub
+    - draft
+    - approved
+  lifecycleStatus:
+    - pre-invest
+    - invest
+    - maintain
+    - disinvest
+    - exit
+fieldTypes:
+  owner: dict
+  tags: list
+  patch: dict
