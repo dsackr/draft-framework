@@ -20,11 +20,24 @@ Local development starts the API against a workspace path:
 curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install.sh | bash
 ```
 
+PowerShell on Windows:
+
+```powershell
+irm https://raw.githubusercontent.com/dsackr/draft-framework/main/install.ps1 | iex
+```
+
 For a custom workspace path:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install.sh | \
   bash -s -- --workspace-dir /path/to/company-draft-workspace
+```
+
+PowerShell custom workspace path:
+
+```powershell
+irm https://raw.githubusercontent.com/dsackr/draft-framework/main/install.ps1 -OutFile install.ps1
+.\install.ps1 -WorkspaceDir "C:\DRAFT\workspace"
 ```
 
 Manual setup:

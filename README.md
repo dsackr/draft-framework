@@ -78,6 +78,12 @@ Quick install:
 curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install.sh | bash
 ```
 
+PowerShell on Windows:
+
+```powershell
+irm https://raw.githubusercontent.com/dsackr/draft-framework/main/install.ps1 | iex
+```
+
 The installer clones or updates the framework, creates a private workspace
 skeleton at `~/draft-workspace`, installs app dependencies in a local Python
 virtual environment, and starts the app. To inspect before running:
@@ -88,11 +94,26 @@ less install.sh
 bash install.sh
 ```
 
+PowerShell inspect-first flow:
+
+```powershell
+irm https://raw.githubusercontent.com/dsackr/draft-framework/main/install.ps1 -OutFile install.ps1
+Get-Content .\install.ps1
+Set-ExecutionPolicy -Scope Process Bypass -Force
+.\install.ps1
+```
+
 Customize paths or install without starting the app:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install.sh | \
   bash -s -- --install-dir ~/draft-framework --workspace-dir ~/my-draft-workspace --no-start
+```
+
+PowerShell with custom paths:
+
+```powershell
+.\install.ps1 -InstallDir "$HOME\draft-framework" -WorkspaceDir "$HOME\my-draft-workspace" -NoStart
 ```
 
 Local install:
