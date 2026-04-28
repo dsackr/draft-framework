@@ -184,10 +184,14 @@ or OAuth integration. More detail lives in [app/README.md](app/README.md) and
 [app/DEPLOYMENT.md](app/DEPLOYMENT.md).
 
 The app opens in a dark theme by default. The Welcome screen leads users to the
-Drafting Table and the Architecture browser. The Setup tab covers runtime
-status, per-user ChatGPT/Codex sign-in, and Git publishing controls. Tokens are
-stored outside the workspace repo under the user's home directory, and API keys
-are not supported for the embedded Draftsman.
+Drafting Table and the Architecture browser. The Drafting Table accepts
+natural-language requests and uploaded source material without asking users for
+object IDs. The Architecture browser opens as a full-page catalog experience;
+when it is served by the app, the left navigation includes a Draftsman box for
+guided updates. The Setup tab covers runtime status, per-user ChatGPT/Codex
+sign-in, and Git publishing controls. Tokens are stored outside the workspace
+repo under the user's home directory, and API keys are not supported for the
+embedded Draftsman.
 
 ## Start Here
 
@@ -245,6 +249,7 @@ The generated static browser is published at:
 [https://dsackr.github.io/draft-framework/](https://dsackr.github.io/draft-framework/)
 
 GitHub Pages is for read-only browsing. It does not run the Draftsman and does
-not update workspace content. The local/shared DRAFT App embeds the same
-generated browser shape in its Architecture tab, then lets a user carry a
-selected artifact into the Drafting Table for changes.
+not update workspace content. The local/shared DRAFT App serves the same
+generated browser as the current workspace catalog, labels it as an app session,
+shows the company content repo name, and exposes Draftsman guidance in the left
+navigation for catalog updates.

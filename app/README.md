@@ -7,7 +7,8 @@ same operations:
 - start from a branded Drafting Table workspace
 - browse the effective catalog with the same generated browser shape used by
   GitHub Pages
-- carry selected artifacts from browsing into Drafting Table change requests
+- ask the Draftsman for catalog changes directly from the app-served catalog
+  browser
 - resolve the effective framework model
 - inspect catalog and configuration objects
 - use installer-created private workspace structure
@@ -19,9 +20,14 @@ same operations:
   values in workspace files
 
 The browser UI uses a dark theme by default and opens to a Welcome screen. The
-Drafting Table accepts text prompts and uploaded source material. The
-Architecture tab embeds the generated catalog browser. The Setup tab handles
-runtime status, per-user ChatGPT/Codex sign-in, and Git publishing controls.
+Drafting Table accepts natural-language prompts and uploaded source material
+without asking users for object IDs. The Architecture entry opens the generated
+catalog browser as a full-page experience. When that browser is served by the
+app, it shows the workspace catalog name and exposes a Draftsman box in the
+left navigation for guided updates. When the same browser is published through
+GitHub Pages, it stays read-only and does not show the Draftsman. The Setup tab
+handles runtime status, per-user ChatGPT/Codex sign-in, and Git publishing
+controls.
 
 First-run configuration is intentionally text based. The installer asks which
 private GitHub repo DRAFT should use for company content, validates access with

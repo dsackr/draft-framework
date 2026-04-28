@@ -153,17 +153,17 @@
         font-weight: 800;
         margin-bottom: 6px;
       }
-      pre {
-        background: #090c11;
+      .output-panel {
+        background: #111722;
         border: 1px solid var(--border);
         border-radius: 8px;
         color: #dbe5ef;
         margin: 0;
-        max-height: 420px;
-        overflow: auto;
+        min-height: 44px;
         padding: 12px;
-        white-space: pre-wrap;
-        word-break: break-word;
+      }
+      .output-panel:empty {
+        display: none;
       }
       .status-pill {
         border: 1px solid var(--border);
@@ -238,20 +238,6 @@
         gap: 10px;
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
-      .browser-frame {
-        background: #ffffff;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        height: calc(100vh - 220px);
-        min-height: 620px;
-        overflow: hidden;
-        width: 100%;
-      }
-      .browser-frame iframe {
-        border: 0;
-        height: 100%;
-        width: 100%;
-      }
       .upload-list {
         color: var(--muted);
         display: grid;
@@ -284,7 +270,7 @@
       <nav aria-label="Primary">
         <button class="nav-button active" data-tab="welcome">Welcome</button>
         <button class="nav-button" data-tab="drafting">Drafting Table</button>
-        <button class="nav-button" data-tab="architecture">Architecture</button>
+        <button class="nav-button" id="open-architecture">Architecture</button>
         <button class="nav-button" data-tab="setup">Setup</button>
       </nav>
 
@@ -330,7 +316,7 @@
               <p class="muted">Loading sign-in state.</p>
             </div>
           </div>
-          <pre id="welcome-output"></pre>
+          <div class="output-panel" id="welcome-output" aria-live="polite"></div>
         </section>
 
         <section class="tab-panel" id="tab-drafting">
@@ -347,15 +333,9 @@
 
           <div class="split">
             <div class="grid">
-              <div class="form-grid">
-                <div>
-                  <label for="target">Target Object ID</label>
-                  <input id="target" placeholder="Optional existing object ID" />
-                </div>
-                <div>
-                  <label for="draft-files">Source Material</label>
-                  <input id="draft-files" type="file" multiple accept="image/*,.txt,.md,.markdown,.yaml,.yml,.json,.csv" />
-                </div>
+              <div>
+                <label for="draft-files">Source Material</label>
+                <input id="draft-files" type="file" multiple accept="image/*,.txt,.md,.markdown,.json,.csv" />
               </div>
               <div class="upload-list" id="upload-list">No files selected.</div>
               <div>
@@ -363,33 +343,7 @@
                 <textarea id="draft-request" placeholder="Describe the system, product, diagram, requirement, or change. Include what should be reused off the shelf and what constraints or compliance needs matter."></textarea>
               </div>
             </div>
-            <pre id="draft-output"></pre>
-          </div>
-        </section>
-
-        <section class="tab-panel" id="tab-architecture">
-          <div class="headline">
-            <div>
-              <h2>Architecture Catalog</h2>
-              <p class="muted">Read-only catalog browsing, using the same generated browser shape as GitHub Pages.</p>
-            </div>
-            <div class="actions">
-              <button id="draft-selected-object">Draft Change</button>
-              <button id="reload-browser" class="secondary">Reload Browser</button>
-            </div>
-          </div>
-          <div class="form-grid">
-            <div>
-              <label for="selected-object">Selected Object ID</label>
-              <input id="selected-object" readonly placeholder="Open an object detail in the browser, then draft a change." />
-            </div>
-            <div class="notice">
-              <h3>Browse before drafting</h3>
-              <p class="muted">Select an artifact in the catalog browser, then use Draft Change to continue at the Drafting Table.</p>
-            </div>
-          </div>
-          <div class="browser-frame">
-            <iframe id="browser-frame" title="DRAFT architecture browser"></iframe>
+            <div class="output-panel" id="draft-output" aria-live="polite"></div>
           </div>
         </section>
 
@@ -419,8 +373,8 @@
                     <input id="openai-account" readonly />
                   </div>
                   <div>
-                    <label for="openai-token-store">Token Store</label>
-                    <input id="openai-token-store" readonly />
+                    <label for="openai-status">Sign-In Status</label>
+                    <input id="openai-status" readonly />
                   </div>
                 </div>
                 <div class="actions">
@@ -443,7 +397,7 @@
                 </div>
               </div>
             </div>
-            <pre id="setup-output"></pre>
+            <div class="output-panel" id="setup-output" aria-live="polite"></div>
           </div>
         </section>
       </main>
@@ -457,10 +411,8 @@
       };
 
       const workspaceInput = document.getElementById('workspace');
-      const browserFrame = document.getElementById('browser-frame');
       const draftFiles = document.getElementById('draft-files');
       const uploadList = document.getElementById('upload-list');
-      const selectedObject = document.getElementById('selected-object');
 
       function workspaceValue() {
         return workspaceInput.value.trim() || null;
@@ -472,16 +424,48 @@
       }
 
       function show(target, data) {
-        document.getElementById(target).textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+        if (!target) {
+          return;
+        }
+        const element = document.getElementById(target);
+        if (!element) {
+          return;
+        }
+        element.textContent = humanMessage(data);
       }
 
-      async function requestJson(url, options = {}, output = 'setup-output') {
+      function humanMessage(data) {
+        if (!data) return '';
+        if (typeof data === 'string') return summarizeText(data);
+        const detail = data.detail;
+        if (typeof detail === 'string') return summarizeText(detail);
+        if (detail?.message) return summarizeText(detail.message);
+        if (data.message) return summarizeText(data.message);
+        if (data.error) return summarizeText(data.error);
+        if (data.stdout && typeof data.stdout === 'string') return summarizeText(data.stdout);
+        if (data.stderr && typeof data.stderr === 'string') return summarizeText(data.stderr);
+        if (data.body && typeof data.body === 'string') return summarizeText(data.body);
+        if (data.ok === true) return 'Done.';
+        if (data.ok === false) return 'The requested action did not complete.';
+        return '';
+      }
+
+      function summarizeText(text) {
+        const value = String(text || '').trim();
+        if (!value) return '';
+        const validation = value.match(/Validated\s+(\d+)\s+catalog files successfully/i);
+        if (validation) return `Workspace validation passed. ${validation[1]} catalog files were checked.`;
+        if (value.includes('nothing to commit') || value.includes('working tree clean')) return 'No pending Git changes.';
+        return value.length > 1200 ? `${value.slice(0, 1200)}...` : value;
+      }
+
+      async function requestJson(url, options = {}, output = null) {
         const response = await fetch(url, options);
         const contentType = response.headers.get('content-type') || '';
         const data = contentType.includes('application/json')
           ? await response.json()
           : {ok: response.ok, status: response.status, body: await response.text()};
-        show(output, response.ok ? data : data);
+        show(output, data);
         return data;
       }
 
@@ -492,9 +476,6 @@
         document.querySelectorAll('.tab-panel').forEach(panel => {
           panel.classList.toggle('active', panel.id === `tab-${tab}`);
         });
-        if (tab === 'architecture') {
-          loadBrowser();
-        }
       }
 
       function layerCount(name) {
@@ -519,24 +500,24 @@
           <p class="muted">Account: ${account}</p>
         `;
         document.getElementById('openai-account').value = account;
-        document.getElementById('openai-token-store').value = status.auth?.tokenStore || '';
+        document.getElementById('openai-status').value = ready;
       }
 
       async function loadWorkspaceConfig() {
-        const data = await requestJson(`/api/workspace/config${workspaceQuery()}`, {}, 'setup-output');
+        const data = await requestJson(`/api/workspace/config${workspaceQuery()}`);
         if (data.workspace && !workspaceInput.value.trim()) {
           workspaceInput.value = data.workspace;
         }
       }
 
       async function loadModel() {
-        const data = await requestJson(`/api/workspace/effective-model${workspaceQuery()}`, {}, 'welcome-output');
+        const data = await requestJson(`/api/workspace/effective-model${workspaceQuery()}`);
         state.model = data.objects ? data : {objects: [], layers: []};
         renderMetrics();
       }
 
       async function loadDraftsman() {
-        const data = await requestJson(`/api/draftsman/config${workspaceQuery()}`, {}, 'setup-output');
+        const data = await requestJson(`/api/draftsman/config${workspaceQuery()}`);
         state.draftsman = data;
         renderDraftsman();
       }
@@ -557,38 +538,8 @@
         return `/api/catalog/browser?${params.toString()}`;
       }
 
-      function loadBrowser() {
-        browserFrame.src = browserUrl();
-      }
-
-      function selectedBrowserObjectId() {
-        try {
-          const hash = browserFrame.contentWindow.location.hash.replace(/^#/, '');
-          const params = new URLSearchParams(hash);
-          return params.get('view') === 'detail' ? params.get('id') : '';
-        } catch (error) {
-          return '';
-        }
-      }
-
-      function syncSelectedObject() {
-        const objectId = selectedBrowserObjectId();
-        if (objectId) {
-          selectedObject.value = objectId;
-        }
-        return objectId;
-      }
-
-      function draftSelectedObject() {
-        const objectId = syncSelectedObject();
-        if (!objectId) {
-          selectedObject.value = '';
-          show('welcome-output', {ok: false, message: 'Open an object detail in the Architecture browser before drafting a change.'});
-          return;
-        }
-        document.getElementById('target').value = objectId;
-        document.getElementById('draft-request').value = `Update ${objectId}: `;
-        setTab('drafting');
+      function openArchitecture() {
+        window.location.href = browserUrl();
       }
 
       async function validateWorkspace(output = 'setup-output') {
@@ -602,7 +553,7 @@
 
       async function gitStatus() {
         const data = await requestJson(`/api/git/status${workspaceQuery()}`, {}, 'setup-output');
-        show('setup-output', data.stdout || data.stderr || data);
+        show('setup-output', data.stdout ? 'Git has pending workspace changes.' : 'No pending Git changes.');
       }
 
       async function commitWorkspace() {
@@ -726,7 +677,7 @@
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             workspace: workspaceValue(),
-            contextObjectId: document.getElementById('target').value.trim() || null,
+            contextObjectId: null,
             message: message || 'Use the uploaded source material to start a drafting session.',
             attachments: state.attachments
           })
@@ -735,24 +686,29 @@
       }
 
       async function health() {
-        const data = await requestJson('/api/health', {}, 'welcome-output');
+        const data = await requestJson('/api/health');
         const pill = document.getElementById('health');
         pill.textContent = data.status || 'unknown';
         pill.classList.toggle('ok', data.status === 'ok');
       }
 
-      document.querySelectorAll('.nav-button').forEach(button => {
+      document.querySelectorAll('.nav-button[data-tab]').forEach(button => {
         button.addEventListener('click', () => setTab(button.dataset.tab));
       });
       document.querySelectorAll('[data-go]').forEach(button => {
-        button.addEventListener('click', () => setTab(button.dataset.go));
+        button.addEventListener('click', () => {
+          if (button.dataset.go === 'architecture') {
+            openArchitecture();
+            return;
+          }
+          setTab(button.dataset.go);
+        });
       });
 
       document.getElementById('welcome-validate').addEventListener('click', () => validateWorkspace('welcome-output'));
       document.getElementById('draft-validate').addEventListener('click', () => validateWorkspace('draft-output'));
       document.getElementById('ask-draftsman').addEventListener('click', askDraftsman);
-      document.getElementById('draft-selected-object').addEventListener('click', draftSelectedObject);
-      document.getElementById('reload-browser').addEventListener('click', loadBrowser);
+      document.getElementById('open-architecture').addEventListener('click', openArchitecture);
       document.getElementById('reload-setup').addEventListener('click', refreshAll);
       document.getElementById('sign-in').addEventListener('click', signIn);
       document.getElementById('import-codex-auth').addEventListener('click', importCodexAuth);
@@ -763,14 +719,6 @@
       document.getElementById('push').addEventListener('click', pushWorkspace);
       document.getElementById('publish').addEventListener('click', publishWorkspace);
       draftFiles.addEventListener('change', updateAttachments);
-      browserFrame.addEventListener('load', () => {
-        syncSelectedObject();
-        try {
-          browserFrame.contentWindow.addEventListener('hashchange', syncSelectedObject);
-        } catch (error) {
-          // The iframe is same-origin for the local app; ignore if a browser blocks access.
-        }
-      });
 
       health();
       refreshAll();

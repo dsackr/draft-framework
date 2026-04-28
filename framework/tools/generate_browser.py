@@ -11,6 +11,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import copy
 import json
 import subprocess
@@ -27,6 +28,7 @@ OUTPUT_PATH = REPO_ROOT / "docs" / "index.html"
 SCHEMA_ROOT = FRAMEWORK_ROOT / "schemas"
 BASE_CONFIGURATION_ROOT = FRAMEWORK_ROOT / "configurations"
 DEFAULT_WORKSPACE_ROOT = REPO_ROOT / "examples"
+LOGO_PATH = REPO_ROOT / "draftlogo.png"
 CATALOG_FOLDERS = [
     "odcs",
     "odc-overrides",
@@ -231,6 +233,43 @@ def repository_web_url(root: Path) -> str:
     if remote.endswith(".git"):
         remote = remote[:-4]
     return remote if remote.startswith("https://github.com/") else ""
+
+
+def repository_name_from_url(url: str) -> str:
+    if not url:
+        return ""
+    return url.rstrip("/").split("/")[-1] or ""
+
+
+def workspace_repository_name(workspace_root: Path) -> str:
+    config_path = workspace_root / ".draft" / "workspace.yaml"
+    if config_path.exists():
+        try:
+            config = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+        except Exception:  # noqa: BLE001
+            config = {}
+        repository = config.get("repository") if isinstance(config, dict) else {}
+        if isinstance(repository, dict):
+            owner = str(repository.get("owner") or "").strip()
+            name = str(repository.get("name") or "").strip()
+            if owner and name:
+                return f"{owner}/{name}"
+            if name:
+                return name
+    workspace_url = repository_web_url(workspace_root)
+    if workspace_url:
+        parts = workspace_url.rstrip("/").split("/")
+        if len(parts) >= 2:
+            return "/".join(parts[-2:])
+    framework_url = repository_web_url(REPO_ROOT)
+    return repository_name_from_url(framework_url) or workspace_root.name
+
+
+def logo_data_uri() -> str:
+    if not LOGO_PATH.exists():
+        return ""
+    encoded = base64.b64encode(LOGO_PATH.read_bytes()).decode("ascii")
+    return f"data:image/png;base64,{encoded}"
 
 
 def extract_refs(node: Any, path: str = "") -> list[tuple[str, str]]:
@@ -474,7 +513,7 @@ def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, A
     }
 
 
-def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: Path) -> dict[str, Any]:
     objects = list(registry.values())
     schemas = load_schemas(SCHEMA_ROOT)
     outbound_refs, referenced_by, warnings = build_reference_index(registry)
@@ -589,7 +628,9 @@ def build_browser_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]
         "referencedBy": referenced_by,
         "warnings": warnings,
         "compliance": build_compliance_payload(registry),
-        "repoUrl": repository_web_url(REPO_ROOT),
+        "repoUrl": repository_web_url(workspace_root) or repository_web_url(REPO_ROOT),
+        "catalogName": workspace_repository_name(workspace_root),
+        "logoDataUri": logo_data_uri(),
     }
 
 
@@ -640,6 +681,35 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       margin: 0;
       font-size: 18px;
       letter-spacing: 0.02em;
+    }
+    .browser-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .browser-logo {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      flex: 0 0 auto;
+    }
+    .catalog-name {
+      color: var(--subtle);
+      font-size: 13px;
+      margin-top: 4px;
+      overflow-wrap: anywhere;
+    }
+    .mode-badge {
+      display: inline-flex;
+      width: fit-content;
+      margin-top: 10px;
+      padding: 5px 9px;
+      border: 1px solid rgba(56,189,248,0.38);
+      border-radius: 999px;
+      color: #bae6fd;
+      background: rgba(56,189,248,0.12);
+      font-size: 11px;
+      font-weight: 700;
     }
     .sidebar p {
       margin: 10px 0 0;
@@ -1755,6 +1825,29 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       font-size: 12px;
       line-height: 1.5;
     }
+    .draftsman-box {
+      display: grid;
+      gap: 10px;
+    }
+    .draftsman-textarea {
+      min-height: 110px;
+      resize: vertical;
+      width: 100%;
+      border: 1px solid rgba(148,163,184,0.35);
+      border-radius: 8px;
+      background: rgba(15,23,42,0.72);
+      color: var(--text);
+      font: inherit;
+      font-size: 13px;
+      line-height: 1.45;
+      padding: 10px;
+    }
+    .draftsman-output {
+      color: var(--subtle);
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
     .editor-overlay {
       position: fixed;
       inset: 0;
@@ -1962,7 +2055,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       font-size: 13px;
       line-height: 1.55;
     }
-    .yaml-preview {
+    .structured-preview {
       white-space: pre-wrap;
       word-break: break-word;
       font-family: "SF Mono", Menlo, monospace;
@@ -2081,8 +2174,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <body>
   <div class="app">
     <aside class="sidebar">
-      <h1>Catalog Browser</h1>
-      <p>Browse the catalog by object type, then inspect a single object’s components, interactions, and decisions.</p>
+      <div class="browser-brand">
+        <img id="draft-logo" class="browser-logo" alt="DRAFT">
+        <div>
+          <h1>DRAFT Catalog</h1>
+          <div class="catalog-name" id="catalog-name"></div>
+          <div class="mode-badge" id="browser-mode"></div>
+        </div>
+      </div>
+      <p>Browse architecture objects, relationships, interactions, and decisions.</p>
       <div class="sidebar-stack">
         <div id="sidebar-content"></div>
         <div class="legend-block">
@@ -2108,6 +2208,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     const sidebarContent = document.getElementById('sidebar-content');
     const legend = document.getElementById('legend');
     const editorOverlay = document.getElementById('editor-overlay');
+    const urlParams = new URLSearchParams(window.location.search);
+    const isDraftApp = window.location.pathname.includes('/api/catalog/browser');
+    const workspaceParam = urlParams.get('workspace') || null;
+    document.getElementById('draft-logo').src = browserData.logoDataUri || 'draftlogo.png';
+    document.getElementById('catalog-name').textContent = browserData.catalogName || 'Catalog';
+    document.getElementById('browser-mode').textContent = isDraftApp ? 'DRAFT App' : 'GitHub Pages';
     let editorState = null;
     let controlImportState = null;
     const CATEGORY_CONFIG = [
@@ -2528,8 +2634,64 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
+    function selectedObjectForDraftsman() {
+      return currentDetailId && objectLookup[currentDetailId] ? objectLookup[currentDetailId] : null;
+    }
+
+    function draftsmanMarkup() {
+      if (!isDraftApp) {
+        return '';
+      }
+      const selected = selectedObjectForDraftsman();
+      const scopeText = selected ? `Ask for a change to ${escapeHtml(selected.name)}.` : 'Ask for a catalog update or architecture change.';
+      return `
+        <div class="sidebar-block draftsman-box">
+          <div class="legend-title">Draftsman</div>
+          <div class="sidebar-help">${scopeText}</div>
+          <textarea id="draftsman-request" class="draftsman-textarea" placeholder="Describe the update you want."></textarea>
+          <button class="action-button" id="draftsman-submit">Ask Draftsman</button>
+          <div class="draftsman-output" id="draftsman-output" aria-live="polite"></div>
+        </div>
+      `;
+    }
+
+    function humanDraftsmanMessage(data) {
+      if (!data) return '';
+      if (typeof data === 'string') return data;
+      if (data.message) return data.message;
+      if (data.detail?.message) return data.detail.message;
+      if (typeof data.detail === 'string') return data.detail;
+      return data.ok === false ? 'The Draftsman could not complete that request.' : 'Done.';
+    }
+
+    async function askDraftsmanFromBrowser() {
+      const input = document.getElementById('draftsman-request');
+      const output = document.getElementById('draftsman-output');
+      const message = input?.value.trim() || '';
+      if (!message) {
+        output.textContent = 'Describe the change you want first.';
+        return;
+      }
+      output.textContent = 'Draftsman is reviewing the catalog.';
+      try {
+        const response = await fetch('/api/draftsman/chat', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            workspace: workspaceParam,
+            contextObjectId: currentDetailId || null,
+            message
+          })
+        });
+        const data = await response.json();
+        output.textContent = humanDraftsmanMessage(data);
+      } catch (error) {
+        output.textContent = 'The Draftsman is not reachable from this browser session.';
+      }
+    }
+
     function sidebarMarkup(extraMarkup = '') {
-      return `${complianceFrameworkMarkup()}${currentFilterMarkup()}${extraMarkup}`;
+      return `${draftsmanMarkup()}${complianceFrameworkMarkup()}${currentFilterMarkup()}${extraMarkup}`;
     }
 
     function rerenderCurrentView() {
@@ -2546,16 +2708,19 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function attachSidebarHandlers() {
       const frameworkSelect = document.getElementById('framework-select');
-      if (!frameworkSelect) {
-        return;
+      if (frameworkSelect) {
+        frameworkSelect.addEventListener('change', event => {
+          selectedFrameworkId = event.target.value || complianceData.defaultProfileId || complianceProfiles[0]?.id || null;
+          try {
+            window.localStorage.setItem('draft-framework:selected-framework', selectedFrameworkId || '');
+          } catch (error) {}
+          rerenderCurrentView();
+        });
       }
-      frameworkSelect.addEventListener('change', event => {
-        selectedFrameworkId = event.target.value || complianceData.defaultProfileId || complianceProfiles[0]?.id || null;
-        try {
-          window.localStorage.setItem('draft-framework:selected-framework', selectedFrameworkId || '');
-        } catch (error) {}
-        rerenderCurrentView();
-      });
+      const draftsmanSubmit = document.getElementById('draftsman-submit');
+      if (draftsmanSubmit) {
+        draftsmanSubmit.addEventListener('click', askDraftsmanFromBrowser);
+      }
     }
 
     function attachTopNavHandlers() {
@@ -3691,7 +3856,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <div class="editor-field">
             <label for="editor-${escapeHtml(field)}">${escapeHtml(label)}${requiredText}</label>
             <textarea id="editor-${escapeHtml(field)}" data-editor-field="${escapeHtml(field)}" data-editor-complex="true">${escapeHtml(yamlFieldValue(value))}</textarea>
-            <div class="editor-help">Edit as YAML for structured data.</div>
+            <div class="editor-help">Edit structured values carefully.</div>
           </div>
         `;
       }
@@ -3740,7 +3905,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function updateEditorPreview(object) {
       const errorNode = editorOverlay.querySelector('#editor-error');
-      const previewNode = editorOverlay.querySelector('#editor-yaml-preview');
+      const previewNode = editorOverlay.querySelector('#editor-structured-preview');
       if (!editorState || !errorNode || !previewNode) return;
       try {
         const serialized = serializeEditorObject(object, editorState.fieldValues);
@@ -3968,12 +4133,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       editorOverlay.innerHTML = `
         <div class="editor-panel">
           <div class="editor-header">
-            <div class="editor-title">
-              <h3>Edit ${escapeHtml(object.name)}</h3>
-              <p>Static GitHub Pages cannot write back to the repo directly. Use this editor to adjust the object, preview the YAML, and then copy or download the result.</p>
-            </div>
-            <div class="editor-actions">
-              ${repoSourceUrl(object) ? `<a class="action-button secondary" href="${escapeHtml(repoSourceUrl(object))}" target="_blank" rel="noreferrer">Open Source On GitHub</a>` : ''}
+              <div class="editor-title">
+                <h3>Edit ${escapeHtml(object.name)}</h3>
+              <p>Static GitHub Pages is read-only. Use the DRAFT App and Draftsman for guided catalog changes.</p>
+              </div>
+              <div class="editor-actions">
               <button class="action-button secondary" id="editor-reset">Reset</button>
               <button class="action-button secondary" id="editor-close">Close</button>
             </div>
@@ -3987,13 +4151,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               </div>
             </section>
             <section class="editor-card">
-              <h4>YAML Preview</h4>
-              <div class="editor-help">This preview updates as you edit. Complex fields use YAML textareas so lists and maps stay structured.</div>
+              <h4>Structured Preview</h4>
+              <div class="editor-help">This preview updates as you edit.</div>
               <div id="editor-error" class="editor-error"></div>
-              <pre id="editor-yaml-preview" class="yaml-preview"></pre>
+              <div id="editor-structured-preview" class="structured-preview"></div>
               <div class="editor-actions">
-                <button class="action-button" id="editor-copy">Copy YAML</button>
-                <button class="action-button" id="editor-download">Download YAML</button>
+                <button class="action-button" id="editor-copy">Copy</button>
+                <button class="action-button" id="editor-download">Download</button>
               </div>
             </section>
           </div>
@@ -4205,10 +4369,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <div class="editor-header">
               <div class="editor-title">
                 <h3>Import Controls Into ${escapeHtml(object.name)}</h3>
-                <p>Import minimal control identity data, answer the DRAFT semantics with constrained options, and download the rebuilt framework YAML. GitHub Pages stays read-only.</p>
+                <p>Import minimal control identity data and answer the DRAFT semantics with constrained options. GitHub Pages stays read-only.</p>
               </div>
               <div class="editor-actions">
-                ${repoSourceUrl(object) ? `<a class="action-button secondary" href="${escapeHtml(repoSourceUrl(object))}" target="_blank" rel="noreferrer">Open Source On GitHub</a>` : ''}
                 <button class="action-button secondary" id="control-import-reset">Reset</button>
                 <button class="action-button secondary" id="control-import-close">Close</button>
               </div>
@@ -4216,14 +4379,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <div class="editor-grid">
               <section class="editor-card">
                 <h4>Import Source</h4>
-                <div class="editor-help">Paste YAML shaped as a list of controls, a single control object, or <code>controls: [...]</code>. Each imported control only needs <code>controlId</code>, <code>name</code>, and <code>externalReference</code>.</div>
+                <div class="editor-help">Paste a list of controls, a single control object, or a controls collection. Each imported control only needs control ID, name, and external reference.</div>
                 <div class="editor-field">
-                  <label for="control-import-source">Control YAML</label>
+                  <label for="control-import-source">Control Data</label>
                   <textarea id="control-import-source" placeholder="- controlId: 4.4.1&#10;  name: Password Policy&#10;  externalReference: https://example.com/control"></textarea>
                 </div>
                 <div class="editor-inline-actions">
                   <input type="file" id="control-import-file" accept=".yaml,.yml,text/yaml,text/x-yaml">
-                  <button class="action-button" id="control-import-parse">Import YAML</button>
+                  <button class="action-button" id="control-import-parse">Import</button>
                   <button class="action-button secondary" id="control-import-add">Add Control</button>
                 </div>
                 <div class="editor-divider"></div>
@@ -4234,13 +4397,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 </div>
               </section>
               <section class="editor-card">
-                <h4>Framework YAML Preview</h4>
-                <div class="editor-help">This preview updates as you edit control semantics. Download the result and commit it manually for now.</div>
+                <h4>Framework Preview</h4>
+                <div class="editor-help">This preview updates as you edit control semantics.</div>
                 <div id="control-import-error" class="editor-error"></div>
-                <pre id="control-import-preview" class="yaml-preview"></pre>
+                <div id="control-import-preview" class="structured-preview"></div>
                 <div class="editor-actions">
-                  <button class="action-button" id="control-import-copy">Copy YAML</button>
-                  <button class="action-button" id="control-import-download">Download YAML</button>
+                  <button class="action-button" id="control-import-copy">Copy</button>
+                  <button class="action-button" id="control-import-download">Download</button>
                 </div>
               </section>
             </div>
@@ -4426,11 +4589,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <div class="owner-line">
             <span><strong>Owner:</strong> ${escapeHtml(object.owner?.team || 'Unknown')}</span>
             <span><strong>Contact:</strong> ${escapeHtml(object.owner?.contact || 'Unknown')}</span>
-            <span><strong>Source:</strong> ${escapeHtml(object.source || 'Generated')}</span>
-          </div>
-          <div class="header-actions">
-            <button class="action-button" id="open-editor-button">Edit In Browser</button>
-            ${repoSourceUrl(object) ? `<a class="action-button secondary" href="${escapeHtml(repoSourceUrl(object))}" target="_blank" rel="noreferrer">View Source</a>` : ''}
           </div>
         </section>
       `;
@@ -5343,7 +5501,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
     output_path = args.output.resolve()
     registry = load_objects(args.workspace.resolve())
-    payload = build_browser_payload(registry)
+    payload = build_browser_payload(registry, args.workspace.resolve())
     write_browser(payload, output_path)
     for warning in payload.get("warnings", []):
         print(warning, file=sys.stderr)
