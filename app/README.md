@@ -4,6 +4,9 @@ The DRAFT App is the shared internal web application and API surface for a
 company DRAFT workspace. It is designed so the browser UI and AI agents use the
 same operations:
 
+- start from a branded Drafting Table workspace
+- browse the effective catalog before making changes
+- inspect and select artifacts for change requests
 - resolve the effective framework model
 - inspect catalog and configuration objects
 - initialize private workspace structure

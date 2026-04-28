@@ -7,99 +7,202 @@
     <style>
       :root {
         color-scheme: light;
-        --border: #d8dde7;
-        --muted: #5f6b7a;
-        --panel: #ffffff;
+        --border: #d7dde8;
+        --border-strong: #b8c2d1;
+        --ink: #111827;
+        --muted: #5c6675;
         --page: #f5f7fa;
-        --primary: #1f6feb;
-        --text: #111827;
+        --panel: #ffffff;
+        --primary: #0f6f9f;
+        --primary-dark: #0a557a;
+        --success: #197a4a;
+        --warning: #9a5b08;
+        --danger: #b42318;
+        --soft-blue: #e8f4fb;
+        --soft-green: #eaf6ef;
+        --soft-gold: #fff6df;
       }
       * {
         box-sizing: border-box;
       }
       body {
         margin: 0;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         background: var(--page);
-        color: var(--text);
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
       header {
         align-items: center;
         background: var(--panel);
         border-bottom: 1px solid var(--border);
         display: flex;
+        gap: 18px;
         justify-content: space-between;
-        min-height: 64px;
-        padding: 14px 24px;
+        min-height: 74px;
+        padding: 12px 24px;
       }
       .brand {
         align-items: center;
         display: flex;
-        gap: 12px;
+        gap: 14px;
         min-width: 0;
       }
       .brand img {
         display: block;
-        height: 42px;
+        height: 52px;
         object-fit: contain;
-        width: 42px;
+        width: 52px;
       }
-      h1, h2 {
+      h1, h2, h3, p {
         margin: 0;
       }
       h1 {
-        font-size: 22px;
-        line-height: 1.2;
+        font-size: 23px;
+        line-height: 1.1;
       }
       h2 {
-        font-size: 16px;
+        font-size: 20px;
+        line-height: 1.2;
       }
-      main {
+      h3 {
+        font-size: 15px;
+        line-height: 1.25;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .status-pill {
+        align-items: center;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        display: inline-flex;
+        font-size: 12px;
+        font-weight: 700;
+        gap: 6px;
+        min-height: 28px;
+        padding: 5px 10px;
+      }
+      .status-pill.ok {
+        background: var(--soft-green);
+        border-color: #b9dbc7;
+        color: var(--success);
+      }
+      .status-pill.warn {
+        background: var(--soft-gold);
+        border-color: #ecd08a;
+        color: var(--warning);
+      }
+      .shell {
         display: grid;
-        gap: 16px;
-        grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+        gap: 18px;
+        grid-template-columns: 250px minmax(0, 1fr);
         padding: 18px 24px 24px;
       }
-      aside, section {
+      nav, main, aside, section {
         background: var(--panel);
         border: 1px solid var(--border);
         border-radius: 8px;
       }
-      aside {
+      nav {
         align-self: start;
         display: grid;
-        gap: 16px;
-        padding: 16px;
+        gap: 8px;
+        padding: 12px;
       }
-      section {
+      main {
+        min-width: 0;
+        padding: 18px;
+      }
+      .nav-button {
+        align-items: center;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        color: #253142;
+        cursor: pointer;
+        display: flex;
+        font-weight: 700;
+        justify-content: space-between;
+        min-height: 40px;
+        padding: 8px 10px;
+        text-align: left;
+        width: 100%;
+      }
+      .nav-button.active {
+        background: var(--soft-blue);
+        border-color: #b8d8e8;
+        color: var(--primary-dark);
+      }
+      .nav-button:hover {
+        border-color: var(--border-strong);
+      }
+      .tab-panel {
+        display: none;
+      }
+      .tab-panel.active {
         display: grid;
-        gap: 14px;
-        padding: 16px;
+        gap: 16px;
       }
-      .stack {
+      .headline {
+        align-items: start;
+        display: flex;
+        gap: 16px;
+        justify-content: space-between;
+      }
+      .headline-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+      .summary-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(4, minmax(130px, 1fr));
+      }
+      .metric {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        min-height: 82px;
+        padding: 12px;
+      }
+      .metric strong {
+        display: block;
+        font-size: 26px;
+        line-height: 1.1;
+        margin-bottom: 4px;
+      }
+      .split {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 430px);
+      }
+      .work-area {
+        display: grid;
+        gap: 12px;
+      }
+      .inline-fields {
         display: grid;
         gap: 10px;
-      }
-      .grid {
-        display: grid;
-        gap: 16px;
-        grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
       label {
         color: #263241;
         display: block;
-        font-size: 13px;
-        font-weight: 650;
+        font-size: 12px;
+        font-weight: 750;
         margin-bottom: 6px;
       }
-      input, textarea {
+      input, select, textarea {
         background: #ffffff;
         border: 1px solid #c6cfdc;
         border-radius: 6px;
-        color: var(--text);
+        color: var(--ink);
         font: inherit;
         font-size: 14px;
-        padding: 9px 10px;
+        min-height: 36px;
+        padding: 8px 10px;
         width: 100%;
       }
       textarea {
@@ -112,28 +215,49 @@
         border-radius: 6px;
         color: #ffffff;
         cursor: pointer;
-        font-weight: 650;
+        font-weight: 750;
         min-height: 36px;
-        padding: 8px 11px;
+        padding: 8px 12px;
       }
       button.secondary {
         background: #ffffff;
         border-color: #c6cfdc;
         color: #1f2937;
       }
+      button.ghost {
+        background: transparent;
+        border-color: transparent;
+        color: var(--primary-dark);
+      }
+      button:disabled {
+        cursor: not-allowed;
+        opacity: .55;
+      }
       .actions {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
       }
-      .status {
-        color: var(--muted);
-        font-size: 13px;
+      .notice {
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--primary);
+        border-radius: 8px;
+        display: grid;
+        gap: 6px;
+        padding: 12px;
+      }
+      .notice.warning {
+        border-left-color: var(--warning);
+      }
+      .catalog-tools {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: minmax(220px, 1fr) 180px 160px;
       }
       .table-wrap {
         border: 1px solid var(--border);
         border-radius: 8px;
-        max-height: 460px;
+        max-height: 520px;
         overflow: auto;
       }
       table {
@@ -143,7 +267,7 @@
       }
       th, td {
         border-bottom: 1px solid #e8ecf2;
-        padding: 8px;
+        padding: 9px;
         text-align: left;
         vertical-align: top;
       }
@@ -151,10 +275,41 @@
         background: #f9fafc;
         color: #4d5a69;
         font-size: 12px;
-        font-weight: 750;
+        font-weight: 800;
         position: sticky;
         text-transform: uppercase;
         top: 0;
+      }
+      tr.selectable {
+        cursor: pointer;
+      }
+      tr.selectable:hover {
+        background: #f5f9fc;
+      }
+      tr.selected {
+        background: var(--soft-blue);
+      }
+      .detail {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        min-height: 180px;
+        padding: 12px;
+      }
+      .detail dl {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: 92px minmax(0, 1fr);
+        margin: 0;
+      }
+      .detail dt {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 750;
+        text-transform: uppercase;
+      }
+      .detail dd {
+        margin: 0;
+        overflow-wrap: anywhere;
       }
       pre {
         background: #101827;
@@ -167,8 +322,28 @@
         white-space: pre-wrap;
         word-break: break-word;
       }
-      @media (max-width: 900px) {
-        main, .grid {
+      .config-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+      }
+      .workspace-bar {
+        align-items: end;
+        border-top: 1px solid var(--border);
+        display: grid;
+        gap: 10px;
+        grid-template-columns: minmax(260px, 1fr) auto;
+        margin-top: 8px;
+        padding-top: 12px;
+      }
+      @media (max-width: 1050px) {
+        .shell, .split, .config-grid, .summary-grid {
+          grid-template-columns: 1fr;
+        }
+        nav {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .catalog-tools, .workspace-bar, .inline-fields {
           grid-template-columns: 1fr;
         }
       }
@@ -178,83 +353,219 @@
     <header>
       <div class="brand">
         <img src="/assets/draftlogo.png" alt="DRAFT" />
-        <h1>DRAFT App</h1>
+        <div>
+          <h1>DRAFT</h1>
+          <div class="muted">Deployable architecture workspace</div>
+        </div>
       </div>
-      <div class="status" id="health">checking</div>
+      <div class="status-pill" id="health">checking</div>
     </header>
-    <main>
-      <aside>
-        <div class="stack">
-          <label for="workspace">Workspace Path</label>
-          <input id="workspace" placeholder="/path/to/company-draft-workspace" />
-          <div class="actions">
-            <button id="init">Init</button>
-            <button id="load" class="secondary">Load</button>
-            <button id="validate" class="secondary">Validate</button>
+
+    <div class="shell">
+      <nav aria-label="Primary">
+        <button class="nav-button active" data-tab="start">Start Here</button>
+        <button class="nav-button" data-tab="catalog">Catalog</button>
+        <button class="nav-button" data-tab="drafting">Drafting Table</button>
+        <button class="nav-button" data-tab="config">Configuration</button>
+      </nav>
+
+      <main>
+        <section class="tab-panel active" id="tab-start">
+          <div class="headline">
+            <div>
+              <h2>Welcome to the Drafting Table</h2>
+              <p class="muted" id="workspace-label">Loading workspace</p>
+            </div>
+            <div class="headline-actions">
+              <button id="start-validate">Validate</button>
+              <button id="start-status" class="secondary">Git Status</button>
+            </div>
           </div>
-        </div>
-        <div class="stack">
-          <label for="message">Commit Message</label>
-          <input id="message" value="Update DRAFT workspace" />
-          <div class="actions">
-            <button id="status" class="secondary">Status</button>
-            <button id="commit">Commit</button>
-            <button id="push" class="secondary">Push</button>
-            <button id="publish" class="secondary">Publish</button>
+
+          <div class="summary-grid">
+            <div class="metric">
+              <strong id="metric-total">0</strong>
+              <span class="muted">Effective objects</span>
+            </div>
+            <div class="metric">
+              <strong id="metric-catalog">0</strong>
+              <span class="muted">Catalog objects</span>
+            </div>
+            <div class="metric">
+              <strong id="metric-config">0</strong>
+              <span class="muted">Configuration objects</span>
+            </div>
+            <div class="metric">
+              <strong id="metric-framework">0</strong>
+              <span class="muted">Framework objects</span>
+            </div>
           </div>
-        </div>
-        <div class="stack">
-          <h2>Workspace Config</h2>
-          <textarea id="config"></textarea>
-          <div class="actions">
-            <button id="load-config" class="secondary">Reload</button>
-            <button id="save-config">Save</button>
-          </div>
-        </div>
-      </aside>
-      <div class="grid">
-        <section>
-          <h2>Effective Model</h2>
-          <div class="status" id="summary"></div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr><th>ID</th><th>Type</th><th>Layer</th><th>Source</th></tr>
-              </thead>
-              <tbody id="objects"></tbody>
-            </table>
+
+          <div class="split">
+            <div class="work-area">
+              <div class="notice">
+                <h3>Start with the catalog</h3>
+                <p class="muted">Browse existing artifacts before creating new ones.</p>
+                <div class="actions">
+                  <button data-go="catalog">Browse Catalog</button>
+                  <button data-go="drafting" class="secondary">Open Drafting Table</button>
+                </div>
+              </div>
+              <div class="notice warning" id="draftsman-mode">
+                <h3>Draftsman</h3>
+                <p class="muted">Loading Draftsman configuration.</p>
+              </div>
+            </div>
+            <pre id="start-output"></pre>
           </div>
         </section>
-        <section>
-          <h2>Object Patch</h2>
-          <div class="stack">
-            <label for="target">Target Object ID</label>
-            <input id="target" placeholder="rbb.host.example" />
+
+        <section class="tab-panel" id="tab-catalog">
+          <div class="headline">
+            <div>
+              <h2>Catalog</h2>
+              <p class="muted">Read-only browsing for the current effective model.</p>
+            </div>
+            <div class="headline-actions">
+              <button id="reload-catalog" class="secondary">Reload</button>
+            </div>
           </div>
-          <div class="stack">
-            <label for="purpose">Purpose</label>
-            <input id="purpose" value="override" />
+
+          <div class="catalog-tools">
+            <input id="catalog-search" placeholder="Search ID, name, type, source" />
+            <select id="type-filter">
+              <option value="">All types</option>
+            </select>
+            <select id="layer-filter">
+              <option value="">All layers</option>
+              <option value="catalog">Catalog</option>
+              <option value="configuration">Configuration</option>
+              <option value="framework">Framework</option>
+            </select>
           </div>
-          <div class="stack">
-            <label for="patch">Patch JSON</label>
-            <textarea id="patch">{
+
+          <div class="split">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>ID</th><th>Name</th><th>Type</th><th>Layer</th></tr>
+                </thead>
+                <tbody id="objects"></tbody>
+              </table>
+            </div>
+            <div class="detail" id="object-detail">
+              <h3>No object selected</h3>
+              <p class="muted">Select a row to inspect an artifact.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="tab-drafting">
+          <div class="headline">
+            <div>
+              <h2>Drafting Table</h2>
+              <p class="muted">Create a change request for an existing artifact or a new architecture object.</p>
+            </div>
+            <div class="headline-actions">
+              <button id="engage-draftsman">Engage Draftsman</button>
+              <button id="write-patch" class="secondary">Write Patch</button>
+            </div>
+          </div>
+
+          <div class="split">
+            <div class="work-area">
+              <div class="inline-fields">
+                <div>
+                  <label for="target">Target Object ID</label>
+                  <input id="target" placeholder="Select from catalog or enter an ID" />
+                </div>
+                <div>
+                  <label for="purpose">Change Purpose</label>
+                  <input id="purpose" value="override" />
+                </div>
+              </div>
+              <div>
+                <label for="draft-request">Draft Request</label>
+                <textarea id="draft-request" placeholder="Describe the architecture artifact or change you want to make."></textarea>
+              </div>
+              <div>
+                <label for="patch">Patch JSON</label>
+                <textarea id="patch">{
   "catalogStatus": "draft"
 }</textarea>
+              </div>
+            </div>
+            <pre id="draft-output"></pre>
           </div>
-          <div class="actions">
-            <button id="write-patch">Write Patch</button>
-            <button id="updates" class="secondary">Framework Check</button>
-          </div>
-          <pre id="output"></pre>
         </section>
-      </div>
-    </main>
+
+        <section class="tab-panel" id="tab-config">
+          <div class="headline">
+            <div>
+              <h2>Configuration</h2>
+              <p class="muted">Workspace settings, Draftsman mode, validation, and publishing.</p>
+            </div>
+            <div class="headline-actions">
+              <button id="save-config">Save Config</button>
+              <button id="load-config" class="secondary">Reload</button>
+            </div>
+          </div>
+
+          <div class="workspace-bar">
+            <div>
+              <label for="workspace">Workspace Path</label>
+              <input id="workspace" placeholder="/path/to/company-draft-workspace" />
+            </div>
+            <div class="actions">
+              <button id="init" class="secondary">Initialize</button>
+              <button id="load" class="secondary">Load</button>
+            </div>
+          </div>
+
+          <div class="config-grid">
+            <div>
+              <label for="config">Workspace Config JSON</label>
+              <textarea id="config"></textarea>
+            </div>
+            <div class="work-area">
+              <div class="notice" id="config-draftsman">
+                <h3>Draftsman Mode</h3>
+                <p class="muted">Loading.</p>
+              </div>
+              <div>
+                <label for="message">Commit Message</label>
+                <input id="message" value="Update DRAFT workspace" />
+              </div>
+              <div class="actions">
+                <button id="validate">Validate</button>
+                <button id="status" class="secondary">Git Status</button>
+                <button id="commit" class="secondary">Commit</button>
+                <button id="push" class="secondary">Push</button>
+                <button id="publish" class="secondary">Publish</button>
+                <button id="updates" class="ghost">Framework Check</button>
+              </div>
+              <pre id="config-output"></pre>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
     <script>
+      const state = {
+        model: {objects: [], layers: []},
+        filtered: [],
+        selected: null,
+        draftsman: null
+      };
+
       const workspaceInput = document.getElementById('workspace');
-      const output = document.getElementById('output');
-      const summary = document.getElementById('summary');
-      const objects = document.getElementById('objects');
       const config = document.getElementById('config');
+      const objects = document.getElementById('objects');
+      const objectDetail = document.getElementById('object-detail');
+      const typeFilter = document.getElementById('type-filter');
+      const layerFilter = document.getElementById('layer-filter');
+      const catalogSearch = document.getElementById('catalog-search');
 
       function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, character => ({
@@ -275,48 +586,156 @@
         return value ? `?workspace=${encodeURIComponent(value)}` : '';
       }
 
-      function show(data) {
-        output.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      function show(target, data) {
+        document.getElementById(target).textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
       }
 
-      async function requestJson(url, options = {}) {
+      async function requestJson(url, options = {}, output = 'config-output') {
         const response = await fetch(url, options);
         const data = await response.json();
-        show(data);
+        if (!response.ok) {
+          show(output, data);
+          return data;
+        }
+        show(output, data);
         return data;
       }
 
-      async function loadModel() {
-        const data = await requestJson(`/api/workspace/effective-model${workspaceQuery()}`);
-        summary.textContent = `${(data.objects || []).length} effective objects`;
-        objects.innerHTML = (data.objects || []).map(item => `
-          <tr>
-            <td>${escapeHtml(item.id)}</td>
-            <td>${escapeHtml(item.type)}</td>
-            <td>${escapeHtml(item.layer)}</td>
-            <td>${escapeHtml(item.source)}</td>
-          </tr>
-        `).join('');
+      function setTab(tab) {
+        document.querySelectorAll('.nav-button').forEach(button => {
+          button.classList.toggle('active', button.dataset.tab === tab);
+        });
+        document.querySelectorAll('.tab-panel').forEach(panel => {
+          panel.classList.toggle('active', panel.id === `tab-${tab}`);
+        });
       }
 
-      async function initWorkspace() {
+      function layerCount(name) {
+        const layer = (state.model.layers || []).find(item => item.name === name);
+        return layer ? layer.count : 0;
+      }
+
+      function updateMetrics() {
+        document.getElementById('metric-total').textContent = (state.model.objects || []).length;
+        document.getElementById('metric-catalog').textContent = layerCount('catalog');
+        document.getElementById('metric-config').textContent = layerCount('configuration');
+        document.getElementById('metric-framework').textContent = layerCount('framework');
+        document.getElementById('workspace-label').textContent = state.model.workspace || 'No workspace loaded';
+      }
+
+      function renderDraftsmanStatus() {
+        const status = state.draftsman?.status;
+        const mode = status?.mode || 'external';
+        const available = status?.embeddedDraftsmanAvailable ? 'Embedded Draftsman ready' : 'External Draftsman mode';
+        const issues = (status?.issues || []).map(item => `<div>${escapeHtml(item)}</div>`).join('');
+        const body = `
+          <h3>Draftsman</h3>
+          <p class="muted">${escapeHtml(available)}</p>
+          <p class="muted">Mode: ${escapeHtml(mode)}; provider: ${escapeHtml(status?.embeddedProvider || 'openai')}; auth: ${escapeHtml(status?.embeddedAuth || 'oauth')}.</p>
+          ${issues ? `<div class="muted">${issues}</div>` : ''}
+        `;
+        document.getElementById('draftsman-mode').innerHTML = body;
+        document.getElementById('config-draftsman').innerHTML = body;
+      }
+
+      function populateFilters() {
+        const current = typeFilter.value;
+        const types = Array.from(new Set((state.model.objects || []).map(item => item.type).filter(Boolean))).sort();
+        typeFilter.innerHTML = '<option value="">All types</option>' + types.map(type => (
+          `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`
+        )).join('');
+        typeFilter.value = types.includes(current) ? current : '';
+      }
+
+      function filterObjects() {
+        const query = catalogSearch.value.trim().toLowerCase();
+        const type = typeFilter.value;
+        const layer = layerFilter.value;
+        state.filtered = (state.model.objects || []).filter(item => {
+          const text = [item.id, item.name, item.type, item.layer, item.source].join(' ').toLowerCase();
+          return (!query || text.includes(query)) && (!type || item.type === type) && (!layer || item.layer === layer);
+        });
+        renderCatalog();
+      }
+
+      function renderCatalog() {
+        objects.innerHTML = state.filtered.map(item => `
+          <tr class="selectable ${state.selected?.id === item.id ? 'selected' : ''}" data-id="${escapeHtml(item.id)}">
+            <td>${escapeHtml(item.id)}</td>
+            <td>${escapeHtml(item.name)}</td>
+            <td>${escapeHtml(item.type)}</td>
+            <td>${escapeHtml(item.layer)}</td>
+          </tr>
+        `).join('');
+        objects.querySelectorAll('tr').forEach(row => {
+          row.addEventListener('click', () => selectObject(row.dataset.id));
+        });
+      }
+
+      function selectObject(id) {
+        state.selected = (state.model.objects || []).find(item => item.id === id) || null;
+        if (!state.selected) {
+          return;
+        }
+        document.getElementById('target').value = state.selected.id;
+        objectDetail.innerHTML = `
+          <h3>${escapeHtml(state.selected.name || state.selected.id)}</h3>
+          <dl>
+            <dt>ID</dt><dd>${escapeHtml(state.selected.id)}</dd>
+            <dt>Type</dt><dd>${escapeHtml(state.selected.type)}</dd>
+            <dt>Layer</dt><dd>${escapeHtml(state.selected.layer)}</dd>
+            <dt>Source</dt><dd>${escapeHtml(state.selected.source)}</dd>
+          </dl>
+          <div class="actions" style="margin-top: 12px;">
+            <button data-action="draft-selected">Engage Draftsman</button>
+            <button data-action="copy-json" class="secondary">Show JSON</button>
+          </div>
+        `;
+        objectDetail.querySelector('[data-action="draft-selected"]').addEventListener('click', () => {
+          document.getElementById('draft-request').value = `Update ${state.selected.id}: `;
+          setTab('drafting');
+        });
+        objectDetail.querySelector('[data-action="copy-json"]').addEventListener('click', () => {
+          show('start-output', state.selected);
+          setTab('start');
+        });
+        renderCatalog();
+      }
+
+      async function loadModel() {
+        const data = await requestJson(`/api/workspace/effective-model${workspaceQuery()}`, {}, 'start-output');
+        state.model = data.objects ? data : {objects: [], layers: []};
+        updateMetrics();
+        populateFilters();
+        filterObjects();
+      }
+
+      async function loadConfig() {
+        const data = await requestJson(`/api/workspace/config${workspaceQuery()}`, {}, 'config-output');
+        if (data.workspace && !workspaceInput.value.trim()) {
+          workspaceInput.value = data.workspace;
+        }
+        config.value = JSON.stringify(data.config || {}, null, 2);
+      }
+
+      async function loadDraftsman() {
+        const data = await requestJson(`/api/draftsman/config${workspaceQuery()}`, {}, 'config-output');
+        state.draftsman = data;
+        renderDraftsmanStatus();
+      }
+
+      async function initializeWorkspace() {
         const workspace = workspaceValue();
         if (!workspace) {
-          show({ok: false, error: 'Workspace path is required'});
+          show('config-output', {ok: false, error: 'Workspace path is required'});
           return;
         }
         await requestJson('/api/workspace/init', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({workspace})
-        });
-        await loadConfig();
-        await loadModel();
-      }
-
-      async function loadConfig() {
-        const data = await requestJson(`/api/workspace/config${workspaceQuery()}`);
-        config.value = JSON.stringify(data.config || {}, null, 2);
+        }, 'config-output');
+        await refreshAll();
       }
 
       async function saveConfig() {
@@ -324,21 +743,22 @@
           method: 'PUT',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({workspace: workspaceValue(), config: JSON.parse(config.value || '{}')})
-        });
+        }, 'config-output');
+        await loadDraftsman();
       }
 
-      async function validateWorkspace() {
+      async function validateWorkspace(output = 'config-output') {
         const data = await requestJson('/api/workspace/validate', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({workspace: workspaceValue()})
-        });
-        show(data.stdout || data.stderr || data);
+        }, output);
+        show(output, data.stdout || data.stderr || data);
       }
 
-      async function gitStatus() {
-        const data = await requestJson(`/api/git/status${workspaceQuery()}`);
-        show(data.stdout || data.stderr || data);
+      async function gitStatus(output = 'config-output') {
+        const data = await requestJson(`/api/git/status${workspaceQuery()}`, {}, output);
+        show(output, data.stdout || data.stderr || data);
       }
 
       async function commitWorkspace() {
@@ -346,7 +766,7 @@
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({workspace: workspaceValue(), message: document.getElementById('message').value})
-        });
+        }, 'config-output');
       }
 
       async function pushWorkspace() {
@@ -354,7 +774,7 @@
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({workspace: workspaceValue()})
-        });
+        }, 'config-output');
       }
 
       async function publishWorkspace() {
@@ -362,7 +782,7 @@
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({workspace: workspaceValue()})
-        });
+        }, 'config-output');
       }
 
       async function writePatch() {
@@ -375,33 +795,67 @@
             purpose: document.getElementById('purpose').value.trim() || 'override',
             patch: JSON.parse(document.getElementById('patch').value || '{}')
           })
-        });
+        }, 'draft-output');
         await loadModel();
       }
 
+      async function engageDraftsman() {
+        await requestJson('/api/draftsman/chat', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            workspace: workspaceValue(),
+            contextObjectId: document.getElementById('target').value.trim() || null,
+            message: document.getElementById('draft-request').value.trim() || 'Start a drafting session.'
+          })
+        }, 'draft-output');
+      }
+
       async function frameworkCheck() {
-        await requestJson(`/api/framework/updates${workspaceQuery()}`);
+        await requestJson(`/api/framework/updates${workspaceQuery()}`, {}, 'config-output');
       }
 
       async function health() {
-        const data = await requestJson('/api/health');
-        document.getElementById('health').textContent = data.status || 'unknown';
+        const data = await requestJson('/api/health', {}, 'start-output');
+        const health = document.getElementById('health');
+        health.textContent = data.status || 'unknown';
+        health.classList.toggle('ok', data.status === 'ok');
       }
 
-      document.getElementById('init').addEventListener('click', initWorkspace);
-      document.getElementById('load').addEventListener('click', loadModel);
-      document.getElementById('validate').addEventListener('click', validateWorkspace);
-      document.getElementById('status').addEventListener('click', gitStatus);
+      async function refreshAll() {
+        await loadConfig();
+        await loadModel();
+        await loadDraftsman();
+      }
+
+      document.querySelectorAll('.nav-button').forEach(button => {
+        button.addEventListener('click', () => setTab(button.dataset.tab));
+      });
+      document.querySelectorAll('[data-go]').forEach(button => {
+        button.addEventListener('click', () => setTab(button.dataset.go));
+      });
+
+      document.getElementById('init').addEventListener('click', initializeWorkspace);
+      document.getElementById('load').addEventListener('click', refreshAll);
+      document.getElementById('load-config').addEventListener('click', loadConfig);
+      document.getElementById('save-config').addEventListener('click', saveConfig);
+      document.getElementById('validate').addEventListener('click', () => validateWorkspace('config-output'));
+      document.getElementById('start-validate').addEventListener('click', () => validateWorkspace('start-output'));
+      document.getElementById('status').addEventListener('click', () => gitStatus('config-output'));
+      document.getElementById('start-status').addEventListener('click', () => gitStatus('start-output'));
       document.getElementById('commit').addEventListener('click', commitWorkspace);
       document.getElementById('push').addEventListener('click', pushWorkspace);
       document.getElementById('publish').addEventListener('click', publishWorkspace);
-      document.getElementById('load-config').addEventListener('click', loadConfig);
-      document.getElementById('save-config').addEventListener('click', saveConfig);
-      document.getElementById('write-patch').addEventListener('click', writePatch);
       document.getElementById('updates').addEventListener('click', frameworkCheck);
+      document.getElementById('write-patch').addEventListener('click', writePatch);
+      document.getElementById('engage-draftsman').addEventListener('click', engageDraftsman);
+      document.getElementById('reload-catalog').addEventListener('click', loadModel);
+      catalogSearch.addEventListener('input', filterObjects);
+      typeFilter.addEventListener('change', filterObjects);
+      layerFilter.addEventListener('change', filterObjects);
+
       health();
-      loadModel();
-      loadConfig();
+      refreshAll();
     </script>
   </body>
 </html>
