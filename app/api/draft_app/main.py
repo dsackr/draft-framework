@@ -1,10 +1,21 @@
 from __future__ import annotations
 
+import base64
 import copy
+import hashlib
+import html
+import json
 import os
 import re
+import secrets
 import subprocess
+import threading
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
 from datetime import datetime, timezone
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, Optional
 
@@ -21,6 +32,23 @@ FRAMEWORK_ROOT = REPO_ROOT / "framework"
 DEFAULT_WORKSPACE = REPO_ROOT / "examples"
 UI_ROOT = APP_ROOT / "ui"
 LOGO_PATH = REPO_ROOT / "draftlogo.png"
+OPENAI_CODEX_CLIENT_ID = os.environ.get("DRAFT_OPENAI_CODEX_CLIENT_ID", "app_EMoamEEZ73f0CkXaXp7hrann")
+OPENAI_CODEX_AUTH_URL = "https://auth.openai.com/oauth/authorize"
+OPENAI_CODEX_TOKEN_URL = "https://auth.openai.com/oauth/token"
+OPENAI_CODEX_API_BASE = os.environ.get("DRAFT_OPENAI_CODEX_API_BASE", "https://chatgpt.com/backend-api")
+OPENAI_CODEX_REDIRECT_URI = os.environ.get("DRAFT_OPENAI_CODEX_REDIRECT_URI", "http://localhost:1455/auth/callback")
+OPENAI_CODEX_CALLBACK_HOST = os.environ.get("DRAFT_OPENAI_CODEX_CALLBACK_HOST", "127.0.0.1")
+OPENAI_CODEX_CALLBACK_PORT = int(os.environ.get("DRAFT_OPENAI_CODEX_CALLBACK_PORT", "1455"))
+OPENAI_CODEX_SCOPE = "openid profile email offline_access"
+AUTH_ROOT = Path(os.environ.get("DRAFT_AUTH_DIR", Path.home() / ".draft")).expanduser()
+AUTH_STORE_PATH = AUTH_ROOT / "auth-profiles.json"
+CODEX_AUTH_PATH = Path(os.environ.get("DRAFT_CODEX_AUTH_PATH", Path.home() / ".codex" / "auth.json")).expanduser()
+AUTH_PROFILE_ID = "openai-codex"
+AUTH_REFRESH_WINDOW_SECONDS = 300
+OAUTH_PENDING: dict[str, dict[str, Any]] = {}
+OAUTH_LOCK = threading.Lock()
+OAUTH_CALLBACK_SERVER: ThreadingHTTPServer | None = None
+OAUTH_CALLBACK_THREAD: threading.Thread | None = None
 
 CATALOG_FOLDERS = (
     "abbs",
@@ -60,12 +88,21 @@ ALLOWED_DRAFTSMAN_MODES = {"external", "embedded", "disabled"}
 ALLOWED_EMBEDDED_PROVIDERS = {"openai"}
 ALLOWED_EMBEDDED_AUTH_TYPES = {"oauth"}
 DISALLOWED_SECRET_KEYS = {
+    "accessToken",
+    "access_token",
     "apiKey",
     "api_key",
     "apiKeyRef",
     "api_key_ref",
+    "clientSecret",
+    "client_secret",
+    "idToken",
+    "id_token",
     "openaiApiKey",
     "openai_api_key",
+    "refreshToken",
+    "refresh_token",
+    "token",
 }
 
 
@@ -82,6 +119,15 @@ class WorkspaceInitRequest(BaseModel):
 
 class WorkspaceSettingsRequest(WorkspaceRequest):
     config: dict[str, Any]
+
+
+class DraftsmanConfigRequest(WorkspaceRequest):
+    config: dict[str, Any]
+
+
+class DraftsmanAuthCodeRequest(WorkspaceRequest):
+    code: str
+    state: str
 
 
 class ObjectWriteRequest(WorkspaceRequest):
@@ -172,6 +218,418 @@ def write_yaml(path: Path, data: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         yaml.safe_dump(data, handle, sort_keys=False, allow_unicode=False)
+
+
+def write_json_private(path: Path, data: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        path.parent.chmod(0o700)
+    except OSError:
+        pass
+    with path.open("w", encoding="utf-8") as handle:
+        json.dump(data, handle, indent=2)
+        handle.write("\n")
+    try:
+        path.chmod(0o600)
+    except OSError:
+        pass
+
+
+def read_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    with path.open("r", encoding="utf-8") as handle:
+        data = json.load(handle)
+    return data if isinstance(data, dict) else {}
+
+
+def base64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).decode("ascii").rstrip("=")
+
+
+def pkce_verifier() -> str:
+    return base64url(secrets.token_bytes(48))
+
+
+def pkce_challenge(verifier: str) -> str:
+    return base64url(hashlib.sha256(verifier.encode("ascii")).digest())
+
+
+def now_epoch() -> int:
+    return int(time.time())
+
+
+def iso_from_epoch(value: int | float | None) -> str:
+    if not value:
+        return ""
+    return datetime.fromtimestamp(float(value), timezone.utc).replace(microsecond=0).isoformat()
+
+
+def parse_jwt_payload(token: str | None) -> dict[str, Any]:
+    if not token or token.count(".") < 2:
+        return {}
+    payload = token.split(".")[1]
+    payload += "=" * (-len(payload) % 4)
+    try:
+        decoded = base64.urlsafe_b64decode(payload.encode("ascii"))
+        data = json.loads(decoded.decode("utf-8"))
+    except (ValueError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def auth_claims(tokens: dict[str, Any]) -> dict[str, Any]:
+    payload = parse_jwt_payload(str(tokens.get("access_token") or tokens.get("accessToken") or ""))
+    id_payload = parse_jwt_payload(str(tokens.get("id_token") or tokens.get("idToken") or ""))
+    auth = payload.get("https://api.openai.com/auth")
+    profile = payload.get("https://api.openai.com/profile")
+    if not isinstance(auth, dict):
+        auth = {}
+    if not isinstance(profile, dict):
+        profile = {}
+    id_auth = id_payload.get("https://api.openai.com/auth")
+    if isinstance(id_auth, dict):
+        auth = {**id_auth, **auth}
+    return {
+        "accountId": auth.get("chatgpt_account_id") or tokens.get("account_id") or tokens.get("accountId") or "",
+        "accountUserId": auth.get("chatgpt_account_user_id") or "",
+        "chatgptUserId": auth.get("chatgpt_user_id") or auth.get("user_id") or "",
+        "planType": auth.get("chatgpt_plan_type") or "",
+        "email": profile.get("email") or id_payload.get("email") or "",
+        "subject": payload.get("sub") or id_payload.get("sub") or "",
+    }
+
+
+def auth_store() -> dict[str, Any]:
+    data = read_json(AUTH_STORE_PATH)
+    if not data:
+        data = {"schemaVersion": "1.0", "profiles": {}}
+    if not isinstance(data.get("profiles"), dict):
+        data["profiles"] = {}
+    return data
+
+
+def read_auth_profile() -> dict[str, Any] | None:
+    profile = auth_store().get("profiles", {}).get(AUTH_PROFILE_ID)
+    return profile if isinstance(profile, dict) else None
+
+
+def save_auth_profile(tokens: dict[str, Any], source: str = "draft-oauth") -> dict[str, Any]:
+    access_token = str(tokens.get("access_token") or tokens.get("accessToken") or "")
+    refresh_token = str(tokens.get("refresh_token") or tokens.get("refreshToken") or "")
+    id_token = str(tokens.get("id_token") or tokens.get("idToken") or "")
+    expires_in = int(tokens.get("expires_in") or tokens.get("expiresIn") or 3600)
+    expires_at = int(tokens.get("expiresAtEpoch") or (now_epoch() + expires_in))
+    claims = auth_claims(
+        {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "id_token": id_token,
+            "account_id": tokens.get("account_id") or tokens.get("accountId") or "",
+        }
+    )
+    profile = {
+        "provider": "openai-codex",
+        "authType": "chatgpt-codex-oauth",
+        "source": source,
+        "accessToken": access_token,
+        "refreshToken": refresh_token,
+        "idToken": id_token,
+        "expiresAtEpoch": expires_at,
+        "expiresAt": iso_from_epoch(expires_at),
+        "accountId": claims["accountId"],
+        "accountUserId": claims["accountUserId"],
+        "chatgptUserId": claims["chatgptUserId"],
+        "planType": claims["planType"],
+        "email": claims["email"],
+        "subject": claims["subject"],
+        "updatedAt": now_iso(),
+    }
+    store = auth_store()
+    store["profiles"][AUTH_PROFILE_ID] = profile
+    write_json_private(AUTH_STORE_PATH, store)
+    return profile
+
+
+def delete_auth_profile() -> bool:
+    store = auth_store()
+    existed = AUTH_PROFILE_ID in store.get("profiles", {})
+    store.get("profiles", {}).pop(AUTH_PROFILE_ID, None)
+    write_json_private(AUTH_STORE_PATH, store)
+    return existed
+
+
+def openai_codex_auth_status() -> dict[str, Any]:
+    profile = read_auth_profile()
+    if not profile:
+        return {
+            "signedIn": False,
+            "provider": "openai-codex",
+            "authType": "chatgpt-codex-oauth",
+            "tokenStore": str(AUTH_STORE_PATH),
+            "callbackUrl": OPENAI_CODEX_REDIRECT_URI,
+            "accountId": "",
+            "email": "",
+            "planType": "",
+            "expiresAt": "",
+        }
+    expires_at = int(profile.get("expiresAtEpoch") or 0)
+    return {
+        "signedIn": bool(profile.get("accessToken") and profile.get("refreshToken")),
+        "provider": "openai-codex",
+        "authType": "chatgpt-codex-oauth",
+        "tokenStore": str(AUTH_STORE_PATH),
+        "callbackUrl": OPENAI_CODEX_REDIRECT_URI,
+        "accountId": profile.get("accountId", ""),
+        "email": profile.get("email", ""),
+        "planType": profile.get("planType", ""),
+        "source": profile.get("source", ""),
+        "expiresAt": profile.get("expiresAt") or iso_from_epoch(expires_at),
+        "expiresSoon": bool(expires_at and expires_at - now_epoch() <= AUTH_REFRESH_WINDOW_SECONDS),
+    }
+
+
+def oauth_token_request(payload: dict[str, str]) -> dict[str, Any]:
+    body = urllib.parse.urlencode(payload).encode("utf-8")
+    request = urllib.request.Request(
+        OPENAI_CODEX_TOKEN_URL,
+        data=body,
+        headers={
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Accept": "application/json",
+            "User-Agent": "DRAFT-App/0.1",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            data = response.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise HTTPException(status_code=exc.code, detail=detail) from exc
+    except urllib.error.URLError as exc:
+        raise HTTPException(status_code=502, detail=f"OpenAI OAuth token exchange failed: {exc.reason}") from exc
+    parsed = json.loads(data)
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def exchange_openai_codex_code(code: str, verifier: str) -> dict[str, Any]:
+    return oauth_token_request(
+        {
+            "grant_type": "authorization_code",
+            "client_id": OPENAI_CODEX_CLIENT_ID,
+            "code": code,
+            "code_verifier": verifier,
+            "redirect_uri": OPENAI_CODEX_REDIRECT_URI,
+        }
+    )
+
+
+def refresh_openai_codex_tokens(profile: dict[str, Any]) -> dict[str, Any]:
+    refresh_token = str(profile.get("refreshToken") or "")
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="No OpenAI Codex refresh token is available. Sign in again.")
+    tokens = oauth_token_request(
+        {
+            "grant_type": "refresh_token",
+            "client_id": OPENAI_CODEX_CLIENT_ID,
+            "refresh_token": refresh_token,
+        }
+    )
+    if not tokens.get("refresh_token"):
+        tokens["refresh_token"] = refresh_token
+    if not tokens.get("id_token") and profile.get("idToken"):
+        tokens["id_token"] = profile["idToken"]
+    return save_auth_profile(tokens, source=str(profile.get("source") or "draft-oauth"))
+
+
+def active_openai_codex_profile() -> dict[str, Any]:
+    profile = read_auth_profile()
+    if not profile or not profile.get("accessToken"):
+        raise HTTPException(status_code=401, detail="OpenAI Codex sign-in required.")
+    expires_at = int(profile.get("expiresAtEpoch") or 0)
+    if expires_at and expires_at - now_epoch() <= AUTH_REFRESH_WINDOW_SECONDS:
+        profile = refresh_openai_codex_tokens(profile)
+    return profile
+
+
+def import_codex_cli_auth() -> dict[str, Any]:
+    data = read_json(CODEX_AUTH_PATH)
+    tokens = data.get("tokens")
+    if not isinstance(tokens, dict):
+        raise HTTPException(status_code=404, detail=f"Codex CLI auth was not found at {CODEX_AUTH_PATH}")
+    normalized = {
+        "access_token": tokens.get("access_token", ""),
+        "refresh_token": tokens.get("refresh_token", ""),
+        "id_token": tokens.get("id_token", ""),
+        "account_id": tokens.get("account_id", ""),
+    }
+    access_claims = parse_jwt_payload(str(normalized["access_token"]))
+    if access_claims.get("exp"):
+        normalized["expiresAtEpoch"] = int(access_claims["exp"])
+    return save_auth_profile(normalized, source="codex-cli-import")
+
+
+def extract_response_text(value: Any) -> str:
+    parts: list[str] = []
+
+    def visit(node: Any) -> None:
+        if isinstance(node, dict):
+            node_type = node.get("type")
+            if node_type in {"output_text", "text"} and isinstance(node.get("text"), str):
+                parts.append(node["text"])
+            elif isinstance(node.get("content"), list):
+                visit(node["content"])
+            elif isinstance(node.get("output"), list):
+                visit(node["output"])
+            elif isinstance(node.get("message"), dict):
+                visit(node["message"])
+        elif isinstance(node, list):
+            for item in node:
+                visit(item)
+
+    visit(value)
+    return "\n".join(part for part in parts if part).strip()
+
+
+def stream_chatgpt_codex_response(payload: dict[str, Any], profile: dict[str, Any]) -> dict[str, Any]:
+    account_id = str(profile.get("accountId") or "")
+    headers = {
+        "Authorization": f"Bearer {profile['accessToken']}",
+        "Content-Type": "application/json",
+        "Accept": "text/event-stream",
+        "User-Agent": "DRAFT-App/0.1",
+        "OpenAI-Beta": "responses_websockets=2026-02-06",
+        "x-responsesapi-include-timing-metrics": "true",
+        "x-codex-installation-id": "draft-app",
+        "originator": "draft-app",
+    }
+    if account_id:
+        headers["ChatGPT-Account-Id"] = account_id
+    body = json.dumps(payload).encode("utf-8")
+    request = urllib.request.Request(
+        f"{OPENAI_CODEX_API_BASE.rstrip('/')}/responses",
+        data=body,
+        headers=headers,
+        method="POST",
+    )
+    text_parts: list[str] = []
+    final_response: dict[str, Any] = {}
+    try:
+        with urllib.request.urlopen(request, timeout=120) as response:
+            for raw_line in response:
+                line = raw_line.decode("utf-8", errors="replace").strip()
+                if not line.startswith("data:"):
+                    continue
+                data = line.removeprefix("data:").strip()
+                if not data or data == "[DONE]":
+                    continue
+                try:
+                    event = json.loads(data)
+                except json.JSONDecodeError:
+                    continue
+                event_type = event.get("type")
+                delta = event.get("delta")
+                if event_type == "response.output_text.delta" and isinstance(delta, str):
+                    text_parts.append(delta)
+                if event_type == "response.completed" and isinstance(event.get("response"), dict):
+                    final_response = event["response"]
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise HTTPException(status_code=exc.code, detail=detail) from exc
+    except urllib.error.URLError as exc:
+        raise HTTPException(status_code=502, detail=f"OpenAI Codex response failed: {exc.reason}") from exc
+    text = "".join(text_parts).strip() or extract_response_text(final_response)
+    return {
+        "text": text,
+        "response": final_response,
+    }
+
+
+class OpenAICodexCallbackHandler(BaseHTTPRequestHandler):
+    def log_message(self, format: str, *args: Any) -> None:
+        return
+
+    def do_GET(self) -> None:
+        parsed = urllib.parse.urlparse(self.path)
+        if parsed.path != "/auth/callback":
+            self.send_error(404)
+            return
+        params = urllib.parse.parse_qs(parsed.query)
+        state = (params.get("state") or [""])[0]
+        code = (params.get("code") or [""])[0]
+        error = (params.get("error") or [""])[0]
+        try:
+            result = complete_openai_codex_oauth(state, code, error)
+            ok = result.get("ok", False)
+            title = "DRAFT sign-in complete" if ok else "DRAFT sign-in failed"
+            detail = "You can close this window and return to DRAFT." if ok else str(result.get("error", "Sign-in failed."))
+        except Exception as exc:  # Callback must return a readable browser page.
+            ok = False
+            title = "DRAFT sign-in failed"
+            detail = str(exc)
+        safe_title = html.escape(title)
+        safe_detail = html.escape(detail)
+        html = f"""<!doctype html>
+<html><head><title>{safe_title}</title><style>
+body{{font-family:system-ui,sans-serif;background:#101215;color:#e7edf4;margin:40px;line-height:1.5}}
+.panel{{max-width:680px;border:1px solid #334155;border-radius:8px;padding:24px;background:#171a1f}}
+.ok{{color:#73d18b}}.err{{color:#f97066}}
+</style></head><body><div class="panel">
+<h1 class="{'ok' if ok else 'err'}">{safe_title}</h1><p>{safe_detail}</p>
+</div></body></html>"""
+        encoded = html.encode("utf-8")
+        self.send_response(200 if ok else 400)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(encoded)))
+        self.end_headers()
+        self.wfile.write(encoded)
+
+
+def ensure_openai_codex_callback_server() -> None:
+    global OAUTH_CALLBACK_SERVER, OAUTH_CALLBACK_THREAD
+    if OAUTH_CALLBACK_SERVER and OAUTH_CALLBACK_THREAD and OAUTH_CALLBACK_THREAD.is_alive():
+        return
+    try:
+        OAUTH_CALLBACK_SERVER = ThreadingHTTPServer(
+            (OPENAI_CODEX_CALLBACK_HOST, OPENAI_CODEX_CALLBACK_PORT),
+            OpenAICodexCallbackHandler,
+        )
+    except OSError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Could not start local OAuth callback listener on {OPENAI_CODEX_CALLBACK_HOST}:{OPENAI_CODEX_CALLBACK_PORT}: {exc}",
+        ) from exc
+    OAUTH_CALLBACK_THREAD = threading.Thread(target=OAUTH_CALLBACK_SERVER.serve_forever, daemon=True)
+    OAUTH_CALLBACK_THREAD.start()
+
+
+def complete_openai_codex_oauth(state: str, code: str, error: str = "") -> dict[str, Any]:
+    if error:
+        return {"ok": False, "error": error}
+    if not state or not code:
+        return {"ok": False, "error": "OAuth callback was missing state or code."}
+    with OAUTH_LOCK:
+        pending = OAUTH_PENDING.pop(state, None)
+    if not pending:
+        return {"ok": False, "error": "OAuth state was not recognized or already used."}
+    if pending.get("expiresAtEpoch", 0) < now_epoch():
+        return {"ok": False, "error": "OAuth state expired. Start sign-in again."}
+    tokens = exchange_openai_codex_code(code, str(pending["verifier"]))
+    profile = save_auth_profile(tokens, source="draft-oauth")
+    return {"ok": True, "profile": auth_profile_public(profile)}
+
+
+def auth_profile_public(profile: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "provider": profile.get("provider", "openai-codex"),
+        "authType": profile.get("authType", "chatgpt-codex-oauth"),
+        "source": profile.get("source", ""),
+        "accountId": profile.get("accountId", ""),
+        "email": profile.get("email", ""),
+        "planType": profile.get("planType", ""),
+        "expiresAt": profile.get("expiresAt", ""),
+    }
 
 
 def now_iso() -> str:
@@ -266,13 +724,12 @@ def draftsman_default_config() -> dict[str, Any]:
         "embedded": {
             "enabled": False,
             "provider": "openai",
-            "model": "",
+            "model": "gpt-5.5",
             "auth": {
                 "type": "oauth",
-                "clientIdRef": "DRAFT_OPENAI_OAUTH_CLIENT_ID",
-                "clientSecretRef": "DRAFT_OPENAI_OAUTH_CLIENT_SECRET",
-                "redirectUri": "http://127.0.0.1:8000/api/draftsman/oauth/openai/callback",
-                "tokenStorage": "runtime",
+                "clientId": OPENAI_CODEX_CLIENT_ID,
+                "redirectUri": OPENAI_CODEX_REDIRECT_URI,
+                "tokenStorage": "user-local",
                 "apiKeysAllowed": False,
             },
         },
@@ -282,6 +739,12 @@ def draftsman_default_config() -> dict[str, Any]:
             "writeRequiresAppValidation": True,
         },
     }
+
+
+def normalize_draftsman_config(config: Any) -> dict[str, Any]:
+    if not isinstance(config, dict):
+        config = {}
+    return deep_merge(draftsman_default_config(), config)
 
 
 def find_disallowed_secret_keys(node: Any, path: str = "draftsman") -> list[str]:
@@ -302,6 +765,7 @@ def draftsman_config_status(config: dict[str, Any]) -> dict[str, Any]:
     draftsman = config.get("draftsman")
     if not isinstance(draftsman, dict):
         draftsman = draftsman_default_config()
+    draftsman = normalize_draftsman_config(draftsman)
 
     issues: list[str] = []
     mode = draftsman.get("mode", "external")
@@ -328,23 +792,24 @@ def draftsman_config_status(config: dict[str, Any]) -> dict[str, Any]:
 
     secret_keys = find_disallowed_secret_keys(draftsman)
     if secret_keys:
-        issues.append(f"Workspace config must not contain API key fields: {', '.join(secret_keys)}")
+        issues.append(f"Workspace config must not contain secret fields: {', '.join(secret_keys)}")
 
-    oauth_env_ready = bool(
-        os.environ.get(str(auth.get("clientIdRef", "")))
-        and os.environ.get(str(auth.get("clientSecretRef", "")))
-    )
+    auth_status = openai_codex_auth_status()
+    embedded_available = bool(mode == "embedded" and auth_status["signedIn"])
     return {
         "ok": not issues,
         "mode": mode,
         "embeddedProvider": provider,
         "embeddedAuth": auth_type,
         "externalAgentAvailable": mode in {"external", "embedded"},
-        "embeddedDraftsmanAvailable": False,
-        "embeddedImplementationStatus": "configuration-only",
-        "oauthRuntimeConfigured": oauth_env_ready,
+        "embeddedDraftsmanAvailable": embedded_available,
+        "embeddedImplementationStatus": "available" if embedded_available else "sign-in-required",
+        "oauthRuntimeConfigured": auth_status["signedIn"],
+        "oauthClientId": auth.get("clientId", OPENAI_CODEX_CLIENT_ID),
+        "oauthRedirectUri": auth.get("redirectUri", ""),
+        "auth": auth_status,
         "issues": issues,
-        "note": "External AI agents can use the repo and app API now. Embedded Draftsman model calls are not implemented until OAuth-based OpenAI access is confirmed for this use case.",
+        "note": "Embedded Draftsman uses the signed-in user's ChatGPT/Codex OAuth session. Tokens are stored outside the workspace repo.",
     }
 
 
@@ -457,6 +922,78 @@ def effective_model(workspace: Path) -> dict[str, Any]:
     }
 
 
+def draftsman_context(workspace: Path, context_object_id: Optional[str]) -> str:
+    model = effective_model(workspace)
+    objects = model.get("objects", [])
+    selected = None
+    if context_object_id:
+        selected = next((obj for obj in objects if obj.get("id") == context_object_id), None)
+    object_rows = [
+        {
+            "id": obj.get("id"),
+            "name": obj.get("name"),
+            "type": obj.get("type"),
+            "layer": obj.get("layer"),
+            "source": obj.get("source"),
+        }
+        for obj in objects[:120]
+    ]
+    context = {
+        "workspace": str(workspace),
+        "framework": "DRAFT",
+        "selectedObject": selected,
+        "objectCount": len(objects),
+        "objects": object_rows,
+        "rules": [
+            "Act as The Draftsman for DRAFT architecture content.",
+            "Ask concise follow-up questions when ODC or compliance evidence is missing.",
+            "Do not claim to write files directly; propose changes that the app/API can validate and write.",
+            "Never ask for, reveal, or store API keys, OAuth tokens, Git credentials, or other secrets.",
+            "Prefer reusable off-the-shelf catalog artifacts before creating new objects.",
+        ],
+    }
+    return json.dumps(context, indent=2)
+
+
+def call_embedded_draftsman(root: Path, config: dict[str, Any], request: DraftsmanChatRequest) -> dict[str, Any]:
+    draftsman = normalize_draftsman_config(config.get("draftsman") if isinstance(config, dict) else {})
+    model = str(((draftsman.get("embedded") or {}).get("model") or "gpt-5.5"))
+    profile = active_openai_codex_profile()
+    instructions = (
+        "You are The Draftsman inside the DRAFT App. "
+        "Help users document deployable architecture in the DRAFT framework. "
+        "Use the provided effective-model context as source material. "
+        "Be direct, ask needed questions, and produce concrete object or patch recommendations. "
+        "Do not expose secrets and do not claim you have written files unless the app/API reports that action."
+    )
+    payload = {
+        "model": model,
+        "stream": True,
+        "store": False,
+        "instructions": instructions,
+        "input": [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": f"Effective DRAFT context:\n{draftsman_context(root, request.contextObjectId)}\n\nUser request:\n{request.message}",
+                    }
+                ],
+            }
+        ],
+    }
+    response = stream_chatgpt_codex_response(payload, profile)
+    return {
+        "ok": True,
+        "mode": "embedded",
+        "provider": "openai-codex",
+        "model": model,
+        "account": auth_profile_public(profile),
+        "message": response["text"],
+    }
+
+
 @app.get("/")
 def index():
     index_path = UI_ROOT / "index.html"
@@ -507,14 +1044,20 @@ def draftsman_providers() -> dict[str, Any]:
             "description": "External AI agents use this repository, AGENTS.md, and the DRAFT App API from outside the app.",
         },
         "embedded": {
-            "enabled": False,
+            "enabled": True,
+            "runtimeAvailable": openai_codex_auth_status()["signedIn"],
+            "status": "available-after-user-sign-in",
+            "description": "Each local user signs in with ChatGPT/Codex OAuth. Tokens are stored under the user's home directory, not in the workspace repo.",
             "allowedProviders": [
                 {
                     "id": "openai",
                     "name": "OpenAI",
                     "auth": "oauth",
                     "apiKeysAllowed": False,
-                    "status": "configuration-only",
+                    "status": "available-after-user-sign-in",
+                    "clientIdDefault": OPENAI_CODEX_CLIENT_ID,
+                    "redirectUriDefault": OPENAI_CODEX_REDIRECT_URI,
+                    "tokenStorage": str(AUTH_STORE_PATH),
                 }
             ],
         },
@@ -529,10 +1072,31 @@ def draftsman_config(workspace: Optional[str] = Query(default=None)) -> dict[str
     draftsman = config.get("draftsman")
     if not isinstance(draftsman, dict):
         draftsman = draftsman_default_config()
+    draftsman = normalize_draftsman_config(draftsman)
     return {
         "workspace": str(root),
         "config": draftsman,
         "status": draftsman_config_status({"draftsman": draftsman}),
+    }
+
+
+@app.put("/api/draftsman/config")
+def update_draftsman_config(request: DraftsmanConfigRequest) -> dict[str, Any]:
+    root = resolve_workspace(request.workspace)
+    config_path = workspace_config_path(root)
+    workspace_config = read_yaml(config_path) if config_path.exists() else {}
+    draftsman = normalize_draftsman_config(request.config)
+    status = draftsman_config_status({"draftsman": draftsman})
+    if not status["ok"]:
+        raise HTTPException(status_code=400, detail=status)
+    workspace_config["draftsman"] = draftsman
+    write_yaml(config_path, workspace_config)
+    return {
+        "ok": True,
+        "workspace": str(root),
+        "path": str(config_path),
+        "config": draftsman,
+        "status": status,
     }
 
 
@@ -544,36 +1108,128 @@ def draftsman_chat(request: DraftsmanChatRequest) -> dict[str, Any]:
     status = draftsman_config_status(config)
     if not status["ok"]:
         raise HTTPException(status_code=400, detail=status)
-    raise HTTPException(
-        status_code=501,
-        detail={
-            "message": "Embedded AI Draftsman chat is not implemented in this version.",
-            "status": status,
-            "externalMode": "Use AGENTS.md, AI_INDEX.md, and /api/framework/manifest with an external AI agent.",
-        },
-    )
+    if status["mode"] == "disabled":
+        raise HTTPException(status_code=400, detail={"message": "Draftsman is disabled for this workspace.", "status": status})
+    if status["mode"] == "external":
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "Workspace is configured for an external Draftsman. Switch to Embedded ChatGPT Sign-In in Configuration to chat inside the app.",
+                "status": status,
+            },
+        )
+    if not status["embeddedDraftsmanAvailable"]:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "message": "Sign in with ChatGPT before using the embedded Draftsman.",
+                "status": status,
+            },
+        )
+    return call_embedded_draftsman(root, config, request)
+
+
+@app.get("/api/draftsman/oauth/openai/status")
+def draftsman_openai_oauth_status(workspace: Optional[str] = Query(default=None)) -> dict[str, Any]:
+    root = resolve_workspace(workspace)
+    config_path = workspace_config_path(root)
+    config = read_yaml(config_path) if config_path.exists() else {}
+    status = draftsman_config_status(config)
+    return {
+        "ok": status["ok"],
+        "workspace": str(root),
+        "provider": "openai-codex",
+        "auth": "chatgpt-codex-oauth",
+        "signedIn": status["auth"]["signedIn"],
+        "runtimeConfigured": status["auth"]["signedIn"],
+        "runtimeAvailable": status["auth"]["signedIn"],
+        "implementationStatus": status["embeddedImplementationStatus"],
+        "apiKeysAllowed": False,
+        "clientId": status.get("oauthClientId", OPENAI_CODEX_CLIENT_ID),
+        "redirectUri": status.get("oauthRedirectUri", ""),
+        "tokenStore": status["auth"]["tokenStore"],
+        "accountId": status["auth"]["accountId"],
+        "email": status["auth"]["email"],
+        "planType": status["auth"]["planType"],
+        "expiresAt": status["auth"]["expiresAt"],
+        "note": status["note"],
+    }
 
 
 @app.get("/api/draftsman/oauth/openai/start")
-def draftsman_openai_oauth_start() -> dict[str, Any]:
-    raise HTTPException(
-        status_code=501,
-        detail={
-            "message": "OpenAI OAuth for embedded Draftsman is configuration-only in this version.",
-            "apiKeysAllowed": False,
-        },
-    )
+def draftsman_openai_oauth_start(workspace: Optional[str] = Query(default=None)) -> dict[str, Any]:
+    resolve_workspace(workspace)
+    ensure_openai_codex_callback_server()
+    verifier = pkce_verifier()
+    state = secrets.token_urlsafe(32)
+    expires_at = now_epoch() + 600
+    with OAUTH_LOCK:
+        OAUTH_PENDING[state] = {
+            "verifier": verifier,
+            "workspace": workspace or "",
+            "expiresAtEpoch": expires_at,
+        }
+    params = {
+        "client_id": OPENAI_CODEX_CLIENT_ID,
+        "response_type": "code",
+        "redirect_uri": OPENAI_CODEX_REDIRECT_URI,
+        "scope": OPENAI_CODEX_SCOPE,
+        "code_challenge": pkce_challenge(verifier),
+        "code_challenge_method": "S256",
+        "state": state,
+        "id_token_add_organizations": "true",
+        "codex_cli_simplified_flow": "true",
+    }
+    auth_url = f"{OPENAI_CODEX_AUTH_URL}?{urllib.parse.urlencode(params)}"
+    return {
+        "ok": True,
+        "authUrl": auth_url,
+        "state": state,
+        "expiresAt": iso_from_epoch(expires_at),
+        "callbackListener": f"http://{OPENAI_CODEX_CALLBACK_HOST}:{OPENAI_CODEX_CALLBACK_PORT}/auth/callback",
+        "tokenStore": str(AUTH_STORE_PATH),
+        "apiKeysAllowed": False,
+    }
+
+
+@app.post("/api/draftsman/oauth/openai/complete")
+def draftsman_openai_oauth_complete(request: DraftsmanAuthCodeRequest) -> dict[str, Any]:
+    resolve_workspace(request.workspace)
+    result = complete_openai_codex_oauth(request.state, request.code)
+    if not result.get("ok"):
+        raise HTTPException(status_code=400, detail=result)
+    return result
+
+
+@app.post("/api/draftsman/oauth/openai/import-codex")
+def draftsman_openai_oauth_import_codex(request: WorkspaceRequest) -> dict[str, Any]:
+    resolve_workspace(request.workspace)
+    profile = import_codex_cli_auth()
+    return {
+        "ok": True,
+        "profile": auth_profile_public(profile),
+        "tokenStore": str(AUTH_STORE_PATH),
+    }
+
+
+@app.post("/api/draftsman/oauth/openai/logout")
+def draftsman_openai_oauth_logout(request: WorkspaceRequest) -> dict[str, Any]:
+    resolve_workspace(request.workspace)
+    return {
+        "ok": True,
+        "removed": delete_auth_profile(),
+        "tokenStore": str(AUTH_STORE_PATH),
+    }
 
 
 @app.get("/api/draftsman/oauth/openai/callback")
 def draftsman_openai_oauth_callback() -> dict[str, Any]:
-    raise HTTPException(
-        status_code=501,
-        detail={
-            "message": "OpenAI OAuth callback is not implemented in this version.",
-            "apiKeysAllowed": False,
-        },
-    )
+    return {
+        "ok": False,
+        "message": "ChatGPT/Codex OAuth callbacks are handled by the local listener at http://127.0.0.1:1455/auth/callback.",
+        "start": "/api/draftsman/oauth/openai/start",
+        "apiKeysAllowed": False,
+    }
 
 
 @app.get("/api/framework/updates")

@@ -160,6 +160,11 @@ and normal Git credentials. Shared internal deployments should use a GitHub App
 or OAuth integration. More detail lives in [app/README.md](app/README.md) and
 [app/DEPLOYMENT.md](app/DEPLOYMENT.md).
 
+The app opens in a dark theme by default. The Configuration tab includes an
+AI Draftsman setup panel for per-user ChatGPT/Codex sign-in. Tokens are stored
+outside the workspace repo under the user's home directory, and API keys are
+not supported for the embedded Draftsman.
+
 ## Start Here
 
 ### Framework Basics

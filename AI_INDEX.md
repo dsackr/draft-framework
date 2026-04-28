@@ -43,7 +43,7 @@ Draftsman role defined in `framework/docs/draftsman.md`, then use this index,
 | framework/docs/abbs.md | ABBs | An Architecture Building Block, or ABB, is a discrete third-party product |
 | framework/docs/deployment-risks-and-decisions.md | Deployment Risks And Decisions | Deployment Risks and Decisions are first-class records for known risks, |
 | framework/docs/drafting-sessions.md | Drafting Sessions | A Drafting Session is a machine-readable record of partial architecture work. |
-| framework/docs/draftsman-ai-configuration.md | Draftsman AI Configuration | DRAFT supports two Draftsman operating modes in workspace configuration. |
+| framework/docs/draftsman-ai-configuration.md | Draftsman AI Configuration | DRAFT supports three Draftsman operating modes in workspace configuration. |
 | framework/docs/draftsman.md | Draftsman Instructions | This document is written for an AI assistant that is using this repository as |
 | framework/docs/how-to-add-objects.md | How To Add Objects | The fastest way to add a new object correctly is to decide what kind of thing you are modeling before you write YAML. |
 | framework/docs/naming-conventions.md | Naming Conventions | The catalog relies on stable, predictable IDs because the IDs are the connective tissue between YAML objects, validat... |

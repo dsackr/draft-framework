@@ -14,8 +14,14 @@ same operations:
 - validate workspace changes
 - commit and publish through Git/GitHub workflows
 - detect pinned framework update opportunities
-- expose Draftsman AI mode configuration without storing API keys in workspace
-  files
+- expose Draftsman AI mode configuration from the Configuration tab without
+  storing API keys or OAuth token values in workspace files
+
+The browser UI uses a dark theme by default. The Configuration tab has an
+AI Draftsman setup panel for selecting external-agent mode, embedded
+ChatGPT/Codex sign-in, or disabled mode. Embedded mode uses the signed-in
+user's ChatGPT/Codex account. Tokens are stored under `~/.draft/`, outside the
+workspace repo.
 
 Local development starts the API against a workspace path:
 
@@ -82,6 +88,12 @@ Useful API routes:
 - `GET /api/framework/updates`
 - `GET /api/draftsman/providers`
 - `GET /api/draftsman/config`
+- `PUT /api/draftsman/config`
+- `GET /api/draftsman/oauth/openai/status`
+- `GET /api/draftsman/oauth/openai/start`
+- `POST /api/draftsman/oauth/openai/complete`
+- `POST /api/draftsman/oauth/openai/import-codex`
+- `POST /api/draftsman/oauth/openai/logout`
 - `POST /api/draftsman/chat`
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for the container entrypoint.

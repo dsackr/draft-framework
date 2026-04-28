@@ -55,9 +55,11 @@ Draftsman behavior is workspace configuration, not hardcoded to one AI vendor.
 
 - `external` mode lets the user point an external AI agent at the repo and app
   API. This is available now.
-- `embedded` mode will let the app host the Draftsman conversation. The first
-  allowed embedded provider is OpenAI with OAuth, and API keys are explicitly
-  disallowed in tracked files.
+- `embedded` mode lets the app host the Draftsman conversation. The first
+  allowed embedded provider is ChatGPT/Codex sign-in through OpenAI OAuth, and
+  API keys are explicitly disallowed in tracked files. Each user signs in with
+  their own ChatGPT/Codex account; local tokens live outside the workspace repo
+  under `~/.draft/`.
 - `disabled` mode turns Draftsman features off for the workspace.
 
 See [Draftsman AI configuration](draftsman-ai-configuration.md) for the full

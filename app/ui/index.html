@@ -6,21 +6,22 @@
     <title>DRAFT App</title>
     <style>
       :root {
-        color-scheme: light;
-        --border: #d7dde8;
-        --border-strong: #b8c2d1;
-        --ink: #111827;
-        --muted: #5c6675;
-        --page: #f5f7fa;
-        --panel: #ffffff;
-        --primary: #0f6f9f;
-        --primary-dark: #0a557a;
-        --success: #197a4a;
-        --warning: #9a5b08;
-        --danger: #b42318;
-        --soft-blue: #e8f4fb;
-        --soft-green: #eaf6ef;
-        --soft-gold: #fff6df;
+        color-scheme: dark;
+        --border: #334155;
+        --border-strong: #526171;
+        --ink: #e7edf4;
+        --muted: #98a6b7;
+        --page: #101215;
+        --panel: #171a1f;
+        --panel-raised: #1f242b;
+        --primary: #22a7b8;
+        --primary-dark: #7bd8e4;
+        --success: #73d18b;
+        --warning: #f1ba55;
+        --danger: #f97066;
+        --soft-blue: #102f3a;
+        --soft-green: #132f22;
+        --soft-gold: #372a10;
       }
       * {
         box-sizing: border-box;
@@ -85,12 +86,12 @@
       }
       .status-pill.ok {
         background: var(--soft-green);
-        border-color: #b9dbc7;
+        border-color: #2d6f46;
         color: var(--success);
       }
       .status-pill.warn {
         background: var(--soft-gold);
-        border-color: #ecd08a;
+        border-color: #8b6b24;
         color: var(--warning);
       }
       .shell {
@@ -119,7 +120,7 @@
         background: transparent;
         border: 1px solid transparent;
         border-radius: 6px;
-        color: #253142;
+        color: var(--ink);
         cursor: pointer;
         display: flex;
         font-weight: 700;
@@ -131,7 +132,7 @@
       }
       .nav-button.active {
         background: var(--soft-blue);
-        border-color: #b8d8e8;
+        border-color: #2e7182;
         color: var(--primary-dark);
       }
       .nav-button:hover {
@@ -188,15 +189,15 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
       label {
-        color: #263241;
+        color: var(--ink);
         display: block;
         font-size: 12px;
         font-weight: 750;
         margin-bottom: 6px;
       }
       input, select, textarea {
-        background: #ffffff;
-        border: 1px solid #c6cfdc;
+        background: #0f1318;
+        border: 1px solid #445063;
         border-radius: 6px;
         color: var(--ink);
         font: inherit;
@@ -220,9 +221,9 @@
         padding: 8px 12px;
       }
       button.secondary {
-        background: #ffffff;
-        border-color: #c6cfdc;
-        color: #1f2937;
+        background: #232932;
+        border-color: #445063;
+        color: var(--ink);
       }
       button.ghost {
         background: transparent;
@@ -266,14 +267,14 @@
         width: 100%;
       }
       th, td {
-        border-bottom: 1px solid #e8ecf2;
+        border-bottom: 1px solid #27313d;
         padding: 9px;
         text-align: left;
         vertical-align: top;
       }
       th {
-        background: #f9fafc;
-        color: #4d5a69;
+        background: #1c222a;
+        color: #b3becb;
         font-size: 12px;
         font-weight: 800;
         position: sticky;
@@ -284,7 +285,7 @@
         cursor: pointer;
       }
       tr.selectable:hover {
-        background: #f5f9fc;
+        background: #1d2b33;
       }
       tr.selected {
         background: var(--soft-blue);
@@ -312,7 +313,7 @@
         overflow-wrap: anywhere;
       }
       pre {
-        background: #101827;
+        background: #080b10;
         border-radius: 8px;
         color: #e5e7eb;
         margin: 0;
@@ -336,8 +337,25 @@
         margin-top: 8px;
         padding-top: 12px;
       }
+      .field-stack {
+        display: grid;
+        gap: 10px;
+      }
+      .provider-panel {
+        background: var(--panel-raised);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        display: grid;
+        gap: 10px;
+        padding: 12px;
+      }
+      .provider-grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
       @media (max-width: 1050px) {
-        .shell, .split, .config-grid, .summary-grid {
+        .shell, .split, .config-grid, .summary-grid, .provider-grid {
           grid-template-columns: 1fr;
         }
         nav {
@@ -532,6 +550,65 @@
                 <h3>Draftsman Mode</h3>
                 <p class="muted">Loading.</p>
               </div>
+              <div class="notice field-stack" id="openai-draftsman-setup">
+                <h3>AI Draftsman Setup</h3>
+                <div class="provider-grid">
+                  <div>
+                    <label for="draftsman-mode-select">Mode</label>
+                    <select id="draftsman-mode-select">
+                      <option value="external">External Agent</option>
+                      <option value="embedded">Embedded ChatGPT Sign-In</option>
+                      <option value="disabled">Disabled</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="openai-provider">Provider</label>
+                    <select id="openai-provider">
+                      <option value="openai">OpenAI</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="provider-panel">
+                  <div class="provider-grid">
+                    <div>
+                      <label for="openai-model">OpenAI Model</label>
+                      <input id="openai-model" placeholder="gpt-5.5" />
+                    </div>
+                    <div>
+                      <label for="openai-redirect-uri">Local OAuth Callback</label>
+                      <input id="openai-redirect-uri" readonly />
+                    </div>
+                    <div>
+                      <label for="openai-client-id-ref">OAuth Client ID</label>
+                      <input id="openai-client-id-ref" readonly />
+                    </div>
+                    <div>
+                      <label for="openai-token-store">Token Store</label>
+                      <input id="openai-token-store" readonly />
+                    </div>
+                    <div>
+                      <label for="openai-account">Signed-In Account</label>
+                      <input id="openai-account" readonly />
+                    </div>
+                    <div>
+                      <label for="openai-plan">Plan</label>
+                      <input id="openai-plan" readonly />
+                    </div>
+                    <div style="display: none;">
+                      <label for="openai-client-secret-ref">Unused Secret Ref</label>
+                      <input id="openai-client-secret-ref" />
+                    </div>
+                  </div>
+                  <div class="actions">
+                    <button id="use-openai-oauth">Sign In with ChatGPT</button>
+                    <button id="save-draftsman-setup" class="secondary">Save Setup</button>
+                    <button id="import-codex-auth" class="secondary">Use Existing Codex Login</button>
+                    <button id="check-openai-oauth" class="secondary">Check Sign-In</button>
+                    <button id="logout-openai-oauth" class="secondary">Sign Out</button>
+                  </div>
+                  <p class="muted">Each user signs in separately. Tokens are stored under that user's home directory and never in the workspace repo.</p>
+                </div>
+              </div>
               <div>
                 <label for="message">Commit Message</label>
                 <input id="message" value="Update DRAFT workspace" />
@@ -566,6 +643,15 @@
       const typeFilter = document.getElementById('type-filter');
       const layerFilter = document.getElementById('layer-filter');
       const catalogSearch = document.getElementById('catalog-search');
+      const draftsmanModeSelect = document.getElementById('draftsman-mode-select');
+      const openaiProvider = document.getElementById('openai-provider');
+      const openaiModel = document.getElementById('openai-model');
+      const openaiRedirectUri = document.getElementById('openai-redirect-uri');
+      const openaiClientIdRef = document.getElementById('openai-client-id-ref');
+      const openaiClientSecretRef = document.getElementById('openai-client-secret-ref');
+      const openaiTokenStore = document.getElementById('openai-token-store');
+      const openaiAccount = document.getElementById('openai-account');
+      const openaiPlan = document.getElementById('openai-plan');
 
       function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, character => ({
@@ -588,6 +674,48 @@
 
       function show(target, data) {
         document.getElementById(target).textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      }
+
+      function deepMerge(base, patch) {
+        if (base && patch && typeof base === 'object' && typeof patch === 'object' && !Array.isArray(base) && !Array.isArray(patch)) {
+          return Object.fromEntries(Array.from(new Set([...Object.keys(base), ...Object.keys(patch)])).map(key => [
+            key,
+            key in patch ? deepMerge(base[key], patch[key]) : base[key]
+          ]));
+        }
+        return patch === undefined ? base : patch;
+      }
+
+      function defaultDraftsmanConfig() {
+        return {
+          mode: 'external',
+          external: {
+            enabled: true,
+            description: 'Use an external AI agent with AGENTS.md, AI_INDEX.md, and the DRAFT App API.',
+            entrypoints: ['AGENTS.md', 'AI_INDEX.md', 'framework/docs/draftsman.md', 'app/api']
+          },
+          embedded: {
+            enabled: false,
+            provider: 'openai',
+            model: 'gpt-5.5',
+            auth: {
+              type: 'oauth',
+              clientId: 'app_EMoamEEZ73f0CkXaXp7hrann',
+              redirectUri: 'http://localhost:1455/auth/callback',
+              tokenStorage: 'user-local',
+              apiKeysAllowed: false
+            }
+          },
+          security: {
+            storeSecretsInWorkspace: false,
+            sendGitCredentialsToModel: false,
+            writeRequiresAppValidation: true
+          }
+        };
+      }
+
+      function normalizedDraftsmanConfig(value) {
+        return deepMerge(defaultDraftsmanConfig(), value || {});
       }
 
       async function requestJson(url, options = {}, output = 'config-output') {
@@ -626,16 +754,59 @@
       function renderDraftsmanStatus() {
         const status = state.draftsman?.status;
         const mode = status?.mode || 'external';
-        const available = status?.embeddedDraftsmanAvailable ? 'Embedded Draftsman ready' : 'External Draftsman mode';
+        const available = mode === 'embedded'
+          ? (status?.embeddedDraftsmanAvailable ? 'Embedded Draftsman ready' : 'ChatGPT sign-in required')
+          : (mode === 'disabled' ? 'Draftsman disabled' : 'External Draftsman mode');
         const issues = (status?.issues || []).map(item => `<div>${escapeHtml(item)}</div>`).join('');
+        const account = status?.auth?.email || status?.auth?.accountId || 'not signed in';
         const body = `
           <h3>Draftsman</h3>
           <p class="muted">${escapeHtml(available)}</p>
-          <p class="muted">Mode: ${escapeHtml(mode)}; provider: ${escapeHtml(status?.embeddedProvider || 'openai')}; auth: ${escapeHtml(status?.embeddedAuth || 'oauth')}.</p>
+          <p class="muted">Mode: ${escapeHtml(mode)}; provider: ${escapeHtml(status?.embeddedProvider || 'openai')}; account: ${escapeHtml(account)}.</p>
           ${issues ? `<div class="muted">${issues}</div>` : ''}
         `;
         document.getElementById('draftsman-mode').innerHTML = body;
         document.getElementById('config-draftsman').innerHTML = body;
+      }
+
+      function renderDraftsmanControls() {
+        const draftConfig = normalizedDraftsmanConfig(state.draftsman?.config);
+        draftsmanModeSelect.value = draftConfig.mode || 'external';
+        openaiProvider.value = draftConfig.embedded?.provider || 'openai';
+        openaiModel.value = draftConfig.embedded?.model || '';
+        openaiRedirectUri.value = draftConfig.embedded?.auth?.redirectUri || 'http://localhost:1455/auth/callback';
+        openaiClientIdRef.value = draftConfig.embedded?.auth?.clientId || 'app_EMoamEEZ73f0CkXaXp7hrann';
+        openaiClientSecretRef.value = '';
+        openaiTokenStore.value = state.draftsman?.status?.auth?.tokenStore || '';
+        openaiAccount.value = state.draftsman?.status?.auth?.email || state.draftsman?.status?.auth?.accountId || 'Not signed in';
+        openaiPlan.value = state.draftsman?.status?.auth?.planType || '';
+      }
+
+      function draftsmanConfigFromControls() {
+        const mode = draftsmanModeSelect.value || 'external';
+        return normalizedDraftsmanConfig({
+          mode,
+          external: {
+            enabled: mode !== 'disabled'
+          },
+          embedded: {
+            enabled: mode === 'embedded',
+            provider: openaiProvider.value || 'openai',
+            model: openaiModel.value.trim(),
+            auth: {
+              type: 'oauth',
+              clientId: openaiClientIdRef.value.trim() || 'app_EMoamEEZ73f0CkXaXp7hrann',
+              redirectUri: openaiRedirectUri.value.trim() || 'http://localhost:1455/auth/callback',
+              tokenStorage: 'user-local',
+              apiKeysAllowed: false
+            }
+          },
+          security: {
+            storeSecretsInWorkspace: false,
+            sendGitCredentialsToModel: false,
+            writeRequiresAppValidation: true
+          }
+        });
       }
 
       function populateFilters() {
@@ -722,6 +893,7 @@
         const data = await requestJson(`/api/draftsman/config${workspaceQuery()}`, {}, 'config-output');
         state.draftsman = data;
         renderDraftsmanStatus();
+        renderDraftsmanControls();
       }
 
       async function initializeWorkspace() {
@@ -743,6 +915,66 @@
           method: 'PUT',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({workspace: workspaceValue(), config: JSON.parse(config.value || '{}')})
+        }, 'config-output');
+        await loadDraftsman();
+      }
+
+      async function saveDraftsmanSetup() {
+        const data = await requestJson('/api/draftsman/config', {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({workspace: workspaceValue(), config: draftsmanConfigFromControls()})
+        }, 'config-output');
+        if (data.config) {
+          state.draftsman = data;
+        }
+        await loadConfig();
+        await loadDraftsman();
+      }
+
+      async function useOpenAiOauth() {
+        const signInWindow = window.open('about:blank', '_blank');
+        draftsmanModeSelect.value = 'embedded';
+        await saveDraftsmanSetup();
+        const data = await requestJson(`/api/draftsman/oauth/openai/start${workspaceQuery()}`, {}, 'config-output');
+        if (data.authUrl) {
+          if (signInWindow) {
+            signInWindow.location = data.authUrl;
+          } else {
+            window.location.href = data.authUrl;
+          }
+          show('config-output', {
+            ok: true,
+            message: 'Continue sign-in in the browser window. Return here and click Check Sign-In when complete.',
+            callbackListener: data.callbackListener,
+            tokenStore: data.tokenStore
+          });
+        } else if (signInWindow) {
+          signInWindow.close();
+        }
+      }
+
+      async function checkOpenAiOauth() {
+        await requestJson(`/api/draftsman/oauth/openai/status${workspaceQuery()}`, {}, 'config-output');
+        await loadDraftsman();
+      }
+
+      async function importCodexAuth() {
+        await requestJson('/api/draftsman/oauth/openai/import-codex', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({workspace: workspaceValue()})
+        }, 'config-output');
+        draftsmanModeSelect.value = 'embedded';
+        await saveDraftsmanSetup();
+        await loadDraftsman();
+      }
+
+      async function logoutOpenAiOauth() {
+        await requestJson('/api/draftsman/oauth/openai/logout', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({workspace: workspaceValue()})
         }, 'config-output');
         await loadDraftsman();
       }
@@ -839,6 +1071,11 @@
       document.getElementById('load').addEventListener('click', refreshAll);
       document.getElementById('load-config').addEventListener('click', loadConfig);
       document.getElementById('save-config').addEventListener('click', saveConfig);
+      document.getElementById('use-openai-oauth').addEventListener('click', useOpenAiOauth);
+      document.getElementById('save-draftsman-setup').addEventListener('click', saveDraftsmanSetup);
+      document.getElementById('import-codex-auth').addEventListener('click', importCodexAuth);
+      document.getElementById('check-openai-oauth').addEventListener('click', checkOpenAiOauth);
+      document.getElementById('logout-openai-oauth').addEventListener('click', logoutOpenAiOauth);
       document.getElementById('validate').addEventListener('click', () => validateWorkspace('config-output'));
       document.getElementById('start-validate').addEventListener('click', () => validateWorkspace('start-output'));
       document.getElementById('status').addEventListener('click', () => gitStatus('config-output'));

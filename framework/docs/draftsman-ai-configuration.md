@@ -2,7 +2,7 @@
 
 ## Modes
 
-DRAFT supports two Draftsman operating modes in workspace configuration.
+DRAFT supports three Draftsman operating modes in workspace configuration.
 
 `external` mode means the AI runs outside the DRAFT App. The user points an AI
 agent at the repo, and the agent follows `AGENTS.md`, `AI_INDEX.md`, and the
@@ -10,66 +10,75 @@ DRAFT App API. This mode is available now and does not require AI credentials
 inside the app.
 
 `embedded` mode means the DRAFT App hosts the Draftsman chat experience. The
-app provides the UI, builds the effective-model context, and calls an approved
-AI provider. This mode is configuration-only in the current implementation.
+app provides the UI, builds the effective-model context, and calls the approved
+AI provider with the signed-in user's account.
 
 `disabled` mode removes Draftsman features from the workspace.
 
 ## First Embedded Provider
 
-The first embedded-provider configuration is intentionally limited to OpenAI
-with OAuth:
+The first embedded provider is OpenAI through ChatGPT/Codex OAuth. This follows
+the same user-owned subscription model used by Codex-style tools: each user
+signs in with their own ChatGPT/Codex account, and the app uses that user's
+session for embedded Draftsman chat.
+
+Workspace configuration contains only non-secret setup:
 
 ```yaml
 draftsman:
-  mode: external
+  mode: embedded
   embedded:
-    enabled: false
+    enabled: true
     provider: openai
-    model: <openai-model-id>
+    model: gpt-5.5
     auth:
       type: oauth
-      clientIdRef: DRAFT_OPENAI_OAUTH_CLIENT_ID
-      clientSecretRef: DRAFT_OPENAI_OAUTH_CLIENT_SECRET
-      redirectUri: http://127.0.0.1:8000/api/draftsman/oauth/openai/callback
-      tokenStorage: runtime
+      clientId: app_EMoamEEZ73f0CkXaXp7hrann
+      redirectUri: http://localhost:1455/auth/callback
+      tokenStorage: user-local
       apiKeysAllowed: false
 ```
 
-Do not store API keys, OAuth client secrets, access tokens, or refresh tokens in
-`.draft/workspace.yaml` or any other tracked workspace file. Configuration may
-refer to environment variables or deployment secret names, but the secret
-values must live outside Git.
+Do not store API keys, access tokens, refresh tokens, ID tokens, or OAuth
+client secrets in `.draft/workspace.yaml` or any other tracked workspace file.
+Local DRAFT app tokens are stored under `~/.draft/auth-profiles.json` with
+user-only file permissions. This file is outside the company workspace repo.
 
-## Current OpenAI Constraint
+## Local OAuth Flow
 
-The OpenAI API documentation currently describes API-key authentication for
-direct API calls. OpenAI documentation also describes OAuth for ChatGPT
-Actions, apps, and connector-style integrations where ChatGPT calls a third
-party application.
+The DRAFT App uses an OpenAI Codex-style OAuth/PKCE flow:
 
-Because DRAFT should not store API keys in workspace files, the embedded
-Draftsman implementation must wait until OAuth-based OpenAI access is confirmed
-for this app-to-OpenAI model-calling use case, or until an approved server-side
-secret-management design is accepted.
+1. The user selects `Embedded ChatGPT Sign-In` in the Configuration tab.
+2. The app starts a local callback listener on `127.0.0.1:1455`.
+3. The user signs in with ChatGPT in the browser.
+4. OpenAI redirects to `http://localhost:1455/auth/callback`.
+5. The app exchanges the code for the user's tokens and stores them outside Git.
+6. `POST /api/draftsman/chat` can call the embedded Draftsman using that user's
+   signed-in ChatGPT/Codex account.
 
-External-agent mode is not blocked by this. A user can use ChatGPT, Codex, or
-another external AI tool as the Draftsman by giving it the repo and app API
-contract.
+The Configuration tab also provides `Use Existing Codex Login`, which imports a
+local `~/.codex/auth.json` session into DRAFT's `~/.draft/` token store.
+
+## Shared App Boundary
+
+The local Codex OAuth callback assumes the browser and DRAFT App run on the
+same workstation. A shared internal deployment must use a per-user server-side
+OAuth/session design before enabling embedded chat for multiple users. It must
+not place one user's token where another user can use it.
 
 ## App API
 
-The app exposes Draftsman configuration routes:
+The app exposes Draftsman configuration and auth routes:
 
 - `GET /api/draftsman/providers`
 - `GET /api/draftsman/config`
-- `POST /api/draftsman/chat`
+- `PUT /api/draftsman/config`
+- `GET /api/draftsman/oauth/openai/status`
 - `GET /api/draftsman/oauth/openai/start`
-- `GET /api/draftsman/oauth/openai/callback`
-
-`POST /api/draftsman/chat` currently returns `501` for embedded mode. This is
-intentional: the app can validate and expose configuration without pretending
-that model calls are implemented.
+- `POST /api/draftsman/oauth/openai/complete`
+- `POST /api/draftsman/oauth/openai/import-codex`
+- `POST /api/draftsman/oauth/openai/logout`
+- `POST /api/draftsman/chat`
 
 ## Authority Boundary
 
