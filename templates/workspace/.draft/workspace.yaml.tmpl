@@ -1,15 +1,12 @@
 schemaVersion: "1.0"
 workspace:
   name: <company-draft-workspace>
-  mode: shared-app
 
 repository:
   provider: github
   owner: <github-org>
   name: <private-repo>
   defaultBranch: <default-branch>
-  devBranch: <dev-branch>
-  publishMode: pull-request
 
 framework:
   source: https://github.com/dsackr/draft-framework.git
@@ -19,34 +16,3 @@ framework:
 paths:
   catalog: catalog
   configurations: configurations
-
-auth:
-  localMode: gh
-  sharedAppMode: github-app
-
-draftsman:
-  mode: external  # external | embedded | disabled
-  external:
-    enabled: true
-    description: >
-      Use an external AI agent with AGENTS.md, AI_INDEX.md, and the DRAFT App
-      API. This mode does not require the app to store AI provider credentials.
-    entrypoints:
-      - AGENTS.md
-      - AI_INDEX.md
-      - framework/docs/draftsman.md
-      - app/api
-  embedded:
-    enabled: false
-    provider: openai
-    model: gpt-5.5
-    auth:
-      type: oauth
-      clientId: app_EMoamEEZ73f0CkXaXp7hrann
-      redirectUri: http://localhost:1455/auth/callback
-      tokenStorage: user-local
-      apiKeysAllowed: false
-  security:
-    storeSecretsInWorkspace: false
-    sendGitCredentialsToModel: false
-    writeRequiresAppValidation: true

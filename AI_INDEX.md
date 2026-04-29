@@ -22,19 +22,15 @@ Draftsman role defined in `framework/docs/draftsman.md`, then use this index,
 | Path | Purpose |
 |---|---|
 | AGENTS.md | Canonical AI bootstrap instructions for this repository. |
-| install.sh | Company-friendly installer for the DRAFT App and workspace skeleton. |
-| install.ps1 | Windows PowerShell installer for the DRAFT App and workspace skeleton. |
-| run.ps1 | Windows PowerShell launcher for an installed DRAFT App. |
 | framework/docs/draftsman.md | Draftsman role, intent routing, and authoring rules. |
 | framework/docs/overview.md | Framework concepts and object family overview. |
 | framework/docs/yaml-schema-reference.md | Quick map from object families to schemas. |
 | framework/docs/how-to-add-objects.md | Practical object authoring workflow. |
-| framework/docs/workspaces-and-app.md | Private workspace layout, app/API contract, and Git workflow. |
+| framework/docs/workspaces.md | Private workspace layout and source-based workflow. |
 | framework/docs/odcs.md | Object Definition Checklist model and validation behavior. |
 | framework/docs/drafting-sessions.md | How to persist incomplete authoring work. |
-| app/README.md | Shared internal app runtime and API routes. |
 | framework/tools/validate.py | Executable validation for schemas, ODCs, references, and controls. |
-| app/api | Shared internal app API surface for workspace, validation, git, and agent operations. |
+| framework/tools/generate_browser.py | Static GitHub Pages browser generator. |
 
 ## Framework Docs
 
@@ -43,7 +39,7 @@ Draftsman role defined in `framework/docs/draftsman.md`, then use this index,
 | framework/docs/abbs.md | ABBs | An Architecture Building Block, or ABB, is a discrete third-party product |
 | framework/docs/deployment-risks-and-decisions.md | Deployment Risks And Decisions | Deployment Risks and Decisions are first-class records for known risks, |
 | framework/docs/drafting-sessions.md | Drafting Sessions | A Drafting Session is a machine-readable record of partial architecture work. |
-| framework/docs/draftsman-ai-configuration.md | Draftsman AI Configuration | DRAFT supports three Draftsman operating modes in workspace configuration. |
+| framework/docs/draftsman-ai-configuration.md | Draftsman AI Guidance | DRAFT does not include a built-in AI runtime. The Draftsman is an external AI |
 | framework/docs/draftsman.md | Draftsman Instructions | This document is written for an AI assistant that is using this repository as |
 | framework/docs/how-to-add-objects.md | How To Add Objects | The fastest way to add a new object correctly is to decide what kind of thing you are modeling before you write YAML. |
 | framework/docs/naming-conventions.md | Naming Conventions | The catalog relies on stable, predictable IDs because the IDs are the connective tissue between YAML objects, validat... |
@@ -56,7 +52,7 @@ Draftsman role defined in `framework/docs/draftsman.md`, then use this index,
 | framework/docs/saas-services.md | SaaS Services | A SaaS Service is a vendor-managed service that the adopting organization |
 | framework/docs/security-and-compliance-controls.md | Security and Compliance Controls | DRAFT treats compliance as a pluggable layer rather than a fixed property of |
 | framework/docs/software-distribution-manifests.md | Software Distribution Manifests | A Software Distribution Manifest, or SDM, is a declaration that a specific product is distributed and deployed accord... |
-| framework/docs/workspaces-and-app.md | Workspaces And The DRAFT App | DRAFT separates the public framework from private company content. |
+| framework/docs/workspaces.md | Workspaces | DRAFT separates the public framework from private company content. |
 | framework/docs/yaml-schema-reference.md | YAML Schema Reference | This page is the quickest way to understand how to build a valid YAML object in |
 
 ## Schemas

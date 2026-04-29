@@ -30,7 +30,7 @@ authoritative source for object shape.
 | ODC | `configurations/odc-overrides/` | [odc.schema.yaml](../schemas/odc.schema.yaml) | ODCs are checklist objects. Base ODCs ship in `framework/configurations/odcs/`; company changes are overlays. |
 | Compliance Framework | `configurations/compliance-frameworks/` | [compliance-framework.schema.yaml](../schemas/compliance-framework.schema.yaml) | Pure control catalog with control identity only. |
 | Compliance Profile | `configurations/compliance-profiles/` | [compliance-profile.schema.yaml](../schemas/compliance-profile.schema.yaml) | DRAFT semantics for a control catalog: applicability, valid answer types, and conditionality. |
-| Object Patch | `configurations/object-patches/` | [object-patch.schema.yaml](../schemas/object-patch.schema.yaml) | Patch-style override object used by the app/API to alter base framework objects without copying them. |
+| Object Patch | `configurations/object-patches/` | [object-patch.schema.yaml](../schemas/object-patch.schema.yaml) | Patch-style override object used to alter base framework objects without copying them. |
 
 ## Minimum Guidance By Type
 

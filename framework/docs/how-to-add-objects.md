@@ -26,8 +26,8 @@ with real architecture facts and run validation. Template files use the
 
 In a company workspace, generated architecture content belongs under
 `catalog/`. Company configuration and extension content belongs under
-`configurations/`. The app/API should create and update those files; direct YAML
-editing is a recovery path, not the preferred authoring path.
+`configurations/`. Edit YAML directly, keep changes small and reviewable, and
+run validation before treating the work as complete.
 
 ## Add An ABB
 
@@ -72,7 +72,7 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 
 ## Add An ODC
 
-1. Create an `object_patch` override or extension file through the app/API in
+1. Create an `object_patch` override or extension file in
    `configurations/object-patches/`.
 2. Define the `appliesTo` scope clearly.
 3. Write requirements in the mechanism-based model.
@@ -80,7 +80,7 @@ ABBs should be specific. If you cannot name the product version clearly, you pro
 5. If the ODC extends another ODC, use `inherits`.
 
 Base ODCs live in `framework/configurations/odcs/`. Company-specific ODC
-changes should be patch-style overlays created through the app/API.
+changes should be patch-style overlays in the private workspace.
 
 An ODC can target more than RBBs. The current catalog includes ODCs for RBBs, reference architectures, and software distribution manifests. The `appliesTo` block is what tells the validator which object type the ODC governs.
 

@@ -662,7 +662,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       color: var(--text);
       font-family: "SF Pro Display", "Segoe UI", sans-serif;
     }
-    .app {
+    .page-shell {
       min-height: 100vh;
       display: grid;
       grid-template-columns: 280px minmax(0, 1fr);
@@ -1825,29 +1825,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       font-size: 12px;
       line-height: 1.5;
     }
-    .draftsman-box {
-      display: grid;
-      gap: 10px;
-    }
-    .draftsman-textarea {
-      min-height: 110px;
-      resize: vertical;
-      width: 100%;
-      border: 1px solid rgba(148,163,184,0.35);
-      border-radius: 8px;
-      background: rgba(15,23,42,0.72);
-      color: var(--text);
-      font: inherit;
-      font-size: 13px;
-      line-height: 1.45;
-      padding: 10px;
-    }
-    .draftsman-output {
-      color: var(--subtle);
-      font-size: 12px;
-      line-height: 1.5;
-      white-space: pre-wrap;
-    }
     .editor-overlay {
       position: fixed;
       inset: 0;
@@ -2163,7 +2140,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       .deployment-target-columns { grid-template-columns: 1fr; }
     }
     @media (max-width: 980px) {
-      .app { grid-template-columns: 1fr; }
+      .page-shell { grid-template-columns: 1fr; }
       .sidebar { border-right: 0; border-bottom: 1px solid rgba(51,65,85,0.7); }
       .main { padding: 20px; }
       .decisions-grid { grid-template-columns: 1fr; }
@@ -2172,7 +2149,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <div class="app">
+  <div class="page-shell">
     <aside class="sidebar">
       <div class="browser-brand">
         <img id="draft-logo" class="browser-logo" alt="DRAFT">
@@ -2192,7 +2169,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       </div>
     </aside>
     <main class="main">
-      <div id="app-root"></div>
+      <div id="page-root"></div>
     </main>
   </div>
   <div id="editor-overlay" class="editor-overlay"></div>
@@ -2204,16 +2181,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     const referencedByIndex = browserData.referencedBy || {};
     const complianceData = browserData.compliance || {};
     const repoUrl = browserData.repoUrl || '';
-    const appRoot = document.getElementById('app-root');
+    const pageRoot = document.getElementById('page-root');
     const sidebarContent = document.getElementById('sidebar-content');
     const legend = document.getElementById('legend');
     const editorOverlay = document.getElementById('editor-overlay');
-    const urlParams = new URLSearchParams(window.location.search);
-    const isDraftApp = window.location.pathname.includes('/api/catalog/browser');
-    const workspaceParam = urlParams.get('workspace') || null;
     document.getElementById('draft-logo').src = browserData.logoDataUri || 'draftlogo.png';
     document.getElementById('catalog-name').textContent = browserData.catalogName || 'Catalog';
-    document.getElementById('browser-mode').textContent = isDraftApp ? 'DRAFT App' : 'GitHub Pages';
+    document.getElementById('browser-mode').textContent = 'GitHub Pages';
     let editorState = null;
     let controlImportState = null;
     const CATEGORY_CONFIG = [
@@ -2634,187 +2608,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
-    function selectedObjectForDraftsman() {
-      return currentDetailId && objectLookup[currentDetailId] ? objectLookup[currentDetailId] : null;
-    }
-
-    function draftsmanMarkup() {
-      if (!isDraftApp) {
-        return '';
-      }
-      const selected = selectedObjectForDraftsman();
-      const scopeText = selected ? `Ask for a change to ${escapeHtml(selected.name)}.` : 'Ask for a catalog update or architecture change.';
-      return `
-        <div class="sidebar-block draftsman-box">
-          <div class="legend-title">Draftsman</div>
-          <div class="sidebar-help">${scopeText}</div>
-          <textarea id="draftsman-request" class="draftsman-textarea" placeholder="Describe the update you want."></textarea>
-          <button class="action-button" id="draftsman-submit">Ask Draftsman</button>
-          <div class="draftsman-output" id="draftsman-output" aria-live="polite"></div>
-        </div>
-      `;
-    }
-
-    function humanDraftsmanMessage(data) {
-      if (!data) return '';
-      if (typeof data === 'string') return data;
-      if (data.message) return data.message;
-      if (data.detail?.message) return data.detail.message;
-      if (typeof data.detail === 'string') return data.detail;
-      return data.ok === false ? 'The Draftsman could not complete that request.' : 'Done.';
-    }
-
-    function appApiUrl(path) {
-      const normalizedPath = String(path || '').replace(/^\/+/, '');
-      const browserPath = '/api/catalog/browser';
-      const currentPath = window.location.pathname;
-      const browserIndex = currentPath.indexOf(browserPath);
-      const apiRoot = browserIndex >= 0
-        ? `${currentPath.slice(0, browserIndex)}/api/`
-        : '/api/';
-      return new URL(`${apiRoot}${normalizedPath}`, window.location.origin).toString();
-    }
-
-    function rootApiUrl(path) {
-      const normalizedPath = String(path || '').replace(/^\/+/, '');
-      return new URL(`/api/${normalizedPath}`, window.location.origin).toString();
-    }
-
-    function appRootUrl(path) {
-      const normalizedPath = String(path || '').replace(/^\/+/, '');
-      const browserPath = '/api/catalog/browser';
-      const currentPath = window.location.pathname;
-      const browserIndex = currentPath.indexOf(browserPath);
-      const prefix = browserIndex >= 0 ? currentPath.slice(0, browserIndex) : '';
-      return new URL(`${prefix}/${normalizedPath}`, window.location.origin).toString();
-    }
-
-    function uniqueUrls(urls) {
-      return Array.from(new Set(urls));
-    }
-
-    function draftsmanChatUrls() {
-      return uniqueUrls([
-        appApiUrl('draftsman/chat'),
-        appApiUrl('draftsman/chat/'),
-        appApiUrl('draftman/chat'),
-        appApiUrl('draftman/chat/'),
-        rootApiUrl('draftsman/chat'),
-        rootApiUrl('draftsman/chat/'),
-        rootApiUrl('draftman/chat'),
-        rootApiUrl('draftman/chat/')
-      ]);
-    }
-
-    async function fetchDraftsmanJson(url, payload) {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-      });
-      const contentType = response.headers.get('content-type') || '';
-      const data = contentType.includes('application/json')
-        ? await response.json()
-        : { ok: response.ok, message: await response.text() };
-      return { response, data, url };
-    }
-
-    async function fetchJsonDiagnostic(url) {
-      try {
-        const response = await fetch(url);
-        const contentType = response.headers.get('content-type') || '';
-        if (!contentType.includes('application/json')) {
-          return { url, status: response.status, data: null };
-        }
-        return { url, status: response.status, data: await response.json() };
-      } catch (error) {
-        return { url, status: 'unreachable', data: null };
-      }
-    }
-
-    function routeListFromOpenApi(openApiData) {
-      if (!openApiData?.paths || typeof openApiData.paths !== 'object') {
-        return [];
-      }
-      return Object.keys(openApiData.paths)
-        .filter(path => path.toLowerCase().includes('draft'))
-        .sort();
-    }
-
-    async function describeDraftsmanApiMiss(triedUrls) {
-      const providerUrls = uniqueUrls([
-        appApiUrl('draftsman/providers'),
-        rootApiUrl('draftsman/providers')
-      ]);
-      const providerChecks = [];
-      for (const url of providerUrls) {
-        try {
-          const response = await fetch(url);
-          providerChecks.push(`${url} -> ${response.status}`);
-        } catch (error) {
-          providerChecks.push(`${url} -> unreachable`);
-        }
-      }
-      const manifestChecks = [];
-      for (const url of uniqueUrls([appApiUrl('framework/manifest'), rootApiUrl('framework/manifest')])) {
-        const result = await fetchJsonDiagnostic(url);
-        const frameworkRoot = result.data?.frameworkRoot ? `; frameworkRoot=${result.data.frameworkRoot}` : '';
-        manifestChecks.push(`${url} -> ${result.status}${frameworkRoot}`);
-      }
-      const routeChecks = [];
-      for (const url of uniqueUrls([appRootUrl('openapi.json'), new URL('/openapi.json', window.location.origin).toString()])) {
-        const result = await fetchJsonDiagnostic(url);
-        const draftRoutes = routeListFromOpenApi(result.data);
-        routeChecks.push(`${url} -> ${result.status}; draft routes=${draftRoutes.length ? draftRoutes.join(', ') : 'none'}`);
-      }
-      return [
-        'Draftsman chat API was not found on this app server.',
-        `Current page: ${window.location.href}`,
-        `Tried: ${triedUrls.join(', ')}`,
-        `Draftsman provider check: ${providerChecks.join(', ')}`,
-        `Framework manifest check: ${manifestChecks.join(', ')}`,
-        `OpenAPI route check: ${routeChecks.join(', ')}`,
-        'Run git pull in the same framework folder that starts the app, then restart the app and open Architecture from the Welcome screen.'
-      ].join('\\n');
-    }
-
-    async function askDraftsmanFromBrowser() {
-      const input = document.getElementById('draftsman-request');
-      const output = document.getElementById('draftsman-output');
-      const message = input?.value.trim() || '';
-      if (!message) {
-        output.textContent = 'Describe the change you want first.';
-        return;
-      }
-      output.textContent = 'Draftsman is reviewing the catalog.';
-      try {
-        const payload = {
-          workspace: workspaceParam,
-          contextObjectId: currentDetailId || null,
-          message
-        };
-        const triedUrls = [];
-        for (const url of draftsmanChatUrls()) {
-          triedUrls.push(url);
-          const { response, data } = await fetchDraftsmanJson(url, payload);
-          
-          // Differentiate between "Route not found" (generic 404) 
-          // and "Resource not found" (app-level 404 for missing workspace, etc)
-          const isAppLevelError = response.status === 404 && (data?.detail || data?.message);
-
-          if (response.status !== 404 || isAppLevelError) {
-            output.textContent = humanDraftsmanMessage(data);
-            return;
-          }
-        }
-        output.textContent = await describeDraftsmanApiMiss(triedUrls);
-      } catch (error) {
-        output.textContent = 'The Draftsman is not reachable from this browser session.';
-      }
-    }
-
     function sidebarMarkup(extraMarkup = '') {
-      return `${draftsmanMarkup()}${complianceFrameworkMarkup()}${currentFilterMarkup()}${extraMarkup}`;
+      return `${complianceFrameworkMarkup()}${currentFilterMarkup()}${extraMarkup}`;
     }
 
     function rerenderCurrentView() {
@@ -2840,14 +2635,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           rerenderCurrentView();
         });
       }
-      const draftsmanSubmit = document.getElementById('draftsman-submit');
-      if (draftsmanSubmit) {
-        draftsmanSubmit.addEventListener('click', askDraftsmanFromBrowser);
-      }
     }
 
     function attachTopNavHandlers() {
-      appRoot.querySelectorAll('[data-nav]').forEach(button => {
+      pageRoot.querySelectorAll('[data-nav]').forEach(button => {
         button.addEventListener('click', () => {
           const nav = button.dataset.nav;
           if (nav === 'list') {
@@ -2960,7 +2751,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           })();
       syncHashForListView();
       renderSidebarContent(sidebarMarkup());
-      appRoot.innerHTML = `
+      pageRoot.innerHTML = `
         <div class="view-shell">
           ${topNavMarkup()}
           <div class="tab-row">
@@ -2979,7 +2770,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         </div>
       `;
 
-      appRoot.querySelectorAll('[data-category-tab]').forEach(button => {
+      pageRoot.querySelectorAll('[data-category-tab]').forEach(button => {
         button.addEventListener('click', () => {
           activeCategory = button.dataset.categoryTab;
           activeFilter = 'all';
@@ -2987,14 +2778,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
       });
 
-      appRoot.querySelectorAll('[data-filter]').forEach(button => {
+      pageRoot.querySelectorAll('[data-filter]').forEach(button => {
         button.addEventListener('click', () => {
           activeFilter = button.dataset.filter;
           renderListView();
         });
       });
 
-      appRoot.querySelectorAll('[data-object-id]').forEach(card => {
+      pageRoot.querySelectorAll('[data-object-id]').forEach(card => {
         card.addEventListener('click', () => {
           showDetailView(card.dataset.objectId);
         });
@@ -3476,7 +3267,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         return { icon: '⬢', cls: 'pod' };
       }
       if (ref.startsWith('rbb.service.web.')) return { icon: '🖥', cls: '' };
-      if (ref.startsWith('rbb.service.app.')) return { icon: '🗂', cls: '' };
       if (ref.startsWith('rbb.service.dbms.')) return { icon: '🗄', cls: '' };
       if (ref.startsWith('rbb.service.messaging.')) return { icon: '📬', cls: '' };
       if (serviceObject?.serviceCategory === 'database') return { icon: '🗄', cls: '' };
@@ -4258,7 +4048,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <div class="editor-header">
               <div class="editor-title">
                 <h3>Edit ${escapeHtml(object.name)}</h3>
-              <p>Static GitHub Pages is read-only. Use the DRAFT App and Draftsman for guided catalog changes.</p>
+              <p>GitHub Pages is read-only. Use this panel to draft local YAML changes, then validate the source files.</p>
               </div>
               <div class="editor-actions">
               <button class="action-button secondary" id="editor-reset">Reset</button>
@@ -4878,7 +4668,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         `;
       }
 
-      appRoot.innerHTML = `
+      pageRoot.innerHTML = `
         <div class="detail-layout">
           ${topNavMarkup()}
           <button class="back-button" id="back-button">Back</button>
@@ -4907,7 +4697,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
       attachTopNavHandlers();
       attachSidebarHandlers();
-      attachObjectLinkHandlers(appRoot);
+      attachObjectLinkHandlers(pageRoot);
       if (object.type === 'software_distribution_manifest' || object.type === 'reference_architecture') {
         currentSdmScalingFilter = 'all';
         const applySdmScalingFilter = () => {
@@ -4945,13 +4735,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           }
         };
 
-        appRoot.querySelectorAll('[data-sdm-tab]').forEach(button => {
+        pageRoot.querySelectorAll('[data-sdm-tab]').forEach(button => {
           button.addEventListener('click', () => {
             const nextTab = button.dataset.sdmTab;
-            appRoot.querySelectorAll('[data-sdm-tab]').forEach(tab => {
+            pageRoot.querySelectorAll('[data-sdm-tab]').forEach(tab => {
               tab.classList.toggle('active', tab.dataset.sdmTab === nextTab);
             });
-            appRoot.querySelectorAll('[data-sdm-panel]').forEach(panel => {
+            pageRoot.querySelectorAll('[data-sdm-panel]').forEach(panel => {
               panel.hidden = panel.dataset.sdmPanel !== nextTab;
             });
             if (nextTab === 'topology') {
@@ -5538,7 +5328,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       syncHashForImpactView();
       const selection = impactSelectedId ? computeImpactSelection(impactSelectedId) : { selected: null, impacted: new Set(), siblings: new Set(), supported: false };
       renderSidebarContent(sidebarMarkup(impactSidebarMarkup(selection)));
-      appRoot.innerHTML = `
+      pageRoot.innerHTML = `
         <div class="view-shell">
           ${topNavMarkup()}
           <section class="impact-graph-card">
@@ -5574,7 +5364,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           }
         });
       }
-      appRoot.querySelectorAll('[data-impact-select]').forEach(item => {
+      pageRoot.querySelectorAll('[data-impact-select]').forEach(item => {
         item.addEventListener('click', () => {
           selectImpactObject(item.dataset.impactSelect);
         });
@@ -5582,7 +5372,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           selectImpactObject(item.dataset.impactSelect, true);
         });
       });
-      appRoot.querySelectorAll('[data-impact-lifecycle]').forEach(button => {
+      pageRoot.querySelectorAll('[data-impact-lifecycle]').forEach(button => {
         button.addEventListener('click', () => {
           const status = button.dataset.impactLifecycle;
           impactLifecycleFilters[status] = !impactLifecycleFilters[status];

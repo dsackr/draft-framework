@@ -13,19 +13,15 @@ OUTPUT_PATH = REPO_ROOT / "AI_INDEX.md"
 
 FRAMEWORK_ENTRYPOINTS = [
     ("AGENTS.md", "Canonical AI bootstrap instructions for this repository."),
-    ("install.sh", "Company-friendly installer for the DRAFT App and workspace skeleton."),
-    ("install.ps1", "Windows PowerShell installer for the DRAFT App and workspace skeleton."),
-    ("run.ps1", "Windows PowerShell launcher for an installed DRAFT App."),
     ("framework/docs/draftsman.md", "Draftsman role, intent routing, and authoring rules."),
     ("framework/docs/overview.md", "Framework concepts and object family overview."),
     ("framework/docs/yaml-schema-reference.md", "Quick map from object families to schemas."),
     ("framework/docs/how-to-add-objects.md", "Practical object authoring workflow."),
-    ("framework/docs/workspaces-and-app.md", "Private workspace layout, app/API contract, and Git workflow."),
+    ("framework/docs/workspaces.md", "Private workspace layout and source-based workflow."),
     ("framework/docs/odcs.md", "Object Definition Checklist model and validation behavior."),
     ("framework/docs/drafting-sessions.md", "How to persist incomplete authoring work."),
-    ("app/README.md", "Shared internal app runtime and API routes."),
     ("framework/tools/validate.py", "Executable validation for schemas, ODCs, references, and controls."),
-    ("app/api", "Shared internal app API surface for workspace, validation, git, and agent operations."),
+    ("framework/tools/generate_browser.py", "Static GitHub Pages browser generator."),
 ]
 
 CONFIGURATION_FOLDERS = [

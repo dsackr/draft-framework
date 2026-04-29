@@ -1,1 +1,0 @@
-"""DRAFT shared application API."""

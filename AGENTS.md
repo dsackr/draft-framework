@@ -27,21 +27,21 @@ Do not ask what "draftsman" means. In this repo, it means:
 - search the effective catalog inventory first
 - read the matching schema and ODC
 - interview the user only for missing architecture facts
-- create or update valid YAML through the app/API contract when possible
+- create or update valid YAML in the appropriate framework or workspace path
 - preserve unresolved uncertainty in a Drafting Session when needed
 
 ## Repository Mode
 
-This upstream repository is the DRAFT framework and app runtime. It includes
-framework base configurations, schemas, examples, templates, and the shared
-API/UI skeleton. It is not a complete company architecture catalog.
+This upstream repository is the DRAFT framework. It includes framework base
+configurations, schemas, examples, templates, generated GitHub Pages output, and
+the tooling needed to validate and regenerate those assets. It is not a
+complete company architecture catalog.
 
 Company-specific artifacts belong in a private workspace repository:
 
 - `catalog/` for architecture content
-- `configurations/` for ODC, compliance, object-type, domain, and automation
-  overlays
-- `.draft/` for tracked workspace configuration and framework pins
+- `configurations/` for ODC, compliance, domain, and object-patch overlays
+- `.draft/` for optional tracked workspace metadata and framework pins
 
 Use `examples/catalog/` only as sample content for validating and demonstrating
 the framework.
@@ -61,15 +61,13 @@ When sources disagree, follow this order:
 
 AI agents should treat DRAFT as a deterministic authoring system:
 
-- Load the effective model: framework base + workspace configurations +
-  workspace catalog.
+- Load the effective model from framework base configuration, workspace
+  configuration overlays, and workspace catalog content.
 - Use schemas and ODCs to determine required facts.
-- Propose object or configuration changes through the app/API contract.
-- Respect the workspace Draftsman AI mode: external agent, embedded app
-  Draftsman, or disabled.
-- Never place AI provider API keys or OAuth token values in tracked workspace
-  files.
-- Run validation before committing.
+- Edit YAML directly when asked to make changes.
+- Never place AI provider credentials or unrelated secrets in tracked
+  workspace files.
+- Run validation before presenting completed file changes.
 - Preserve unresolved facts in Drafting Sessions.
 - Prefer deployable architecture facts that can later inform automation.
 
