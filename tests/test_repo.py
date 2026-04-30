@@ -4,6 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import yaml
+
 from draft_table.repo import (
     ensure_git_repo,
     ensure_workspace_layout,
@@ -39,8 +41,12 @@ class RepoTests(unittest.TestCase):
             agents = workspace / ".draft" / "framework" / "AGENTS.md"
             self.assertTrue(agents.exists())
             self.assertIn("docs/draftsman.md", agents.read_text(encoding="utf-8"))
+            self.assertTrue((workspace / ".draft" / "framework" / "draft-framework.yaml").exists())
+            self.assertTrue((workspace / ".draft" / "framework" / "VERSIONING.md").exists())
             workspace_config = (workspace / ".draft" / "workspace.yaml").read_text(encoding="utf-8")
             self.assertIn("activeControlEnforcementProfiles", workspace_config)
+            lock = yaml.safe_load((workspace / ".draft" / "framework.lock").read_text(encoding="utf-8"))
+            self.assertEqual(lock["framework"]["version"], "0.4.0")
             self.assertTrue(created)
             self.assertTrue(is_workspace(workspace))
 

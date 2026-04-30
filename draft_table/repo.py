@@ -50,7 +50,11 @@ FRAMEWORK_VENDOR_FILES = (
     "AGENTS.md",
     "AI_INDEX.md",
     "CLAUDE.md",
+    "CHANGELOG.md",
+    "draft-framework.yaml",
     "GEMINI.md",
+    "RELEASE.md",
+    "VERSIONING.md",
     "llms.txt",
     "security.md",
 )
@@ -126,17 +130,52 @@ def current_framework_commit(framework_repo: Path = REPO_ROOT) -> str:
     return result.stdout.strip() if result.returncode == 0 else ""
 
 
+def framework_manifest_path(framework_repo: Path = REPO_ROOT) -> Path | None:
+    framework_root = resolve_framework_root(framework_repo)
+    for path in (framework_root / "draft-framework.yaml", framework_root.parent / "draft-framework.yaml"):
+        if path.exists():
+            return path
+    return None
+
+
+def current_framework_version(framework_repo: Path = REPO_ROOT) -> str:
+    manifest_path = framework_manifest_path(framework_repo)
+    if not manifest_path:
+        return ""
+    try:
+        loaded = yaml.safe_load(manifest_path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError:
+        return ""
+    if not isinstance(loaded, dict):
+        return ""
+    return str(loaded.get("version") or "").strip()
+
+
+def current_framework_tag(framework_repo: Path = REPO_ROOT) -> str:
+    framework_root = resolve_framework_root(framework_repo)
+    git_root = framework_root.parent if (framework_root.parent / ".git").exists() else framework_root
+    result = run_git(["describe", "--tags", "--exact-match"], git_root)
+    return result.stdout.strip() if result.returncode == 0 else ""
+
+
 def framework_lock_data(framework_repo: Path = REPO_ROOT, source_label: str | None = None) -> dict[str, Any]:
     framework_commit = current_framework_commit(framework_repo)
+    framework_version = current_framework_version(framework_repo)
+    framework_tag = current_framework_tag(framework_repo)
+    framework: dict[str, Any] = {
+        "source": source_label or DEFAULT_FRAMEWORK_SOURCE,
+        "vendoredPath": ".draft/framework",
+        "updatePolicy": "explicit",
+        "syncedRef": "main",
+        "syncedCommit": framework_commit,
+    }
+    if framework_version:
+        framework["version"] = framework_version
+    if framework_tag:
+        framework["syncedTag"] = framework_tag
     return {
         "schemaVersion": "1.0",
-        "framework": {
-            "source": source_label or DEFAULT_FRAMEWORK_SOURCE,
-            "vendoredPath": ".draft/framework",
-            "updatePolicy": "explicit",
-            "syncedRef": "main",
-            "syncedCommit": framework_commit,
-        },
+        "framework": framework,
     }
 
 
@@ -152,7 +191,7 @@ def copy_optional_framework_file(source_root: Path, source_repo: Path, filename:
     for source in (source_root / filename, source_repo / filename):
         if source.exists():
             target = destination / filename
-            if filename in {"AGENTS.md", "AI_INDEX.md", "CLAUDE.md", "GEMINI.md", "llms.txt"}:
+            if filename.endswith(".md") or filename in {"AI_INDEX.md", "CLAUDE.md", "GEMINI.md", "llms.txt"}:
                 target.write_text(vendored_framework_text(source.read_text(encoding="utf-8")), encoding="utf-8")
             else:
                 shutil.copy2(source, target)

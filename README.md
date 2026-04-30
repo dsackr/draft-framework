@@ -156,6 +156,9 @@ See [security.md](security.md) for the threat model and credential boundary.
 ### Framework Basics
 
 - [Framework overview](framework/docs/overview.md)
+- [Framework versioning](VERSIONING.md)
+- [Release checklist](RELEASE.md)
+- [Changelog](CHANGELOG.md)
 - [AI agent bootstrap](AGENTS.md)
 - [AI framework index](AI_INDEX.md)
 - [Draftsman instructions for AI](framework/docs/draftsman.md)
@@ -227,6 +230,12 @@ Run the DRAFT Table unit tests:
 
 ```bash
 python3 -m unittest discover -s tests
+```
+
+Check release-note and version metadata:
+
+```bash
+python3 framework/tools/check_release_notes.py
 ```
 
 ## Compliance Claims
