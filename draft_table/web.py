@@ -15,7 +15,7 @@ from .validation import validate_workspace
 def create_app(config_path: Path | None = None) -> Any:
     try:
         from fastapi import Body, FastAPI, File, HTTPException, UploadFile
-        from fastapi.responses import HTMLResponse
+        from fastapi.responses import FileResponse, HTMLResponse
     except ModuleNotFoundError as exc:
         raise RuntimeError(
             "FastAPI runtime dependencies are missing. Install with: python3 -m pip install -e ."
@@ -27,6 +27,13 @@ def create_app(config_path: Path | None = None) -> Any:
     @app.get("/", response_class=HTMLResponse)
     def index() -> str:
         return INDEX_HTML
+
+    @app.get("/assets/draftlogo.png")
+    def draft_logo() -> Any:
+        logo_path = REPO_ROOT / "draftlogo.png"
+        if not logo_path.exists():
+            raise HTTPException(status_code=404, detail="DRAFT logo asset not found.")
+        return FileResponse(logo_path, media_type="image/png")
 
     @app.get("/api/status")
     def status() -> dict[str, Any]:
@@ -186,6 +193,16 @@ INDEX_HTML = """<!doctype html>
       border-right: 1px solid var(--border);
       padding: 24px;
     }
+    .brand {
+      display: grid;
+      gap: 14px;
+      align-items: start;
+    }
+    .brand-logo {
+      width: min(180px, 100%);
+      height: auto;
+      display: block;
+    }
     main { padding: 24px; }
     h1, h2 { margin: 0 0 12px; }
     p { color: var(--muted); line-height: 1.5; }
@@ -281,14 +298,24 @@ INDEX_HTML = """<!doctype html>
     @media (max-width: 800px) {
       .shell { grid-template-columns: 1fr; }
       aside { border-right: 0; border-bottom: 1px solid var(--border); }
+      .brand {
+        grid-template-columns: auto 1fr;
+        align-items: center;
+      }
+      .brand-logo { width: 96px; }
     }
   </style>
 </head>
 <body>
   <div class="shell">
     <aside>
-      <h1>DRAFT Table</h1>
-      <p>Local drafting table for a DRAFT architecture catalog. The Draftsman conversation is the primary workspace.</p>
+      <div class="brand">
+        <img class="brand-logo" src="/assets/draftlogo.png" alt="DRAFT">
+        <div>
+          <h1>DRAFT Table</h1>
+          <p>Local drafting table for a DRAFT architecture catalog. The Draftsman conversation is the primary workspace.</p>
+        </div>
+      </div>
     </aside>
     <main>
       <section class="panel">

@@ -11,6 +11,10 @@ class WebTests(unittest.TestCase):
         self.assertIn("The Draftsman request failed", INDEX_HTML)
         self.assertIn("readJson(response)", INDEX_HTML)
 
+    def test_ui_includes_draft_logo(self) -> None:
+        self.assertIn('src="/assets/draftlogo.png"', INDEX_HTML)
+        self.assertIn('class="brand-logo"', INDEX_HTML)
+
 
 if __name__ == "__main__":
     unittest.main()
