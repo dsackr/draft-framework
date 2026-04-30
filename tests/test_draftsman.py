@@ -1,12 +1,21 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from draft_table.config import save_config
-from draft_table.draftsman import DraftsmanEngine, parse_provider_response, public_proposal, safe_workspace_path
+from draft_table.draftsman import (
+    DraftsmanEngine,
+    invoke_provider,
+    parse_provider_response,
+    provider_timeout_seconds,
+    public_proposal,
+    safe_workspace_path,
+)
 from draft_table.paths import REPO_ROOT
 from draft_table.sessions import DraftsmanSessionStore
 
@@ -59,6 +68,25 @@ class DraftsmanTests(unittest.TestCase):
         parsed = parse_provider_response(raw)
 
         self.assertEqual(parsed["answer"], "Done")
+
+    def test_provider_timeout_returns_visible_answer(self) -> None:
+        with mock.patch(
+            "draft_table.draftsman.subprocess.run",
+            side_effect=subprocess.TimeoutExpired(cmd=["gemini"], timeout=10),
+        ):
+            answer = invoke_provider(
+                {"type": "gemini-cli", "executable": "/usr/bin/gemini", "timeout_seconds": 10},
+                "Draft something",
+            )
+
+        self.assertIn("Gemini CLI provider did not return within 10 seconds", answer)
+        self.assertIn("I did not create or apply any artifacts", answer)
+        self.assertNotIn("Draft something", answer)
+
+    def test_provider_timeout_is_clamped(self) -> None:
+        self.assertEqual(provider_timeout_seconds({"timeout_seconds": 1}), 5)
+        self.assertEqual(provider_timeout_seconds({"timeout_seconds": 99999}), 1800)
+        self.assertEqual(provider_timeout_seconds({"timeout_seconds": "invalid"}), 180)
 
     def test_safe_workspace_path_rejects_escape(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

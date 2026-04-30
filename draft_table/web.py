@@ -336,6 +336,25 @@ INDEX_HTML = """<!doctype html>
       messages.scrollTop = messages.scrollHeight;
     }
 
+    function replaceLastDraftsmanMessage(text) {
+      const messages = document.getElementById('messages');
+      if (messages.lastChild) {
+        messages.lastChild.textContent = text;
+      } else {
+        addMessage('draftsman', text);
+      }
+    }
+
+    async function readJson(response) {
+      const text = await response.text();
+      if (!text) return {};
+      try {
+        return JSON.parse(text);
+      } catch (error) {
+        return {detail: text};
+      }
+    }
+
     function renderProposals(proposals) {
       latestProposals = proposals || [];
       const target = document.getElementById('proposal-actions');
@@ -388,19 +407,26 @@ INDEX_HTML = """<!doctype html>
       addMessage('user', message);
       input.value = '';
       addMessage('draftsman', 'Thinking...');
-      const response = await fetch('/api/draftsman/chat', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({message, sessionId})
-      });
-      const data = await response.json();
-      sessionId = data.sessionId || sessionId;
-      const messages = document.getElementById('messages');
-      messages.lastChild.textContent = data.answer || data.detail || 'No response.';
-      if (data.questions?.length) {
-        addMessage('draftsman', `I need to confirm:\\n- ${data.questions.join('\\n- ')}`);
+      try {
+        const response = await fetch('/api/draftsman/chat', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({message, sessionId})
+        });
+        const data = await readJson(response);
+        sessionId = data.sessionId || sessionId;
+        if (!response.ok) {
+          throw new Error(data.detail || `Request failed with HTTP ${response.status}.`);
+        }
+        replaceLastDraftsmanMessage(data.answer || data.detail || 'No response.');
+        if (data.questions?.length) {
+          addMessage('draftsman', `I need to confirm:\\n- ${data.questions.join('\\n- ')}`);
+        }
+        renderProposals(data.proposals || []);
+      } catch (error) {
+        replaceLastDraftsmanMessage(`The Draftsman request failed: ${error.message}`);
+        renderProposals([]);
       }
-      renderProposals(data.proposals || []);
     });
 
     document.getElementById('upload-button').addEventListener('click', async () => {

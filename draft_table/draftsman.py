@@ -17,6 +17,9 @@ from .sessions import DraftsmanSessionStore
 from .validation import validate_workspace
 
 
+DEFAULT_PROVIDER_TIMEOUT_SECONDS = 180
+
+
 @dataclass
 class DraftsmanResponse:
     session_id: str
@@ -264,26 +267,60 @@ def invoke_provider(provider: dict[str, Any], prompt: str) -> str:
     provider_type = str(provider.get("type") or "")
     executable = str(provider.get("executable") or "")
     model = str(provider.get("model") or "")
+    timeout_seconds = provider_timeout_seconds(provider)
     if provider_type == "local-llm":
-        return invoke_ollama(str(provider.get("endpoint") or "http://127.0.0.1:11434"), model, prompt)
-    command = build_provider_command(provider_type, executable, prompt, model)
-    process = subprocess.run(command, text=True, capture_output=True, check=False, timeout=180)
+        return invoke_ollama(str(provider.get("endpoint") or "http://127.0.0.1:11434"), model, prompt, timeout_seconds)
+    try:
+        command = build_provider_command(provider_type, executable, prompt, model)
+        process = subprocess.run(command, text=True, capture_output=True, check=False, timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        return (
+            f"The {provider_display_name(provider_type)} provider did not return within "
+            f"{timeout_seconds} seconds, so I stopped waiting. I did not create or apply any artifacts. "
+            "Try the request again in smaller batches, verify the provider CLI works in a terminal, "
+            "or increase the provider timeout in the DRAFT Table config."
+        )
+    except (OSError, ValueError) as exc:
+        return f"The {provider_display_name(provider_type)} provider could not be started: {exc}"
     if process.returncode != 0:
         return process.stderr.strip() or process.stdout.strip() or f"Provider command failed with exit code {process.returncode}."
     return process.stdout.strip()
 
 
-def invoke_ollama(endpoint: str, model: str, prompt: str) -> str:
+def provider_timeout_seconds(provider: dict[str, Any]) -> int:
+    raw = provider.get("timeout_seconds") or provider.get("timeoutSeconds") or provider.get("timeout")
+    if raw in (None, ""):
+        return DEFAULT_PROVIDER_TIMEOUT_SECONDS
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        return DEFAULT_PROVIDER_TIMEOUT_SECONDS
+    return max(5, min(value, 1800))
+
+
+def provider_display_name(provider_type: str) -> str:
+    return {
+        "codex": "Codex",
+        "claude-code": "Claude Code",
+        "gemini-cli": "Gemini CLI",
+        "local-llm": "local LLM",
+        "custom-command": "custom command",
+    }.get(provider_type, provider_type or "AI")
+
+
+def invoke_ollama(endpoint: str, model: str, prompt: str, timeout_seconds: int = DEFAULT_PROVIDER_TIMEOUT_SECONDS) -> str:
     if not model:
         return "Local LLM mode needs a selected model name."
     url = endpoint.rstrip("/") + "/api/generate"
     payload = json.dumps({"model": model, "prompt": prompt, "stream": False}).encode("utf-8")
     request = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"}, method="POST")
     try:
-        with urllib.request.urlopen(request, timeout=180) as response:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
             data = json.loads(response.read().decode("utf-8"))
     except (urllib.error.URLError, TimeoutError) as exc:
         return f"Local LLM endpoint is not reachable: {exc}"
+    except json.JSONDecodeError as exc:
+        return f"Local LLM endpoint returned invalid JSON: {exc}"
     return str(data.get("response", ""))
 
 
