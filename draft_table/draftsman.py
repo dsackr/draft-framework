@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from .catalog import build_reference_index, load_effective_catalog, object_summary, search_objects
 from .config import load_config
 from .paths import REPO_ROOT
@@ -92,6 +94,7 @@ class DraftsmanEngine:
             applied.append(
                 {
                     "id": str(proposal.get("id", "")),
+                    "artifactId": str(proposal.get("artifactId", "")),
                     "name": str(proposal.get("name", "")),
                     "artifactType": str(proposal.get("artifactType", "")),
                     "path": str(relative_path),
@@ -368,6 +371,7 @@ def normalize_proposals(proposals: Any) -> list[dict[str, Any]]:
         if not isinstance(proposal, dict):
             continue
         proposal_id = str(proposal.get("id") or f"proposal-{index}")
+        identity = proposal_identity(str(proposal.get("content") or ""))
         normalized.append(
             {
                 "id": proposal_id,
@@ -376,6 +380,7 @@ def normalize_proposals(proposals: Any) -> list[dict[str, Any]]:
                 "name": str(proposal.get("name") or proposal_id),
                 "summary": str(proposal.get("summary") or ""),
                 "path": str(proposal.get("path") or ""),
+                "artifactId": identity.get("id", ""),
                 "content": str(proposal.get("content") or ""),
                 "applied": bool(proposal.get("applied", False)),
             }
@@ -383,13 +388,29 @@ def normalize_proposals(proposals: Any) -> list[dict[str, Any]]:
     return normalized
 
 
+def proposal_identity(content: str) -> dict[str, str]:
+    try:
+        data = yaml.safe_load(content) or {}
+    except yaml.YAMLError:
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return {
+        "id": str(data.get("id") or ""),
+        "type": str(data.get("type") or ""),
+        "name": str(data.get("name") or ""),
+    }
+
+
 def public_proposal(proposal: dict[str, Any]) -> dict[str, Any]:
     return {
         "id": proposal.get("id", ""),
+        "artifactId": proposal.get("artifactId", ""),
         "action": proposal.get("action", ""),
         "artifactType": proposal.get("artifactType", ""),
         "name": proposal.get("name", ""),
         "summary": proposal.get("summary", ""),
+        "path": proposal.get("path", ""),
         "applied": proposal.get("applied", False),
     }
 

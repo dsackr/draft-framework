@@ -13,7 +13,17 @@ class WebTests(unittest.TestCase):
 
     def test_ui_includes_draft_logo(self) -> None:
         self.assertIn('src="/assets/draftlogo.png"', INDEX_HTML)
-        self.assertIn('class="brand-logo"', INDEX_HTML)
+        self.assertIn("brand-logo", INDEX_HTML)
+
+    def test_chat_enter_sends_message(self) -> None:
+        self.assertIn("event.key === 'Enter' && !event.shiftKey", INDEX_HTML)
+        self.assertIn("event.preventDefault()", INDEX_HTML)
+        self.assertIn("sendMessage()", INDEX_HTML)
+
+    def test_ui_includes_configuration_commands(self) -> None:
+        self.assertIn("draft-table onboard", INDEX_HTML)
+        self.assertIn("draft-table ai doctor", INDEX_HTML)
+        self.assertIn("draft-table framework refresh", INDEX_HTML)
 
 
 if __name__ == "__main__":

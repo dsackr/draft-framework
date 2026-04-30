@@ -60,7 +60,7 @@ class DraftsmanTests(unittest.TestCase):
         )
 
         self.assertNotIn("content", public)
-        self.assertNotIn("path", public)
+        self.assertEqual(public["path"], "catalog/host-standards/host-standard.yaml")
         self.assertEqual(public["name"], "Standard Host")
 
     def test_parse_provider_response_extracts_json(self) -> None:

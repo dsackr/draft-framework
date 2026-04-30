@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional
 
+from .catalog import build_reference_index, extract_refs, load_effective_catalog
 from .config import load_config, save_config
 from .draftsman import DraftsmanEngine
 from .github import github_status
@@ -37,46 +38,21 @@ def create_app(config_path: Path | None = None) -> Any:
 
     @app.get("/api/status")
     def status() -> dict[str, Any]:
+        return status_payload(config_path)
+
+    @app.get("/api/catalog")
+    def catalog() -> dict[str, Any]:
         config = load_config(config_path)
         repo_value = str(config.get("content_repo_path") or "").strip()
         repo_path = Path(repo_value).expanduser() if repo_value else None
         framework_repo = Path(config.get("framework_repo_path") or REPO_ROOT).expanduser()
-        provider = config.get("provider") or {}
-        provider_status = detect_provider(
-            str(provider.get("type") or ""),
-            str(provider.get("executable") or provider.get("endpoint") or "") or None,
-        )
-        git = {"returncode": None, "stdout": "", "stderr": "No company DRAFT repo selected."}
-        validation = {"returncode": None, "stdout": "", "stderr": "No company DRAFT repo selected."}
-        framework = {"vendored": False, "vendoredPath": "", "syncedCommit": "", "installedCommit": ""}
-        if repo_path and repo_path.exists():
-            git_process = git_status(repo_path)
-            git = {
-                "returncode": git_process.returncode,
-                "stdout": git_process.stdout,
-                "stderr": git_process.stderr,
-            }
-            framework = framework_status(repo_path, framework_repo)
-            validation_result = validate_workspace(repo_path, framework_repo)
-            validation = {
-                "returncode": validation_result.returncode,
-                "stdout": validation_result.stdout,
-                "stderr": validation_result.stderr,
-            }
-        return {
-            "contentRepoPath": str(repo_path) if repo_path else "",
-            "isWorkspace": is_workspace(repo_path) if repo_path and repo_path.exists() else False,
-            "provider": {
-                "type": provider_status.provider_type,
-                "available": provider_status.available,
-                "executable": provider_status.executable,
-                "detail": provider_status.detail,
-            },
-            "github": github_status().__dict__,
-            "git": git,
-            "framework": framework,
-            "validation": validation,
-        }
+        objects = load_effective_catalog(repo_path, framework_repo)
+        referenced_by = build_reference_index(objects)
+        summaries = [
+            catalog_object_payload(object_id, obj, referenced_by.get(object_id, []))
+            for object_id, obj in sorted(objects.items(), key=lambda item: str(item[1].get("name") or item[0]).lower())
+        ]
+        return {"objects": summaries, "counts": catalog_counts(summaries)}
 
     @app.post("/api/repo/select")
     def select_repo(selection: dict[str, Any] = Body(...)) -> dict[str, Any]:
@@ -134,6 +110,51 @@ def create_app(config_path: Path | None = None) -> Any:
     return app
 
 
+def status_payload(config_path: Path | None = None) -> dict[str, Any]:
+    config = load_config(config_path)
+    repo_value = str(config.get("content_repo_path") or "").strip()
+    repo_path = Path(repo_value).expanduser() if repo_value else None
+    framework_repo = Path(config.get("framework_repo_path") or REPO_ROOT).expanduser()
+    provider = config.get("provider") or {}
+    provider_status = detect_provider(
+        str(provider.get("type") or ""),
+        str(provider.get("executable") or provider.get("endpoint") or "") or None,
+    )
+    git = {"returncode": None, "stdout": "", "stderr": "No company DRAFT repo selected."}
+    validation = {"returncode": None, "stdout": "", "stderr": "No company DRAFT repo selected."}
+    framework = {"vendored": False, "vendoredPath": "", "syncedCommit": "", "installedCommit": ""}
+    if repo_path and repo_path.exists():
+        git_process = git_status(repo_path)
+        git = {
+            "returncode": git_process.returncode,
+            "stdout": git_process.stdout,
+            "stderr": git_process.stderr,
+        }
+        framework = framework_status(repo_path, framework_repo)
+        validation_result = validate_workspace(repo_path, framework_repo)
+        validation = {
+            "returncode": validation_result.returncode,
+            "stdout": validation_result.stdout,
+            "stderr": validation_result.stderr,
+        }
+    return {
+        "contentRepoPath": str(repo_path) if repo_path else "",
+        "isWorkspace": is_workspace(repo_path) if repo_path and repo_path.exists() else False,
+        "provider": {
+            "type": provider_status.provider_type,
+            "available": provider_status.available,
+            "executable": provider_status.executable,
+            "detail": provider_status.detail,
+            "model": str(provider.get("model") or ""),
+            "endpoint": str(provider.get("endpoint") or ""),
+        },
+        "github": github_status().__dict__,
+        "git": git,
+        "framework": framework,
+        "validation": validation,
+    }
+
+
 def safe_upload_name(name: str) -> str:
     safe = "".join(ch if ch.isalnum() or ch in "._-" else "-" for ch in name)
     return safe.strip(".-") or "upload"
@@ -149,6 +170,103 @@ def extract_upload_text(name: str, content_type: str, content: bytes) -> str:
     return ""
 
 
+def catalog_object_payload(object_id: str, obj: dict[str, Any], referenced_by: list[dict[str, str]]) -> dict[str, Any]:
+    return {
+        "id": object_id,
+        "name": str(obj.get("name") or object_id),
+        "type": str(obj.get("type") or ""),
+        "typeLabel": type_label(str(obj.get("type") or "")),
+        "status": str(obj.get("catalogStatus") or ""),
+        "lifecycleStatus": str(obj.get("lifecycleStatus") or ""),
+        "source": str(obj.get("_source") or ""),
+        "description": str(obj.get("description") or "").strip(),
+        "tags": string_list(obj.get("tags")),
+        "owner": obj.get("owner") if isinstance(obj.get("owner"), dict) else {},
+        "capabilities": string_list(obj.get("capabilities")),
+        "definitionChecklists": string_list(obj.get("satisfiesDefinitionChecklist")),
+        "controlEnforcementProfiles": string_list(obj.get("controlEnforcementProfiles")),
+        "outboundRefs": [{"ref": ref, "path": path} for ref, path in extract_refs(obj)],
+        "referencedBy": referenced_by,
+        "summaryFields": summary_fields(obj),
+    }
+
+
+def catalog_counts(objects: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for obj in objects:
+        label = str(obj.get("typeLabel") or "Artifact")
+        counts[label] = counts.get(label, 0) + 1
+    return dict(sorted(counts.items(), key=lambda item: item[0]))
+
+
+def string_list(value: Any) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [str(item) for item in value if str(item).strip()]
+
+
+def summary_fields(obj: dict[str, Any]) -> list[dict[str, str]]:
+    skip = {
+        "_source",
+        "schemaVersion",
+        "id",
+        "type",
+        "name",
+        "description",
+        "tags",
+        "owner",
+        "catalogStatus",
+        "lifecycleStatus",
+        "satisfiesDefinitionChecklist",
+        "controlEnforcementProfiles",
+        "controlImplementations",
+        "requirements",
+        "controls",
+        "controlSemantics",
+    }
+    fields: list[dict[str, str]] = []
+    for key, value in obj.items():
+        if key in skip or value in (None, "", [], {}):
+            continue
+        if isinstance(value, (str, int, float, bool)):
+            rendered = str(value)
+        elif isinstance(value, list):
+            rendered = ", ".join(str(item) for item in value if isinstance(item, (str, int, float, bool)))
+            if not rendered:
+                rendered = f"{len(value)} entries"
+        elif isinstance(value, dict):
+            rendered = f"{len(value)} entries"
+        else:
+            rendered = str(value)
+        if rendered:
+            fields.append({"key": key, "value": rendered[:300]})
+        if len(fields) >= 10:
+            break
+    return fields
+
+
+def type_label(object_type: str) -> str:
+    labels = {
+        "technology_component": "Technology Component",
+        "appliance_component": "Appliance Component",
+        "host_standard": "Host Standard",
+        "service_standard": "Service Standard",
+        "database_standard": "Database Standard",
+        "product_service": "Product Service",
+        "paas_service_standard": "PaaS Service Standard",
+        "saas_service_standard": "SaaS Service Standard",
+        "reference_architecture": "Reference Architecture",
+        "software_deployment_pattern": "Software Deployment Pattern",
+        "definition_checklist": "Definition Checklist",
+        "decision_record": "Decision Record",
+        "compliance_controls": "Compliance Controls",
+        "control_enforcement_profile": "Control Enforcement Profile",
+        "drafting_session": "Drafting Session",
+        "domain": "Domain",
+    }
+    return labels.get(object_type, object_type.replace("_", " ").title() if object_type else "Artifact")
+
+
 INDEX_HTML = """<!doctype html>
 <html lang="en">
 <head>
@@ -157,227 +275,484 @@ INDEX_HTML = """<!doctype html>
   <title>DRAFT Table</title>
   <style>
     :root {
-      color-scheme: light dark;
-      --bg: #f8fafc;
-      --panel: #ffffff;
-      --text: #111827;
-      --muted: #64748b;
-      --border: #d8dee9;
-      --accent: #2563eb;
-      --ok: #047857;
-      --bad: #b91c1c;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0f172a;
-        --panel: #111827;
-        --text: #e5e7eb;
-        --muted: #94a3b8;
-        --border: #334155;
-        --accent: #60a5fa;
-      }
+      color-scheme: dark;
+      --page: #0f172a;
+      --panel: #111827;
+      --card: #1e293b;
+      --border: #334155;
+      --muted: #94a3b8;
+      --text: #e2e8f0;
+      --subtle: #cbd5e1;
+      --accent: #38bdf8;
+      --ok: #10b981;
+      --warn: #f59e0b;
+      --bad: #ef4444;
     }
     * { box-sizing: border-box; }
-    body {
+    html, body {
       margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
+      min-height: 100%;
+      background: var(--page);
       color: var(--text);
+      font-family: "SF Pro Display", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
     }
-    .shell {
+    button, input, textarea { font: inherit; }
+    .page-shell {
+      min-height: 100vh;
       display: grid;
-      grid-template-columns: 280px 1fr;
+      grid-template-columns: 380px minmax(0, 1fr);
+      gap: 1px;
+      background: var(--border);
+    }
+    .sidebar,
+    .main {
+      background: linear-gradient(180deg, rgba(15,23,42,0.98), rgba(17,24,39,0.98));
+    }
+    .sidebar {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      gap: 18px;
+      padding: 24px 20px;
+      border-right: 1px solid rgba(51,65,85,0.7);
       min-height: 100vh;
     }
-    aside {
-      border-right: 1px solid var(--border);
-      padding: 24px;
+    .browser-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-    .brand {
-      display: grid;
-      gap: 14px;
-      align-items: start;
+    .browser-logo {
+      width: 54px;
+      height: 54px;
+      object-fit: contain;
+      flex: 0 0 auto;
     }
-    .brand-logo {
-      width: min(180px, 100%);
-      height: auto;
-      display: block;
+    .sidebar h1 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0.02em;
     }
-    main { padding: 24px; }
-    h1, h2 { margin: 0 0 12px; }
-    p { color: var(--muted); line-height: 1.5; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 16px;
-    }
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px;
-    }
-    label {
-      display: block;
-      color: var(--muted);
+    .catalog-name {
+      color: var(--subtle);
       font-size: 13px;
-      margin-bottom: 6px;
+      margin-top: 4px;
+      overflow-wrap: anywhere;
     }
-    input {
-      width: 100%;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 10px;
-      background: transparent;
-      color: var(--text);
-      font: inherit;
-    }
-    button {
+    .mode-badge {
+      display: inline-flex;
+      width: fit-content;
       margin-top: 10px;
-      border: 0;
-      border-radius: 6px;
-      padding: 10px 12px;
-      background: var(--accent);
-      color: white;
-      font: inherit;
+      padding: 5px 9px;
+      border: 1px solid rgba(56,189,248,0.38);
+      border-radius: 999px;
+      color: #bae6fd;
+      background: rgba(56,189,248,0.12);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .side-tabs,
+    .top-nav,
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .nav-button,
+    .side-tab,
+    .action-button {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(15,23,42,0.72);
+      color: var(--text);
+      padding: 10px 16px;
       cursor: pointer;
+      transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
     }
-    pre {
+    .side-tab {
+      flex: 1 1 auto;
+      border-radius: 14px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .nav-button:hover,
+    .side-tab:hover,
+    .action-button:hover {
+      border-color: rgba(56,189,248,0.55);
+      transform: translateY(-1px);
+    }
+    .nav-button.active,
+    .side-tab.active,
+    .action-button.primary {
+      background: rgba(56,189,248,0.18);
+      border-color: rgba(56,189,248,0.6);
+      color: #dff7ff;
+    }
+    .nav-button:disabled,
+    .action-button:disabled {
+      cursor: default;
+      opacity: 0.45;
+      transform: none;
+    }
+    .sidebar-panel {
+      min-height: 0;
       overflow: auto;
-      white-space: pre-wrap;
-      background: rgba(100, 116, 139, 0.12);
-      padding: 12px;
-      border-radius: 6px;
-      min-height: 56px;
+      display: grid;
+      align-content: start;
+      gap: 14px;
+      padding-right: 4px;
     }
-    .status { font-weight: 700; }
-    .ok { color: var(--ok); }
-    .bad { color: var(--bad); }
-    .chat {
+    .sidebar-block,
+    .section-card,
+    .object-card,
+    .empty-card,
+    .header-card,
+    .message,
+    .proposal-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+    }
+    .sidebar-block {
+      padding: 14px;
       display: grid;
       gap: 12px;
+    }
+    .sidebar-block h2,
+    .sidebar-block h3,
+    .section-card h3 {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+    }
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
     }
     .messages {
       display: grid;
       gap: 10px;
-      min-height: 260px;
-      max-height: 48vh;
+      min-height: 280px;
+      max-height: 42vh;
       overflow: auto;
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      background: rgba(100, 116, 139, 0.08);
+      padding: 10px;
+      border: 1px solid rgba(51,65,85,0.75);
+      border-radius: 14px;
+      background: rgba(15,23,42,0.55);
     }
     .message {
       padding: 12px;
-      border-radius: 8px;
       line-height: 1.5;
       white-space: pre-wrap;
+      font-size: 13px;
     }
-    .user { background: rgba(37, 99, 235, 0.14); }
-    .draftsman { background: var(--panel); border: 1px solid var(--border); }
-    textarea {
+    .message.user {
+      border-color: rgba(56,189,248,0.38);
+      background: rgba(56,189,248,0.12);
+    }
+    .message.draftsman {
+      background: rgba(30,41,59,0.92);
+    }
+    textarea,
+    input[type="text"],
+    input[type="search"],
+    input[type="file"] {
       width: 100%;
-      min-height: 92px;
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 10px;
-      background: transparent;
+      border-radius: 14px;
+      padding: 11px 12px;
+      background: rgba(15,23,42,0.72);
       color: var(--text);
-      font: inherit;
+    }
+    textarea {
+      min-height: 96px;
       resize: vertical;
+      line-height: 1.4;
     }
-    .proposal {
-      border: 1px solid var(--border);
-      border-radius: 8px;
+    label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .main {
+      padding: 28px;
+      overflow: auto;
+    }
+    .view-shell {
+      display: grid;
+      gap: 22px;
+    }
+    .view-title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .content-rows {
+      display: grid;
+      gap: 24px;
+    }
+    .content-row {
+      display: grid;
+      gap: 14px;
+    }
+    .content-row-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(51,65,85,0.72);
+    }
+    .content-row-title {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: 0.02em;
+    }
+    .content-row-count {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 18px;
+    }
+    .object-card {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+      cursor: pointer;
+      min-height: 168px;
+      transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+    }
+    .object-card:hover {
+      border-color: rgba(56,189,248,0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(2,6,23,0.22);
+    }
+    .object-card h3 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.35;
+    }
+    .object-id,
+    .field-value {
+      color: var(--muted);
+      font-size: 12px;
+      word-break: break-word;
+    }
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid rgba(148,163,184,0.18);
+      background: rgba(15,23,42,0.65);
+      color: var(--subtle);
+      width: fit-content;
+    }
+    .catalog-approved,
+    .ok-badge {
+      border-color: rgba(16,185,129,0.45);
+      color: #d1fae5;
+    }
+    .catalog-draft,
+    .warn-badge {
+      border-color: rgba(245,158,11,0.45);
+      color: #fde68a;
+    }
+    .catalog-stub,
+    .info-badge {
+      border-color: rgba(148,163,184,0.35);
+      color: #cbd5e1;
+    }
+    .header-card {
+      padding: 22px;
+      display: grid;
+      gap: 14px;
+    }
+    .header-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-title h2 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.15;
+    }
+    .header-title .object-id {
+      margin-top: 6px;
+      font-size: 13px;
+    }
+    .header-description {
+      color: var(--subtle);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+    .section-card {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .definition-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+    }
+    .definition-list dt {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .definition-list dd {
+      margin: 2px 0 0;
+      color: var(--subtle);
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .proposal-card {
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      cursor: pointer;
+    }
+    .proposal-card.active {
+      border-color: rgba(56,189,248,0.6);
+      background: rgba(56,189,248,0.1);
+    }
+    .command-list {
+      display: grid;
+      gap: 10px;
+    }
+    .command {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow: auto;
       padding: 12px;
-      margin-top: 8px;
-      background: rgba(100, 116, 139, 0.08);
+      border: 1px solid rgba(51,65,85,0.85);
+      border-radius: 14px;
+      background: rgba(15,23,42,0.72);
+      color: #bfdbfe;
+      font-size: 12px;
+      line-height: 1.5;
     }
-    .proposal strong { display: block; margin-bottom: 4px; }
-    @media (max-width: 800px) {
-      .shell { grid-template-columns: 1fr; }
-      aside { border-right: 0; border-bottom: 1px solid var(--border); }
-      .brand {
-        grid-template-columns: auto 1fr;
-        align-items: center;
-      }
-      .brand-logo { width: 96px; }
+    .empty-card {
+      padding: 22px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    @media (max-width: 980px) {
+      .page-shell { grid-template-columns: 1fr; }
+      .sidebar { min-height: auto; border-right: 0; border-bottom: 1px solid rgba(51,65,85,0.7); }
+      .messages { max-height: 320px; }
+      .main { padding: 20px; }
     }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <aside>
-      <div class="brand">
-        <img class="brand-logo" src="/assets/draftlogo.png" alt="DRAFT">
+  <div class="page-shell">
+    <aside class="sidebar">
+      <div class="browser-brand">
+        <img class="browser-logo brand-logo" src="/assets/draftlogo.png" alt="DRAFT">
         <div>
           <h1>DRAFT Table</h1>
-          <p>Local drafting table for a DRAFT architecture catalog. The Draftsman conversation is the primary workspace.</p>
+          <div class="catalog-name" id="catalog-name">Loading workspace...</div>
+          <div class="mode-badge">Local Draftsman</div>
         </div>
       </div>
-    </aside>
-    <main>
-      <section class="panel">
-        <h2>Company DRAFT Repo</h2>
-        <label for="repo-path">Local repo path</label>
-        <input id="repo-path" placeholder="/path/to/company-draft-catalog">
-        <button id="select-repo">Select Repo</button>
-        <p id="repo-message"></p>
-      </section>
-      <section class="panel chat" style="margin-top:16px">
-        <h2>Draftsman Conversation</h2>
-        <p>Talk through the architecture, attach source material, and let the Draftsman interview for missing facts. DRAFT Table does not show raw YAML.</p>
-        <div class="messages" id="messages"></div>
-        <label for="upload">Source material</label>
-        <input id="upload" type="file">
-        <button id="upload-button">Attach Source</button>
-        <p id="upload-message"></p>
-        <label for="draftsman-message">Message</label>
-        <textarea id="draftsman-message" placeholder="Example: What is a Technology Component? Or: Review the uploaded diagram and draft the architecture artifacts we need."></textarea>
-        <button id="send-message">Send</button>
-        <div id="proposal-actions"></div>
-      </section>
-      <div class="grid" style="margin-top:16px">
-        <section class="panel">
-          <h2>Provider</h2>
-          <pre id="provider">Loading...</pre>
-        </section>
-        <section class="panel">
-          <h2>Framework Copy</h2>
-          <pre id="framework">Loading...</pre>
-        </section>
-        <section class="panel">
-          <h2>Git Status</h2>
-          <pre id="git">Loading...</pre>
-        </section>
-        <section class="panel">
-          <h2>Validation</h2>
-          <pre id="validation">Loading...</pre>
-        </section>
+      <div class="side-tabs">
+        <button class="side-tab active" data-side-tab="draftsman">Draftsman</button>
+        <button class="side-tab" data-side-tab="catalog">Catalog</button>
+        <button class="side-tab" data-side-tab="configuration">Configuration</button>
       </div>
+      <div class="sidebar-panel" id="sidebar-panel"></div>
+    </aside>
+    <main class="main">
+      <div id="main-root" class="view-shell"></div>
     </main>
   </div>
   <script>
     let sessionId = null;
+    let statusData = null;
+    let catalogData = {objects: [], counts: {}};
+    let activeSideTab = 'draftsman';
+    let searchTerm = '';
+    let focused = null;
     let latestProposals = [];
+    let messages = [];
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[char]));
+    }
+
+    function statusBadge(value) {
+      const normalized = String(value || '').toLowerCase();
+      const cls = normalized === 'approved' ? 'catalog-approved' : normalized === 'draft' ? 'catalog-draft' : normalized === 'stub' ? 'catalog-stub' : 'info-badge';
+      return value ? `<span class="badge ${cls}">${escapeHtml(value)}</span>` : '';
+    }
+
+    function setSideTab(tab) {
+      activeSideTab = tab;
+      renderSidebar();
+      renderMain();
+    }
+
+    function syncSideTabs() {
+      document.querySelectorAll('[data-side-tab]').forEach(button => {
+        button.classList.toggle('active', button.dataset.sideTab === activeSideTab);
+      });
+    }
 
     function addMessage(role, text) {
-      const messages = document.getElementById('messages');
-      const node = document.createElement('div');
-      node.className = `message ${role}`;
-      node.textContent = text;
-      messages.appendChild(node);
-      messages.scrollTop = messages.scrollHeight;
+      messages.push({role, text});
+      renderSidebar();
+      scrollMessages();
     }
 
     function replaceLastDraftsmanMessage(text) {
-      const messages = document.getElementById('messages');
-      if (messages.lastChild) {
-        messages.lastChild.textContent = text;
+      if (messages.length) {
+        messages[messages.length - 1].text = text;
       } else {
-        addMessage('draftsman', text);
+        messages.push({role: 'draftsman', text});
       }
+      renderSidebar();
+      scrollMessages();
+    }
+
+    function scrollMessages() {
+      requestAnimationFrame(() => {
+        const node = document.getElementById('messages');
+        if (node) node.scrollTop = node.scrollHeight;
+      });
     }
 
     async function readJson(response) {
@@ -390,56 +765,421 @@ INDEX_HTML = """<!doctype html>
       }
     }
 
-    function renderProposals(proposals) {
-      latestProposals = proposals || [];
-      const target = document.getElementById('proposal-actions');
-      if (!latestProposals.length) {
-        target.innerHTML = '';
-        return;
-      }
-      target.innerHTML = `
-        <h3>Proposed Artifacts</h3>
-        ${latestProposals.map(proposal => `
-          <div class="proposal">
-            <strong>${proposal.action} ${proposal.artifactType}: ${proposal.name}</strong>
-            <div>${proposal.summary || 'No summary provided.'}</div>
-          </div>
-        `).join('')}
-        <button id="apply-proposals">Apply Proposed Artifacts</button>
-      `;
-      document.getElementById('apply-proposals').addEventListener('click', applyProposals);
-    }
-
-    async function refresh() {
+    async function refreshStatus() {
       const response = await fetch('/api/status');
-      const data = await response.json();
-      document.getElementById('repo-path').value = data.contentRepoPath || '';
-      document.getElementById('provider').textContent =
-        `${data.provider.type || 'not selected'}\\n${data.provider.available ? 'available' : 'missing'}\\n${data.provider.detail || ''}`;
-      document.getElementById('framework').textContent =
-        `${data.framework?.vendored ? 'vendored' : 'missing'}\\n${data.framework?.vendoredPath || ''}\\nsynced: ${data.framework?.syncedCommit || 'unknown'}\\ninstalled: ${data.framework?.installedCommit || 'unknown'}`;
-      document.getElementById('git').textContent =
-        data.git.stdout || data.git.stderr || 'No Git output.';
-      document.getElementById('validation').textContent =
-        data.validation.stdout || data.validation.stderr || 'No validation output.';
+      statusData = await response.json();
+      const repo = statusData.contentRepoPath || 'No company DRAFT repo selected';
+      document.getElementById('catalog-name').textContent = repo;
     }
-    document.getElementById('select-repo').addEventListener('click', async () => {
-      const path = document.getElementById('repo-path').value.trim();
-      const message = document.getElementById('repo-message');
-      message.textContent = 'Selecting repo...';
-      const response = await fetch('/api/repo/select', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({path})
-      });
-      const data = await response.json();
-      message.textContent = response.ok ? `Selected ${data.path}` : data.detail;
-      await refresh();
-    });
 
-    document.getElementById('send-message').addEventListener('click', async () => {
+    async function refreshCatalog() {
+      const response = await fetch('/api/catalog');
+      catalogData = await response.json();
+    }
+
+    async function refreshAll() {
+      await refreshStatus();
+      await refreshCatalog();
+      renderSidebar();
+      renderMain();
+    }
+
+    function renderSidebar() {
+      syncSideTabs();
+      const panel = document.getElementById('sidebar-panel');
+      if (activeSideTab === 'catalog') {
+        panel.innerHTML = catalogSidebarMarkup();
+        bindCatalogSidebar();
+      } else if (activeSideTab === 'configuration') {
+        panel.innerHTML = configurationSidebarMarkup();
+      } else {
+        panel.innerHTML = draftsmanSidebarMarkup();
+        bindDraftsmanSidebar();
+      }
+    }
+
+    function draftsmanSidebarMarkup() {
+      const messageMarkup = messages.length
+        ? messages.map(message => `<div class="message ${escapeHtml(message.role)}">${escapeHtml(message.text)}</div>`).join('')
+        : '<div class="empty-card">Start the drafting conversation.</div>';
+      const proposalMarkup = latestProposals.length ? `
+        <div class="sidebar-block">
+          <h3>Proposed Artifacts</h3>
+          ${latestProposals.map(proposal => `
+            <div class="proposal-card ${focused?.kind === 'proposal' && focused.data.id === proposal.id ? 'active' : ''}" data-proposal-id="${escapeHtml(proposal.id)}">
+              <div class="badges">
+                <span class="badge warn-badge">${escapeHtml(proposal.action || 'propose')}</span>
+                <span class="badge">${escapeHtml(proposal.artifactType || 'Artifact')}</span>
+              </div>
+              <strong>${escapeHtml(proposal.name || proposal.id)}</strong>
+              <div class="muted">${escapeHtml(proposal.summary || 'No summary provided.')}</div>
+            </div>
+          `).join('')}
+          <button class="action-button primary" id="apply-proposals">Apply Proposed Artifacts</button>
+        </div>
+      ` : '';
+      return `
+        <div class="sidebar-block">
+          <h2>Draftsman Conversation</h2>
+          <div class="messages" id="messages">${messageMarkup}</div>
+          <label for="upload">Source Material</label>
+          <input id="upload" type="file">
+          <button class="action-button" id="upload-button">Attach Source</button>
+          <div class="muted" id="upload-message"></div>
+          <label for="draftsman-message">Message</label>
+          <textarea id="draftsman-message"></textarea>
+          <button class="action-button primary" id="send-message">Send</button>
+        </div>
+        ${proposalMarkup}
+      `;
+    }
+
+    function bindDraftsmanSidebar() {
+      document.querySelectorAll('[data-proposal-id]').forEach(card => {
+        card.addEventListener('click', () => {
+          const proposal = latestProposals.find(item => item.id === card.dataset.proposalId);
+          if (proposal) {
+            focused = {kind: 'proposal', data: proposal};
+            renderSidebar();
+            renderMain();
+          }
+        });
+      });
       const input = document.getElementById('draftsman-message');
-      const message = input.value.trim();
+      if (input) {
+        input.addEventListener('keydown', event => {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+          }
+        });
+      }
+      document.getElementById('send-message')?.addEventListener('click', sendMessage);
+      document.getElementById('upload-button')?.addEventListener('click', uploadSource);
+      document.getElementById('apply-proposals')?.addEventListener('click', applyProposals);
+    }
+
+    function catalogSidebarMarkup() {
+      const counts = Object.entries(catalogData.counts || {});
+      return `
+        <div class="sidebar-block">
+          <h2>Catalog</h2>
+          <input type="search" id="catalog-search" value="${escapeHtml(searchTerm)}">
+          <div class="pill-row">
+            ${counts.map(([label, count]) => `<span class="badge">${escapeHtml(label)}: ${count}</span>`).join('') || '<span class="badge">No objects loaded</span>'}
+          </div>
+        </div>
+      `;
+    }
+
+    function bindCatalogSidebar() {
+      const input = document.getElementById('catalog-search');
+      input?.addEventListener('input', event => {
+        searchTerm = event.target.value;
+        renderMain();
+      });
+    }
+
+    function configurationSidebarMarkup() {
+      const provider = statusData?.provider || {};
+      const framework = statusData?.framework || {};
+      const repo = statusData?.contentRepoPath || 'Not selected';
+      const providerCommand = providerCommandFor(provider.type);
+      return `
+        <div class="sidebar-block">
+          <h2>Configuration</h2>
+          <dl class="definition-list">
+            <div><dt>Company Repo</dt><dd>${escapeHtml(repo)}</dd></div>
+            <div><dt>AI Provider</dt><dd>${escapeHtml(provider.type || 'Not selected')}</dd></div>
+            <div><dt>Provider Status</dt><dd>${escapeHtml(provider.detail || 'Unknown')}</dd></div>
+            <div><dt>Framework Copy</dt><dd>${escapeHtml(framework.vendoredPath || 'Not available')}</dd></div>
+            <div><dt>Synced Commit</dt><dd>${escapeHtml(framework.syncedCommit || 'Unknown')}</dd></div>
+          </dl>
+        </div>
+        <div class="sidebar-block">
+          <h3>Commands</h3>
+          <div class="command-list">
+            <pre class="command">draft-table onboard</pre>
+            <pre class="command">draft-table ai doctor</pre>
+            <pre class="command">draft-table framework status</pre>
+            <pre class="command">draft-table framework refresh</pre>
+            <pre class="command">draft-table validate</pre>
+            ${providerCommand ? `<pre class="command">${escapeHtml(providerCommand)}</pre>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function providerCommandFor(providerType) {
+      if (providerType === 'codex') return 'codex --login';
+      if (providerType === 'claude-code') return 'claude';
+      if (providerType === 'gemini-cli') return 'gemini';
+      return '';
+    }
+
+    function renderMain() {
+      const root = document.getElementById('main-root');
+      const canFocus = Boolean(focused);
+      const focusActive = canFocus && activeSideTab !== 'configuration';
+      root.innerHTML = `
+        <div class="top-nav">
+          <button class="nav-button ${!focusActive && activeSideTab !== 'configuration' ? 'active' : ''}" id="nav-catalog">Catalog Browser</button>
+          <button class="nav-button ${focusActive ? 'active' : ''}" id="nav-focus" ${canFocus ? '' : 'disabled'}>Focused Artifact</button>
+          <button class="nav-button ${activeSideTab === 'configuration' ? 'active' : ''}" id="nav-config">Configuration</button>
+          <button class="nav-button" id="nav-refresh">Refresh</button>
+        </div>
+        ${activeSideTab === 'configuration' ? renderConfigurationDetail() : focused ? renderFocus() : renderCatalog()}
+      `;
+      document.getElementById('nav-catalog')?.addEventListener('click', () => {
+        focused = null;
+        setSideTab('catalog');
+      });
+      document.getElementById('nav-focus')?.addEventListener('click', () => {
+        if (!focused) return;
+        if (activeSideTab === 'configuration') {
+          activeSideTab = 'catalog';
+          renderSidebar();
+        }
+        renderMain();
+      });
+      document.getElementById('nav-config')?.addEventListener('click', () => setSideTab('configuration'));
+      document.getElementById('nav-refresh')?.addEventListener('click', refreshAll);
+      bindObjectCards();
+      document.getElementById('focus-apply-proposals')?.addEventListener('click', applyProposals);
+      document.getElementById('focus-clear')?.addEventListener('click', () => {
+        focused = null;
+        renderMain();
+      });
+    }
+
+    function renderCatalog() {
+      const filtered = filteredObjects();
+      const grouped = groupByType(filtered);
+      return `
+        <div class="view-title">
+          <span>${filtered.length} objects</span>
+          <span>${escapeHtml(statusData?.contentRepoPath || 'Example framework catalog')}</span>
+        </div>
+        <div class="content-rows">
+          ${Object.entries(grouped).map(([label, objects]) => `
+            <section class="content-row">
+              <div class="content-row-header">
+                <h2 class="content-row-title">${escapeHtml(label)}</h2>
+                <span class="content-row-count">${objects.length} objects</span>
+              </div>
+              <div class="cards-grid">
+                ${objects.map(objectCardMarkup).join('')}
+              </div>
+            </section>
+          `).join('') || '<div class="empty-card">No matching catalog objects.</div>'}
+        </div>
+      `;
+    }
+
+    function filteredObjects() {
+      const query = searchTerm.trim().toLowerCase();
+      if (!query) return catalogData.objects || [];
+      return (catalogData.objects || []).filter(object => [
+        object.id,
+        object.name,
+        object.typeLabel,
+        object.description,
+        object.source
+      ].join(' ').toLowerCase().includes(query));
+    }
+
+    function groupByType(objects) {
+      return objects.reduce((groups, object) => {
+        const label = object.typeLabel || 'Artifact';
+        groups[label] = groups[label] || [];
+        groups[label].push(object);
+        return groups;
+      }, {});
+    }
+
+    function objectCardMarkup(object) {
+      return `
+        <article class="object-card" data-object-id="${escapeHtml(object.id)}">
+          <div class="badges">
+            <span class="badge">${escapeHtml(object.typeLabel)}</span>
+            ${statusBadge(object.status)}
+          </div>
+          <h3>${escapeHtml(object.name)}</h3>
+          <div class="object-id">${escapeHtml(object.id)}</div>
+          <div class="muted">${escapeHtml(object.description || object.source || 'No description available.')}</div>
+        </article>
+      `;
+    }
+
+    function bindObjectCards() {
+      document.querySelectorAll('[data-object-id]').forEach(card => {
+        card.addEventListener('click', () => {
+          const object = (catalogData.objects || []).find(item => item.id === card.dataset.objectId);
+          if (object) {
+            focused = {kind: 'object', data: object};
+            renderMain();
+          }
+        });
+      });
+    }
+
+    function renderFocus() {
+      if (!focused) return renderCatalog();
+      return focused.kind === 'proposal' ? renderProposalFocus(focused.data) : renderObjectFocus(focused.data);
+    }
+
+    function renderObjectFocus(object) {
+      return `
+        <section class="header-card">
+          <div class="header-top">
+            <div class="header-title">
+              <h2>${escapeHtml(object.name)}</h2>
+              <div class="object-id">${escapeHtml(object.id)}</div>
+            </div>
+            <div class="badges">
+              <span class="badge">${escapeHtml(object.typeLabel)}</span>
+              ${statusBadge(object.status)}
+              ${object.lifecycleStatus ? `<span class="badge">${escapeHtml(object.lifecycleStatus)}</span>` : ''}
+            </div>
+          </div>
+          <div class="header-description">${escapeHtml(object.description || 'No description available.')}</div>
+        </section>
+        <div class="detail-grid">
+          <section class="section-card">
+            <h3>Object Facts</h3>
+            ${definitionList([
+              ['Source', object.source],
+              ['Owner', object.owner?.team || object.owner?.contact || ''],
+              ['Capabilities', (object.capabilities || []).join(', ')],
+              ['Definition Checklists', (object.definitionChecklists || []).join(', ')],
+              ['Control Enforcement Profiles', (object.controlEnforcementProfiles || []).join(', ')]
+            ])}
+          </section>
+          <section class="section-card">
+            <h3>Relationships</h3>
+            ${relationshipList(object)}
+          </section>
+          <section class="section-card">
+            <h3>Additional Fields</h3>
+            ${definitionList((object.summaryFields || []).map(field => [field.key, field.value]))}
+          </section>
+        </div>
+      `;
+    }
+
+    function renderProposalFocus(proposal) {
+      return `
+        <section class="header-card">
+          <div class="header-top">
+            <div class="header-title">
+              <h2>${escapeHtml(proposal.name || proposal.id)}</h2>
+              <div class="object-id">${escapeHtml(proposal.artifactId || proposal.path || proposal.id)}</div>
+            </div>
+            <div class="badges">
+              <span class="badge warn-badge">Proposal</span>
+              <span class="badge">${escapeHtml(proposal.action || 'create')}</span>
+              <span class="badge">${escapeHtml(proposal.artifactType || 'Artifact')}</span>
+            </div>
+          </div>
+          <div class="header-description">${escapeHtml(proposal.summary || 'No summary provided.')}</div>
+          <div class="pill-row">
+            <button class="action-button primary" id="focus-apply-proposals">Apply Proposed Artifacts</button>
+            <button class="action-button" id="focus-clear">Back To Catalog</button>
+          </div>
+        </section>
+        <div class="detail-grid">
+          <section class="section-card">
+            <h3>Review</h3>
+            ${definitionList([
+              ['Artifact ID', proposal.artifactId],
+              ['Path', proposal.path],
+              ['Action', proposal.action],
+              ['Status', proposal.applied ? 'Applied' : 'Not applied']
+            ])}
+          </section>
+          <section class="section-card">
+            <h3>Validation</h3>
+            <div class="muted">${escapeHtml(statusData?.validation?.stdout || statusData?.validation?.stderr || 'Validation has not run yet.')}</div>
+          </section>
+        </div>
+      `;
+    }
+
+    function relationshipList(object) {
+      const refs = object.outboundRefs || [];
+      const incoming = object.referencedBy || [];
+      const rows = [
+        ...refs.map(item => ['Uses', `${item.ref} via ${item.path}`]),
+        ...incoming.map(item => ['Used By', `${item.source} via ${item.path}`])
+      ];
+      return definitionList(rows.length ? rows : [['Relationships', 'No relationships found in the loaded model.']]);
+    }
+
+    function definitionList(rows) {
+      const normalized = rows.filter(row => row[1]);
+      if (!normalized.length) return '<div class="muted">No values recorded.</div>';
+      return `<dl class="definition-list">${normalized.map(row => `<div><dt>${escapeHtml(row[0])}</dt><dd>${escapeHtml(row[1])}</dd></div>`).join('')}</dl>`;
+    }
+
+    function renderConfigurationDetail() {
+      const provider = statusData?.provider || {};
+      const framework = statusData?.framework || {};
+      const github = statusData?.github || {};
+      return `
+        <section class="header-card">
+          <div class="header-top">
+            <div class="header-title">
+              <h2>Configuration</h2>
+              <div class="object-id">${escapeHtml(statusData?.contentRepoPath || 'No company DRAFT repo selected')}</div>
+            </div>
+            <div class="badges">
+              <span class="badge ${provider.available ? 'ok-badge' : 'warn-badge'}">${provider.available ? 'Provider Available' : 'Provider Missing'}</span>
+              <span class="badge ${statusData?.isWorkspace ? 'ok-badge' : 'warn-badge'}">${statusData?.isWorkspace ? 'Workspace Ready' : 'Workspace Needs Setup'}</span>
+            </div>
+          </div>
+        </section>
+        <div class="detail-grid">
+          <section class="section-card">
+            <h3>Repo And Framework</h3>
+            ${definitionList([
+              ['Company Repo', statusData?.contentRepoPath],
+              ['Vendored Framework', framework.vendoredPath],
+              ['Synced Commit', framework.syncedCommit],
+              ['Installed Commit', framework.installedCommit]
+            ])}
+          </section>
+          <section class="section-card">
+            <h3>AI And GitHub</h3>
+            ${definitionList([
+              ['Provider', provider.type],
+              ['Executable', provider.executable],
+              ['Model', provider.model],
+              ['Endpoint', provider.endpoint],
+              ['GitHub', github.detail]
+            ])}
+          </section>
+          <section class="section-card">
+            <h3>Commands</h3>
+            <div class="command-list">
+              <pre class="command">draft-table onboard</pre>
+              <pre class="command">draft-table ai doctor</pre>
+              <pre class="command">draft-table framework status</pre>
+              <pre class="command">draft-table framework refresh</pre>
+              <pre class="command">draft-table validate</pre>
+              ${providerCommandFor(provider.type) ? `<pre class="command">${escapeHtml(providerCommandFor(provider.type))}</pre>` : ''}
+            </div>
+          </section>
+          <section class="section-card">
+            <h3>Validation</h3>
+            <div class="muted">${escapeHtml(statusData?.validation?.stdout || statusData?.validation?.stderr || 'Validation has not run yet.')}</div>
+          </section>
+        </div>
+      `;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('draftsman-message');
+      const message = input?.value.trim();
       if (!message) return;
       addMessage('user', message);
       input.value = '';
@@ -459,18 +1199,25 @@ INDEX_HTML = """<!doctype html>
         if (data.questions?.length) {
           addMessage('draftsman', `I need to confirm:\\n- ${data.questions.join('\\n- ')}`);
         }
-        renderProposals(data.proposals || []);
+        latestProposals = data.proposals || [];
+        if (latestProposals.length) {
+          focused = {kind: 'proposal', data: latestProposals[0]};
+        }
+        activeSideTab = 'draftsman';
+        renderSidebar();
+        renderMain();
       } catch (error) {
         replaceLastDraftsmanMessage(`The Draftsman request failed: ${error.message}`);
-        renderProposals([]);
+        latestProposals = [];
+        renderSidebar();
       }
-    });
+    }
 
-    document.getElementById('upload-button').addEventListener('click', async () => {
+    async function uploadSource() {
       const input = document.getElementById('upload');
       const message = document.getElementById('upload-message');
-      if (!input.files.length) {
-        message.textContent = 'Choose a file first.';
+      if (!input?.files.length) {
+        if (message) message.textContent = 'Choose a file first.';
         return;
       }
       const form = new FormData();
@@ -479,8 +1226,8 @@ INDEX_HTML = """<!doctype html>
       const response = await fetch(url, {method: 'POST', body: form});
       const data = await response.json();
       sessionId = data.sessionId || sessionId;
-      message.textContent = response.ok ? `Attached ${data.name}` : data.detail;
-    });
+      if (message) message.textContent = response.ok ? `Attached ${data.name}` : data.detail;
+    }
 
     async function applyProposals() {
       if (!sessionId || !latestProposals.length) return;
@@ -494,12 +1241,33 @@ INDEX_HTML = """<!doctype html>
         addMessage('draftsman', data.detail || 'Could not apply the proposed artifacts.');
         return;
       }
-      const applied = (data.applied || []).map(item => `${item.artifactType || 'Artifact'}: ${item.name || item.id}`).join('\\n- ');
-      addMessage('draftsman', `Applied artifact changes${applied ? `:\\n- ${applied}` : '.'}\\nValidation ${data.validation?.ok ? 'passed' : 'needs attention'}.`);
-      renderProposals([]);
-      await refresh();
+      const applied = data.applied || [];
+      addMessage('draftsman', `Applied artifact changes${applied.length ? `:\\n- ${applied.map(item => `${item.artifactType || 'Artifact'}: ${item.name || item.id}`).join('\\n- ')}` : '.'}\\nValidation ${data.validation?.ok ? 'passed' : 'needs attention'}.`);
+      latestProposals = [];
+      await refreshStatus();
+      await refreshCatalog();
+      const appliedObject = findAppliedObject(applied[0]);
+      focused = appliedObject
+        ? {kind: 'object', data: appliedObject}
+        : applied.length ? {kind: 'proposal', data: {...applied[0], action: 'applied', summary: 'Applied to the company DRAFT repo.', applied: true}} : null;
+      renderSidebar();
+      renderMain();
     }
-    refresh();
+
+    function findAppliedObject(item) {
+      if (!item) return null;
+      const objects = catalogData.objects || [];
+      return objects.find(object => object.id === item.artifactId)
+        || objects.find(object => item.path && String(object.source || '').endsWith(item.path))
+        || objects.find(object => object.name === item.name)
+        || null;
+    }
+
+    document.querySelectorAll('[data-side-tab]').forEach(button => {
+      button.addEventListener('click', () => setSideTab(button.dataset.sideTab));
+    });
+
+    refreshAll();
   </script>
 </body>
 </html>
