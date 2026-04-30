@@ -173,6 +173,13 @@ Product Service, PaaS Service, and SaaS Service are also RBB classifications.
 These are not separate peer object types in the architecture taxonomy. They are
 service-side RBB classifications with additional metadata fields.
 
+Appliance ABBs are the deliberate exception to the RBB composition path. They
+are ABBs because they map directly to vendor products, but they provide a
+deployed service-like capability without exposing a host RBB or service RBB
+wrapper. Because they do not inherit `odc.host` or `odc.service`, the appliance
+ODC asks the required operating and governance capability questions directly on
+the appliance ABB.
+
 ## External Interactions As Black Boxes
 
 External interactions are treated as black boxes by design.

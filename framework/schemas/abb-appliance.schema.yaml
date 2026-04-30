@@ -20,6 +20,7 @@ optionalFields:
   - notes
   - capabilities
   - configurations
+  - externalInteractions
   - networkPlacement
   - patchingOwner
   - complianceCerts
@@ -56,12 +57,14 @@ fieldTypes:
   tags: list
   capabilities: list
   configurations: list
+  externalInteractions: list
   complianceCerts: list
   complianceProfiles: list
   controlImplementations: list
   architecturalDecisions: dict
 collectionSchemas:
   configurations: configuration
+  externalInteractions: externalInteraction
   controlImplementations: controlImplementation
 configuration:
   requiredFields:
@@ -69,6 +72,16 @@ configuration:
     - name
     - description
     - capabilities
+  fieldTypes:
+    capabilities: list
+
+externalInteraction:
+  requiredFields:
+    - capabilities
+  optionalFields:
+    - name
+    - ref
+    - notes
   fieldTypes:
     capabilities: list
 

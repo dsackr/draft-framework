@@ -97,6 +97,13 @@ class DraftsmanTests(unittest.TestCase):
         self.assertIn("do not ask which", prompt)
         self.assertIn("team owns patching", prompt)
 
+    def test_prompt_explains_appliance_abb_service_like_capability_answers(self) -> None:
+        prompt = build_draftsman_prompt(REPO_ROOT, None, "Build an appliance ABB.", {"uploads": []})
+
+        self.assertIn("For appliance ABBs", prompt)
+        self.assertIn("vendor-product", prompt)
+        self.assertIn("no host RBB or service RBB wrapper", prompt)
+
     def test_safe_workspace_path_rejects_escape(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaises(ValueError):

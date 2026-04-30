@@ -392,8 +392,8 @@ def mechanism_description(mechanism: dict[str, Any]) -> str:
             return f"internalComponent(concern={concern})"
         return f"internalComponent(role={role or 'unknown'})"
     if mechanism_type == "abbConfiguration":
-        concern = mechanism.get("criteria", {}).get("concern", "unknown")
-        return f"abbConfiguration(concern={concern})"
+        capability = mechanism.get("criteria", {}).get("capability") or mechanism.get("criteria", {}).get("concern", "unknown")
+        return f"abbConfiguration(capability={capability})"
     if mechanism_type == "deploymentConfiguration":
         quality = mechanism.get("criteria", {}).get("quality", "unknown")
         return f"deploymentConfiguration(quality={quality})"
@@ -414,6 +414,9 @@ def referenced_abbs(obj: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]
 
     resolved: list[dict[str, Any]] = []
     seen: set[str] = set()
+    if obj.get("type") == "abb" and is_non_empty(obj.get("id")):
+        resolved.append(obj)
+        seen.add(str(obj["id"]))
     for ref in refs:
         if ref in seen:
             continue

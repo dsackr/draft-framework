@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import tempfile
+import textwrap
 import unittest
 from pathlib import Path
 
@@ -20,6 +22,60 @@ class ValidationTests(unittest.TestCase):
 
         self.assertTrue(result.ok, result.stdout + result.stderr)
         self.assertIn("Validated", result.stdout)
+
+    def test_appliance_abb_satisfies_service_like_odc_capabilities_directly(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            catalog = workspace / "catalog" / "abbs"
+            catalog.mkdir(parents=True)
+            (workspace / "configurations").mkdir()
+            (catalog / "abb-appliance-aws-alb.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    id: abb.appliance.aws-alb
+                    type: abb
+                    subtype: appliance
+                    name: AWS Application Load Balancer
+                    vendor: Amazon Web Services
+                    productName: Application Load Balancer
+                    productVersion: managed
+                    classification: software
+                    catalogStatus: draft
+                    lifecycleStatus: invest
+                    capabilities:
+                      - compute
+                    configurations:
+                      - id: enterprise-access
+                        name: Enterprise Access
+                        description: SAML-authenticated administrative access.
+                        capabilities:
+                          - authentication
+                      - id: managed-health
+                        name: Managed Health Visibility
+                        description: Publishes target and appliance health.
+                        capabilities:
+                          - health-welfare-monitoring
+                    externalInteractions:
+                      - name: Centralized logging
+                        capabilities:
+                          - log-management
+                    networkPlacement: public-facing
+                    patchingOwner: aws-managed
+                    complianceCerts: []
+                    architecturalDecisions:
+                      resilienceModel: Managed multi-AZ control plane.
+                      configurableSurface: Listeners, rules, certificates, and target groups.
+                      failureDomain: Shared ingress dependency for the protected application path.
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertTrue(result.ok, result.stdout + result.stderr)
 
 
 if __name__ == "__main__":

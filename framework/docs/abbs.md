@@ -135,6 +135,22 @@ infrastructure boundary. The key idea is that there is no separable host for
 the architect to model. The appliance and the underlying host are effectively
 the same thing from the framework's perspective.
 
+An Appliance ABB is still an ABB by identity: it maps directly to a discrete
+vendor product and version. It is not a normal RBB because it does not expose a
+host, operating system, compute platform, or function ABB that the framework can
+compose. Architecturally, however, it behaves like a deployed service
+capability: adopters depend on it to do useful work inside their infrastructure
+boundary.
+
+That blackbox boundary is why the appliance ODC carries service-like operating
+questions directly on the ABB. A normal host RBB inherits the host baseline
+through `odc.host`, and a normal service RBB inherits service requirements
+through `odc.service`. An Appliance ABB does neither. It must therefore answer
+consumer-facing capabilities such as authentication/access, log or audit
+visibility, health/status visibility, patch/update model, resilience, network
+placement, configurable surface, failure domain, and compliance posture on the
+appliance object itself.
+
 Use an Appliance ABB when the organization configures the component and places
 it in its own AWS account, VPC, or datacenter, but does not manage the
 underlying operating system, firmware, or host lifecycle directly.
@@ -149,10 +165,11 @@ vendor's environment. That is a SaaS Service, not an Appliance ABB.
 
 Good examples of Appliance ABBs are load balancers, blackbox runtime
 hosts, managed file appliances, or vendor appliances with opaque host internals.
-The catalog captures capabilities, network placement, patching ownership, the
+The catalog captures capabilities, access model, log and audit visibility,
+health and status visibility, patch/update model, network placement, the
 configuration surface the adopter controls, failure domain, and compliance
-posture instead of trying to invent a host model the architect does not
-actually control.
+posture instead of trying to invent a host model the architect does not actually
+control.
 
 ## How To Add A New ABB
 

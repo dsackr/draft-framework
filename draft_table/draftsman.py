@@ -237,6 +237,9 @@ Rules:
 - For odc.host patch management, ask what patch platform, installed component,
   ABB configuration, or architectural decision applies updates; do not ask which
   team owns patching as the capability answer.
+- For appliance ABBs, remember that the object is an ABB by vendor-product
+  identity but carries service-like operating capability answers because there
+  is no host RBB or service RBB wrapper to inherit odc.host or odc.service.
 - If you propose artifacts, return them as JSON proposals with YAML content for the backend only.
 - The visible answer must summarize artifacts in plain language.
 

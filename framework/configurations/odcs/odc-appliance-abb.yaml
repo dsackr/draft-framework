@@ -8,8 +8,10 @@ description: >
   vendor component deployed within the organization's infrastructure boundary
   where the underlying host is blackbox. The organization configures the
   appliance but has no visibility into or responsibility for the underlying
-  infrastructure.
-version: 1.0.0
+  infrastructure. Because there is no host RBB or service RBB wrapper to inherit
+  baseline ODC requirements, this checklist collects the appliance's consumer-facing
+  service capabilities directly on the ABB.
+version: 1.1.0
 catalogStatus: approved
 lifecycleStatus: invest
 owner:
@@ -30,6 +32,69 @@ requirements:
       - mechanism: field
         key: capabilities
         example: "capabilities: [load-balancing]"
+  - id: authentication-access-model
+    description: How is administrative, user, or service access to the appliance authenticated?
+    rationale: A blackbox appliance still needs an explicit access-control answer because it provides a deployed capability without inheriting the host or service ODC baseline.
+    canBeSatisfiedBy:
+      - mechanism: externalInteraction
+        criteria:
+          capability: authentication
+        example: The appliance authenticates administrators through an enterprise identity platform.
+      - mechanism: abbConfiguration
+        criteria:
+          capability: authentication
+        example: A named appliance configuration defines the authentication model.
+      - mechanism: architecturalDecision
+        key: authenticationAccessModel
+        example: Administrator access is federated through SAML SSO; service access uses appliance-managed mTLS.
+  - id: log-audit-visibility
+    description: What operational logs, audit records, or events are visible to the adopter, and where do they go?
+    rationale: A blackbox appliance must state the log or audit visibility the adopter can rely on because hidden host logs are not modeled.
+    canBeSatisfiedBy:
+      - mechanism: externalInteraction
+        criteria:
+          capability: log-management
+        example: The appliance forwards audit events to a centralized logging or SIEM platform.
+      - mechanism: abbConfiguration
+        criteria:
+          capability: log-management
+        example: A named appliance configuration enables audit export or log forwarding.
+      - mechanism: architecturalDecision
+        key: logAuditVisibility
+        example: Administrative actions are exported to CloudTrail and retained in the enterprise SIEM.
+  - id: health-status-visibility
+    description: How does the adopter observe appliance health, status, incidents, or operational telemetry?
+    rationale: The appliance provides a service-like capability, so consumers need to know how health and status are observed even though the internal host is hidden.
+    canBeSatisfiedBy:
+      - mechanism: externalInteraction
+        criteria:
+          capability: health-welfare-monitoring
+        example: The appliance publishes health metrics to the enterprise monitoring platform.
+      - mechanism: abbConfiguration
+        criteria:
+          capability: health-welfare-monitoring
+        example: A named appliance configuration enables health checks, status endpoints, or metrics export.
+      - mechanism: architecturalDecision
+        key: healthStatusVisibility
+        example: Health is observed through managed service status, target health checks, and alert rules.
+  - id: patch-update-model
+    description: Who or what is responsible for appliance firmware, software, and hidden host updates, and what mechanism applies them?
+    rationale: The hidden host prevents normal host patch-management modeling, so the appliance must document the update responsibility and mechanism directly.
+    canBeSatisfiedBy:
+      - mechanism: field
+        key: patchingOwner
+        example: "patchingOwner: vendor-managed"
+      - mechanism: externalInteraction
+        criteria:
+          capability: patch-management
+        example: Updates are orchestrated through a vendor or cloud-provider patch service.
+      - mechanism: abbConfiguration
+        criteria:
+          capability: patch-management
+        example: A named appliance configuration defines update windows or managed update policy.
+      - mechanism: architecturalDecision
+        key: patchUpdateModel
+        example: Firmware and hidden host updates are vendor-managed; the adopter controls only maintenance windows.
   - id: resilience-model
     description: >
       What is the resilience model of this appliance — is it inherently

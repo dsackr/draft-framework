@@ -57,7 +57,7 @@ being defined.
 
 ## Satisfaction Mechanisms
 
-There are five satisfaction mechanisms.
+There are six satisfaction mechanisms.
 
 ### `field`
 
@@ -76,7 +76,8 @@ internal component.
 ### `abbConfiguration`
 
 The requirement is satisfied by a named configuration carried on one of the
-referenced ABBs.
+referenced ABBs, or by a named configuration on the ABB itself when the ODC
+applies directly to an ABB such as an Appliance ABB.
 
 Example: a Windows or Linux ABB configuration that defines where host logs are
 written and how they are handled operationally.
@@ -88,6 +89,14 @@ external platform that provides the required capability.
 
 Example: authentication through Active Directory, or logging through a
 centralized logging platform.
+
+### `deploymentConfiguration`
+
+The requirement is satisfied by a named deployment configuration on the RBB.
+
+Example: a service RBB may use a deployment configuration to answer
+availability, scalability, or recoverability when those qualities are reusable
+deployment variants of the same building block.
 
 ### `architecturalDecision`
 
@@ -232,14 +241,25 @@ In interview form, ask:
 
 ### `odc.appliance-abb`
 
-This ODC applies to appliance ABBs. It treats the appliance as a blackbox
-component inside the adopter's infrastructure boundary and requires the object
-to document:
+This ODC applies to appliance ABBs. Appliance ABBs are ABBs by product identity
+because they map directly to a discrete vendor product and version. They are
+not normal RBBs because there is no separable host, operating system, compute
+platform, or function ABB that the framework can compose.
+
+An appliance therefore behaves like a service-like deployed capability without
+inheriting `odc.host` or `odc.service`. For that reason, this ODC asks the
+required consumer-facing capability questions directly on the appliance ABB.
+
+It treats the appliance as a blackbox component inside the adopter's
+infrastructure boundary and requires the object to document:
 
 - what capability the appliance provides
+- how access to the appliance is authenticated
+- what log or audit visibility the adopter gets
+- how health, status, incidents, or operational telemetry are observed
+- who or what applies firmware, software, and hidden host updates
 - how resilient it is
 - where it sits in the network
-- who owns patching
 - what configuration surface the adopter actually controls
 - what failure domain it creates
 - what compliance posture it carries
@@ -247,7 +267,9 @@ to document:
 In interview form, ask:
 
 - What capability does the appliance provide?
-- Where is it placed, who patches it, and what can the adopter configure?
+- How are appliance access, log/audit visibility, and health/status visibility handled?
+- What patch or update model applies to the firmware, software, and hidden host?
+- Where is it placed, and what can the adopter configure?
 - How resilient is it, what failure domain does it create, and what compliance posture is known?
 
 ### `odc.saas-service`

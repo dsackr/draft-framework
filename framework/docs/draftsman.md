@@ -455,12 +455,20 @@ Focus on:
 
 Treat as a black-box component inside the infrastructure boundary.
 
+An Appliance ABB is an ABB by product identity, but it behaves like a
+service-like deployed capability because there is no visible host RBB or service
+RBB wrapper. It does not inherit `odc.host` or `odc.service`, so the appliance
+ODC collects those consumer-facing operating answers directly on the ABB.
+
 Focus on:
 
 - capabilities
+- authentication/access model
+- log or audit visibility
+- health/status visibility
+- patch/update model
 - resilience model
 - network placement
-- patching ownership
 - configurable surface
 - failure domain
 - compliance posture
