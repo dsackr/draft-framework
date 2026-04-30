@@ -40,6 +40,7 @@ framework/configurations/
 examples/catalog/       # Sample content used to validate and demo the framework
 templates/              # Object and private workspace templates
 docs/index.html         # Generated static browser for the example workspace
+draft_table/            # Local-first DRAFT Table CLI and web shell
 ```
 
 A company private workspace should use this shape:
@@ -55,6 +56,89 @@ configurations/object-patches/
 
 The effective model is resolved by reading framework base configuration first,
 then workspace configuration overlays, then workspace catalog content.
+
+## DRAFT Table
+
+DRAFT Table is the local-first companion UI for working with a private DRAFT
+content repo. It is intentionally not an AI credential store and not a hosted
+service. The source of truth remains the local filesystem and Git.
+
+DRAFT Table is not a YAML editor. The user experience is the Draftsman
+conversation: questions, document intake, architecture interviews, artifact
+summaries, validation results, and commit controls. DRAFT Table may write DRAFT
+YAML files internally because that is the framework storage format, but it
+should not show users raw YAML code.
+
+Install and onboard:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install-draft-table.sh | bash
+```
+
+The installer clones or updates the framework repo, installs DRAFT Table, runs
+onboarding, and then starts the local web UI. The web UI is the preferred
+Draftsman experience.
+
+Local development install from this checkout:
+
+```bash
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -e .
+draft-table onboard
+draft-table serve
+```
+
+The web UI binds to `127.0.0.1` by default and prints the selected available
+port.
+
+### DRAFT Table CLI
+
+```bash
+draft-table onboard
+draft-table serve
+draft-table chat
+draft-table validate
+draft-table ai doctor
+draft-table repo status
+draft-table commit -m "Update DRAFT catalog"
+draft-table doctor
+```
+
+DRAFT Table now includes the first Draftsman loop. The web UI is the preferred
+experience because it supports source uploads and artifact proposal review. The
+`draft-table chat` command is a terminal fallback for a conversational
+Draftsman session.
+
+- conversational framework and catalog questions
+- local catalog reference lookup, such as "where is this object used?"
+- source material upload into a local Draftsman session
+- provider-backed architecture interview prompts through the selected CLI
+- artifact proposal cards without raw YAML display
+- apply-proposal flow that writes DRAFT YAML internally and then validates
+
+Later phases should deepen document/image extraction, add richer validation
+repair loops, and add push and PR workflow.
+
+### Supported AI Providers
+
+DRAFT Table stores only provider type, executable path, optional model name,
+local endpoint, content repo path, and non-secret preferences in
+`~/.draft-table/config.yaml`.
+
+Supported provider selections:
+
+- `codex`
+- `claude-code`
+- `gemini-cli`
+- `local-llm`
+- `custom-command`
+
+Provider CLIs own their own authentication. For example, use `codex --login`,
+the Claude Code login flow, or the Gemini CLI Google login outside DRAFT Table.
+For local models, Phase 1 records an Ollama-compatible localhost endpoint.
+
+See [security.md](security.md) for the threat model and credential boundary.
 
 ## Start Here
 
@@ -120,6 +204,12 @@ changes:
 ```bash
 python3 framework/tools/generate_browser.py
 python3 framework/tools/generate_ai_index.py
+```
+
+Run the DRAFT Table unit tests:
+
+```bash
+python3 -m unittest discover -s tests
 ```
 
 ## Compliance Claims

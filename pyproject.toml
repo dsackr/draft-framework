@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "draft-table"
+version = "0.1.0"
+description = "Local-first drafting table for DRAFT architecture workspaces."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.27",
+  "python-multipart>=0.0.9",
+  "PyYAML>=6.0",
+]
+
+[project.scripts]
+draft-table = "draft_table.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["draft_table*"]

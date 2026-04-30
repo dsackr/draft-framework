@@ -13,6 +13,9 @@ OUTPUT_PATH = REPO_ROOT / "AI_INDEX.md"
 
 FRAMEWORK_ENTRYPOINTS = [
     ("AGENTS.md", "Canonical AI bootstrap instructions for this repository."),
+    ("pyproject.toml", "Python packaging and draft-table CLI entry point."),
+    ("draft_table", "Local-first DRAFT Table CLI and web shell."),
+    ("security.md", "DRAFT Table credential and local security boundary."),
     ("framework/docs/draftsman.md", "Draftsman role, intent routing, and authoring rules."),
     ("framework/docs/overview.md", "Framework concepts and object family overview."),
     ("framework/docs/yaml-schema-reference.md", "Quick map from object families to schemas."),
@@ -22,6 +25,7 @@ FRAMEWORK_ENTRYPOINTS = [
     ("framework/docs/drafting-sessions.md", "How to persist incomplete authoring work."),
     ("framework/tools/validate.py", "Executable validation for schemas, ODCs, references, and controls."),
     ("framework/tools/generate_browser.py", "Static GitHub Pages browser generator."),
+    ("install-draft-table.sh", "Local DRAFT Table installer and onboarding launcher."),
 ]
 
 CONFIGURATION_FOLDERS = [
