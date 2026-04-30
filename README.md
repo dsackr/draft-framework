@@ -77,7 +77,8 @@ curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install
 
 The installer clones or updates the framework repo, installs DRAFT Table, runs
 onboarding, and then starts the local web UI. The web UI is the preferred
-Draftsman experience.
+Draftsman experience. Run it from an interactive terminal so onboarding can
+prompt for your content repo and provider preference.
 
 Local development install from this checkout:
 

@@ -16,6 +16,15 @@ need_command() {
 need_command git
 need_command python3
 
+run_onboarding() {
+  if [[ ! -r /dev/tty ]]; then
+    echo "DRAFT Table onboarding needs an interactive terminal." >&2
+    echo "Run $DRAFT_TABLE_VENV/bin/draft-table onboard after installation completes." >&2
+    exit 1
+  fi
+  "$DRAFT_TABLE_VENV/bin/draft-table" onboard </dev/tty
+}
+
 if [[ -d "$DRAFT_TABLE_INSTALL_DIR/.git" ]]; then
   git -C "$DRAFT_TABLE_INSTALL_DIR" fetch origin "$DRAFT_TABLE_REF"
   git -C "$DRAFT_TABLE_INSTALL_DIR" checkout "$DRAFT_TABLE_REF"
@@ -28,6 +37,6 @@ fi
 python3 -m venv "$DRAFT_TABLE_VENV"
 "$DRAFT_TABLE_VENV/bin/python" -m pip install --upgrade pip
 "$DRAFT_TABLE_VENV/bin/python" -m pip install -e "$DRAFT_TABLE_INSTALL_DIR"
-"$DRAFT_TABLE_VENV/bin/draft-table" onboard
+run_onboarding
 echo "Starting DRAFT Table web UI. Press Ctrl-C to stop it."
 "$DRAFT_TABLE_VENV/bin/draft-table" serve
