@@ -26,8 +26,9 @@ with real architecture facts and run validation. Template files use the
 
 In a company workspace, generated architecture content belongs under
 `catalog/`. Company configuration and extension content belongs under
-`configurations/`. Edit YAML directly, keep changes small and reviewable, and
-run validation before treating the work as complete.
+`configurations/`. The selected framework version lives under
+`.draft/framework/`. Edit company YAML directly, keep changes small and
+reviewable, and run validation before treating the work as complete.
 
 ## Add A Technology Component
 
@@ -79,8 +80,8 @@ Technology Components should be specific. If you cannot name the product version
 4. For each requirement, explain what capability must be addressed, why it exists, which mechanisms are allowed, and how many satisfactions are required.
 5. If the Definition Checklist extends another Definition Checklist, use `inherits`.
 
-Base Definition Checklists live in `framework/configurations/definition-checklists/`. Company-specific Definition Checklist
-changes should be patch-style overlays in the private workspace.
+Base Definition Checklists live in `.draft/framework/configurations/definition-checklists/` inside a company repo. Company-specific Definition Checklist
+changes should be patch-style overlays in the company repo.
 
 A Definition Checklist can target more than Standards. The current catalog includes Definition Checklists for Standards, Reference Architectures, and Software Deployment Patterns. The `appliesTo` block is what tells the validator which object type the Definition Checklist governs.
 
@@ -179,6 +180,12 @@ Validate a company workspace:
 
 ```bash
 python3 framework/tools/validate.py --workspace /path/to/company-draft-workspace
+```
+
+From inside a company repo, use the vendored framework copy:
+
+```bash
+python3 .draft/framework/tools/validate.py --workspace .
 ```
 
 Regenerate the AI framework index after framework docs, schemas, Definition Checklists,

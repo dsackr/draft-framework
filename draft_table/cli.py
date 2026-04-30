@@ -10,9 +10,10 @@ from .config import load_config, redacted_yaml
 from .draftsman import DraftsmanEngine
 from .github import github_status
 from .onboard import run_onboarding
+from .paths import REPO_ROOT
 from .providers import doctor as provider_doctor
 from .providers import format_statuses
-from .repo import git_commit, git_status, is_workspace
+from .repo import framework_status, git_commit, git_status, is_workspace, refresh_vendored_framework
 from .validation import validate_workspace
 
 
@@ -26,7 +27,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="draft-table", description="Local-first DRAFT Table CLI.")
     subcommands = parser.add_subparsers(dest="command", required=True)
 
-    onboard = subcommands.add_parser("onboard", help="Configure a local content repo and AI provider.")
+    onboard = subcommands.add_parser("onboard", help="Configure a local company DRAFT repo and AI provider.")
     onboard.set_defaults(func=cmd_onboard)
 
     serve = subcommands.add_parser("serve", help="Start the local DRAFT Table web UI.")
@@ -38,7 +39,7 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--port", type=int, default=0)
     serve.set_defaults(func=cmd_serve)
 
-    validate = subcommands.add_parser("validate", help="Validate the selected or provided content repo.")
+    validate = subcommands.add_parser("validate", help="Validate the selected or provided company DRAFT repo.")
     validate.add_argument("--workspace", default="")
     validate.set_defaults(func=cmd_validate)
 
@@ -55,10 +56,21 @@ def build_parser() -> argparse.ArgumentParser:
 
     repo = subcommands.add_parser("repo", help="Content repo commands.")
     repo_subcommands = repo.add_subparsers(dest="repo_command", required=True)
-    repo_status = repo_subcommands.add_parser("status", help="Show content repo Git status.")
+    repo_status = repo_subcommands.add_parser("status", help="Show company DRAFT repo Git status.")
     repo_status.set_defaults(func=cmd_repo_status)
 
-    commit = subcommands.add_parser("commit", help="Commit content repo changes.")
+    framework = subcommands.add_parser("framework", help="Vendored framework commands.")
+    framework_subcommands = framework.add_subparsers(dest="framework_command", required=True)
+    framework_status_cmd = framework_subcommands.add_parser("status", help="Show the workspace framework copy status.")
+    framework_status_cmd.set_defaults(func=cmd_framework_status)
+    framework_refresh = framework_subcommands.add_parser(
+        "refresh",
+        help="Refresh .draft/framework from the installed framework checkout and validate the workspace.",
+    )
+    framework_refresh.add_argument("--source", default="", help="Framework source checkout or framework root. Defaults to this install.")
+    framework_refresh.set_defaults(func=cmd_framework_refresh)
+
+    commit = subcommands.add_parser("commit", help="Commit company DRAFT repo changes.")
     commit.add_argument("-m", "--message", required=True)
     commit.set_defaults(func=cmd_commit)
     return parser
@@ -67,7 +79,7 @@ def build_parser() -> argparse.ArgumentParser:
 def selected_workspace(config: dict, override: str = "") -> Path:
     path = override or str(config.get("content_repo_path") or "")
     if not path:
-        raise SystemExit("No content repo selected. Run draft-table onboard first.")
+        raise SystemExit("No company DRAFT repo selected. Run draft-table onboard first.")
     return Path(path).expanduser()
 
 
@@ -148,6 +160,33 @@ def cmd_repo_status(args: argparse.Namespace) -> int:
     return result.returncode
 
 
+def cmd_framework_status(args: argparse.Namespace) -> int:
+    config = load_config()
+    workspace = selected_workspace(config)
+    status = framework_status(workspace, Path(config.get("framework_repo_path") or REPO_ROOT))
+    print(f"Vendored framework: {'present' if status['vendored'] else 'missing'}")
+    print(f"Path: {status['vendoredPath']}")
+    print(f"Synced commit: {status['syncedCommit'] or 'unknown'}")
+    print(f"Installed commit: {status['installedCommit'] or 'unknown'}")
+    print(f"Update policy: {status['updatePolicy']}")
+    return 0
+
+
+def cmd_framework_refresh(args: argparse.Namespace) -> int:
+    config = load_config()
+    workspace = selected_workspace(config)
+    source = Path(args.source).expanduser() if args.source else Path(config.get("framework_repo_path") or REPO_ROOT)
+    changed = refresh_vendored_framework(workspace, source, args.source or None)
+    print("Refreshed vendored framework files:")
+    for path in changed:
+        print(f"  {path}")
+    validation = validate_workspace(workspace, source)
+    output = validation.stdout or validation.stderr
+    if output:
+        print(output, end="" if output.endswith("\n") else "\n")
+    return validation.returncode
+
+
 def cmd_commit(args: argparse.Namespace) -> int:
     config = load_config()
     workspace = selected_workspace(config)
@@ -168,8 +207,11 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     content_path = str(config.get("content_repo_path") or "")
     if content_path:
         workspace = Path(content_path).expanduser()
-        print(f"Content repo: {workspace}")
-        print(f"DRAFT workspace layout: {'ok' if is_workspace(workspace) else 'missing catalog/configurations'}")
+        print(f"Company DRAFT repo: {workspace}")
+        print(f"DRAFT workspace layout: {'ok' if is_workspace(workspace) else 'missing catalog/configurations or .draft/framework'}")
+        status = framework_status(workspace, Path(config.get("framework_repo_path") or REPO_ROOT))
+        print(f"Vendored framework: {'present' if status['vendored'] else 'missing'}")
+        print(f"Framework synced commit: {status['syncedCommit'] or 'unknown'}")
     return 0
 
 

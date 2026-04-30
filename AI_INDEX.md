@@ -3,7 +3,7 @@
 This generated file gives AI assistants a fast map of the DRAFT framework checkout.
 It is intentionally framework-first: this upstream repository is a reusable template,
 not a complete company architecture catalog. Organization-specific architecture content
-belongs in downstream private clones.
+belongs in private company DRAFT repos that vendor this framework under `.draft/framework/`.
 
 Regenerate with:
 
@@ -15,7 +15,7 @@ python3 framework/tools/generate_ai_index.py
 
 When a user says "I need a draftsman", the AI should immediately assume the
 Draftsman role defined in `framework/docs/draftsman.md`, then use this index,
-`framework/schemas/`, `framework/configurations/`, and workspace YAML to guide the conversation and edits.
+the selected framework schemas/configurations, and workspace YAML to guide the conversation and edits.
 
 ## Framework Entrypoints
 
@@ -56,7 +56,7 @@ Draftsman role defined in `framework/docs/draftsman.md`, then use this index,
 | framework/docs/software-deployment-patterns.md | Software Deployment Patterns | A Software Deployment Pattern is a declaration that a specific product is intended |
 | framework/docs/standards.md | Standards | A Standard is a reusable architecture object. It is the layer where the catalog defines |
 | framework/docs/technology-components.md | Technology Components | A Technology Component is a discrete third-party product object. It records one |
-| framework/docs/workspaces.md | Workspaces | DRAFT separates the public framework from private company content. |
+| framework/docs/workspaces.md | Workspaces | DRAFT separates the upstream framework from private company implementation |
 | framework/docs/yaml-schema-reference.md | YAML Schema Reference | This page is the quickest way to understand how to build a valid YAML object in |
 
 ## Schemas
@@ -83,7 +83,7 @@ Draftsman role defined in `framework/docs/draftsman.md`, then use this index,
 
 ## Base Configurations
 
-These YAML files are framework-owned base configurations. Company workspaces add or override behavior through their private `configurations/` folder.
+These YAML files are framework-owned base configurations. Company workspaces add or override behavior through their private `configurations/` folder while keeping the vendored framework copy under `.draft/framework/` refreshable.
 
 | ID | Name | Type | Tags | Description | Path |
 |---|---|---|---|---|---|
@@ -114,7 +114,7 @@ These YAML files are framework-owned base configurations. Company workspaces add
 
 ## Example Catalog Inventory
 
-These are sample catalog objects used to validate and demonstrate the framework. Company-specific content belongs in a private workspace `catalog/` folder.
+These are sample catalog objects used to validate and demonstrate the framework. Company-specific content belongs in a private company `catalog/` folder.
 
 | ID | Name | Type | Tags | Description | Path |
 |---|---|---|---|---|---|
@@ -171,5 +171,6 @@ These are sample catalog objects used to validate and demonstrate the framework.
 
 - Validate the example workspace: `python3 framework/tools/validate.py`
 - Validate a company workspace: `python3 framework/tools/validate.py --workspace /path/to/workspace`
+- Validate from inside a company repo: `python3 .draft/framework/tools/validate.py --workspace .`
 - Regenerate browser after YAML changes: `python3 framework/tools/generate_browser.py`
 - Regenerate this index after framework or YAML changes: `python3 framework/tools/generate_ai_index.py`

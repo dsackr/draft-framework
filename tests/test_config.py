@@ -7,6 +7,7 @@ from pathlib import Path
 import yaml
 
 from draft_table.config import load_config, redact, save_config
+from draft_table.paths import FRAMEWORK_ROOT
 
 
 class ConfigTests(unittest.TestCase):
@@ -50,6 +51,14 @@ class ConfigTests(unittest.TestCase):
 
         self.assertEqual(config["provider"]["type"], "codex")
         self.assertIn("preferences", config)
+
+    def test_load_config_accepts_framework_root_path(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "config.yaml"
+            path.write_text(f"framework_repo_path: {FRAMEWORK_ROOT}\n", encoding="utf-8")
+            config = load_config(path)
+
+        self.assertEqual(Path(config["framework_repo_path"]), FRAMEWORK_ROOT)
 
 
 if __name__ == "__main__":

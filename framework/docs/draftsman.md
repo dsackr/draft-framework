@@ -33,18 +33,19 @@ role. It should not ask what "draftsman" means.
 
 ### Repository And Workspace Mode
 
-The upstream `draft-framework` repository is the framework. It is not expected
-to contain a complete company architecture catalog. Company content belongs in
-a private workspace repository.
+The upstream `draft-framework` repository is the framework source. A company
+DRAFT repository vendors a reviewed copy under `.draft/framework/` and uses
+that copy during normal Draftsman work. The upstream public repo is an update
+source, not a runtime dependency for company drafting.
 
 The effective model is resolved from three layers:
 
-1. framework base configuration in `framework/configurations/`
+1. vendored framework base configuration in `.draft/framework/configurations/`
 2. company configuration overlays in the workspace `configurations/`
 3. company architecture content in the workspace `catalog/`
 
-Use `AI_INDEX.md` to understand what exists in this framework checkout. Use the
-workspace path to inspect company content.
+Use the vendored framework docs and index to understand the framework version
+selected by the company. Use the workspace path to inspect company content.
 
 ### Diagram Intake
 
@@ -128,11 +129,11 @@ When the repo and prior assumptions disagree, follow the repo.
 
 Use this order of precedence:
 
-1. Schema files in `framework/schemas/`
-2. Framework base configuration in `framework/configurations/`
+1. Schema files in the selected framework copy, normally `.draft/framework/schemas/`
+2. Framework base configuration in `.draft/framework/configurations/`
 3. Company workspace configuration in `configurations/`
 4. Company workspace catalog content in `catalog/`
-5. Framework documentation in `framework/docs/`
+5. Framework documentation in `.draft/framework/docs/`
 6. Generated browser output in `docs/index.html`
 
 The schema files are authoritative for object structure. Effective Definition Checklist files

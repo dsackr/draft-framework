@@ -37,14 +37,15 @@ configurations, schemas, examples, templates, generated GitHub Pages output, and
 the tooling needed to validate and regenerate those assets. It is not a
 complete company architecture catalog.
 
-Company-specific artifacts belong in a private workspace repository:
+Company-specific artifacts belong in a private DRAFT repository:
 
+- `.draft/framework/` for the vendored framework copy used during normal drafting
 - `catalog/` for architecture content
 - `configurations/` for Definition Checklist, compliance, domain, and object-patch overlays
-- `.draft/` for optional tracked workspace metadata and framework pins
+- `.draft/workspace.yaml` and `.draft/framework.lock` for tracked workspace metadata and framework sync state
 
 Use `examples/catalog/` only as sample content for validating and demonstrating
-the framework.
+the upstream framework.
 
 ## Source Of Truth Order
 
@@ -61,8 +62,8 @@ When sources disagree, follow this order:
 
 AI agents should treat DRAFT as a deterministic authoring system:
 
-- Load the effective model from framework base configuration, workspace
-  configuration overlays, and workspace catalog content.
+- Load the effective model from the vendored framework base configuration,
+  workspace configuration overlays, and workspace catalog content.
 - Use schemas and Definition Checklists to determine required facts.
 - Edit YAML directly when asked to make changes.
 - Never place AI provider credentials or unrelated secrets in tracked

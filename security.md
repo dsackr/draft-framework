@@ -1,6 +1,6 @@
 # DRAFT Table Security Boundary
 
-DRAFT Table is a local-first helper for a DRAFT content repository. It is not a
+DRAFT Table is a local-first helper for a company DRAFT repository. It is not a
 credential broker and does not store AI provider API keys.
 
 ## Network Binding
@@ -46,8 +46,8 @@ keychain or another platform credential store, not plaintext app config.
 
 `~/.draft-table/config.yaml` may store:
 
-- framework repo path
-- content repo path
+- installed framework repo path
+- company DRAFT repo path
 - provider type
 - provider executable path
 - selected model name
@@ -60,9 +60,18 @@ redaction for keys such as `api_key`, `access_token`, `refresh_token`,
 
 ## User Interface Boundary
 
-The content repo working tree is the source of truth, but DRAFT Table should
+The company DRAFT repo working tree is the source of truth, but DRAFT Table should
 not show raw YAML code to users. Future AI drafting features should present
 proposed changes as artifact-level summaries, interview answers, validation
 results, and commit-ready change sets. YAML may be written to the working tree
 internally, but users who want to inspect or edit YAML should use Git or their
 preferred coding tool outside DRAFT Table.
+
+## Vendored Framework Boundary
+
+During onboarding, DRAFT Table copies the selected framework version into the
+company repo at `.draft/framework/`. Normal Draftsman use reads that local copy
+instead of calling back to the public upstream repo. Framework refresh is an
+explicit user action through `draft-table framework refresh`; the resulting
+`.draft/framework/` and `.draft/framework.lock` changes are ordinary Git
+changes that should be reviewed before commit.

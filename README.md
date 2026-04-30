@@ -13,8 +13,9 @@ DRAFT is an AI-first, YAML-first framework for documenting deployable
 architecture. It provides schemas, base configuration, authoring guidance,
 examples, validation tooling, and a generated static GitHub Pages browser.
 
-This repository is the public framework. Company-specific architecture content
-and configuration belong in downstream private workspace repositories.
+This repository is the upstream framework. Company implementations should keep
+a vendored framework copy inside their private DRAFT repo so normal Draftsman
+use does not depend on reaching back to the public repo.
 
 ## AI-First Setup
 
@@ -38,29 +39,32 @@ framework/              # Core schemas, tools, docs, and base configurations
 framework/configurations/
                         # Base Definition Checklists, Compliance Controls, Control Enforcement Profiles, domains
 examples/catalog/       # Sample content used to validate and demo the framework
-templates/              # Object and private workspace templates
+templates/              # Object and company repo templates
 docs/index.html         # Generated static browser for the example workspace
 draft_table/            # Local-first DRAFT Table CLI and web shell
 ```
 
-A company private workspace should use this shape:
+A company private DRAFT repo should use this shape:
 
 ```text
+.draft/framework/      # Vendored DRAFT framework copy used by that company
+.draft/workspace.yaml  # Tracked workspace metadata
+.draft/framework.lock  # Upstream source and synced framework commit
 catalog/                # Company architecture content
 configurations/         # Company Definition Checklist, compliance, domain, and patch overlays
 configurations/object-patches/
                         # Patch objects for framework or catalog overrides
-.draft/workspace.yaml   # Optional tracked workspace metadata
-.draft/framework.lock   # Optional tracked framework pin
 ```
 
-The effective model is resolved by reading framework base configuration first,
-then workspace configuration overlays, then workspace catalog content.
+The effective model is resolved by reading `.draft/framework/configurations/`
+first, then workspace configuration overlays, then workspace catalog content.
+The public repo is an update source, not a runtime dependency for a company's
+Draftsman.
 
 ## DRAFT Table
 
-DRAFT Table is the local-first companion UI for working with a private DRAFT
-content repo. It is intentionally not an AI credential store and not a hosted
+DRAFT Table is the local-first companion UI for working with a private company
+DRAFT repo. It is intentionally not an AI credential store and not a hosted
 service. The source of truth remains the local filesystem and Git.
 
 DRAFT Table is not a YAML editor. The user experience is the Draftsman
@@ -76,9 +80,10 @@ curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install
 ```
 
 The installer clones or updates the framework repo, installs DRAFT Table, runs
-onboarding, and then starts the local web UI. The web UI is the preferred
-Draftsman experience. Run it from an interactive terminal so onboarding can
-prompt for your content repo and provider preference.
+onboarding, bootstraps `.draft/framework/` into the selected company repo, and
+then starts the local web UI. The web UI is the preferred Draftsman experience.
+Run it from an interactive terminal so onboarding can prompt for your company
+DRAFT repo and provider preference.
 
 Local development install from this checkout:
 
@@ -103,6 +108,8 @@ draft-table chat
 draft-table validate
 draft-table ai doctor
 draft-table repo status
+draft-table framework status
+draft-table framework refresh
 draft-table commit -m "Update DRAFT catalog"
 draft-table doctor
 ```
@@ -118,6 +125,7 @@ Draftsman session.
 - provider-backed architecture interview prompts through the selected CLI
 - artifact proposal cards without raw YAML display
 - apply-proposal flow that writes DRAFT YAML internally and then validates
+- explicit framework refresh into `.draft/framework/` for review and commit
 
 Later phases should deepen document/image extraction, add richer validation
 repair loops, and add push and PR workflow.
@@ -125,7 +133,7 @@ repair loops, and add push and PR workflow.
 ### Supported AI Providers
 
 DRAFT Table stores only provider type, executable path, optional model name,
-local endpoint, content repo path, and non-secret preferences in
+local endpoint, company DRAFT repo path, and non-secret preferences in
 `~/.draft-table/config.yaml`.
 
 Supported provider selections:
@@ -194,10 +202,16 @@ Validate the framework base configuration and example catalog:
 python3 framework/tools/validate.py
 ```
 
-Validate a private workspace:
+Validate a company repo from the upstream checkout:
 
 ```bash
 python3 framework/tools/validate.py --workspace /path/to/company-draft-workspace
+```
+
+Inside a company repo, validate against the vendored framework copy:
+
+```bash
+python3 .draft/framework/tools/validate.py --workspace .
 ```
 
 Regenerate the static browser and AI index after YAML, docs, schema, or template

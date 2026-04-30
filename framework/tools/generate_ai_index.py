@@ -116,7 +116,7 @@ def main() -> None:
         "This generated file gives AI assistants a fast map of the DRAFT framework checkout.",
         "It is intentionally framework-first: this upstream repository is a reusable template,",
         "not a complete company architecture catalog. Organization-specific architecture content",
-        "belongs in downstream private clones.",
+        "belongs in private company DRAFT repos that vendor this framework under `.draft/framework/`.",
         "",
         "Regenerate with:",
         "",
@@ -128,7 +128,7 @@ def main() -> None:
         "",
         "When a user says \"I need a draftsman\", the AI should immediately assume the",
         "Draftsman role defined in `framework/docs/draftsman.md`, then use this index,",
-        "`framework/schemas/`, `framework/configurations/`, and workspace YAML to guide the conversation and edits.",
+        "the selected framework schemas/configurations, and workspace YAML to guide the conversation and edits.",
         "",
         "## Framework Entrypoints",
         "",
@@ -165,7 +165,8 @@ def main() -> None:
     lines.extend(["", "## Base Configurations", ""])
     lines.append(
         "These YAML files are framework-owned base configurations. Company workspaces add "
-        "or override behavior through their private `configurations/` folder."
+        "or override behavior through their private `configurations/` folder while keeping "
+        "the vendored framework copy under `.draft/framework/` refreshable."
     )
     lines.append("")
     config_rows = []
@@ -177,7 +178,7 @@ def main() -> None:
     lines.extend(["", "## Example Catalog Inventory", ""])
     lines.append(
         "These are sample catalog objects used to validate and demonstrate the framework. "
-        "Company-specific content belongs in a private workspace `catalog/` folder."
+        "Company-specific content belongs in a private company `catalog/` folder."
     )
     lines.append("")
     inventory_rows = []
@@ -209,6 +210,7 @@ def main() -> None:
 
     lines.extend(["", "## Validation", "", "- Validate the example workspace: `python3 framework/tools/validate.py`"])
     lines.append("- Validate a company workspace: `python3 framework/tools/validate.py --workspace /path/to/workspace`")
+    lines.append("- Validate from inside a company repo: `python3 .draft/framework/tools/validate.py --workspace .`")
     if (REPO_ROOT / "framework" / "tools" / "generate_browser.py").exists():
         lines.append("- Regenerate browser after YAML changes: `python3 framework/tools/generate_browser.py`")
     lines.append("- Regenerate this index after framework or YAML changes: `python3 framework/tools/generate_ai_index.py`")

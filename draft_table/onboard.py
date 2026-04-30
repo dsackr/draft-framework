@@ -40,6 +40,7 @@ def run_onboarding(config_path: Path | None = None) -> int:
     print_banner()
     print("DRAFT Table onboarding")
     print("This stores repo paths and provider preferences only. It does not store API keys.")
+    print("Your company repo will include a private .draft/framework copy for normal Draftsman use.")
 
     github = github_status()
     print(github.detail)
@@ -47,7 +48,7 @@ def run_onboarding(config_path: Path | None = None) -> int:
         print("Run gh auth login in another terminal if clone/push needs GitHub authentication.")
 
     current_repo = str(config.get("content_repo_path") or "")
-    repo_url = prompt("", "GitHub content repo URL (leave blank to select local path)")
+    repo_url = prompt("", "GitHub company DRAFT repo URL (leave blank to select local path)")
     if repo_url:
         destination = Path(prompt(str(default_clone_path(repo_url)), "Local clone path")).expanduser()
         result = clone_or_pull(repo_url, destination)
@@ -56,9 +57,9 @@ def run_onboarding(config_path: Path | None = None) -> int:
             return result.returncode
         content_path = destination
     else:
-        content_path = Path(prompt(current_repo, "Local content repo path")).expanduser()
+        content_path = Path(prompt(current_repo, "Local company DRAFT repo path")).expanduser()
         if not content_path.exists():
-            print(f"Creating local DRAFT content repo at {content_path}")
+            print(f"Creating local company DRAFT repo at {content_path}")
         git_result = ensure_git_repo(content_path)
         if git_result.returncode != 0:
             print(git_result.stderr or git_result.stdout)

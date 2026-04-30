@@ -1,8 +1,8 @@
 # Draftsman AI Guidance
 
 DRAFT does not include a built-in AI runtime. The Draftsman is an external AI
-agent role that uses this repository as source material, edits YAML when asked,
-and validates the result with the framework tools.
+agent role that uses the selected framework copy as source material, edits YAML
+when asked, and validates the result with the framework tools.
 
 ## Operating Model
 
@@ -21,11 +21,14 @@ An AI assistant acting as the Draftsman should:
 
 For private company workspaces, the effective model is:
 
-1. framework base configuration in `framework/configurations/`
+1. vendored framework base configuration in `.draft/framework/configurations/`
 2. workspace configuration overlays in `configurations/`
 3. workspace catalog content in `catalog/`
 
-The AI should inspect all three layers before creating new objects. Reuse a
+The AI should inspect all three layers before creating new objects. In a
+company repo, prefer `.draft/framework/docs/`, `.draft/framework/schemas/`, and
+`.draft/framework/configurations/` over the public upstream checkout because
+those files represent the framework version the company has approved. Reuse a
 matching existing object when one is already present, and create a Drafting
 Session when important architecture facts are missing.
 

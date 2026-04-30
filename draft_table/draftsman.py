@@ -14,7 +14,7 @@ from .config import load_config
 from .paths import REPO_ROOT
 from .providers import build_provider_command, detect_provider
 from .sessions import DraftsmanSessionStore
-from .validation import validate_workspace
+from .validation import selected_framework_root, validate_workspace
 
 
 DEFAULT_PROVIDER_TIMEOUT_SECONDS = 180
@@ -51,19 +51,20 @@ class DraftsmanEngine:
 
     def chat(self, message: str, session_id: str | None = None) -> DraftsmanResponse:
         config = load_config(self.config_path)
-        framework_repo = Path(config.get("framework_repo_path") or REPO_ROOT).expanduser()
+        configured_framework = Path(config.get("framework_repo_path") or REPO_ROOT).expanduser()
         workspace_value = str(config.get("content_repo_path") or "").strip()
         workspace = Path(workspace_value).expanduser() if workspace_value else None
+        framework_root = selected_framework_root(workspace, configured_framework)
         session = self.session_store.load(session_id)
         session.setdefault("messages", []).append({"role": "user", "content": message})
 
-        local = answer_locally(message, workspace, framework_repo)
+        local = answer_locally(message, workspace, framework_root)
         if local:
             session["messages"].append({"role": "draftsman", "content": local.answer})
             self.session_store.save(session)
             return DraftsmanResponse(session["id"], local.answer, local.questions, [], local.grounding, False)
 
-        provider_response = self.ask_provider(config, framework_repo, workspace, message, session)
+        provider_response = self.ask_provider(config, framework_root, workspace, message, session)
         session["messages"].append({"role": "draftsman", "content": provider_response.answer})
         session["proposals"] = merge_proposals(session.get("proposals", []), provider_response.proposals)
         self.session_store.save(session)
@@ -73,7 +74,7 @@ class DraftsmanEngine:
         config = load_config(self.config_path)
         workspace_value = str(config.get("content_repo_path") or "").strip()
         if not workspace_value:
-            raise ValueError("No content repo selected.")
+            raise ValueError("No company DRAFT repo selected.")
         workspace = Path(workspace_value).expanduser()
         session = self.session_store.load(session_id)
         selected = set(proposal_ids or [])
@@ -111,7 +112,7 @@ class DraftsmanEngine:
     def ask_provider(
         self,
         config: dict[str, Any],
-        framework_repo: Path,
+        framework_root: Path,
         workspace: Path | None,
         message: str,
         session: dict[str, Any],
@@ -127,13 +128,13 @@ class DraftsmanEngine:
             )
             return DraftsmanResponse(session["id"], answer, [], [], [], False)
 
-        prompt = build_draftsman_prompt(framework_repo, workspace, message, session)
+        prompt = build_draftsman_prompt(framework_root, workspace, message, session)
         raw = invoke_provider(provider, prompt)
         parsed = parse_provider_response(raw)
         proposals = normalize_proposals(parsed.get("proposals", []))
         answer = str(parsed.get("answer") or raw).strip()
         questions = [str(item) for item in parsed.get("questions", []) if str(item).strip()]
-        grounding = [object_summary(obj) for obj in search_objects(load_effective_catalog(workspace, framework_repo), message, 5)]
+        grounding = [object_summary(obj) for obj in search_objects(load_effective_catalog(workspace, framework_root), message, 5)]
         return DraftsmanResponse(session["id"], answer, questions, proposals, grounding, True)
 
 
@@ -144,18 +145,18 @@ class LocalAnswer:
     grounding: list[dict[str, str]]
 
 
-def answer_locally(message: str, workspace: Path | None, framework_repo: Path) -> LocalAnswer | None:
+def answer_locally(message: str, workspace: Path | None, framework_root: Path) -> LocalAnswer | None:
     lowered = message.lower()
     if is_framework_definition_question(lowered, "technology component"):
-        return LocalAnswer(read_doc_section(framework_repo / "framework" / "docs" / "technology-components.md", "What A Technology Component Is"), [], [])
+        return LocalAnswer(read_doc_section(framework_root / "docs" / "technology-components.md", "What A Technology Component Is"), [], [])
     if is_framework_definition_question(lowered, "host standard") or is_framework_definition_question(lowered, "service standard"):
-        return LocalAnswer(read_doc_intro(framework_repo / "framework" / "docs" / "standards.md"), [], [])
+        return LocalAnswer(read_doc_intro(framework_root / "docs" / "standards.md"), [], [])
     if is_framework_definition_question(lowered, "definition checklist"):
-        return LocalAnswer(read_doc_intro(framework_repo / "framework" / "docs" / "definition-checklists.md"), [], [])
+        return LocalAnswer(read_doc_intro(framework_root / "docs" / "definition-checklists.md"), [], [])
     if is_framework_definition_question(lowered, "software deployment pattern"):
-        return LocalAnswer(read_doc_intro(framework_repo / "framework" / "docs" / "software-deployment-patterns.md"), [], [])
+        return LocalAnswer(read_doc_intro(framework_root / "docs" / "software-deployment-patterns.md"), [], [])
     if "where" in lowered and any(term in lowered for term in ("used", "referenced", "use")):
-        return answer_usage_question(message, workspace, framework_repo)
+        return answer_usage_question(message, workspace, framework_root)
     return None
 
 
@@ -163,8 +164,8 @@ def is_framework_definition_question(lowered: str, term: str) -> bool:
     return term in lowered and any(prefix in lowered for prefix in ("what is", "what's", "explain", "define"))
 
 
-def answer_usage_question(message: str, workspace: Path | None, framework_repo: Path) -> LocalAnswer:
-    objects = load_effective_catalog(workspace, framework_repo)
+def answer_usage_question(message: str, workspace: Path | None, framework_root: Path) -> LocalAnswer:
+    objects = load_effective_catalog(workspace, framework_root)
     matches = search_objects(objects, message, 3)
     content_matches = [
         match for match in matches
@@ -211,14 +212,14 @@ def trim_markdown(text: str, limit: int = 1400) -> str:
     return cleaned if len(cleaned) <= limit else cleaned[: limit - 3].rstrip() + "..."
 
 
-def build_draftsman_prompt(framework_repo: Path, workspace: Path | None, message: str, session: dict[str, Any]) -> str:
-    objects = load_effective_catalog(workspace, framework_repo)
+def build_draftsman_prompt(framework_root: Path, workspace: Path | None, message: str, session: dict[str, Any]) -> str:
+    objects = load_effective_catalog(workspace, framework_root)
     matches = [object_summary(obj) for obj in search_objects(objects, message, 8)]
     docs = [
-        ("Draftsman Instructions", framework_repo / "framework" / "docs" / "draftsman.md"),
-        ("Workspace Model", framework_repo / "framework" / "docs" / "workspaces.md"),
-        ("Schema Reference", framework_repo / "framework" / "docs" / "yaml-schema-reference.md"),
-        ("Definition Checklists", framework_repo / "framework" / "docs" / "definition-checklists.md"),
+        ("Draftsman Instructions", framework_root / "docs" / "draftsman.md"),
+        ("Workspace Model", framework_root / "docs" / "workspaces.md"),
+        ("Schema Reference", framework_root / "docs" / "yaml-schema-reference.md"),
+        ("Definition Checklists", framework_root / "docs" / "definition-checklists.md"),
     ]
     doc_context = "\n\n".join(f"## {title}\n{path.read_text(encoding='utf-8')[:5000]}" for title, path in docs if path.exists())
     uploads = session.get("uploads", [])[-6:]
@@ -273,7 +274,7 @@ Return JSON only with this shape:
       "artifactType": "Technology Component|Appliance Component|Host Standard|Service Standard|Database Standard|Reference Architecture|Software Deployment Pattern|Definition Checklist|Decision Record|Compliance Controls|Control Enforcement Profile|Drafting Session",
       "name": "artifact name",
       "summary": "plain-language summary",
-      "path": "relative file path under the content repo",
+      "path": "relative file path under the company DRAFT repo",
       "content": "complete YAML content for the backend to write; never mention this content in the answer"
     }}
   ]
@@ -404,5 +405,5 @@ def safe_workspace_path(workspace: Path, relative_path: str) -> Path:
     target = (workspace / relative_path).resolve()
     root = workspace.resolve()
     if root not in target.parents and target != root:
-        raise ValueError("Proposal path escapes the content repo.")
+        raise ValueError("Proposal path escapes the company DRAFT repo.")
     return target

@@ -6,8 +6,9 @@ from typing import Any, Optional
 from .config import load_config, save_config
 from .draftsman import DraftsmanEngine
 from .github import github_status
+from .paths import REPO_ROOT
 from .providers import detect_provider
-from .repo import ensure_workspace_layout, git_status, is_workspace
+from .repo import ensure_workspace_layout, framework_status, git_status, is_workspace
 from .validation import validate_workspace
 
 
@@ -32,14 +33,15 @@ def create_app(config_path: Path | None = None) -> Any:
         config = load_config(config_path)
         repo_value = str(config.get("content_repo_path") or "").strip()
         repo_path = Path(repo_value).expanduser() if repo_value else None
-        framework_repo = Path(config.get("framework_repo_path") or "").expanduser()
+        framework_repo = Path(config.get("framework_repo_path") or REPO_ROOT).expanduser()
         provider = config.get("provider") or {}
         provider_status = detect_provider(
             str(provider.get("type") or ""),
             str(provider.get("executable") or provider.get("endpoint") or "") or None,
         )
-        git = {"returncode": None, "stdout": "", "stderr": "No content repo selected."}
-        validation = {"returncode": None, "stdout": "", "stderr": "No content repo selected."}
+        git = {"returncode": None, "stdout": "", "stderr": "No company DRAFT repo selected."}
+        validation = {"returncode": None, "stdout": "", "stderr": "No company DRAFT repo selected."}
+        framework = {"vendored": False, "vendoredPath": "", "syncedCommit": "", "installedCommit": ""}
         if repo_path and repo_path.exists():
             git_process = git_status(repo_path)
             git = {
@@ -47,6 +49,7 @@ def create_app(config_path: Path | None = None) -> Any:
                 "stdout": git_process.stdout,
                 "stderr": git_process.stderr,
             }
+            framework = framework_status(repo_path, framework_repo)
             validation_result = validate_workspace(repo_path, framework_repo)
             validation = {
                 "returncode": validation_result.returncode,
@@ -64,6 +67,7 @@ def create_app(config_path: Path | None = None) -> Any:
             },
             "github": github_status().__dict__,
             "git": git,
+            "framework": framework,
             "validation": validation,
         }
 
@@ -288,7 +292,7 @@ INDEX_HTML = """<!doctype html>
     </aside>
     <main>
       <section class="panel">
-        <h2>Content Repo</h2>
+        <h2>Company DRAFT Repo</h2>
         <label for="repo-path">Local repo path</label>
         <input id="repo-path" placeholder="/path/to/company-draft-catalog">
         <button id="select-repo">Select Repo</button>
@@ -311,6 +315,10 @@ INDEX_HTML = """<!doctype html>
         <section class="panel">
           <h2>Provider</h2>
           <pre id="provider">Loading...</pre>
+        </section>
+        <section class="panel">
+          <h2>Framework Copy</h2>
+          <pre id="framework">Loading...</pre>
         </section>
         <section class="panel">
           <h2>Git Status</h2>
@@ -381,6 +389,8 @@ INDEX_HTML = """<!doctype html>
       document.getElementById('repo-path').value = data.contentRepoPath || '';
       document.getElementById('provider').textContent =
         `${data.provider.type || 'not selected'}\\n${data.provider.available ? 'available' : 'missing'}\\n${data.provider.detail || ''}`;
+      document.getElementById('framework').textContent =
+        `${data.framework?.vendored ? 'vendored' : 'missing'}\\n${data.framework?.vendoredPath || ''}\\nsynced: ${data.framework?.syncedCommit || 'unknown'}\\ninstalled: ${data.framework?.installedCommit || 'unknown'}`;
       document.getElementById('git').textContent =
         data.git.stdout || data.git.stderr || 'No Git output.';
       document.getElementById('validation').textContent =

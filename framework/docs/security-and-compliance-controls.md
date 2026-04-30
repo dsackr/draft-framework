@@ -21,7 +21,7 @@ internal control catalog that is specific to their organization.
 
 Each base control catalog is a YAML file in
 `framework/configurations/compliance-controls/`. Company control catalogs live
-in the private workspace under `configurations/compliance-controls/`.
+in the company repo under `configurations/compliance-controls/`.
 The Compliance Controls object contains only control identity data and is governed by
 `checklist.compliance-controls`.
 

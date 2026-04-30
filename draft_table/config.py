@@ -51,7 +51,11 @@ def load_config(path: Path | None = None) -> dict[str, Any]:
         raise ValueError(f"Config file must contain a mapping: {target}")
     merged = copy.deepcopy(DEFAULT_CONFIG)
     deep_update(merged, data)
-    if not (Path(str(merged.get("framework_repo_path") or "")) / "framework" / "tools" / "validate.py").exists():
+    framework_path = Path(str(merged.get("framework_repo_path") or ""))
+    if not (
+        (framework_path / "tools" / "validate.py").exists()
+        or (framework_path / "framework" / "tools" / "validate.py").exists()
+    ):
         merged["framework_repo_path"] = str(REPO_ROOT)
     return merged
 

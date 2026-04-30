@@ -5,7 +5,7 @@ from typing import Any
 
 import yaml
 
-from .paths import REPO_ROOT
+from .paths import REPO_ROOT, resolve_framework_root, workspace_framework_root
 
 
 CATALOG_FOLDERS = (
@@ -66,8 +66,9 @@ ID_PREFIXES = (
 
 
 def load_effective_catalog(workspace: Path | None, framework_repo: Path = REPO_ROOT) -> dict[str, dict[str, Any]]:
+    framework_root = selected_framework_root(workspace, framework_repo)
     objects: dict[str, dict[str, Any]] = {}
-    roots = [framework_repo / "framework" / "configurations"]
+    roots = [framework_root / "configurations"]
     if workspace and workspace.exists():
         workspace_config = workspace / "configurations"
         workspace_catalog = workspace / "catalog"
@@ -78,16 +79,27 @@ def load_effective_catalog(workspace: Path | None, framework_repo: Path = REPO_R
         elif workspace.name == "catalog":
             roots.append(workspace)
     else:
-        roots.append(framework_repo / "examples" / "catalog")
+        examples_catalog = framework_root / "examples" / "catalog"
+        if not examples_catalog.exists():
+            examples_catalog = framework_root.parent / "examples" / "catalog"
+        roots.append(examples_catalog)
 
     for root in roots:
         for path in discover_yaml_files(root):
             data = read_yaml(path)
             object_id = data.get("id")
             if object_id:
-                data["_source"] = display_path(path, framework_repo)
+                data["_source"] = display_path(path, framework_root)
                 objects[str(object_id)] = data
     return apply_object_patches(objects)
+
+
+def selected_framework_root(workspace: Path | None, framework_repo: Path = REPO_ROOT) -> Path:
+    if workspace:
+        vendored = workspace_framework_root(workspace)
+        if (vendored / "configurations").exists():
+            return vendored.resolve()
+    return resolve_framework_root(framework_repo)
 
 
 def discover_yaml_files(root: Path) -> list[Path]:
@@ -112,8 +124,8 @@ def read_yaml(path: Path) -> dict[str, Any]:
     return data if isinstance(data, dict) else {}
 
 
-def display_path(path: Path, framework_repo: Path) -> str:
-    for root in (framework_repo, Path.cwd()):
+def display_path(path: Path, framework_root: Path) -> str:
+    for root in (framework_root, framework_root.parent, Path.cwd()):
         try:
             return path.relative_to(root).as_posix()
         except ValueError:

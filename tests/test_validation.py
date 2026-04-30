@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 
 from draft_table.paths import REPO_ROOT
+from draft_table.repo import ensure_workspace_layout
 from draft_table.validation import build_validate_command, validate_workspace
 
 
@@ -22,6 +23,24 @@ class ValidationTests(unittest.TestCase):
 
         self.assertTrue(result.ok, result.stdout + result.stderr)
         self.assertIn("Validated", result.stdout)
+
+    def test_build_validate_command_prefers_vendored_framework(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+
+            command = build_validate_command(workspace)
+
+        self.assertIn(".draft/framework/tools/validate.py", command[1])
+
+    def test_validate_workspace_uses_vendored_framework(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+
+            result = validate_workspace(workspace)
+
+        self.assertTrue(result.ok, result.stdout + result.stderr)
 
     def test_appliance_component_satisfies_service_like_checklist_capabilities_directly(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

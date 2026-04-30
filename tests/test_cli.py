@@ -12,7 +12,7 @@ class CliTests(unittest.TestCase):
     def test_cli_defines_required_commands(self) -> None:
         parser = build_parser()
 
-        for command in ("onboard", "serve", "validate", "chat", "ai", "repo", "commit", "doctor"):
+        for command in ("onboard", "serve", "validate", "chat", "ai", "repo", "framework", "commit", "doctor"):
             with self.subTest(command=command):
                 with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
                     with self.assertRaises(SystemExit) as context:

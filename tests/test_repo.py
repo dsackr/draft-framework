@@ -4,7 +4,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from draft_table.repo import ensure_git_repo, ensure_workspace_layout, is_workspace, repo_name_from_url
+from draft_table.repo import (
+    ensure_git_repo,
+    ensure_workspace_layout,
+    framework_status,
+    is_workspace,
+    refresh_vendored_framework,
+    repo_name_from_url,
+)
 
 
 class RepoTests(unittest.TestCase):
@@ -26,8 +33,27 @@ class RepoTests(unittest.TestCase):
             self.assertTrue((workspace / "configurations" / "definition-checklists").exists())
             self.assertTrue((workspace / ".draft" / "workspace.yaml").exists())
             self.assertTrue((workspace / ".draft" / "framework.lock").exists())
+            self.assertTrue((workspace / ".draft" / "framework" / "tools" / "validate.py").exists())
+            self.assertTrue((workspace / ".draft" / "framework" / "schemas").exists())
+            agents = workspace / ".draft" / "framework" / "AGENTS.md"
+            self.assertTrue(agents.exists())
+            self.assertIn("docs/draftsman.md", agents.read_text(encoding="utf-8"))
             self.assertTrue(created)
             self.assertTrue(is_workspace(workspace))
+
+    def test_refresh_vendored_framework_updates_framework_copy_and_lock(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory) / "company-draft"
+            workspace.mkdir()
+            ensure_workspace_layout(workspace)
+
+            refreshed = refresh_vendored_framework(workspace)
+            status = framework_status(workspace)
+
+            self.assertTrue((workspace / ".draft" / "framework" / "configurations").exists())
+            self.assertTrue((workspace / ".draft" / "framework" / "templates").exists())
+            self.assertTrue(any(path.name == "framework.lock" for path in refreshed))
+            self.assertTrue(status["vendored"])
 
     def test_ensure_git_repo_creates_missing_directory(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
