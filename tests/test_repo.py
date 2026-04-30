@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from draft_table.repo import ensure_workspace_layout, is_workspace, repo_name_from_url
+from draft_table.repo import ensure_git_repo, ensure_workspace_layout, is_workspace, repo_name_from_url
 
 
 class RepoTests(unittest.TestCase):
@@ -24,6 +24,25 @@ class RepoTests(unittest.TestCase):
             self.assertTrue((workspace / ".draft" / "framework.lock").exists())
             self.assertTrue(created)
             self.assertTrue(is_workspace(workspace))
+
+    def test_ensure_git_repo_creates_missing_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory) / "new-draft-content"
+
+            result = ensure_git_repo(workspace)
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue((workspace / ".git").exists())
+
+    def test_ensure_git_repo_rejects_file_path(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "not-a-directory"
+            target.write_text("content", encoding="utf-8")
+
+            result = ensure_git_repo(target)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("not a directory", result.stderr)
 
 
 if __name__ == "__main__":

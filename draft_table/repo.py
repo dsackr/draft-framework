@@ -59,6 +59,21 @@ def clone_or_pull(url: str, destination: Path) -> subprocess.CompletedProcess[st
     )
 
 
+def ensure_git_repo(repo_path: Path) -> subprocess.CompletedProcess[str]:
+    root = repo_path.expanduser()
+    if root.exists() and not root.is_dir():
+        return subprocess.CompletedProcess(
+            ["git", "init"],
+            2,
+            "",
+            f"Path exists and is not a directory: {root}",
+        )
+    root.mkdir(parents=True, exist_ok=True)
+    if (root / ".git").exists():
+        return run_git(["status", "--short", "--branch"], root)
+    return run_git(["init"], root)
+
+
 def git_status(repo_path: Path) -> subprocess.CompletedProcess[str]:
     return run_git(["status", "--short", "--branch"], repo_path.expanduser())
 
