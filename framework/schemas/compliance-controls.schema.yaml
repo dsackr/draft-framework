@@ -1,0 +1,48 @@
+schemaVersion: '1.0'
+type: compliance_controls
+requiredFields:
+- schemaVersion
+- id
+- type
+- name
+- controlsKind
+- catalogStatus
+- lifecycleStatus
+optionalFields:
+- description
+- version
+- owner
+- tags
+- controlIdNamespace
+- defaultSelection
+- notes
+- controls
+idPattern: ^controls\.[a-z0-9-]+$
+enumFields:
+  catalogStatus:
+  - stub
+  - draft
+  - approved
+  lifecycleStatus:
+  - pre-invest
+  - invest
+  - maintain
+  - disinvest
+  - exit
+  controlsKind:
+  - common
+  - organizational
+fieldTypes:
+  owner: dict
+  tags: list
+  defaultSelection: bool
+  controls: list
+collectionSchemas:
+  controls: control
+control:
+  requiredFields:
+  - controlId
+  - name
+  - externalReference
+  optionalFields:
+  - notes

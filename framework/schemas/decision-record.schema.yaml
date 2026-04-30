@@ -1,0 +1,53 @@
+schemaVersion: '1.0'
+type: decision_record
+requiredFields:
+- schemaVersion
+- id
+- type
+- name
+- category
+- status
+- catalogStatus
+- lifecycleStatus
+optionalFields:
+- description
+- version
+- owner
+- tags
+- affectedComponent
+- impact
+- mitigationPath
+- decisionRationale
+- relatedDecisionRecords
+- controlReferences
+- linkedSoftwareDeployment
+idPattern: ^decision\.[a-z0-9-]+\.[0-9]+$
+enumFields:
+  catalogStatus:
+  - stub
+  - draft
+  - approved
+  lifecycleStatus:
+  - pre-invest
+  - invest
+  - maintain
+  - disinvest
+  - exit
+  category:
+  - risk
+  - decision
+  status:
+  - open
+  - accepted
+  - mitigated
+  - resolved
+fieldTypes:
+  owner: dict
+  tags: list
+  relatedDecisionRecords: list
+  controlReferences: list
+conditionalRequired:
+- when:
+    category: decision
+  require:
+  - decisionRationale

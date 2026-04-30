@@ -1,0 +1,25 @@
+# Template for a Decision Record.
+schemaVersion: "1.0"
+id: decision.<scope-slug>.001
+type: decision_record
+name: <Risk Or Decision Name>
+description: <Risk or decision statement.>
+version: 1.0.0
+catalogStatus: stub
+lifecycleStatus: pre-invest
+owner:
+  team: <owning-team>
+  contact: <team-or-person@example.com>
+tags:
+  - decision-record
+category: <risk|decision>
+status: <open|accepted|mitigated|resolved>
+affectedComponent: <object-id-or-component-name>
+impact: <Operational, security, compliance, or availability impact.>
+mitigationPath: <Mitigation path if this is a risk.>
+decisionRationale: <Required when category is decision.>
+linkedSoftwareDeployment: software-deployment.<product-slug>
+relatedDecisionRecords:
+  - decision.<scope-slug>.002
+controlReferences:
+  - <controls-or-control-reference>

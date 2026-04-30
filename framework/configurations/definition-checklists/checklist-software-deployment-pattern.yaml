@@ -1,0 +1,108 @@
+schemaVersion: '1.0'
+id: checklist.software-deployment-pattern
+type: definition_checklist
+name: Software Deployment Pattern Definition Checklist
+description: Structured checklist of required questions and answers used to define
+  a complete and correct software deployment pattern.
+version: 1.0.0
+catalogStatus: approved
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- software-deployment-pattern
+- checklist
+- definition
+appliesTo:
+  type: software_deployment_pattern
+requirements:
+- id: reference-architecture-conformance
+  description: The Software Deployment Pattern must reference a valid Reference Architecture
+    ID or explicitly document that no applicable Reference Architecture exists yet.
+  rationale: Connecting deployments to patterns enables governance discoverability
+    and impact analysis.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: followsReferenceArchitecture
+    example: reference-architecture.dotnet.three-tier.ha
+  - mechanism: architecturalDecision
+    key: noApplicablePattern
+    example: No applicable Reference Architecture exists yet for this deployment shape
+  minimumSatisfactions: 1
+- id: service-groups
+  description: The Software Deployment Pattern must declare the service groups that
+    make up the deployed product.
+  rationale: A deployment manifest is incomplete until the real deployed service group
+    structure is explicit.
+  canBeSatisfiedBy:
+  - mechanism: internalComponent
+    criteria:
+      role: service-group
+    example: Frontend UI, Data Services, Shared Event Processing Services
+  minimumSatisfactions: 1
+- id: deployment-targets
+  description: Every service group must declare where it runs.
+  rationale: Deployment reality is not complete until the execution boundary or target
+    is explicit for each service group.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: deploymentTargets
+    example: Service groups are placed in AWS Account - Team_Accelify_Prod
+  minimumSatisfactions: 1
+- id: availability-requirement
+  description: The product availability tier must be documented.
+  rationale: Availability requirements justify deployment posture and inform operational
+    support models.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: availabilityRequirement
+    example: 99.9%, business-hours, 24x7
+  minimumSatisfactions: 1
+- id: additional-interactions
+  description: "Any external systems this product interacts with beyond what its component\
+    \ Standards declare must be documented \u2014 or explicitly stated as none."
+  rationale: Product-specific integrations are invisible to the architecture without
+    explicit declaration.
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: any
+    example: Product-specific SaaS integration, partner API
+  - mechanism: architecturalDecision
+    key: noAdditionalInteractions
+    example: No additional interactions beyond component Standards
+  minimumSatisfactions: 1
+- id: data-classification
+  description: The type of data this product stores or processes must be documented.
+  rationale: Data classification drives security posture requirements and compliance
+    obligations.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: dataClassification
+    example: PII, student records, internal-only, public
+  minimumSatisfactions: 1
+- id: failure-domain
+  description: The Software Deployment Pattern must document the deployment-level
+    failure domain of the product.
+  rationale: Product-level impact boundaries cannot be inferred from component selections
+    alone.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: failureDomain
+    example: Shared services are cross-sub-environment dependencies; sub-environment
+      failures are tenant-bounded
+  minimumSatisfactions: 1
+- id: pattern-deviations
+  description: Any intentional deviation from the selected Reference Architecture must
+    be documented, or the Software Deployment Pattern must explicitly state that no deviations exist.
+  rationale: The Software Deployment Pattern is where pattern intent becomes product
+    deployment reality, so departures from the Reference Architecture must be visible.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: patternDeviations
+    example: Shared ingestion remains centralized rather than per-sub-environment
+  - mechanism: architecturalDecision
+    key: noPatternDeviations
+    example: No intentional deviations from the selected Reference Architecture
+  minimumSatisfactions: 1

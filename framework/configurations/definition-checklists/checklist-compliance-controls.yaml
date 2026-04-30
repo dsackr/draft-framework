@@ -1,0 +1,45 @@
+schemaVersion: '1.0'
+id: checklist.compliance-controls
+type: definition_checklist
+name: Compliance Controls Definition Checklist
+description: 'Structured checklist for defining a pure control catalog in DRAFT. This
+  Definition Checklist is focused on the control facts themselves, not on how DRAFT
+  applies them.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- definition-checklist
+- compliance
+appliesTo:
+  type: compliance_controls
+requirements:
+- id: control-identity
+  description: 'Every control must declare the source control identifier and the friendly
+    control name used by the organization or source controls.
+
+    '
+  rationale: 'AI or human authors can usually extract these fields directly from a
+    source spreadsheet, document, or user interview.
+
+    '
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: controls
+- id: authoritative-source
+  description: 'Every control must carry an authoritative source link so the full
+    control text can be reviewed outside DRAFT.
+
+    '
+  rationale: 'DRAFT should not restate the source framework text when the original
+    control definition can be linked directly.
+
+    '
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: controls

@@ -1,0 +1,75 @@
+schemaVersion: '1.0'
+type: paas_service_standard
+requiredFields:
+- schemaVersion
+- id
+- type
+- name
+- vendor
+- catalogStatus
+- lifecycleStatus
+optionalFields:
+- description
+- version
+- owner
+- tags
+- capabilities
+- vendorSLA
+- authenticationModel
+- complianceCerts
+- architecturalDecisions
+- notes
+- controlEnforcementProfiles
+- controlImplementations
+idPattern: ^paas-service\.[a-z0-9-]+$
+enumFields:
+  catalogStatus:
+  - stub
+  - draft
+  - approved
+  lifecycleStatus:
+  - pre-invest
+  - invest
+  - maintain
+  - disinvest
+  - exit
+  authenticationModel:
+  - iam
+  - api-key
+  - other
+fieldTypes:
+  owner: dict
+  tags: list
+  capabilities: list
+  complianceCerts: list
+  architecturalDecisions: dict
+  controlEnforcementProfiles: list
+  controlImplementations: list
+collectionSchemas:
+  controlImplementations: controlImplementation
+controlImplementation:
+  requiredFields:
+  - profile
+  - controlId
+  - status
+  optionalFields:
+  - mechanism
+  - key
+  - equals
+  - criteria
+  - ref
+  - notes
+  enumFields:
+    status:
+    - satisfied
+    - not-applicable
+    - opted-out
+    mechanism:
+    - technologyComponent
+    - technologyComponentConfiguration
+    - deploymentConfiguration
+    - externalInteraction
+    - architecturalDecision
+    - field
+  fieldTypes:
+    criteria: dict

@@ -1,17 +1,18 @@
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: domain.compute
 type: domain
-name: "Compute & Runtime"
-description: >
-  Strategic domain covering application runtimes, serverless functions, 
-  and physical/virtual compute resources.
+name: Compute & Runtime
+description: 'Strategic domain covering application runtimes, serverless functions,  and
+  physical/virtual compute resources.
+
+  '
 capabilities:
-  - id: compute
-    name: "General Purpose Compute"
-    description: "Provisioning and execution of arbitrary code (VMs, containers)."
-  - id: serverless-runtime
-    name: "Serverless Function Runtime"
-    description: "Event-driven, scale-to-zero compute runtimes."
-  - id: container-orchestration
-    name: "Container Orchestration"
-    description: "Management of containerized workload lifecycles (EKS, ECS)."
+- id: compute
+  name: General Purpose Compute
+  description: Provisioning and execution of arbitrary code (VMs, containers).
+- id: serverless-runtime
+  name: Serverless Function Runtime
+  description: Event-driven, scale-to-zero compute runtimes.
+- id: container-orchestration
+  name: Container Orchestration
+  description: Management of containerized workload lifecycles (EKS, ECS).

@@ -23,7 +23,7 @@ supports three primary user intents:
   inventory, and how DRAFT works
 
 The authoring interface is source YAML. AI agents should edit the appropriate
-framework or workspace files directly, use schemas and ODCs as the contract,
+framework or workspace files directly, use schemas and Definition Checklists as the contract,
 and run validation before presenting completed changes. See
 [Draftsman AI guidance](draftsman-ai-configuration.md).
 
@@ -61,14 +61,14 @@ The Draftsman should:
 2. Separate observed facts from inferred architecture. Anything not explicit in
    the source must become an assumption or unresolved question.
 3. Decide which DRAFT artifact family is appropriate:
-   - actual product deployment or estate: Software Distribution Manifest
+   - actual product deployment or estate: Software Deployment Pattern
    - reusable deployment pattern: Reference Architecture
-   - reusable runtime or service substrate: RBB
-   - third-party product, operating system, platform, software, or agent: ABB
-   - vendor-managed platform dependency: PaaS Service RBB
-   - vendor-managed external dependency: SaaS Service RBB
-   - infrastructure appliance: Appliance ABB
-   - deployment risk or decision: ARD
+   - reusable runtime or service substrate: Standard
+   - third-party product, operating system, platform, software, or agent: Technology Component
+   - vendor-managed platform dependency: PaaS Service Standard
+   - vendor-managed external dependency: SaaS Service Standard
+   - infrastructure appliance: Appliance Component
+   - deployment risk or decision: Decision Record
    - incomplete authoring work: Drafting Session
 4. Search the current catalog inventory for existing matching artifacts before
    proposing new ones.
@@ -77,11 +77,11 @@ The Draftsman should:
    the catalog or when a user explicitly confirms a new object is needed.
 7. Record diagram provenance in a Drafting Session when the output is partial,
    inferred, or dependent on follow-up questions.
-8. Generate or update YAML that validates against the relevant schema and ODC.
+8. Generate or update YAML that validates against the relevant schema and Definition Checklist.
 
-For diagram-driven SDM work, the Draftsman should usually create or update the
-SDM first, then create Product Service entries only for distinct first-party
-runtime-behavior components required by that SDM. It should not turn every box
+For diagram-driven Software Deployment Pattern work, the Draftsman should usually create or update the
+Software Deployment Pattern first, then create Product Service entries only for distinct first-party
+runtime-behavior components required by that Software Deployment Pattern. It should not turn every box
 in the diagram into a new Product Service.
 
 ### Artifact Update
@@ -99,7 +99,7 @@ Use this resolution order:
 If multiple artifacts plausibly match, ask one focused clarification question.
 After resolving the artifact, the Draftsman should:
 
-- read the source YAML, matching schema, applicable ODC, and directly related
+- read the source YAML, matching schema, applicable Definition Checklist, and directly related
   objects
 - apply the user's feedback as the smallest coherent catalog change
 - preserve IDs, relationship refs, and naming unless the user explicitly wants
@@ -135,7 +135,7 @@ Use this order of precedence:
 5. Framework documentation in `framework/docs/`
 6. Generated browser output in `docs/index.html`
 
-The schema files are authoritative for object structure. Effective ODC files
+The schema files are authoritative for object structure. Effective Definition Checklist files
 from framework base plus workspace overlays are authoritative for required
 interview questions and answer expectations.
 
@@ -144,7 +144,7 @@ interview questions and answer expectations.
 The Draftsman should:
 
 - identify what kind of object the user is trying to define
-- interview the user using the applicable ODC
+- interview the user using the applicable Definition Checklist
 - prefer existing inventory before creating something new
 - challenge unnecessary invention when a close reusable object already exists
 - create a minimal stub when a new object is intentionally needed
@@ -162,19 +162,19 @@ The Draftsman should not:
 
 These are the DRAFT objects a user may intentionally start with:
 
-- Host RBB
-- General Service RBB
-- Database Service RBB
-- Appliance ABB
-- PaaS Service RBB
-- SaaS Service RBB
+- Host Standard
+- General Service Standard
+- Database Service Standard
+- Appliance Component
+- PaaS Service Standard
+- SaaS Service Standard
 - Reference Architecture
-- Software Distribution Manifest
+- Software Deployment Pattern
 - Drafting Session
-- Security and Compliance Control framework
-- Compliance Profile
+- Compliance Controls
+- Control Enforcement Profile
 
-Product Service is not a starting-point object. It emerges only when an SDM
+Product Service is not a starting-point object. It emerges only when a Software Deployment Pattern
 needs to express a distinct first-party runtime-behavior component deployed on
 top of a reusable substrate.
 
@@ -206,9 +206,9 @@ Examples:
 
 - A Reference Architecture requires an outcome such as high availability, but
   does not own the concrete settings.
-- An RBB may declare a reusable deployment configuration that delivers that
+- A Standard may declare a reusable deployment configuration that delivers that
   outcome.
-- An ABB owns the concrete executable configuration where the setting is
+- A Technology Component owns the concrete executable configuration where the setting is
   actually applied.
 
 Do not store high-level expectations and low-level implementation detail in the
@@ -216,18 +216,18 @@ same object when the lower object can carry the detail directly.
 
 ## Core Object Model
 
-### ABB
+### Technology Component
 
-An ABB is a discrete third-party product object.
+A Technology Component is a discrete third-party product object.
 
-Every ABB must include:
+Every Technology Component must include:
 
 - `vendor`
 - `productName`
 - `productVersion`
 - `classification`
 
-ABB classifications are:
+Technology Component classifications are:
 
 - `operating-system`
 - `compute-platform`
@@ -235,20 +235,20 @@ ABB classifications are:
 - `agent`
 
 Agents require a corresponding external interaction when they are used in an
-RBB. Software ABBs do not automatically require one.
+Standard. Software Technology Components do not automatically require one.
 
-ABBs may also carry:
+Technology Components may also carry:
 
 - `capabilities`
 - `configurations[]`
 
-Configurations belong on the ABB being configured.
+Configurations belong on the Technology Component being configured.
 
-### RBB
+### Standard
 
-An RBB is the only reusable building-block architecture type.
+A Standard is the only reusable building-block architecture type.
 
-RBB classifications are:
+Standard classifications are:
 
 - Host
 - General Service
@@ -257,17 +257,17 @@ RBB classifications are:
 - SaaS Service
 - Product Service
 
-Product Service remains an RBB classification in the machine-readable model,
+Product Service remains a Standard classification in the machine-readable model,
 but it is not a starting-point interview object.
 
-### RA
+### Reference Architecture
 
 A Reference Architecture is a deployment pattern. It exists to express how an
 application can be deployed on reusable building blocks to achieve supported
 non-functional outcomes such as availability, recoverability, resiliency, and
 security posture.
 
-An RA should express:
+A Reference Architecture should express:
 
 - the deployment pattern
 - the service-group structure
@@ -276,12 +276,12 @@ An RA should express:
 It should not own the concrete configuration details if those belong on lower
 objects.
 
-### SDM
+### Software Deployment Pattern
 
-An SDM is the deployment reality for a product. It adopts an RA when
-appropriate and declares what is actually deployed.
+A Software Deployment Pattern is the deployment reality for a product. It follows
+a Reference Architecture when appropriate and declares what is actually deployed.
 
-An SDM should:
+A Software Deployment Pattern should:
 
 - choose from reusable architecture already in the catalog
 - express service groups, deployment targets, failure domains, and deviations
@@ -295,62 +295,62 @@ work. It records source material, generated YAML objects, assumptions,
 unresolved questions, and next steps so work can continue later without relying
 on prior chat memory.
 
-### Compliance Framework
+### Compliance Controls
 
-A Compliance Framework is a pure control catalog. It records:
+Compliance Controls are a pure control catalog. They record:
 
 - `controlId`
 - `name`
 - `externalReference`
 
-### Compliance Profile
+### Control Enforcement Profile
 
-A Compliance Profile applies a pure control catalog to DRAFT. It defines:
+A Control Enforcement Profile applies a pure control catalog to DRAFT. It defines:
 
 - `appliesTo`
 - `validAnswerTypes`
 - `requirementMode`
 - `naAllowed` and `applicability` for conditional controls
-- `relatedCapability` when a control refines an ODC capability
+- `relatedCapability` when a control refines a Definition Checklist capability
 
 ### Control Implementations
 
 Architecture artifacts can record explicit control implementations using:
 
-- `complianceProfiles`
+- `controlEnforcementProfiles`
 - `controlImplementations`
 
-`complianceProfiles` is the explicit compliance claim. If a profile is attached
+`controlEnforcementProfiles` is the explicit compliance claim. If a profile is attached
 to an object, every applicable control from that profile must have a recorded
-implementation or the object is non-compliant for that claimed profile.
+implementation or the object is non-compliant for that claimed Control Enforcement Profile.
 
 If no profile is attached, the object is not labeled non-compliant; it is simply
-not a compliant off-the-shelf artifact for that framework. Control
+not a compliant off-the-shelf artifact for that control profile. Control
 implementations are evidence for declared profiles only and must not appear for
 profiles the object has not claimed.
 
-## ODC Model
+## Definition Checklist Model
 
-An ODC is an **Object Definition Checklist**:
+A Definition Checklist is:
 
 > A structured checklist of required questions and answers used to define a
 > complete and correct architecture object.
 
-The ODC is the interview script. It tells the Draftsman what questions must be
+The Definition Checklist is the interview script. It tells the Draftsman what questions must be
 answered while the object is being defined.
 
-ODCs do not redefine the schema. They define the required capabilities that must be
+Definition Checklists do not redefine the schema. They define the required capabilities that must be
 answered for a complete object.
 
 ## Answer Mechanisms
 
-When an ODC capability or SCC control needs an answer, the answer should use the
-mechanisms already supported by the framework.
+When a Definition Checklist capability or compliance control needs an answer, the answer should use the
+mechanisms already supported by DRAFT.
 
 Depending on the object and capability, valid answers may include:
 
-- ABB selection
-- ABB configuration
+- Technology Component selection
+- Technology Component configuration
 - internal component
 - external interaction
 - deployment configuration
@@ -358,20 +358,20 @@ Depending on the object and capability, valid answers may include:
 - direct field answer on the object
 
 If a required capability or required control is not directly answered, an
-Architectural Decision is required to explain why.
+architectural decision entry is required to explain why.
 
-If an internal component or external interaction is added beyond what the ODC
-or active control frameworks require, an Architectural Decision is also
+If an internal component or external interaction is added beyond what the Definition Checklist
+or active control profiles require, an architectural decision entry is also
 required to explain why.
 
 When interviewing a capability requirement, ask for the mechanism that
 satisfies the capability. Do not convert capability requirements into team
-ownership questions unless the applicable ODC explicitly asks for ownership.
+ownership questions unless the applicable Definition Checklist explicitly asks for ownership.
 Ownership metadata can be collected separately, but it is not a substitute for
-an ODC capability answer.
+a Definition Checklist capability answer.
 
-For `odc.host` patch management, ask what patch platform, installed component,
-ABB configuration, or architectural decision satisfies patch orchestration. Do
+For `checklist.host-standard` patch management, ask what patch platform, installed component,
+Technology Component configuration, or architectural decision satisfies patch orchestration. Do
 not ask which team owns patching as the capability answer.
 
 ## Interview Guidance By Object
@@ -380,8 +380,8 @@ not ask which team owns patching as the capability answer.
 
 Structural minimum:
 
-- one Operating System ABB
-- one Compute Platform ABB
+- one Operating System Technology Component
+- one Compute Platform Technology Component
 
 Required capabilities:
 
@@ -392,12 +392,12 @@ Required capabilities:
 - security monitoring
 - patch management
 
-Capabilities may be answered by ABBs, ABB configurations, external interactions, or
-architectural decisions as allowed by the framework.
+Capabilities may be answered by Technology Components, Technology Component configurations, external interactions, or
+architectural decisions as allowed by the active Definition Checklists and control profiles.
 
 For host interviews, ask capability-by-capability which satisfaction mechanism
 applies. For patch management, ask what mechanism applies patches: an external
-patch platform, an internal agent/software ABB, an ABB configuration, or an
+patch platform, an internal agent/software Technology Component, a Technology Component configuration, or an
 architectural decision. Do not ask for patching team ownership unless the user
 is separately filling object owner metadata.
 
@@ -405,8 +405,8 @@ is separately filling object owner metadata.
 
 Structural minimum:
 
-- one `hostRbb`
-- one `functionAbb`
+- one `hostStandard`
+- one `primaryTechnologyComponent`
 
 Required capabilities:
 
@@ -420,7 +420,7 @@ Required capabilities:
 - failure domain
 
 Optional reusable operational patterns belong in
-`deploymentConfigurations[]` on the RBB, not in the ODC.
+`deploymentConfigurations[]` on the Standard, not in the Definition Checklist.
 
 ### Database Service
 
@@ -455,10 +455,10 @@ Focus on:
 
 Treat as a black-box component inside the infrastructure boundary.
 
-An Appliance ABB is an ABB by product identity, but it behaves like a
-service-like deployed capability because there is no visible host RBB or service
-RBB wrapper. It does not inherit `odc.host` or `odc.service`, so the appliance
-ODC collects those consumer-facing operating answers directly on the ABB.
+An Appliance Component is a Technology Component by product identity, but it behaves like a
+service-like deployed capability because there is no visible host Standard or service
+Standard wrapper. It does not inherit `checklist.host-standard` or `checklist.service-standard`, so the appliance
+Definition Checklist collects those consumer-facing operating answers directly on the Technology Component.
 
 Focus on:
 
@@ -481,11 +481,11 @@ Focus on:
 - service-group structure
 - deployment qualities / pattern-level decisions
 
-### Software Distribution Manifest
+### Software Deployment Pattern
 
 Focus on:
 
-- RA conformance or explicit no-applicable-pattern
+- Reference Architecture conformance or explicit no-applicable-pattern
 - deployed service-group structure
 - deployment targets
 - availability requirement
@@ -496,9 +496,9 @@ Focus on:
 
 ## Product Service Rule
 
-Product Service is not a starting-point ODC object.
+Product Service is not a starting-point Definition Checklist object.
 
-The Draftsman should only surface Product Service when an SDM needs to express
+The Draftsman should only surface Product Service when a Software Deployment Pattern needs to express
 a distinct first-party runtime-behavior component deployed on a substrate.
 
 Do not create a Product Service just because CI/CD deploys something. Use it
@@ -544,7 +544,7 @@ For every interview:
 1. Determine the object the user is trying to define.
 2. Read `AI_INDEX.md` to understand the current checkout.
 3. Read the schema for that object type.
-4. Read the applicable ODC.
+4. Read the applicable Definition Checklist.
 5. Search the repo for reusable inventory before proposing a new object.
 6. Use the closest template in `templates/` when creating a new object.
 7. Interview the user capability by capability.

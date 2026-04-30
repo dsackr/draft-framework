@@ -1,0 +1,64 @@
+schemaVersion: '1.0'
+id: controls.tx-ramp
+type: compliance_controls
+name: TX-RAMP
+description: 'Starter TX-RAMP control pack for DRAFT. This file is intended to map
+  TX-RAMP control expectations onto the existing DRAFT concern model without changing
+  the Definition Checklist files.
+
+  '
+version: 0.1.0
+catalogStatus: draft
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- compliance
+- tx-ramp
+- starter-pack
+controlsKind: common
+controlIdNamespace: TXRAMP
+defaultSelection: false
+notes: 'Starter mapping aligned to the public TX-RAMP program information. Replace
+  the shared program link with deeper authoritative links later if stable per-control
+  references become available.
+
+  '
+controls:
+- controlId: AC-2
+  name: Account Management and Centralized Authentication
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: AU-2
+  name: Auditable Event Logging
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: SI-4
+  name: Security Monitoring
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: CM-3
+  name: Configuration Change Control and Patching
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: SC-28
+  name: Data Protection for Database Services
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: AC-6
+  name: Least Privilege for Database Services
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: CP-9
+  name: Backup and Recovery
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: IA-5
+  name: Secrets and Authenticator Management
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: IA-5
+  name: Product Service Secrets and Authenticator Management
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: PL-2
+  name: Data Classification Declaration
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: CP-2
+  name: Availability and Recovery Objectives
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- controlId: CA-2
+  name: Architecture and Control Conformance
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp

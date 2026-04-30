@@ -1,0 +1,113 @@
+schemaVersion: '1.0'
+type: host_standard
+requiredFields:
+- schemaVersion
+- id
+- type
+- name
+- catalogStatus
+- lifecycleStatus
+optionalFields:
+- description
+- version
+- owner
+- tags
+- satisfiesDefinitionChecklist
+- architecturalDecisions
+- operatingSystemComponent
+- computePlatformComponent
+- internalComponents
+- externalInteractions
+- deploymentConfigurations
+- controlEnforcementProfiles
+- controlImplementations
+idPattern: ^host\.[a-z0-9.-]+$
+enumFields:
+  catalogStatus:
+  - stub
+  - draft
+  - approved
+  lifecycleStatus:
+  - pre-invest
+  - invest
+  - maintain
+  - disinvest
+  - exit
+fieldTypes:
+  owner: dict
+  tags: list
+  satisfiesDefinitionChecklist: list
+  architecturalDecisions: dict
+  internalComponents: list
+  externalInteractions: list
+  deploymentConfigurations: list
+  controlEnforcementProfiles: list
+  controlImplementations: list
+collectionSchemas:
+  internalComponents: internalComponent
+  externalInteractions: externalInteraction
+  deploymentConfigurations: deploymentConfiguration
+  controlImplementations: controlImplementation
+internalComponent:
+  requiredFields:
+  - ref
+  optionalFields:
+  - role
+  - notes
+externalInteraction:
+  requiredFields:
+  - capabilities
+  optionalFields:
+  - name
+  - ref
+  - notes
+  - enabledBy
+  fieldTypes:
+    capabilities: list
+deploymentConfiguration:
+  requiredFields:
+  - id
+  - name
+  - description
+  optionalFields:
+  - addressesQualities
+  - addsInternalComponents
+  - addsExternalInteractions
+  - addsArchitecturalDecisions
+  - notes
+  enumListFields:
+    addressesQualities:
+    - availability
+    - scalability
+    - recoverability
+  fieldTypes:
+    addressesQualities: list
+    addsInternalComponents: list
+    addsExternalInteractions: list
+    addsArchitecturalDecisions: dict
+controlImplementation:
+  requiredFields:
+  - profile
+  - controlId
+  - status
+  optionalFields:
+  - mechanism
+  - key
+  - equals
+  - criteria
+  - ref
+  - notes
+  enumFields:
+    status:
+    - satisfied
+    - not-applicable
+    - opted-out
+    mechanism:
+    - technologyComponent
+    - technologyComponentConfiguration
+    - deploymentConfiguration
+    - externalInteraction
+    - architecturalDecision
+    - field
+  fieldTypes:
+    criteria: dict

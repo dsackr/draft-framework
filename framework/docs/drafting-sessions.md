@@ -30,7 +30,7 @@ Create a Drafting Session when:
 - downstream stubs or provisional objects are created
 - unresolved questions need to be revisited later in a structured way
 
-Do not use a Drafting Session as a replacement for an SDM, RA, or RBB. It is a
+Do not use a Drafting Session as a replacement for a Software Deployment Pattern, Reference Architecture, or Standard. It is a
 working object that wraps incomplete authoring state.
 
 ## YAML Shape
@@ -70,16 +70,16 @@ The normal pattern is:
 
 That keeps the draft moving without pretending uncertainty does not exist.
 
-## Relationship To SDMs
+## Relationship To Software Deployment Patterns
 
-Drafting Sessions are especially useful for SDMs because SDM authoring often
+Drafting Sessions are especially useful for Software Deployment Patterns because Software Deployment Pattern authoring often
 starts before all downstream runtime details are known.
 
 In that case:
 
-- the SDM can still be created and validated
+- the Software Deployment Pattern can still be created and validated
 - provisional assumptions can be made explicit
-- unresolved runtime questions can be tracked outside the SDM itself
+- unresolved runtime questions can be tracked outside the Software Deployment Pattern itself
 
-This prevents the SDM from turning into a dumping ground for half-finished
+This prevents the Software Deployment Pattern from turning into a dumping ground for half-finished
 notes while still preserving the work that remains.

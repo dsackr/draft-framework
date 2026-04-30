@@ -18,7 +18,7 @@ BASE_CONFIGURATION_ROOT = FRAMEWORK_ROOT / "configurations"
 DEFAULT_WORKSPACE_ROOT = REPO_ROOT / "examples"
 SKIP_DIRS = {"tools", "schemas", "docs", "adrs", ".github", ".git", ".draft"}
 VALID_DIAGRAM_TIERS = {"presentation", "application", "data", "utility"}
-VALID_ABB_CLASSIFICATIONS = {"operating-system", "compute-platform", "software", "agent"}
+VALID_TECHNOLOGY_COMPONENT_CLASSIFICATIONS = {"operating-system", "compute-platform", "software", "agent"}
 
 def load_valid_capabilities(search_roots: list[Path] | None = None) -> set[str]:
     # Fallback to current concerns to allow transition
@@ -67,26 +67,34 @@ TYPE_CHECKERS = {
 }
 
 VALID_CONTROL_SCOPES = {
-    "rbb.host",
-    "rbb.service.general",
-    "rbb.service.database",
-    "rbb.service.product",
-    "rbb.service.paas",
-    "rbb.service.saas",
-    "ra",
-    "sdm",
-    "abb.appliance",
+    "host_standard",
+    "service_standard",
+    "database_standard",
+    "product_service",
+    "paas_service_standard",
+    "saas_service_standard",
+    "reference_architecture",
+    "software_deployment_pattern",
+    "appliance_component",
 }
 
 VALID_CONTROL_ANSWER_TYPES = {
-    "abb",
-    "abbConfiguration",
+    "technologyComponent",
+    "technologyComponentConfiguration",
     "deploymentConfiguration",
     "externalInteraction",
     "architecturalDecision",
     "field",
 }
 VALID_CONTROL_REQUIREMENT_MODES = {"mandatory", "conditional"}
+STANDARD_TYPES = {
+    "host_standard",
+    "service_standard",
+    "database_standard",
+    "product_service",
+    "paas_service_standard",
+    "saas_service_standard",
+}
 
 
 def discover_yaml_files(root: Path) -> list[Path]:
@@ -318,38 +326,38 @@ def validate_schema_section(
             validate_schema_section(item, child_schema, f"{context}: {field}[{index}]", failures)
 
 
-def resolve_odc_requirements(odc_id: str, odcs: dict[str, dict[str, Any]], stack: set[str] | None = None) -> list[dict[str, Any]]:
+def resolve_checklist_requirements(odc_id: str, odcs: dict[str, dict[str, Any]], stack: set[str] | None = None) -> list[dict[str, Any]]:
     if odc_id not in odcs:
-        raise KeyError(f"unknown ODC '{odc_id}'")
+        raise KeyError(f"unknown Definition Checklist '{odc_id}'")
     stack = stack or set()
     if odc_id in stack:
-        raise ValueError(f"cyclic ODC inheritance detected at '{odc_id}'")
+        raise ValueError(f"cyclic Definition Checklist inheritance detected at '{odc_id}'")
     stack.add(odc_id)
     odc = odcs[odc_id]
     requirements: list[dict[str, Any]] = []
     parent_id = odc.get("inherits")
     if parent_id:
-        requirements.extend(resolve_odc_requirements(parent_id, odcs, stack))
+        requirements.extend(resolve_checklist_requirements(parent_id, odcs, stack))
     requirements.extend(odc.get("requirements", []))
     stack.remove(odc_id)
     return requirements
 
 
-def scope_to_odc_id(scope: str) -> str | None:
+def scope_to_checklist_id(scope: str) -> str | None:
     return {
-        "rbb.host": "odc.host",
-        "rbb.service.general": "odc.service",
-        "rbb.service.database": "odc.service.dbms",
-        "rbb.service.paas": "odc.paas-service",
-        "rbb.service.saas": "odc.saas-service",
-        "ra": "odc.ra",
-        "sdm": "odc.sdm",
-        "abb.appliance": "odc.appliance-abb",
-        "drafting_session": "odc.drafting-session",
+        "host_standard": "checklist.host-standard",
+        "service_standard": "checklist.service-standard",
+        "database_standard": "checklist.database-standard",
+        "paas_service_standard": "checklist.paas-service-standard",
+        "saas_service_standard": "checklist.saas-service-standard",
+        "reference_architecture": "checklist.reference-architecture",
+        "software_deployment_pattern": "checklist.software-deployment-pattern",
+        "appliance_component": "checklist.appliance-component",
+        "drafting_session": "checklist.drafting-session",
     }.get(scope)
 
 
-def applicable_odc_ids(obj: dict[str, Any], odcs: dict[str, dict[str, Any]]) -> list[str]:
+def applicable_checklist_ids(obj: dict[str, Any], odcs: dict[str, dict[str, Any]]) -> list[str]:
     object_type = obj.get("type")
     applicable: list[str] = []
     for odc_id, odc in odcs.items():
@@ -360,17 +368,10 @@ def applicable_odc_ids(obj: dict[str, Any], odcs: dict[str, dict[str, Any]]) -> 
             continue
         if applies_to.get("subtype") and obj.get("subtype") != applies_to.get("subtype"):
             continue
-        if object_type == "rbb":
-            category = applies_to.get("category")
-            service_category = applies_to.get("serviceCategory")
-            if category and obj.get("category") != category:
+        if object_type == "host_standard" and odc_id == "checklist.host-standard":
+            object_id = str(obj.get("id", ""))
+            if object_id.startswith("host.serverless.") or object_id.startswith("host.container."):
                 continue
-            if service_category and obj.get("serviceCategory") != service_category:
-                continue
-            if odc_id == "odc.host":
-                object_id = str(obj.get("id", ""))
-                if object_id.startswith("rbb.host.serverless.") or object_id.startswith("rbb.host.container."):
-                    continue
         applicable.append(odc_id)
     return sorted(applicable)
 
@@ -391,9 +392,9 @@ def mechanism_description(mechanism: dict[str, Any]) -> str:
         if concern:
             return f"internalComponent(concern={concern})"
         return f"internalComponent(role={role or 'unknown'})"
-    if mechanism_type == "abbConfiguration":
+    if mechanism_type == "technologyComponentConfiguration":
         capability = mechanism.get("criteria", {}).get("capability") or mechanism.get("criteria", {}).get("concern", "unknown")
-        return f"abbConfiguration(capability={capability})"
+        return f"technologyComponentConfiguration(capability={capability})"
     if mechanism_type == "deploymentConfiguration":
         quality = mechanism.get("criteria", {}).get("quality", "unknown")
         return f"deploymentConfiguration(quality={quality})"
@@ -402,9 +403,9 @@ def mechanism_description(mechanism: dict[str, Any]) -> str:
     return str(mechanism_type)
 
 
-def referenced_abbs(obj: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+def referenced_technology_components(obj: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
     refs: list[str] = []
-    for field in ("osAbb", "hardwareAbb", "functionAbb"):
+    for field in ("operatingSystemComponent", "computePlatformComponent", "primaryTechnologyComponent"):
         ref = obj.get(field)
         if is_non_empty(ref):
             refs.append(str(ref))
@@ -414,7 +415,7 @@ def referenced_abbs(obj: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]
 
     resolved: list[dict[str, Any]] = []
     seen: set[str] = set()
-    if obj.get("type") == "abb" and is_non_empty(obj.get("id")):
+    if obj.get("type") in {"technology_component", "appliance_component"} and is_non_empty(obj.get("id")):
         resolved.append(obj)
         seen.add(str(obj["id"]))
     for ref in refs:
@@ -422,7 +423,7 @@ def referenced_abbs(obj: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]
             continue
         seen.add(ref)
         target = catalog_by_id.get(ref)
-        if target and target.get("type") == "abb":
+        if target and target.get("type") in {"technology_component", "appliance_component"}:
             resolved.append(target)
     return resolved
 
@@ -455,7 +456,7 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any], catalog_
         role = criteria.get("role")
         classification = criteria.get("classification")
         if capability:
-            for abb in referenced_abbs(obj, catalog_by_id):
+            for abb in referenced_technology_components(obj, catalog_by_id):
                 if classification and abb.get("classification") != classification:
                     continue
                 caps = abb.get("capabilities", [])
@@ -466,10 +467,10 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any], catalog_
             isinstance(component, dict) and component.get("role") == role
             for component in obj.get("internalComponents", [])
         )
-    if mechanism_type == "abbConfiguration":
+    if mechanism_type == "technologyComponentConfiguration":
         capability = mechanism.get("criteria", {}).get("capability") or mechanism.get("criteria", {}).get("concern")
         classification = mechanism.get("criteria", {}).get("classification")
-        for abb in referenced_abbs(obj, catalog_by_id):
+        for abb in referenced_technology_components(obj, catalog_by_id):
             if classification and abb.get("classification") != classification:
                 continue
             configurations = abb.get("configurations", [])
@@ -505,7 +506,7 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any], catalog_
     return False
 
 
-def validate_odc_requirement(
+def validate_checklist_requirement(
     obj: dict[str, Any],
     requirement: dict[str, Any],
     catalog_by_id: dict[str, dict[str, Any]],
@@ -522,7 +523,7 @@ def validate_odc_requirement(
         mechanism_text = f"at least {minimum} of {mechanism_text}"
     return (
         False,
-        f"[{obj.get('id', 'unknown')}] ODC requirement '{requirement_id}' not satisfied — needs {mechanism_text}",
+        f"[{obj.get('id', 'unknown')}] Definition Checklist requirement '{requirement_id}' not satisfied — needs {mechanism_text}",
     )
 
 
@@ -556,7 +557,7 @@ def validate_architectural_decisions(obj: dict[str, Any], path: Path, failures: 
             )
 
 
-def validate_abb(
+def validate_component(
     obj: dict[str, Any],
     path: Path,
     odcs: dict[str, dict[str, Any]],
@@ -564,9 +565,9 @@ def validate_abb(
     failures: list[str],
 ) -> None:
     classification = obj.get("classification")
-    if classification not in VALID_ABB_CLASSIFICATIONS:
+    if classification not in VALID_TECHNOLOGY_COMPONENT_CLASSIFICATIONS:
         failures.append(
-            f"{path}: ABB classification must be one of {sorted(VALID_ABB_CLASSIFICATIONS)}"
+            f"{path}: Technology Component classification must be one of {sorted(VALID_TECHNOLOGY_COMPONENT_CLASSIFICATIONS)}"
         )
     capabilities = obj.get("capabilities", [])
     if capabilities is not None:
@@ -597,13 +598,13 @@ def validate_abb(
                         f"{path}: configurations[{index}].capabilities contains invalid ids {invalid} — expected values from {sorted(VALID_CAPABILITIES)}"
                     )
 
-    applicable = applicable_odc_ids(obj, odcs)
+    applicable = applicable_checklist_ids(obj, odcs)
     for odc_id in applicable:
         if odc_id not in odcs:
-            failures.append(f"{path}: referenced ODC '{odc_id}' does not exist")
+            failures.append(f"{path}: referenced Definition Checklist '{odc_id}' does not exist")
             continue
-        for requirement in resolve_odc_requirements(odc_id, odcs):
-            valid, message = validate_odc_requirement(obj, requirement, catalog_by_id)
+        for requirement in resolve_checklist_requirements(odc_id, odcs):
+            valid, message = validate_checklist_requirement(obj, requirement, catalog_by_id)
             if not valid:
                 failures.append(f"{path}: {message}")
     validate_control_implementations(obj, path, catalog_by_id, failures)
@@ -632,7 +633,7 @@ def has_enabled_external_interaction(obj: dict[str, Any], abb_id: str) -> bool:
     )
 
 
-def validate_classified_abb_refs(
+def validate_classified_component_refs(
     obj: dict[str, Any],
     path: Path,
     catalog_by_id: dict[str, dict[str, Any]],
@@ -643,25 +644,25 @@ def validate_classified_abb_refs(
         if not ref:
             return
         target = catalog_by_id.get(ref)
-        if not target or target.get("type") != "abb":
+        if not target or target.get("type") != "technology_component":
             return
         target_classification = target.get("classification")
         if expected_classification and target_classification != expected_classification:
             failures.append(
-                f"{path}: {field} must reference an ABB classified as '{expected_classification}' — got '{target_classification or 'unknown'}'"
+                f"{path}: {field} must reference a Technology Component classified as '{expected_classification}' — got '{target_classification or 'unknown'}'"
             )
 
-    validate_ref("osAbb", "operating-system")
-    validate_ref("hardwareAbb", "compute-platform")
+    validate_ref("operatingSystemComponent", "operating-system")
+    validate_ref("computePlatformComponent", "compute-platform")
 
-    function_ref = obj.get("functionAbb")
+    function_ref = obj.get("primaryTechnologyComponent")
     if function_ref:
         target = catalog_by_id.get(function_ref)
-        if target and target.get("type") == "abb":
+        if target and target.get("type") == "technology_component":
             classification = target.get("classification")
             if classification not in {"software", "agent"}:
                 failures.append(
-                    f"{path}: functionAbb must reference an ABB classified as 'software' or 'agent' — got '{classification or 'unknown'}'"
+                    f"{path}: primaryTechnologyComponent must reference a Technology Component classified as 'software' or 'agent' — got '{classification or 'unknown'}'"
                 )
 
     components = obj.get("internalComponents", [])
@@ -674,16 +675,16 @@ def validate_classified_abb_refs(
         if not ref:
             continue
         target = catalog_by_id.get(ref)
-        if not target or target.get("type") != "abb":
+        if not target or target.get("type") != "technology_component":
             continue
         if target.get("classification") == "agent":
             if not has_enabled_external_interaction(obj, ref) and not agent_interaction_exception(obj, ref):
                 failures.append(
-                    f"{path}: agent ABB '{ref}' requires an externalInteraction enabledBy that ABB or architecturalDecisions.agentInteractionExceptions"
+                    f"{path}: agent Technology Component '{ref}' requires an externalInteraction enabledBy that Technology Component or architecturalDecisions.agentInteractionExceptions"
                 )
 
 
-def validate_rbb(
+def validate_standard(
     obj: dict[str, Any],
     path: Path,
     odcs: dict[str, dict[str, Any]],
@@ -692,47 +693,46 @@ def validate_rbb(
     failures: list[str],
     warnings: list[str],
 ) -> None:
-    satisfies = obj.get("satisfiesODC", [])
+    satisfies = obj.get("satisfiesDefinitionChecklist", [])
     if not isinstance(satisfies, list):
-        failures.append(f"{path}: satisfiesODC must be a list")
+        failures.append(f"{path}: satisfiesDefinitionChecklist must be a list")
         return
 
-    category = obj.get("category")
-    service_category = obj.get("serviceCategory")
-    applicable = sorted(set(satisfies) | set(applicable_odc_ids(obj, odcs)))
+    applicable = sorted(set(satisfies) | set(applicable_checklist_ids(obj, odcs)))
     for odc_id in applicable:
         if odc_id not in odcs:
-            failures.append(f"{path}: referenced ODC '{odc_id}' does not exist")
+            failures.append(f"{path}: referenced Definition Checklist '{odc_id}' does not exist")
             continue
-        for requirement in resolve_odc_requirements(odc_id, odcs):
-            valid, message = validate_odc_requirement(obj, requirement, catalog_by_id)
+        for requirement in resolve_checklist_requirements(odc_id, odcs):
+            valid, message = validate_checklist_requirement(obj, requirement, catalog_by_id)
             if not valid:
                 failures.append(f"{path}: {message}")
 
-    if category == "host":
+    object_type = obj.get("type")
+    if object_type == "host_standard":
         host_id = str(obj.get("id", ""))
-        required_host_fields = () if host_id.startswith("rbb.host.serverless.") else ("osAbb", "hardwareAbb")
+        required_host_fields = () if host_id.startswith(("host.serverless.", "host.container.")) else ("operatingSystemComponent", "computePlatformComponent")
         for field in required_host_fields:
             ref = obj.get(field)
             if ref and ref not in catalog_ids:
                 failures.append(f"{path}: {field} references unknown object '{ref}'")
-    if category == "service" and service_category in {"general", "database"}:
-        for field in ("hostRbb", "functionAbb"):
+    if object_type in {"service_standard", "database_standard"}:
+        for field in ("hostStandard", "primaryTechnologyComponent"):
             ref = obj.get(field)
             if ref and ref not in catalog_ids:
                 failures.append(f"{path}: {field} references unknown object '{ref}'")
-    if category == "service" and service_category == "product":
+    if object_type == "product_service":
         runs_on = obj.get("runsOn")
         target = catalog_by_id.get(runs_on) if runs_on else None
-        if runs_on and (not target or target.get("type") != "rbb"):
-            failures.append(f"{path}: runsOn references unknown RBB '{runs_on}'")
-    if category == "service" and service_category == "saas":
+        if runs_on and (not target or target.get("type") not in {"host_standard", "service_standard", "database_standard", "paas_service_standard", "saas_service_standard"}):
+            failures.append(f"{path}: runsOn references unknown standard '{runs_on}'")
+    if object_type == "saas_service_standard":
         if "dataLeavesInfrastructure" in obj and not isinstance(obj.get("dataLeavesInfrastructure"), bool):
             failures.append(f"{path}: dataLeavesInfrastructure must be true or false")
         if obj.get("dataLeavesInfrastructure") is True and not is_non_empty(obj.get("dpaNotes")):
             warnings.append(f"{path}: SaaS Services with dataLeavesInfrastructure=true should document dpaNotes")
 
-    validate_classified_abb_refs(obj, path, catalog_by_id, failures)
+    validate_classified_component_refs(obj, path, catalog_by_id, failures)
     deployment_configurations = obj.get("deploymentConfigurations", [])
     if deployment_configurations is not None:
         if not isinstance(deployment_configurations, list):
@@ -763,54 +763,54 @@ def validate_ra(
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
 ) -> None:
-    applicable = applicable_odc_ids(obj, odcs)
-    if "odc.ra" not in applicable:
+    applicable = applicable_checklist_ids(obj, odcs)
+    if "checklist.reference-architecture" not in applicable:
         return
 
     object_id = obj.get("id", "unknown")
     if not is_non_empty(obj.get("patternType")):
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'pattern-type' not satisfied — needs architecturalDecision(patternType)"
+            f"{path}: [{object_id}] Definition Checklist requirement 'pattern-type' not satisfied — needs architecturalDecision(patternType)"
         )
 
     service_groups = obj.get("serviceGroups", [])
     if not isinstance(service_groups, list) or not service_groups:
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'service-groups' not satisfied — needs serviceGroups with tiered RBB entries"
+            f"{path}: [{object_id}] Definition Checklist requirement 'service-groups' not satisfied — needs serviceGroups with tiered Standard entries"
         )
     else:
         groups_without_rbbs = [
             group.get("name", "unknown")
             for group in service_groups
-            if isinstance(group, dict) and not isinstance(group.get("rbbs"), list)
+            if isinstance(group, dict) and not isinstance(group.get("standards"), list)
         ]
         if groups_without_rbbs:
             failures.append(
-                f"{path}: [{object_id}] ODC requirement 'service-groups' not satisfied — every service group must declare rbbs (missing on: {', '.join(groups_without_rbbs)})"
+                f"{path}: [{object_id}] Definition Checklist requirement 'service-groups' not satisfied — every service group must declare standards (missing on: {', '.join(groups_without_rbbs)})"
             )
 
     if not is_non_empty(obj.get("architecturalDecisions")):
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'deployment-qualities' not satisfied — needs architecturalDecision(architecturalDecisions)"
+            f"{path}: [{object_id}] Definition Checklist requirement 'deployment-qualities' not satisfied — needs architecturalDecision(architecturalDecisions)"
         )
     validate_control_implementations(obj, path, catalog_by_id, failures)
 
 
-def validate_sdm(
+def validate_software_deployment_pattern(
     obj: dict[str, Any],
     path: Path,
     odcs: dict[str, dict[str, Any]],
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
 ) -> None:
-    applicable = applicable_odc_ids(obj, odcs)
-    if "odc.sdm" not in applicable:
+    applicable = applicable_checklist_ids(obj, odcs)
+    if "checklist.software-deployment-pattern" not in applicable:
         return
 
     object_id = obj.get("id", "unknown")
-    if not is_non_empty(obj.get("appliesPattern")) and not is_non_empty(obj.get("architecturalDecisions", {}).get("noApplicablePattern") if isinstance(obj.get("architecturalDecisions"), dict) else None):
+    if not is_non_empty(obj.get("followsReferenceArchitecture")) and not is_non_empty(obj.get("architecturalDecisions", {}).get("noApplicablePattern") if isinstance(obj.get("architecturalDecisions"), dict) else None):
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'ra-conformance' not satisfied — needs field(appliesPattern) or architecturalDecision(noApplicablePattern)"
+            f"{path}: [{object_id}] Definition Checklist requirement 'reference-architecture-conformance' not satisfied — needs field(followsReferenceArchitecture) or architecturalDecision(noApplicablePattern)"
         )
 
     service_groups = obj.get("serviceGroups", [])
@@ -819,7 +819,7 @@ def validate_sdm(
 
     if not service_groups:
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'service-groups' not satisfied — serviceGroups cannot be empty"
+            f"{path}: [{object_id}] Definition Checklist requirement 'service-groups' not satisfied — serviceGroups cannot be empty"
         )
 
     architectural_decisions = obj.get("architecturalDecisions", {})
@@ -828,12 +828,12 @@ def validate_sdm(
 
     if not is_non_empty(architectural_decisions.get("deploymentTargets")):
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'deployment-targets' not satisfied — needs architecturalDecision(deploymentTargets)"
+            f"{path}: [{object_id}] Definition Checklist requirement 'deployment-targets' not satisfied — needs architecturalDecision(deploymentTargets)"
         )
 
     if not is_non_empty(architectural_decisions.get("availabilityRequirement")):
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'availability-requirement' not satisfied — needs architecturalDecision(availabilityRequirement)"
+            f"{path}: [{object_id}] Definition Checklist requirement 'availability-requirement' not satisfied — needs architecturalDecision(availabilityRequirement)"
         )
 
     has_additional_interactions = any(
@@ -844,29 +844,29 @@ def validate_sdm(
     ) or (isinstance(obj.get("externalInteractions"), list) and len(obj.get("externalInteractions", [])) > 0)
     if not has_additional_interactions and not is_non_empty(architectural_decisions.get("noAdditionalInteractions")):
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'additional-interactions' not satisfied — needs externalInteraction(capability=any) or architecturalDecision(noAdditionalInteractions)"
+            f"{path}: [{object_id}] Definition Checklist requirement 'additional-interactions' not satisfied — needs externalInteraction(capability=any) or architecturalDecision(noAdditionalInteractions)"
         )
 
     if not is_non_empty(architectural_decisions.get("dataClassification")):
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'data-classification' not satisfied — needs architecturalDecision(dataClassification)"
+            f"{path}: [{object_id}] Definition Checklist requirement 'data-classification' not satisfied — needs architecturalDecision(dataClassification)"
         )
 
     if not is_non_empty(architectural_decisions.get("failureDomain")):
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'failure-domain' not satisfied — needs architecturalDecision(failureDomain)"
+            f"{path}: [{object_id}] Definition Checklist requirement 'failure-domain' not satisfied — needs architecturalDecision(failureDomain)"
         )
 
     if not is_non_empty(architectural_decisions.get("patternDeviations")) and not is_non_empty(architectural_decisions.get("noPatternDeviations")):
         failures.append(
-            f"{path}: [{object_id}] ODC requirement 'pattern-deviations' not satisfied — needs architecturalDecision(patternDeviations) or architecturalDecision(noPatternDeviations)"
+            f"{path}: [{object_id}] Definition Checklist requirement 'pattern-deviations' not satisfied — needs architecturalDecision(patternDeviations) or architecturalDecision(noPatternDeviations)"
         )
     validate_control_implementations(obj, path, catalog_by_id, failures)
 
 
-def validate_ard(obj: dict[str, Any], path: Path, failures: list[str], warnings: list[str]) -> None:
+def validate_decision_record(obj: dict[str, Any], path: Path, failures: list[str], warnings: list[str]) -> None:
     if obj.get("category") == "decision" and not is_non_empty(obj.get("decisionRationale")):
-        warnings.append(f"{path}: decision ARDs should include decisionRationale")
+        warnings.append(f"{path}: decision Decision Records should include decisionRationale")
 
 
 def validate_drafting_session(
@@ -876,13 +876,13 @@ def validate_drafting_session(
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
 ) -> None:
-    applicable = applicable_odc_ids(obj, odcs)
+    applicable = applicable_checklist_ids(obj, odcs)
     for odc_id in applicable:
         if odc_id not in odcs:
-            failures.append(f"{path}: referenced ODC '{odc_id}' does not exist")
+            failures.append(f"{path}: referenced Definition Checklist '{odc_id}' does not exist")
             continue
-        for requirement in resolve_odc_requirements(odc_id, odcs):
-            valid, message = validate_odc_requirement(obj, requirement, catalog_by_id)
+        for requirement in resolve_checklist_requirements(odc_id, odcs):
+            valid, message = validate_checklist_requirement(obj, requirement, catalog_by_id)
             if not valid:
                 failures.append(f"{path}: {message}")
 
@@ -923,25 +923,9 @@ def validate_drafting_session(
 
 
 def object_scope(obj: dict[str, Any]) -> str | None:
-    if obj.get("type") == "rbb":
-        if obj.get("category") == "host":
-            return "rbb.host"
-        if obj.get("category") == "service" and obj.get("serviceCategory") == "general":
-            return "rbb.service.general"
-        if obj.get("category") == "service" and obj.get("serviceCategory") == "database":
-            return "rbb.service.database"
-        if obj.get("category") == "service" and obj.get("serviceCategory") == "product":
-            return "rbb.service.product"
-        if obj.get("category") == "service" and obj.get("serviceCategory") == "paas":
-            return "rbb.service.paas"
-        if obj.get("category") == "service" and obj.get("serviceCategory") == "saas":
-            return "rbb.service.saas"
-    if obj.get("type") == "reference_architecture":
-        return "ra"
-    if obj.get("type") == "software_distribution_manifest":
-        return "sdm"
-    if obj.get("type") == "abb" and obj.get("subtype") == "appliance":
-        return "abb.appliance"
+    object_type = obj.get("type")
+    if object_type in VALID_CONTROL_SCOPES:
+        return str(object_type)
     return None
 
 
@@ -984,25 +968,25 @@ def find_deployment_configuration(obj: dict[str, Any], implementation: dict[str,
     return False
 
 
-def find_abb_reference(obj: dict[str, Any], implementation: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]]) -> bool:
+def find_technology_component_reference(obj: dict[str, Any], implementation: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]]) -> bool:
     ref = implementation.get("ref")
     if not is_non_empty(ref):
         return False
-    if obj.get("osAbb") == ref or obj.get("hardwareAbb") == ref or obj.get("functionAbb") == ref:
+    if obj.get("operatingSystemComponent") == ref or obj.get("computePlatformComponent") == ref or obj.get("primaryTechnologyComponent") == ref:
         return True
     for component in obj.get("internalComponents", []) or []:
         if isinstance(component, dict) and component.get("ref") == ref:
             return True
     target = catalog_by_id.get(str(ref))
-    return bool(target and target.get("type") == "abb")
+    return bool(target and target.get("type") in {"technology_component", "appliance_component"})
 
 
-def find_abb_configuration(obj: dict[str, Any], implementation: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]]) -> bool:
+def find_technology_component_configuration(obj: dict[str, Any], implementation: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]]) -> bool:
     ref = implementation.get("ref")
     key = implementation.get("key")
     criteria = implementation.get("criteria", {}) if isinstance(implementation.get("criteria"), dict) else {}
     capability = criteria.get("capability") or criteria.get("concern")
-    for abb in referenced_abbs(obj, catalog_by_id):
+    for abb in referenced_technology_components(obj, catalog_by_id):
         if ref and abb.get("id") != ref:
             continue
         configurations = abb.get("configurations", [])
@@ -1036,33 +1020,36 @@ def implementation_resolves(
         return find_external_interaction(obj, implementation)
     if mechanism == "deploymentConfiguration":
         return find_deployment_configuration(obj, implementation)
-    if mechanism == "abb":
-        return find_abb_reference(obj, implementation, catalog_by_id)
-    if mechanism == "abbConfiguration":
-        return find_abb_configuration(obj, implementation, catalog_by_id)
+    if mechanism == "technologyComponent":
+        return find_technology_component_reference(obj, implementation, catalog_by_id)
+    if mechanism == "technologyComponentConfiguration":
+        return find_technology_component_configuration(obj, implementation, catalog_by_id)
     return False
 
 
-def validate_compliance_profile(
+def validate_control_enforcement_profile(
     obj: dict[str, Any],
     path: Path,
     catalog_by_id: dict[str, dict[str, Any]],
     odcs: dict[str, dict[str, Any]],
     failures: list[str],
 ) -> None:
-    applicable = applicable_odc_ids(obj, odcs)
-    if "odc.compliance-profile" not in applicable:
-        failures.append(f"{path}: compliance profile is missing applicable ODC 'odc.compliance-profile'")
+    applicable = applicable_checklist_ids(obj, odcs)
+    if "checklist.control-enforcement-profile" not in applicable:
+        failures.append(
+            f"{path}: control enforcement profile is missing applicable Definition Checklist "
+            "'checklist.control-enforcement-profile'"
+        )
 
-    framework_id = obj.get("framework")
-    framework = catalog_by_id.get(str(framework_id)) if is_non_empty(framework_id) else None
-    if not framework or framework.get("type") != "compliance_framework":
-        failures.append(f"{path}: framework must reference an existing compliance framework")
+    controls_id = obj.get("controls")
+    controls = catalog_by_id.get(str(controls_id)) if is_non_empty(controls_id) else None
+    if not controls or controls.get("type") != "compliance_controls":
+        failures.append(f"{path}: controls must reference an existing compliance controls object")
         framework_controls = set()
     else:
         framework_controls = {
             control.get("controlId")
-            for control in framework.get("controls", [])
+            for control in controls.get("controls", [])
             if isinstance(control, dict) and is_non_empty(control.get("controlId"))
         }
 
@@ -1080,107 +1067,107 @@ def validate_compliance_profile(
         control_id = semantic.get("controlId")
         if not is_non_empty(control_id) or control_id not in framework_controls:
             failures.append(
-                f"{context}: ODC requirement 'semantic-control-reference' not satisfied — controlId must exist in the referenced control catalog"
+                f"{context}: Definition Checklist requirement 'semantic-control-reference' not satisfied — controlId must exist in the referenced control catalog"
             )
 
         applies_to = semantic.get("appliesTo")
         if not isinstance(applies_to, list) or not applies_to:
             failures.append(
-                f"{context}: ODC requirement 'draft-applicability' not satisfied — appliesTo must be a non-empty list"
+                f"{context}: Definition Checklist requirement 'draft-applicability' not satisfied — appliesTo must be a non-empty list"
             )
             continue
         invalid_scopes = [scope for scope in applies_to if scope not in VALID_CONTROL_SCOPES]
         if invalid_scopes:
             failures.append(
-                f"{context}: ODC requirement 'draft-applicability' not satisfied — invalid appliesTo values {invalid_scopes}"
+                f"{context}: Definition Checklist requirement 'draft-applicability' not satisfied — invalid appliesTo values {invalid_scopes}"
             )
 
         valid_answer_types = semantic.get("validAnswerTypes")
         if not isinstance(valid_answer_types, list) or not valid_answer_types:
             failures.append(
-                f"{context}: ODC requirement 'valid-answer-types' not satisfied — validAnswerTypes must be a non-empty list"
+                f"{context}: Definition Checklist requirement 'valid-answer-types' not satisfied — validAnswerTypes must be a non-empty list"
             )
         else:
             invalid_answer_types = [value for value in valid_answer_types if value not in VALID_CONTROL_ANSWER_TYPES]
             if invalid_answer_types:
                 failures.append(
-                    f"{context}: ODC requirement 'valid-answer-types' not satisfied — invalid validAnswerTypes values {invalid_answer_types}"
+                    f"{context}: Definition Checklist requirement 'valid-answer-types' not satisfied — invalid validAnswerTypes values {invalid_answer_types}"
                 )
 
         requirement_mode = semantic.get("requirementMode")
         if requirement_mode not in VALID_CONTROL_REQUIREMENT_MODES:
             failures.append(
-                f"{context}: ODC requirement 'requirement-mode' not satisfied — requirementMode must be one of {sorted(VALID_CONTROL_REQUIREMENT_MODES)}"
+                f"{context}: Definition Checklist requirement 'requirement-mode' not satisfied — requirementMode must be one of {sorted(VALID_CONTROL_REQUIREMENT_MODES)}"
             )
 
         na_allowed = semantic.get("naAllowed")
         if na_allowed is not None and not isinstance(na_allowed, bool):
             failures.append(
-                f"{context}: ODC requirement 'conditional-applicability' not satisfied — naAllowed must be true or false"
+                f"{context}: Definition Checklist requirement 'conditional-applicability' not satisfied — naAllowed must be true or false"
             )
         if requirement_mode == "mandatory" and na_allowed is True:
             failures.append(
-                f"{context}: ODC requirement 'conditional-applicability' not satisfied — mandatory controls cannot allow N/A responses"
+                f"{context}: Definition Checklist requirement 'conditional-applicability' not satisfied — mandatory controls cannot allow N/A responses"
             )
 
         applicability = semantic.get("applicability")
         if applicability is not None:
             if not isinstance(applicability, dict):
                 failures.append(
-                    f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability must be a mapping"
+                    f"{context}: Definition Checklist requirement 'conditional-applicability' not satisfied — applicability must be a mapping"
                 )
             else:
                 groups = [key for key in ("anyOf", "allOf") if key in applicability]
                 if not groups:
                     failures.append(
-                        f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability must declare anyOf or allOf"
+                        f"{context}: Definition Checklist requirement 'conditional-applicability' not satisfied — applicability must declare anyOf or allOf"
                     )
                 for group in groups:
                     clauses = applicability.get(group)
                     if not isinstance(clauses, list) or not clauses:
                         failures.append(
-                            f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability.{group} must be a non-empty list"
+                            f"{context}: Definition Checklist requirement 'conditional-applicability' not satisfied — applicability.{group} must be a non-empty list"
                         )
                         continue
                     for clause_index, clause in enumerate(clauses):
                         if not isinstance(clause, dict):
                             failures.append(
-                                f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}] must be a mapping"
+                                f"{context}: Definition Checklist requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}] must be a mapping"
                             )
                             continue
                         if not is_non_empty(clause.get("field")):
                             failures.append(
-                                f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}] must declare field"
+                                f"{context}: Definition Checklist requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}] must declare field"
                             )
                         predicates = [key for key in ("equals", "in", "contains", "truthy") if key in clause]
                         if not predicates:
                             failures.append(
-                                f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}] must declare equals, in, contains, or truthy"
+                                f"{context}: Definition Checklist requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}] must declare equals, in, contains, or truthy"
                             )
                         if "truthy" in clause and not isinstance(clause.get("truthy"), bool):
                             failures.append(
-                                f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}].truthy must be true or false"
+                                f"{context}: Definition Checklist requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}].truthy must be true or false"
                             )
                         if "in" in clause and not isinstance(clause.get("in"), list):
                             failures.append(
-                                f"{context}: ODC requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}].in must be a list"
+                                f"{context}: Definition Checklist requirement 'conditional-applicability' not satisfied — applicability.{group}[{clause_index}].in must be a list"
                             )
         elif requirement_mode == "conditional":
             failures.append(
-                f"{context}: ODC requirement 'conditional-applicability' not satisfied — conditional controls must declare applicability"
+                f"{context}: Definition Checklist requirement 'conditional-applicability' not satisfied — conditional controls must declare applicability"
             )
         if requirement_mode == "conditional" and na_allowed is not True:
             failures.append(
-                f"{context}: ODC requirement 'conditional-applicability' not satisfied — conditional controls must set naAllowed: true"
+                f"{context}: Definition Checklist requirement 'conditional-applicability' not satisfied — conditional controls must set naAllowed: true"
             )
 
         related_capability = semantic.get("relatedCapability")
         if is_non_empty(related_capability):
             for scope in applies_to:
-                odc_id = scope_to_odc_id(str(scope))
+                odc_id = scope_to_checklist_id(str(scope))
                 if not odc_id or odc_id not in odcs:
                     continue
-                resolved = resolve_odc_requirements(odc_id, odcs)
+                resolved = resolve_checklist_requirements(odc_id, odcs)
                 valid_requirement_ids = {
                     requirement.get("id")
                     for requirement in resolved
@@ -1188,7 +1175,7 @@ def validate_compliance_profile(
                 }
                 if related_capability not in valid_requirement_ids:
                     failures.append(
-                        f"{context}: relatedCapability '{related_capability}' is not defined on ODC '{odc_id}'"
+                        f"{context}: relatedCapability '{related_capability}' is not defined on Definition Checklist '{odc_id}'"
                     )
 
 
@@ -1202,11 +1189,11 @@ def validate_control_implementations(
     if not scope:
         return
 
-    profiles = obj.get("complianceProfiles", [])
+    profiles = obj.get("controlEnforcementProfiles", [])
     if profiles is None:
         profiles = []
     if not isinstance(profiles, list):
-        failures.append(f"{path}: complianceProfiles must be a list")
+        failures.append(f"{path}: controlEnforcementProfiles must be a list")
         return
     declared_profile_ids = {str(profile_id) for profile_id in profiles}
 
@@ -1229,13 +1216,13 @@ def validate_control_implementations(
             continue
         if str(profile_id) not in declared_profile_ids:
             failures.append(
-                f"{context}: profile '{profile_id}' is not declared in complianceProfiles; "
+                f"{context}: profile '{profile_id}' is not declared in controlEnforcementProfiles; "
                 "control implementations are evidence for an explicit compliance claim"
             )
             continue
         profile = catalog_by_id.get(str(profile_id))
-        if not profile or profile.get("type") != "compliance_profile":
-            failures.append(f"{context}: profile must reference an existing compliance_profile")
+        if not profile or profile.get("type") != "control_enforcement_profile":
+            failures.append(f"{context}: profile must reference an existing control_enforcement_profile")
             continue
         semantics = next(
             (
@@ -1266,8 +1253,8 @@ def validate_control_implementations(
 
     for profile_id in profiles:
         profile = catalog_by_id.get(str(profile_id))
-        if not profile or profile.get("type") != "compliance_profile":
-            failures.append(f"{path}: complianceProfiles references unknown compliance profile '{profile_id}'")
+        if not profile or profile.get("type") != "control_enforcement_profile":
+            failures.append(f"{path}: controlEnforcementProfiles references unknown control enforcement profile '{profile_id}'")
             continue
         semantics = [
             semantic for semantic in profile.get("controlSemantics", [])
@@ -1281,16 +1268,16 @@ def validate_control_implementations(
                 )
 
 
-def validate_compliance_framework(
+def validate_compliance_controls(
     obj: dict[str, Any],
     path: Path,
     catalog_by_id: dict[str, dict[str, Any]],
     odcs: dict[str, dict[str, Any]],
     failures: list[str],
 ) -> None:
-    applicable = applicable_odc_ids(obj, odcs)
-    if "odc.compliance-framework" not in applicable:
-        failures.append(f"{path}: compliance framework is missing applicable ODC 'odc.compliance-framework'")
+    applicable = applicable_checklist_ids(obj, odcs)
+    if "checklist.compliance-controls" not in applicable:
+        failures.append(f"{path}: compliance controls is missing applicable Definition Checklist 'checklist.compliance-controls'")
 
     controls = obj.get("controls")
     if controls is None:
@@ -1306,19 +1293,19 @@ def validate_compliance_framework(
         control_id = control.get("controlId")
         if not is_non_empty(control_id) or not is_non_empty(control.get("name")):
             failures.append(
-                f"{context}: ODC requirement 'control-identity' not satisfied — every control must declare controlId and name"
+                f"{context}: Definition Checklist requirement 'control-identity' not satisfied — every control must declare controlId and name"
             )
         if not is_non_empty(control.get("externalReference")):
             failures.append(
-                f"{context}: ODC requirement 'authoritative-source' not satisfied — every control must declare externalReference"
+                f"{context}: Definition Checklist requirement 'authoritative-source' not satisfied — every control must declare externalReference"
             )
 
 
 def validate_service_group_structure(
     obj: dict[str, Any],
     path: Path,
-    ard_ids: set[str],
-    appliance_abb_ids: set[str],
+    decision_record_ids: set[str],
+    appliance_component_ids: set[str],
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
     require_deployment_target: bool = True,
@@ -1369,31 +1356,31 @@ def validate_service_group_structure(
         if scaling_unit_name and scaling_unit_name not in scaling_unit_names:
             failures.append(f"{path}: serviceGroup '{group_name}' references unknown scalingUnit '{scaling_unit_name}'")
 
-        for entry in group.get("rbbs", []) or []:
+        for entry in group.get("standards", []) or []:
             if not isinstance(entry, dict):
                 continue
             ref = entry.get("ref")
             target = catalog_by_id.get(ref) if ref else None
-            if ref and (not target or target.get("type") != "rbb"):
-                failures.append(f"{path}: serviceGroup '{group_name}' references unknown RBB '{ref}'")
+            if ref and (not target or target.get("type") not in STANDARD_TYPES):
+                failures.append(f"{path}: serviceGroup '{group_name}' references unknown standard '{ref}'")
             diagram_tier = entry.get("diagramTier")
             if diagram_tier not in VALID_DIAGRAM_TIERS:
                 failures.append(
-                    f"{path}: serviceGroup '{group_name}' RBB '{ref}' must set diagramTier to one of {sorted(VALID_DIAGRAM_TIERS)}"
+                    f"{path}: serviceGroup '{group_name}' standard '{ref}' must set diagramTier to one of {sorted(VALID_DIAGRAM_TIERS)}"
                 )
             risk_ref = entry.get("riskRef")
-            if risk_ref and risk_ref not in ard_ids:
-                failures.append(f"{path}: serviceGroup '{group_name}' RBB '{ref}' references unknown ARD '{risk_ref}'")
+            if risk_ref and risk_ref not in decision_record_ids:
+                failures.append(f"{path}: serviceGroup '{group_name}' standard '{ref}' references unknown Decision Record '{risk_ref}'")
             intent = entry.get("intent")
             if intent and intent not in {"ha", "sa"}:
-                failures.append(f"{path}: serviceGroup '{group_name}' RBB '{ref}' has invalid intent '{intent}'")
+                failures.append(f"{path}: serviceGroup '{group_name}' standard '{ref}' has invalid intent '{intent}'")
 
-        for entry in group.get("applianceAbbs", []) or []:
+        for entry in group.get("applianceComponents", []) or []:
             if not isinstance(entry, dict):
                 continue
             ref = entry.get("ref")
-            if ref and ref not in appliance_abb_ids:
-                failures.append(f"{path}: serviceGroup '{group_name}' references unknown Appliance ABB '{ref}'")
+            if ref and ref not in appliance_component_ids:
+                failures.append(f"{path}: serviceGroup '{group_name}' references unknown Appliance Component '{ref}'")
 
         for interaction in group.get("externalInteractions", []) or []:
             if not isinstance(interaction, dict):
@@ -1409,24 +1396,24 @@ def validate_service_group_structure(
 def validate_service_group_refs(
     obj: dict[str, Any],
     path: Path,
-    ard_ids: set[str],
-    appliance_abb_ids: set[str],
+    decision_record_ids: set[str],
+    appliance_component_ids: set[str],
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
     require_deployment_target: bool = True,
 ) -> None:
-    for risk in obj.get("architectureRisksAndDecisions", []):
+    for risk in obj.get("decisionRecords", []):
         if not isinstance(risk, dict):
             continue
         ref = risk.get("ref")
-        if ref and ref not in ard_ids:
-            failures.append(f"{path}: architectureRisksAndDecisions references unknown ARD '{ref}'")
+        if ref and ref not in decision_record_ids:
+            failures.append(f"{path}: decisionRecords references unknown Decision Record '{ref}'")
 
     validate_service_group_structure(
         obj,
         path,
-        ard_ids,
-        appliance_abb_ids,
+        decision_record_ids,
+        appliance_component_ids,
         catalog_by_id,
         failures,
         require_deployment_target=require_deployment_target,
@@ -1458,41 +1445,41 @@ def main(argv: list[str] | None = None) -> int:
         for obj in objects.values()
         if isinstance(obj, dict) and is_non_empty(obj.get("id"))
     }
-    odcs = {object_id: obj for object_id, obj in catalog_by_id.items() if obj.get("type") == "odc"}
-    ard_ids = {object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "ard"}
-    appliance_abb_ids = {
-        object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "abb" and obj.get("subtype") == "appliance"
+    odcs = {object_id: obj for object_id, obj in catalog_by_id.items() if obj.get("type") == "definition_checklist"}
+    decision_record_ids = {object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "decision_record"}
+    appliance_component_ids = {
+        object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "appliance_component"
     }
     catalog_ids = set(catalog_by_id.keys())
 
     for path, obj in objects.items():
         validate_against_schema(obj, path, schemas, failures)
-        if obj.get("type") == "abb":
-            validate_abb(obj, path, odcs, catalog_by_id, failures)
-        if obj.get("type") == "ard":
-            validate_ard(obj, path, failures, warnings)
+        if obj.get("type") in {"technology_component", "appliance_component"}:
+            validate_component(obj, path, odcs, catalog_by_id, failures)
+        if obj.get("type") == "decision_record":
+            validate_decision_record(obj, path, failures, warnings)
         if obj.get("type") == "drafting_session":
             validate_drafting_session(obj, path, odcs, catalog_by_id, failures)
-        if obj.get("type") == "compliance_framework":
-            validate_compliance_framework(obj, path, catalog_by_id, odcs, failures)
-        if obj.get("type") == "compliance_profile":
-            validate_compliance_profile(obj, path, catalog_by_id, odcs, failures)
-        if obj.get("type") == "rbb":
-            validate_rbb(obj, path, odcs, catalog_by_id, catalog_ids, failures, warnings)
+        if obj.get("type") == "compliance_controls":
+            validate_compliance_controls(obj, path, catalog_by_id, odcs, failures)
+        if obj.get("type") == "control_enforcement_profile":
+            validate_control_enforcement_profile(obj, path, catalog_by_id, odcs, failures)
+        if obj.get("type") in STANDARD_TYPES:
+            validate_standard(obj, path, odcs, catalog_by_id, catalog_ids, failures, warnings)
         if obj.get("type") == "reference_architecture":
             validate_ra(obj, path, odcs, catalog_by_id, failures)
             validate_service_group_refs(
                 obj,
                 path,
-                ard_ids,
-                appliance_abb_ids,
+                decision_record_ids,
+                appliance_component_ids,
                 catalog_by_id,
                 failures,
                 require_deployment_target=False,
             )
-        if obj.get("type") == "software_distribution_manifest":
-            validate_sdm(obj, path, odcs, catalog_by_id, failures)
-            validate_service_group_refs(obj, path, ard_ids, appliance_abb_ids, catalog_by_id, failures)
+        if obj.get("type") == "software_deployment_pattern":
+            validate_software_deployment_pattern(obj, path, odcs, catalog_by_id, failures)
+            validate_service_group_refs(obj, path, decision_record_ids, appliance_component_ids, catalog_by_id, failures)
 
     failing_paths = {entry.split(":", 1)[0] for entry in failures}
     for path in files:

@@ -303,7 +303,7 @@ INDEX_HTML = """<!doctype html>
         <button id="upload-button">Attach Source</button>
         <p id="upload-message"></p>
         <label for="draftsman-message">Message</label>
-        <textarea id="draftsman-message" placeholder="Example: What is an ABB? Or: Review the uploaded diagram and draft the architecture artifacts we need."></textarea>
+        <textarea id="draftsman-message" placeholder="Example: What is a Technology Component? Or: Review the uploaded diagram and draft the architecture artifacts we need."></textarea>
         <button id="send-message">Send</button>
         <div id="proposal-actions"></div>
       </section>

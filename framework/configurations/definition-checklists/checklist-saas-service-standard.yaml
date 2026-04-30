@@ -1,0 +1,113 @@
+schemaVersion: '1.0'
+id: checklist.saas-service-standard
+type: definition_checklist
+name: SaaS Service Definition Checklist
+description: 'Structured checklist of required questions and answers used to define
+  a complete and correct SaaS Service. A SaaS Service is a vendor-managed offering
+  that an organization subscribes to. Its underlying architecture is entirely blackbox
+  to the adopter, so the object definition must focus on the capability consumed,
+  the integration boundary, and the operational and compliance assurances available
+  to the adopter.
+
+  '
+version: 1.0.0
+catalogStatus: approved
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- saas
+- checklist
+- definition
+appliesTo:
+  type: saas_service_standard
+  category: service
+  serviceCategory: saas
+requirements:
+- id: function
+  description: What capability does this SaaS service provide?
+  rationale: Capability is the core architectural reason the service exists.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: capabilities
+    example: 'capabilities: [waf]'
+- id: data-boundary
+  description: Does data leave the infrastructure boundary through this service?
+  rationale: The data boundary determines whether the service is modeled as SaaS and
+    what governance obligations follow.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: dataLeavesInfrastructure
+    example: 'dataLeavesInfrastructure: true'
+- id: data-residency
+  description: 'What are the vendor''s data residency commitments? Critical for FERPA,
+    HIPAA-adjacent, and PII data.
+
+    '
+  rationale: Data residency commitments are required before regulated or sensitive
+    workloads can depend on a blackbox vendor platform.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: dataResidencyCommitment
+    example: 'dataResidencyCommitment: US-only, AWS us-east-1'
+- id: data-processing-agreement
+  description: Is a Data Processing Agreement in place with this vendor?
+  rationale: A SaaS dependency that handles organizational data requires explicit
+    contractual treatment.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: dpaNotes
+    example: 'dpaNotes: DPA signed 2024-03, covers FERPA and COPPA'
+- id: compliance-certifications
+  description: What compliance certifications does the vendor carry?
+  rationale: Blackbox services need external attestations or certifications when internal
+    architecture evidence is unavailable.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: complianceCerts
+    allowEmpty: true
+    example: 'complianceCerts: [SOC2 Type II, ISO27001]'
+- id: authentication-model
+  description: How does the organization authenticate to this service?
+  rationale: SaaS consumption must define how identities are established and federated
+    into the vendor platform.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: authenticationModel
+    example: 'authenticationModel: saml'
+- id: audit-visibility
+  description: What logging, audit, or event visibility does the consumer have into
+    this service?
+  rationale: Blackbox services must still define what operational and security evidence
+    is visible to the adopter.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: auditVisibility
+- id: health-status-visibility
+  description: How can the consumer observe the health, status, or incident state
+    of this service?
+  rationale: Vendor-managed services require an explicit answer for how outages or
+    degradations are detected by the adopter.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: incidentNotificationProcess
+    example: 'incidentNotificationProcess: Vendor status page plus email incident
+      notifications'
+  - mechanism: architecturalDecision
+    key: healthStatusVisibility
+- id: failure-domain
+  description: What is the failure domain of this SaaS dependency?
+  rationale: Shared vendor dependencies can create large failure domains and that
+    scope must be explicit.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: failureDomain
+- id: vendor-sla
+  description: What is the vendor's SLA commitment?
+  rationale: SaaS service quality must be defined in terms available to the adopter,
+    not hidden internal design.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: vendorSLA
+    example: 'vendorSLA: 99.99% uptime, 24x7 support'

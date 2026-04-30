@@ -1,0 +1,24 @@
+schemaVersion: '1.0'
+id: technology.agent.crowdstrike-falcon
+type: technology_component
+name: CrowdStrike Falcon Agent
+description: 'Endpoint security agent installed locally on a host that requires communication
+  with the CrowdStrike Falcon platform.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+lifecycleStatus: maintain
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- technology-component
+- agent
+vendor: CrowdStrike
+productName: Falcon Sensor
+productVersion: current
+classification: agent
+platformDependency: CrowdStrike Falcon Platform
+capabilities:
+- security-monitoring

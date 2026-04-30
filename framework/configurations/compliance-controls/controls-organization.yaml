@@ -1,0 +1,25 @@
+schemaVersion: '1.0'
+id: controls.organization-controls
+type: compliance_controls
+name: Organization Controls Overlay
+description: 'Template framework for organization-specific controls. Clone this file,
+  rename the id and name, and populate controls with your internal control identifiers.
+  No other files need to change.
+
+  '
+version: 1.0.0
+catalogStatus: stub
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- compliance
+- organizational
+- extensibility
+controlsKind: organizational
+notes: 'Use extends to inherit all controls from another framework and override only
+  what differs. Example: extends: [controls.security-compliance-controls]
+
+  '
+controls: []

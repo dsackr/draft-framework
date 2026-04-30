@@ -1,0 +1,29 @@
+# Template for an Appliance Component.
+schemaVersion: "1.0"
+id: appliance.<vendor-product>
+type: appliance_component
+subtype: appliance
+name: <Appliance Name>
+description: <Blackbox infrastructure appliance description.>
+version: 1.0.0
+catalogStatus: stub
+lifecycleStatus: pre-invest
+owner:
+  team: <owning-team>
+  contact: <team-or-person@example.com>
+tags:
+  - appliance
+vendor: <Vendor>
+productName: <Product name>
+productVersion: <Version>
+classification: software
+capabilities:
+  - <capability-id>
+networkPlacement: <public-facing|internal|vpc-private>
+patchingOwner: <aws-managed|organization-scheduled|vendor-managed>
+complianceCerts:
+  - <certification-name>
+architecturalDecisions:
+  resilienceModel: <Appliance resilience posture.>
+  configurableSurface: <Configuration surface controlled by the organization.>
+  failureDomain: <Failure domain introduced by the appliance.>

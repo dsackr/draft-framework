@@ -1,6 +1,6 @@
 # Template for a Reference Architecture.
 schemaVersion: "1.0"
-id: ra.<pattern-slug>
+id: reference-architecture.<pattern-slug>
 type: reference_architecture
 name: <Reference Architecture Name>
 description: <Reusable deployment pattern description.>
@@ -13,7 +13,7 @@ owner:
 tags:
   - reference-architecture
 # Declare only profiles this artifact explicitly claims.
-complianceProfiles: []
+controlEnforcementProfiles: []
 controlImplementations: []
 patternType: <pattern-family>
 architecturalDecisions:
@@ -23,8 +23,8 @@ architecturalDecisions:
 serviceGroups:
   - name: <Service Group Name>
     deploymentTarget: <Deployment target or substrate.>
-    rbbs:
-      - ref: rbb.<existing-building-block-id>
+    standards:
+      - ref: <existing-standard-id>
         diagramTier: <presentation|application|data|utility>
         intent: <ha|sa>
         notes: <Role in this pattern.>

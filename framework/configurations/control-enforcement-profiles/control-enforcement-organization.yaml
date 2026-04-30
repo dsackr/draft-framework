@@ -1,0 +1,21 @@
+schemaVersion: '1.0'
+id: control-enforcement.organization-controls
+type: control_enforcement_profile
+name: Organization Controls Overlay Profile
+controls: controls.organization-controls
+description: Control Enforcement Profile for Organization Controls Overlay controls.
+version: 1.0.0
+catalogStatus: stub
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- compliance
+- organizational
+- extensibility
+- control-enforcement-profile
+notes: 'Use extends to inherit all controls from another framework and override only
+  what differs. Example: extends: [controls.security-compliance-controls]
+
+  '

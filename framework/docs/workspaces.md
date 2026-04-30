@@ -7,7 +7,7 @@ DRAFT separates the public framework from private company content.
 The public framework repo owns:
 
 - `framework/schemas/` for object contracts
-- `framework/configurations/` for base ODCs, compliance profiles, control
+- `framework/configurations/` for base Definition Checklists, control enforcement profiles, control
   catalogs, and domains
 - `framework/tools/` for validation and generation
 - `examples/catalog/` for demonstration content only
@@ -36,7 +36,7 @@ The default workspace workflow is source based:
 
 1. Create or update YAML in `catalog/` or `configurations/`.
 2. Use the matching template from `templates/` when creating a new object.
-3. Read the relevant schema and ODC before filling in fields.
+3. Read the relevant schema and Definition Checklist before filling in fields.
 4. Preserve unresolved facts in `catalog/sessions/` as Drafting Sessions.
 5. Run `python3 framework/tools/validate.py --workspace /path/to/workspace`.
 6. Review and commit the workspace changes through normal Git workflow.
@@ -74,10 +74,10 @@ framework checkout before publishing workspace changes.
 The end goal is deployable architecture. Catalog objects should capture facts
 that can later inform pipeline and infrastructure automation:
 
-- RBBs describe reusable deployable building blocks.
-- RAs describe deployable patterns.
-- SDMs describe product deployment reality.
-- Compliance profiles describe required controls.
+- Standards describe reusable deployable building blocks.
+- Reference Architectures describe deployable patterns.
+- Software Deployment Patterns describe product deployment reality.
+- Control Enforcement Profiles describe required controls.
 - Future automation mappings can translate approved objects into pipeline and
   IaC inputs.
 

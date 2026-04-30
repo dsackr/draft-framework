@@ -1,0 +1,138 @@
+schemaVersion: '1.0'
+id: control-enforcement.soc2
+type: control_enforcement_profile
+name: SOC 2 Profile
+controls: controls.soc2
+description: Control Enforcement Profile for SOC 2 controls.
+version: 2017.0.0
+catalogStatus: stub
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- compliance
+- soc2
+- starter-pack
+- control-enforcement-profile
+notes: 'These entries are DRAFT applicability mappings for the public AICPA Trust
+  Services Criteria. The authoritative criteria remain in the linked AICPA source
+  material.
+
+  '
+controlSemantics:
+- controlId: CC6
+  appliesTo:
+  - host_standard
+  relatedCapability: authentication
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+- controlId: CC7
+  appliesTo:
+  - host_standard
+  relatedCapability: log-management
+  requirementMode: mandatory
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC7
+  appliesTo:
+  - host_standard
+  relatedCapability: health-welfare-monitoring
+  requirementMode: mandatory
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC7
+  appliesTo:
+  - host_standard
+  relatedCapability: security-monitoring
+  requirementMode: mandatory
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC8
+  appliesTo:
+  - host_standard
+  relatedCapability: patch-management
+  requirementMode: mandatory
+  validAnswerTypes:
+  - technologyComponent
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC6
+  appliesTo:
+  - database_standard
+  relatedCapability: access-control-model
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+- controlId: CC7
+  appliesTo:
+  - database_standard
+  relatedCapability: backup-strategy
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: C1
+  appliesTo:
+  - database_standard
+  relatedCapability: encryption-at-rest
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - technologyComponentConfiguration
+  - architecturalDecision
+- controlId: CC6
+  appliesTo:
+  - service_standard
+  relatedCapability: secrets-management
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+- controlId: CC6
+  appliesTo:
+  - product_service
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+- controlId: A1
+  appliesTo:
+  - software_deployment_pattern
+  relatedCapability: availability-requirement
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: C1
+  appliesTo:
+  - software_deployment_pattern
+  relatedCapability: data-classification
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: CC9
+  appliesTo:
+  - software_deployment_pattern
+  relatedCapability: reference-architecture-conformance
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision

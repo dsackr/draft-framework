@@ -28,10 +28,10 @@ class DraftsmanTests(unittest.TestCase):
             save_config({"framework_repo_path": str(REPO_ROOT)}, config_path)
             engine = DraftsmanEngine(config_path, DraftsmanSessionStore(Path(directory) / "sessions"))
 
-            response = engine.chat("What is an ABB?")
+            response = engine.chat("What is a Technology Component?")
 
         self.assertFalse(response.provider_used)
-        self.assertIn("Architecture Building Block", response.answer)
+        self.assertIn("Technology Component", response.answer)
         self.assertFalse(response.proposals)
 
     def test_answers_catalog_usage_question_without_provider(self) -> None:
@@ -51,10 +51,10 @@ class DraftsmanTests(unittest.TestCase):
             {
                 "id": "p1",
                 "action": "create",
-                "artifactType": "RBB",
+                "artifactType": "Host Standard",
                 "name": "Standard Host",
                 "summary": "Creates a standard host.",
-                "path": "catalog/rbbs/rbb-host-standard.yaml",
+                "path": "catalog/host-standards/host-standard.yaml",
                 "content": "schemaVersion: '1.0'",
             }
         )
@@ -90,19 +90,19 @@ class DraftsmanTests(unittest.TestCase):
         self.assertEqual(provider_timeout_seconds({"timeout_seconds": "invalid"}), 180)
 
     def test_prompt_guides_host_patch_management_as_mechanism_not_team_owner(self) -> None:
-        prompt = build_draftsman_prompt(REPO_ROOT, None, "Build a Windows Server host RBB.", {"uploads": []})
+        prompt = build_draftsman_prompt(REPO_ROOT, None, "Build a Windows Server Host Standard.", {"uploads": []})
 
-        self.assertIn("For odc.host patch management", prompt)
+        self.assertIn("For checklist.host-standard patch management", prompt)
         self.assertIn("patch platform, installed component", prompt)
         self.assertIn("do not ask which", prompt)
         self.assertIn("team owns patching", prompt)
 
-    def test_prompt_explains_appliance_abb_service_like_capability_answers(self) -> None:
-        prompt = build_draftsman_prompt(REPO_ROOT, None, "Build an appliance ABB.", {"uploads": []})
+    def test_prompt_explains_appliance_component_service_like_capability_answers(self) -> None:
+        prompt = build_draftsman_prompt(REPO_ROOT, None, "Build an Appliance Component.", {"uploads": []})
 
-        self.assertIn("For appliance ABBs", prompt)
+        self.assertIn("For Appliance Components", prompt)
         self.assertIn("vendor-product", prompt)
-        self.assertIn("no host RBB or service RBB wrapper", prompt)
+        self.assertIn("no Host Standard or Service Standard wrapper", prompt)
 
     def test_safe_workspace_path_rejects_escape(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -116,8 +116,8 @@ class DraftsmanTests(unittest.TestCase):
                 "#!/usr/bin/env python3\n"
                 "import json, sys\n"
                 "print(json.dumps({'answer':'I proposed one artifact.', 'questions': [], "
-                "'proposals':[{'id':'p1','action':'create','artifactType':'RBB','name':'Standard Host',"
-                "'summary':'A reusable host pattern.','path':'catalog/rbbs/rbb-host-standard.yaml',"
+                "'proposals':[{'id':'p1','action':'create','artifactType':'Host Standard','name':'Standard Host',"
+                "'summary':'A reusable host pattern.','path':'catalog/host-standards/host-standard.yaml',"
                 "'content':'schemaVersion: 1.0'}]}))\n",
                 encoding="utf-8",
             )

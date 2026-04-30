@@ -1,0 +1,95 @@
+schemaVersion: '1.0'
+id: checklist.control-enforcement-profile
+type: definition_checklist
+name: Control Enforcement Profile Definition Checklist
+description: 'Structured checklist for defining how a pure control catalog is applied
+  in DRAFT. This Definition Checklist captures DRAFT-specific semantics such as applicability,
+  valid answer types, and conditionality.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- definition-checklist
+- compliance
+- control-enforcement-profile
+appliesTo:
+  type: control_enforcement_profile
+requirements:
+- id: semantic-control-reference
+  description: 'Every control semantic entry must reference a control that exists
+    in the backing control catalog.
+
+    '
+  rationale: 'DRAFT semantics should apply existing controls, not redefine them.
+
+    '
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: controlSemantics
+- id: requirement-mode
+  description: 'Every control semantic entry must declare whether it is always required
+    or applies conditionally.
+
+    '
+  rationale: 'DRAFT must distinguish mandatory organization-wide controls from conditional
+    frameworks such as TX-RAMP, PCI, or HIPAA.
+
+    '
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: controlSemantics
+- id: draft-applicability
+  description: 'Every control semantic entry must declare which DRAFT object scopes
+    it can apply to.
+
+    '
+  rationale: 'A pure control catalog does not know where a control belongs in DRAFT;
+    the profile provides that applicability layer.
+
+    '
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: controlSemantics
+- id: valid-answer-types
+  description: 'Every control semantic entry must declare which DRAFT answer mechanisms
+    are valid for satisfying the control.
+
+    '
+  rationale: 'Controls are only useful in DRAFT if the profile tells the architect
+    whether the answer should come from a Technology Component, Technology Component
+    configuration, deployment configuration, external interaction, direct field, or
+    architectural decision.
+
+    '
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: controlSemantics
+- id: conditional-applicability
+  description: 'Conditional controls must explicitly declare N/A handling and the
+    applicability metadata used to decide when the control is in scope.
+
+    '
+  rationale: 'Conditional frameworks should not burden users with controls that are
+    out of scope for the product or deployment being defined.
+
+    '
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: controlSemantics
+- id: related-capability
+  description: 'When the control refines an existing Definition Checklist capability,
+    it should identify that related capability explicitly.
+
+    '
+  rationale: 'This helps DRAFT merge the control into the effective checklist instead
+    of rendering it as an orphaned control.
+
+    '
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: controlSemantics

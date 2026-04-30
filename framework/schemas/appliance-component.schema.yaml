@@ -1,0 +1,111 @@
+schemaVersion: '1.0'
+type: appliance_component
+requiredFields:
+- schemaVersion
+- id
+- type
+- name
+- vendor
+- productName
+- productVersion
+- classification
+- catalogStatus
+- lifecycleStatus
+optionalFields:
+- description
+- version
+- owner
+- tags
+- capabilities
+- configurations
+- externalInteractions
+- networkPlacement
+- patchingOwner
+- complianceCerts
+- architecturalDecisions
+- notes
+- controlEnforcementProfiles
+- controlImplementations
+idPattern: ^appliance\.[a-z0-9-]+$
+enumFields:
+  catalogStatus:
+  - stub
+  - draft
+  - approved
+  lifecycleStatus:
+  - pre-invest
+  - invest
+  - maintain
+  - disinvest
+  - exit
+  networkPlacement:
+  - public-facing
+  - internal
+  - vpc-private
+  patchingOwner:
+  - aws-managed
+  - organization-scheduled
+  - vendor-managed
+  classification:
+  - operating-system
+  - compute-platform
+  - software
+  - agent
+fieldTypes:
+  owner: dict
+  tags: list
+  capabilities: list
+  configurations: list
+  externalInteractions: list
+  complianceCerts: list
+  architecturalDecisions: dict
+  controlEnforcementProfiles: list
+  controlImplementations: list
+collectionSchemas:
+  configurations: configuration
+  externalInteractions: externalInteraction
+  controlImplementations: controlImplementation
+configuration:
+  requiredFields:
+  - id
+  - name
+  - description
+  - capabilities
+  fieldTypes:
+    capabilities: list
+externalInteraction:
+  requiredFields:
+  - capabilities
+  optionalFields:
+  - name
+  - ref
+  - notes
+  - enabledBy
+  fieldTypes:
+    capabilities: list
+controlImplementation:
+  requiredFields:
+  - profile
+  - controlId
+  - status
+  optionalFields:
+  - mechanism
+  - key
+  - equals
+  - criteria
+  - ref
+  - notes
+  enumFields:
+    status:
+    - satisfied
+    - not-applicable
+    - opted-out
+    mechanism:
+    - technologyComponent
+    - technologyComponentConfiguration
+    - deploymentConfiguration
+    - externalInteraction
+    - architecturalDecision
+    - field
+  fieldTypes:
+    criteria: dict

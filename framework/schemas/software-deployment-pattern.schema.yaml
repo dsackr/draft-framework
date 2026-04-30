@@ -1,0 +1,145 @@
+schemaVersion: '1.0'
+type: software_deployment_pattern
+requiredFields:
+- schemaVersion
+- id
+- type
+- name
+- catalogStatus
+- lifecycleStatus
+optionalFields:
+- description
+- version
+- owner
+- tags
+- followsReferenceArchitecture
+- architecturalDecisions
+- scalingUnits
+- serviceGroups
+- externalInteractions
+- decisionRecords
+- controlEnforcementProfiles
+- controlImplementations
+idPattern: ^software-deployment\.[a-z0-9-]+$
+enumFields:
+  catalogStatus:
+  - stub
+  - draft
+  - approved
+  lifecycleStatus:
+  - pre-invest
+  - invest
+  - maintain
+  - disinvest
+  - exit
+fieldTypes:
+  owner: dict
+  tags: list
+  architecturalDecisions: dict
+  scalingUnits: list
+  serviceGroups: list
+  externalInteractions: list
+  decisionRecords: list
+  controlEnforcementProfiles: list
+  controlImplementations: list
+collectionSchemas:
+  scalingUnits: scalingUnit
+  serviceGroups: serviceGroup
+  externalInteractions: externalInteraction
+  decisionRecords: decisionRecordRef
+  controlImplementations: controlImplementation
+scalingUnit:
+  requiredFields:
+  - name
+  - type
+  optionalFields:
+  - instanceCount
+  - notes
+  enumFields:
+    type:
+    - replicable
+    - shared
+serviceGroup:
+  requiredFields:
+  - name
+  - deploymentTarget
+  optionalFields:
+  - deploymentTarget
+  - scalingUnit
+  - standards
+  - applianceComponents
+  - externalInteractions
+  fieldTypes:
+    standards: list
+    applianceComponents: list
+    externalInteractions: list
+  collectionSchemas:
+    standards: standardEntry
+    applianceComponents: applianceComponentEntry
+    externalInteractions: externalInteraction
+standardEntry:
+  requiredFields:
+  - ref
+  optionalFields:
+  - diagramTier
+  - intent
+  - instance
+  - riskRef
+  - notes
+  enumFields:
+    diagramTier:
+    - presentation
+    - application
+    - data
+    - utility
+    intent:
+    - ha
+    - sa
+applianceComponentEntry:
+  requiredFields:
+  - ref
+  optionalFields:
+  - notes
+externalInteraction:
+  requiredFields:
+  - name
+  optionalFields:
+  - type
+  - ref
+  - capabilities
+  - notes
+  enumFields:
+    type:
+    - internal
+    - external
+  fieldTypes:
+    capabilities: list
+decisionRecordRef:
+  requiredFields:
+  - ref
+controlImplementation:
+  requiredFields:
+  - profile
+  - controlId
+  - status
+  optionalFields:
+  - mechanism
+  - key
+  - equals
+  - criteria
+  - ref
+  - notes
+  enumFields:
+    status:
+    - satisfied
+    - not-applicable
+    - opted-out
+    mechanism:
+    - technologyComponent
+    - technologyComponentConfiguration
+    - deploymentConfiguration
+    - externalInteraction
+    - architecturalDecision
+    - field
+  fieldTypes:
+    criteria: dict

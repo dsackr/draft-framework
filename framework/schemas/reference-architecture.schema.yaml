@@ -1,142 +1,136 @@
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 type: reference_architecture
 requiredFields:
-  - schemaVersion
-  - id
-  - type
-  - name
-  - catalogStatus
-  - lifecycleStatus
-  - serviceGroups
+- schemaVersion
+- id
+- type
+- name
+- catalogStatus
+- lifecycleStatus
 optionalFields:
-  - description
-  - version
-  - owner
-  - tags
-  - patternType
-  - architecturalDecisions
-  - applicableODC
-  - scalingUnits
-  - complianceProfiles
-  - controlImplementations
-idPattern: "^ra\\.[a-z0-9.-]+$"
+- description
+- version
+- owner
+- tags
+- patternType
+- architecturalDecisions
+- applicableDefinitionChecklist
+- scalingUnits
+- serviceGroups
+- controlEnforcementProfiles
+- controlImplementations
+idPattern: ^reference-architecture\.[a-z0-9.-]+$
 enumFields:
   catalogStatus:
-    - stub
-    - draft
-    - approved
+  - stub
+  - draft
+  - approved
   lifecycleStatus:
-    - pre-invest
-    - invest
-    - maintain
-    - disinvest
-    - exit
+  - pre-invest
+  - invest
+  - maintain
+  - disinvest
+  - exit
 fieldTypes:
   owner: dict
   tags: list
   architecturalDecisions: dict
   scalingUnits: list
   serviceGroups: list
-  complianceProfiles: list
+  controlEnforcementProfiles: list
   controlImplementations: list
 collectionSchemas:
   scalingUnits: scalingUnit
   serviceGroups: serviceGroup
   controlImplementations: controlImplementation
-
 scalingUnit:
   requiredFields:
-    - name
-    - type
+  - name
+  - type
   optionalFields:
-    - instanceCount
-    - notes
+  - instanceCount
+  - notes
   enumFields:
     type:
-      - replicable
-      - shared
-
+    - replicable
+    - shared
 serviceGroup:
   requiredFields:
-    - name
+  - name
   optionalFields:
-    - deploymentTarget
-    - scalingUnit
-    - rbbs
-    - applianceAbbs
-    - externalInteractions
+  - deploymentTarget
+  - scalingUnit
+  - standards
+  - applianceComponents
+  - externalInteractions
   fieldTypes:
-    rbbs: list
-    applianceAbbs: list
+    standards: list
+    applianceComponents: list
     externalInteractions: list
   collectionSchemas:
-    rbbs: rbbEntry
-    applianceAbbs: applianceAbbEntry
+    standards: standardEntry
+    applianceComponents: applianceComponentEntry
     externalInteractions: externalInteraction
-
-rbbEntry:
+standardEntry:
   requiredFields:
-    - ref
+  - ref
   optionalFields:
-    - diagramTier
-    - intent
-    - instance
-    - riskRef
-    - notes
+  - diagramTier
+  - intent
+  - instance
+  - riskRef
+  - notes
   enumFields:
     diagramTier:
-      - presentation
-      - application
-      - data
-      - utility
+    - presentation
+    - application
+    - data
+    - utility
     intent:
-      - ha
-      - sa
-
-applianceAbbEntry:
+    - ha
+    - sa
+applianceComponentEntry:
   requiredFields:
-    - ref
+  - ref
   optionalFields:
-    - notes
-
+  - notes
 externalInteraction:
   requiredFields:
-    - name
+  - name
   optionalFields:
-    - type
-    - ref
-    - capabilities
-    - notes
+  - type
+  - ref
+  - capabilities
+  - notes
   enumFields:
     type:
-      - internal
-      - external
+    - internal
+    - external
   fieldTypes:
     capabilities: list
-
 controlImplementation:
   requiredFields:
-    - profile
-    - controlId
-    - status
+  - profile
+  - controlId
+  - status
   optionalFields:
-    - mechanism
-    - key
-    - equals
-    - criteria
-    - ref
-    - notes
+  - mechanism
+  - key
+  - equals
+  - criteria
+  - ref
+  - notes
   enumFields:
     status:
-      - satisfied
-      - not-applicable
-      - opted-out
+    - satisfied
+    - not-applicable
+    - opted-out
     mechanism:
-      - abb
-      - abbConfiguration
-      - deploymentConfiguration
-      - externalInteraction
-      - architecturalDecision
-      - field
+    - technologyComponent
+    - technologyComponentConfiguration
+    - deploymentConfiguration
+    - externalInteraction
+    - architecturalDecision
+    - field
   fieldTypes:
     criteria: dict

@@ -36,7 +36,7 @@ updating, or validating DRAFT artifacts.
 ```text
 framework/              # Core schemas, tools, docs, and base configurations
 framework/configurations/
-                        # Base ODCs, compliance frameworks, profiles, domains
+                        # Base Definition Checklists, Compliance Controls, Control Enforcement Profiles, domains
 examples/catalog/       # Sample content used to validate and demo the framework
 templates/              # Object and private workspace templates
 docs/index.html         # Generated static browser for the example workspace
@@ -47,7 +47,7 @@ A company private workspace should use this shape:
 
 ```text
 catalog/                # Company architecture content
-configurations/         # Company ODC, compliance, domain, and patch overlays
+configurations/         # Company Definition Checklist, compliance, domain, and patch overlays
 configurations/object-patches/
                         # Patch objects for framework or catalog overrides
 .draft/workspace.yaml   # Optional tracked workspace metadata
@@ -159,26 +159,26 @@ See [security.md](security.md) for the threat model and credential boundary.
 
 ### Architecture Content
 
-- [Reference Building Blocks (RBBs)](framework/docs/rbbs.md)
-- [Reference Architectures (RAs)](framework/docs/reference-architectures.md)
-- [Software Distribution Manifests (SDMs)](framework/docs/software-distribution-manifests.md)
+- [Standards](framework/docs/standards.md)
+- [Reference Architectures](framework/docs/reference-architectures.md)
+- [Software Deployment Patterns](framework/docs/software-deployment-patterns.md)
 
-### RBB Classifications
+### Standard Classifications
 
 - [Product Service](framework/docs/product-service.md)
-- [PaaS Service](framework/docs/paas-services.md)
-- [SaaS Service](framework/docs/saas-services.md)
+- [PaaS Service](framework/docs/paas-service-standards.md)
+- [SaaS Service](framework/docs/saas-service-standards.md)
 
 ### Supporting Model Objects
 
-- [Architecture Building Blocks (ABBs)](framework/docs/abbs.md)
-- [Deployment Risks and Decisions (DRDs)](framework/docs/deployment-risks-and-decisions.md)
+- [Technology Components](framework/docs/technology-components.md)
+- [Decision Records](framework/docs/decision-records.md)
 - [Drafting Sessions](framework/docs/drafting-sessions.md)
 
 ### Extensible Framework Content
 
-- [Object Definition Checklists (ODCs)](framework/docs/odcs.md)
-- [Security and Compliance Controls (SCCs)](framework/docs/security-and-compliance-controls.md)
+- [Definition Checklists](framework/docs/definition-checklists.md)
+- [Compliance Controls and Control Enforcement Profiles](framework/docs/security-and-compliance-controls.md)
 
 ## Validate And Generate
 
@@ -217,13 +217,13 @@ python3 -m unittest discover -s tests
 ## Compliance Claims
 
 Architecture artifacts declare framework compliance explicitly with
-`complianceProfiles`. When a profile is declared, every applicable control from
+`controlEnforcementProfiles`. When a profile is declared, every applicable control from
 that profile must have a valid `controlImplementations` entry or validation
 fails.
 
 Artifacts without a declared profile are unclaimed inventory. They are not
 labeled non-compliant, but they should not be treated as compliant
-off-the-shelf building blocks for solutions that require that framework.
+off-the-shelf building blocks for solutions that require that control profile.
 
 ## Catalog Browsing
 

@@ -1,0 +1,63 @@
+schemaVersion: '1.0'
+type: technology_component
+requiredFields:
+- schemaVersion
+- id
+- type
+- name
+- vendor
+- productName
+- productVersion
+- classification
+- catalogStatus
+- lifecycleStatus
+optionalFields:
+- description
+- version
+- owner
+- tags
+- subtype
+- vendorLifecycle
+- platformDependency
+- capabilities
+- configurations
+- networkPlacement
+- patchingOwner
+- complianceCerts
+- controlReferences
+- notes
+idPattern: ^technology\.[a-z0-9-]+(?:\.[a-z0-9-]+)+$
+enumFields:
+  catalogStatus:
+  - stub
+  - draft
+  - approved
+  lifecycleStatus:
+  - pre-invest
+  - invest
+  - maintain
+  - disinvest
+  - exit
+  classification:
+  - operating-system
+  - compute-platform
+  - software
+  - agent
+fieldTypes:
+  owner: dict
+  tags: list
+  vendorLifecycle: dict
+  capabilities: list
+  configurations: list
+  complianceCerts: list
+  controlReferences: list
+collectionSchemas:
+  configurations: configuration
+configuration:
+  requiredFields:
+  - id
+  - name
+  - description
+  - capabilities
+  fieldTypes:
+    capabilities: list

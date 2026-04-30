@@ -1,0 +1,158 @@
+schemaVersion: '1.0'
+id: control-enforcement.security-compliance-controls
+type: control_enforcement_profile
+name: Security and Compliance Controls Profile
+controls: controls.security-compliance-controls
+description: Control Enforcement Profile for Security and Compliance Controls.
+version: 1.0.0
+catalogStatus: approved
+lifecycleStatus: maintain
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- compliance
+- controls
+- baseline
+- control-enforcement-profile
+controlSemantics:
+- controlId: CC.SecurityCompliance.04.2.2
+  appliesTo:
+  - host_standard
+  relatedCapability: authentication
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.04.4.1
+  appliesTo:
+  - host_standard
+  relatedCapability: authentication
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.04.4.1
+  appliesTo:
+  - database_standard
+  relatedCapability: access-control-model
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.06.1.1
+  appliesTo:
+  - host_standard
+  relatedCapability: log-management
+  requirementMode: mandatory
+  validAnswerTypes:
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.06.2.1
+  appliesTo:
+  - host_standard
+  relatedCapability: health-welfare-monitoring
+  requirementMode: mandatory
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.06.3.1
+  appliesTo:
+  - host_standard
+  relatedCapability: security-monitoring
+  requirementMode: mandatory
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.03.1.1
+  appliesTo:
+  - host_standard
+  relatedCapability: patch-management
+  requirementMode: mandatory
+  validAnswerTypes:
+  - technologyComponent
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.03.2.1
+  appliesTo:
+  - host_standard
+  relatedCapability: patch-management
+  requirementMode: mandatory
+  validAnswerTypes:
+  - technologyComponent
+  - externalInteraction
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.10.1.1
+  appliesTo:
+  - software_deployment_pattern
+  relatedCapability: reference-architecture-conformance
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.10.1.2
+  appliesTo:
+  - software_deployment_pattern
+  relatedCapability: availability-requirement
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.00.2.1
+  appliesTo:
+  - software_deployment_pattern
+  relatedCapability: data-classification
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.00.2.1
+  appliesTo:
+  - database_standard
+  relatedCapability: access-control-model
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.10.2.1
+  appliesTo:
+  - database_standard
+  relatedCapability: backup-strategy
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.04.1.1
+  appliesTo:
+  - database_standard
+  relatedCapability: access-control-model
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.04.3.1
+  appliesTo:
+  - service_standard
+  relatedCapability: secrets-management
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+- controlId: CC.SecurityCompliance.04.3.1
+  appliesTo:
+  - product_service
+  requirementMode: mandatory
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision

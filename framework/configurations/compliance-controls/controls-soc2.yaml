@@ -1,0 +1,65 @@
+schemaVersion: '1.0'
+id: controls.soc2
+type: compliance_controls
+name: SOC 2
+description: 'Initial SOC 2 control pack based on the AICPA Trust Services Criteria.
+  These controls use DRAFT applicability metadata so they can extend the relevant
+  Definition Checklists without changing the Definition Checklist files themselves.
+
+  '
+version: 2017.0.0
+catalogStatus: stub
+lifecycleStatus: invest
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- compliance
+- soc2
+- starter-pack
+controlsKind: common
+notes: 'These entries are DRAFT applicability mappings for the public AICPA Trust
+  Services Criteria. The authoritative criteria remain in the linked AICPA source
+  material.
+
+  '
+controls:
+- controlId: CC6
+  name: Logical and Physical Access Controls
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC7
+  name: System Operations
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC7
+  name: System Operations
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC7
+  name: System Operations
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC8
+  name: Change Management
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC6
+  name: Logical and Physical Access Controls
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC7
+  name: System Operations
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: C1
+  name: Confidentiality
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC6
+  name: Logical and Physical Access Controls
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC6
+  name: Product Service Access and Secrets Controls
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: A1
+  name: Availability
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: C1
+  name: Confidentiality
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- controlId: CC9
+  name: Risk Mitigation
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022

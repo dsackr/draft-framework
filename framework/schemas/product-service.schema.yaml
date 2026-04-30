@@ -1,0 +1,66 @@
+schemaVersion: '1.0'
+type: product_service
+requiredFields:
+- schemaVersion
+- id
+- type
+- name
+- product
+- runsOn
+- catalogStatus
+- lifecycleStatus
+optionalFields:
+- description
+- version
+- owner
+- tags
+- architecturalDecisions
+- notes
+- controlEnforcementProfiles
+- controlImplementations
+idPattern: ^product-service\.[a-z0-9-]+\.[a-z0-9-]+$
+enumFields:
+  catalogStatus:
+  - stub
+  - draft
+  - approved
+  lifecycleStatus:
+  - pre-invest
+  - invest
+  - maintain
+  - disinvest
+  - exit
+fieldTypes:
+  owner: dict
+  tags: list
+  architecturalDecisions: dict
+  controlEnforcementProfiles: list
+  controlImplementations: list
+collectionSchemas:
+  controlImplementations: controlImplementation
+controlImplementation:
+  requiredFields:
+  - profile
+  - controlId
+  - status
+  optionalFields:
+  - mechanism
+  - key
+  - equals
+  - criteria
+  - ref
+  - notes
+  enumFields:
+    status:
+    - satisfied
+    - not-applicable
+    - opted-out
+    mechanism:
+    - technologyComponent
+    - technologyComponentConfiguration
+    - deploymentConfiguration
+    - externalInteraction
+    - architecturalDecision
+    - field
+  fieldTypes:
+    criteria: dict

@@ -146,14 +146,14 @@ class LocalAnswer:
 
 def answer_locally(message: str, workspace: Path | None, framework_repo: Path) -> LocalAnswer | None:
     lowered = message.lower()
-    if is_framework_definition_question(lowered, "abb"):
-        return LocalAnswer(read_doc_section(framework_repo / "framework" / "docs" / "abbs.md", "What An ABB Is"), [], [])
-    if is_framework_definition_question(lowered, "rbb"):
-        return LocalAnswer(read_doc_intro(framework_repo / "framework" / "docs" / "rbbs.md"), [], [])
-    if is_framework_definition_question(lowered, "odc"):
-        return LocalAnswer(read_doc_intro(framework_repo / "framework" / "docs" / "odcs.md"), [], [])
-    if is_framework_definition_question(lowered, "sdm"):
-        return LocalAnswer(read_doc_intro(framework_repo / "framework" / "docs" / "software-distribution-manifests.md"), [], [])
+    if is_framework_definition_question(lowered, "technology component"):
+        return LocalAnswer(read_doc_section(framework_repo / "framework" / "docs" / "technology-components.md", "What A Technology Component Is"), [], [])
+    if is_framework_definition_question(lowered, "host standard") or is_framework_definition_question(lowered, "service standard"):
+        return LocalAnswer(read_doc_intro(framework_repo / "framework" / "docs" / "standards.md"), [], [])
+    if is_framework_definition_question(lowered, "definition checklist"):
+        return LocalAnswer(read_doc_intro(framework_repo / "framework" / "docs" / "definition-checklists.md"), [], [])
+    if is_framework_definition_question(lowered, "software deployment pattern"):
+        return LocalAnswer(read_doc_intro(framework_repo / "framework" / "docs" / "software-deployment-patterns.md"), [], [])
     if "where" in lowered and any(term in lowered for term in ("used", "referenced", "use")):
         return answer_usage_question(message, workspace, framework_repo)
     return None
@@ -166,6 +166,12 @@ def is_framework_definition_question(lowered: str, term: str) -> bool:
 def answer_usage_question(message: str, workspace: Path | None, framework_repo: Path) -> LocalAnswer:
     objects = load_effective_catalog(workspace, framework_repo)
     matches = search_objects(objects, message, 3)
+    content_matches = [
+        match for match in matches
+        if match.get("type") not in {"definition_checklist", "compliance_controls", "control_enforcement_profile", "domain"}
+    ]
+    if content_matches:
+        matches = content_matches
     if not matches:
         return LocalAnswer("I could not find a matching catalog object in the loaded DRAFT model.", [], [])
     target = matches[0]
@@ -212,7 +218,7 @@ def build_draftsman_prompt(framework_repo: Path, workspace: Path | None, message
         ("Draftsman Instructions", framework_repo / "framework" / "docs" / "draftsman.md"),
         ("Workspace Model", framework_repo / "framework" / "docs" / "workspaces.md"),
         ("Schema Reference", framework_repo / "framework" / "docs" / "yaml-schema-reference.md"),
-        ("ODCs", framework_repo / "framework" / "docs" / "odcs.md"),
+        ("Definition Checklists", framework_repo / "framework" / "docs" / "definition-checklists.md"),
     ]
     doc_context = "\n\n".join(f"## {title}\n{path.read_text(encoding='utf-8')[:5000]}" for title, path in docs if path.exists())
     uploads = session.get("uploads", [])[-6:]
@@ -228,18 +234,19 @@ Rules:
 - Do not show raw YAML to the user.
 - Reuse existing artifacts when possible.
 - Separate observed facts from assumptions.
-- Ask focused follow-up questions for missing ODC-required facts.
-- For ODC capability requirements, ask what mechanism satisfies the capability:
-  field, internal component, ABB configuration, external interaction, deployment
+- Ask focused follow-up questions for missing Definition Checklist facts.
+- For Definition Checklist capability requirements, ask what mechanism satisfies the capability:
+  field, internal component, Technology Component configuration, external interaction, deployment
   configuration, or architectural decision.
 - Do not turn capability requirements into team ownership questions unless the
-  applicable ODC explicitly asks for ownership.
-- For odc.host patch management, ask what patch platform, installed component,
-  ABB configuration, or architectural decision applies updates; do not ask which
+  applicable Definition Checklist explicitly asks for ownership.
+- For checklist.host-standard patch management, ask what patch platform, installed component,
+  Technology Component configuration, or architectural decision applies updates; do not ask which
   team owns patching as the capability answer.
-- For appliance ABBs, remember that the object is an ABB by vendor-product
+- For Appliance Components, remember that the object maps directly to a vendor-product
   identity but carries service-like operating capability answers because there
-  is no host RBB or service RBB wrapper to inherit odc.host or odc.service.
+  is no Host Standard or Service Standard wrapper to inherit checklist.host-standard
+  or checklist.service-standard.
 - If you propose artifacts, return them as JSON proposals with YAML content for the backend only.
 - The visible answer must summarize artifacts in plain language.
 
@@ -263,7 +270,7 @@ Return JSON only with this shape:
     {{
       "id": "short proposal id",
       "action": "create|update",
-      "artifactType": "ABB|RBB|RA|SDM|ODC|Compliance Framework|Drafting Session",
+      "artifactType": "Technology Component|Appliance Component|Host Standard|Service Standard|Database Standard|Reference Architecture|Software Deployment Pattern|Definition Checklist|Decision Record|Compliance Controls|Control Enforcement Profile|Drafting Session",
       "name": "artifact name",
       "summary": "plain-language summary",
       "path": "relative file path under the content repo",

@@ -19,7 +19,11 @@ class RepoTests(unittest.TestCase):
             created = ensure_workspace_layout(workspace)
 
             self.assertTrue((workspace / "catalog").exists())
+            self.assertTrue((workspace / "catalog" / "technology-components").exists())
+            self.assertTrue((workspace / "catalog" / "host-standards").exists())
+            self.assertTrue((workspace / "catalog" / "software-deployment-patterns").exists())
             self.assertTrue((workspace / "configurations" / "object-patches").exists())
+            self.assertTrue((workspace / "configurations" / "definition-checklists").exists())
             self.assertTrue((workspace / ".draft" / "workspace.yaml").exists())
             self.assertTrue((workspace / ".draft" / "framework.lock").exists())
             self.assertTrue(created)

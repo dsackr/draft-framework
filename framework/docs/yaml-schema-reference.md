@@ -18,81 +18,83 @@ authoritative source for object shape.
 
 | Object type | Folder | Schema source | Notes |
 |---|---|---|---|
-| ABB | `catalog/abbs/` | [abb.schema.yaml](../schemas/abb.schema.yaml) | ABBs are discrete third-party product objects with required `vendor`, `productName`, `productVersion`, and `classification`. Appliance ABBs also follow [abb-appliance.schema.yaml](../schemas/abb-appliance.schema.yaml). |
-| RBB | `catalog/rbbs/` | [rbb.schema.yaml](../schemas/rbb.schema.yaml) | RBB is the reusable building-block type. The schema defines the shared contract, including optional `deploymentConfigurations`; the validator applies relationship checks. |
-| Reference Architecture | `catalog/reference-architectures/` | [reference-architecture.schema.yaml](../schemas/reference-architecture.schema.yaml) | RA validation is enforced in `framework/tools/validate.py` and `odc.ra`. |
-| Product Service | `catalog/rbbs/` | [ps.schema.yaml](../schemas/ps.schema.yaml) | Product Services are RBBs with `category: service` and `serviceCategory: product`. They emerge in an SDM rather than as starting-point ODC objects. |
-| PaaS Service | `catalog/rbbs/` | [paas-service.schema.yaml](../schemas/paas-service.schema.yaml) | PaaS Services are RBBs with `category: service` and `serviceCategory: paas`. |
-| Software Distribution Manifest | `catalog/sdms/` | [sdm.schema.yaml](../schemas/sdm.schema.yaml) | Includes `serviceGroups`, optional `scalingUnits`, and service-first topology metadata. |
+| Technology Component | `catalog/technology-components/` | [technology-component.schema.yaml](../schemas/technology-component.schema.yaml) | Technology Components are discrete third-party product objects with required `vendor`, `productName`, `productVersion`, and `classification`. Appliance Components also follow [appliance-component.schema.yaml](../schemas/appliance-component.schema.yaml). |
+| Host Standard | `catalog/host-standards/` | [host-standard.schema.yaml](../schemas/host-standard.schema.yaml) | Runtime substrate that requires an operating system component and compute platform component unless it is a blackbox managed host. |
+| Service Standard | `catalog/service-standards/` | [service-standard.schema.yaml](../schemas/service-standard.schema.yaml) | Reusable service pattern that combines a host standard with a primary technology component. |
+| Database Standard | `catalog/database-standards/` | [database-standard.schema.yaml](../schemas/database-standard.schema.yaml) | Data-platform service pattern with durability, recovery, and access-control requirements. |
+| Reference Architecture | `catalog/reference-architectures/` | [reference-architecture.schema.yaml](../schemas/reference-architecture.schema.yaml) | Reference Architecture validation is enforced in `framework/tools/validate.py` and `checklist.reference-architecture`. |
+| Product Service | `catalog/product-services/` | [product-service.schema.yaml](../schemas/product-service.schema.yaml) | Product Services emerge in a Software Deployment Pattern rather than as starting-point Definition Checklist objects. |
+| PaaS Service Standard | `catalog/paas-services/` | [paas-service-standard.schema.yaml](../schemas/paas-service-standard.schema.yaml) | Vendor-managed platform service inside the organization's cloud boundary. |
+| Software Deployment Pattern | `catalog/software-deployment-patterns/` | [software-deployment-pattern.schema.yaml](../schemas/software-deployment-pattern.schema.yaml) | Includes `serviceGroups`, optional `scalingUnits`, and service-first topology metadata. |
 | Drafting Session | `catalog/sessions/` | [drafting-session.schema.yaml](../schemas/drafting-session.schema.yaml) | Stores partial authoring state, generated objects, assumptions, and unresolved questions so work can be resumed later. |
-| Deployment Risk or Decision | `catalog/ards/` | [ard.schema.yaml](../schemas/ard.schema.yaml) | Object type remains `ard`. |
-| SaaS Service | `catalog/rbbs/` | [saas-service.schema.yaml](../schemas/saas-service.schema.yaml) | SaaS Services are RBBs with `category: service` and `serviceCategory: saas`. |
-| ODC | `configurations/odc-overrides/` | [odc.schema.yaml](../schemas/odc.schema.yaml) | ODCs are checklist objects. Base ODCs ship in `framework/configurations/odcs/`; company changes are overlays. |
-| Compliance Framework | `configurations/compliance-frameworks/` | [compliance-framework.schema.yaml](../schemas/compliance-framework.schema.yaml) | Pure control catalog with control identity only. |
-| Compliance Profile | `configurations/compliance-profiles/` | [compliance-profile.schema.yaml](../schemas/compliance-profile.schema.yaml) | DRAFT semantics for a control catalog: applicability, valid answer types, and conditionality. |
+| Decision Record | `catalog/decision-records/` | [decision-record.schema.yaml](../schemas/decision-record.schema.yaml) | First-class risk or decision object. |
+| SaaS Service Standard | `catalog/saas-services/` | [saas-service-standard.schema.yaml](../schemas/saas-service-standard.schema.yaml) | Vendor-managed external service where traffic or data may leave the infrastructure boundary. |
+| Definition Checklist | `configurations/definition-checklists/` | [definition-checklist.schema.yaml](../schemas/definition-checklist.schema.yaml) | Definition Checklists are framework-owned checklist objects. |
+| Compliance Controls | `configurations/compliance-controls/` | [compliance-controls.schema.yaml](../schemas/compliance-controls.schema.yaml) | Pure control catalog with control identity only. |
+| Control Enforcement Profile | `configurations/control-enforcement-profiles/` | [control-enforcement-profile.schema.yaml](../schemas/control-enforcement-profile.schema.yaml) | DRAFT semantics for a control catalog: applicability, valid answer types, and conditionality. |
 | Object Patch | `configurations/object-patches/` | [object-patch.schema.yaml](../schemas/object-patch.schema.yaml) | Patch-style override object used to alter base framework objects without copying them. |
 
 ## Minimum Guidance By Type
 
-### ABB
+### Technology Component
 
-Use the ABB guide for the conceptual model. Appliance ABBs additionally follow
+Use the Technology Component guide for the conceptual model. Appliance Components additionally follow
 the dedicated appliance schema.
 
-- Guide: [abbs.md](abbs.md)
-- Appliance schema: [abb-appliance.schema.yaml](../schemas/abb-appliance.schema.yaml)
+- Guide: [technology-components.md](technology-components.md)
+- Appliance schema: [appliance-component.schema.yaml](../schemas/appliance-component.schema.yaml)
 
-### RBB
+### Standard
 
-- Guide: [rbbs.md](rbbs.md)
-- Schema: [rbb.schema.yaml](../schemas/rbb.schema.yaml)
+- Guide: [standards.md](standards.md)
+- Schema: [host-standard.schema.yaml](../schemas/host-standard.schema.yaml)
 
 ### Reference Architecture
 
-Reference Architectures are validated against their structure and `odc.ra`.
+Reference Architectures are validated against their structure and `checklist.reference-architecture`.
 
 - Guide: [reference-architectures.md](reference-architectures.md)
 - Validation rules: [`framework/tools/validate.py`](../tools/validate.py)
 
 ### Product Service
 
-Product Services follow the Product Service schema file as an RBB
-classification with product metadata. They do not have a dedicated ODC.
+Product Services follow the Product Service schema file as a Standard
+classification with product metadata. They do not have a dedicated Definition Checklist.
 
 - Guide: [product-service.md](product-service.md)
-- Schema: [ps.schema.yaml](../schemas/ps.schema.yaml)
+- Schema: [product-service.schema.yaml](../schemas/product-service.schema.yaml)
 
 ### PaaS Service
 
-- Guide: [paas-services.md](paas-services.md)
-- Schema: [paas-service.schema.yaml](../schemas/paas-service.schema.yaml)
+- Guide: [paas-service-standards.md](paas-service-standards.md)
+- Schema: [paas-service-standard.schema.yaml](../schemas/paas-service-standard.schema.yaml)
 
-### Software Distribution Manifest
+### Software Deployment Pattern
 
-SDMs use the dedicated schema file and the SDM guide.
+Software Deployment Patterns use the dedicated schema file and the Software Deployment Pattern guide.
 
-- Guide: [software-distribution-manifests.md](software-distribution-manifests.md)
-- Schema: [sdm.schema.yaml](../schemas/sdm.schema.yaml)
+- Guide: [software-deployment-patterns.md](software-deployment-patterns.md)
+- Schema: [software-deployment-pattern.schema.yaml](../schemas/software-deployment-pattern.schema.yaml)
 
 ### Drafting Session
 
 - Guide: [drafting-sessions.md](drafting-sessions.md)
 - Schema: [drafting-session.schema.yaml](../schemas/drafting-session.schema.yaml)
 
-### Deployment Risks and Decisions
+### Decision Records
 
-- Guide: [deployment-risks-and-decisions.md](deployment-risks-and-decisions.md)
-- Schema: [ard.schema.yaml](../schemas/ard.schema.yaml)
+- Guide: [decision-records.md](decision-records.md)
+- Schema: [decision-record.schema.yaml](../schemas/decision-record.schema.yaml)
 
 ### SaaS Service
 
-- Guide: [saas-services.md](saas-services.md)
-- Schema: [saas-service.schema.yaml](../schemas/saas-service.schema.yaml)
+- Guide: [saas-service-standards.md](saas-service-standards.md)
+- Schema: [saas-service-standard.schema.yaml](../schemas/saas-service-standard.schema.yaml)
 
-### ODC
+### Definition Checklist
 
-- Guide: [odcs.md](odcs.md)
-- Schema: [odc.schema.yaml](../schemas/odc.schema.yaml)
+- Guide: [definition-checklists.md](definition-checklists.md)
+- Schema: [definition-checklist.schema.yaml](../schemas/definition-checklist.schema.yaml)
 
 ### Object Patch
 
@@ -102,17 +104,17 @@ framework objects.
 
 - Schema: [object-patch.schema.yaml](../schemas/object-patch.schema.yaml)
 
-### Compliance Framework
+### Compliance Controls
 
-Compliance frameworks are pure control catalogs. They carry metadata and a
+Compliance Controls are pure control catalogs. They carry metadata and a
 `controls` list containing only control identity fields.
 
 - Guide: [security-and-compliance-controls.md](security-and-compliance-controls.md)
-- Schema: [compliance-framework.schema.yaml](../schemas/compliance-framework.schema.yaml)
+- Schema: [compliance-controls.schema.yaml](../schemas/compliance-controls.schema.yaml)
 
-### Compliance Profile
+### Control Enforcement Profile
 
-Compliance profiles carry the DRAFT-specific semantics for a control catalog.
+Control Enforcement Profiles carry the DRAFT-specific semantics for a control catalog.
 They define:
 
 - where a control applies
@@ -121,12 +123,12 @@ They define:
 - whether `N/A` is allowed and under what applicability rules
 
 - Guide: [security-and-compliance-controls.md](security-and-compliance-controls.md)
-- Schema: [compliance-profile.schema.yaml](../schemas/compliance-profile.schema.yaml)
+- Schema: [control-enforcement-profile.schema.yaml](../schemas/control-enforcement-profile.schema.yaml)
 
 ### Object-Level Compliance Claims
 
-Architecture artifacts use `complianceProfiles` to claim compliance with a
-profile. Each declared profile requires matching `controlImplementations` for
+Architecture artifacts use `controlEnforcementProfiles` to claim compliance with a
+Control Enforcement Profile. Each declared profile requires matching `controlImplementations` for
 every applicable control. A missing profile is an absence of a compliance claim,
 not a failed control state.
 

@@ -32,14 +32,15 @@ def refactor_file(file_path):
         data['capabilities'] = list(set(existing_caps + new_caps))
         changed = True
 
-    # 2. Configurations migration (for ABBs)
+    # 2. Configurations migration for Technology Components
     if 'configurations' in data and isinstance(data['configurations'], list):
         for config in data['configurations']:
             if 'addressesConcerns' in config:
                 config['capabilities'] = config.pop('addressesConcerns')
                 changed = True
 
-    # 3. External Interactions migration (for RBBs, SDMs, RAs)
+    # 3. External interactions migration for Standards, Software Deployment
+    # Patterns, and Reference Architectures
     def refactor_interactions(interactions):
         nonlocal changed
         if not isinstance(interactions, list):
@@ -52,7 +53,7 @@ def refactor_file(file_path):
     if 'externalInteractions' in data:
         refactor_interactions(data['externalInteractions'])
 
-    # 4. Service Groups (for SDMs, RAs)
+    # 4. Service groups for Software Deployment Patterns and Reference Architectures
     if 'serviceGroups' in data and isinstance(data['serviceGroups'], list):
         for group in data['serviceGroups']:
             if 'externalInteractions' in group:
@@ -67,14 +68,18 @@ def refactor_file(file_path):
 def main():
     repo_root = Path(__file__).resolve().parents[2]
     folders = [
-        "examples/catalog/abbs",
-        "examples/catalog/rbbs",
-        "examples/catalog/sdms",
-        "examples/catalog/ards",
+        "examples/catalog/technology-components",
+        "examples/catalog/appliance-components",
+        "examples/catalog/host-standards",
+        "examples/catalog/service-standards",
+        "examples/catalog/database-standards",
+        "examples/catalog/software-deployment-patterns",
+        "examples/catalog/decision-records",
         "examples/catalog/product-services",
         "examples/catalog/saas-services",
+        "examples/catalog/paas-services",
         "examples/catalog/reference-architectures",
-        "framework/configurations/odcs",
+        "framework/configurations/definition-checklists",
     ]
     count = 0
     for folder in folders:

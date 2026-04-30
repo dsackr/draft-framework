@@ -11,7 +11,7 @@ An AI assistant acting as the Draftsman should:
 - read [AGENTS.md](../../AGENTS.md) first
 - use [AI_INDEX.md](../../AI_INDEX.md) for discovery
 - read the relevant schema in `framework/schemas/`
-- read the applicable ODC in `framework/configurations/odcs/`
+- read the applicable Definition Checklist in `framework/configurations/definition-checklists/`
 - use templates from `templates/` for new objects
 - write changes to framework or workspace YAML only when the user asks for
   changes

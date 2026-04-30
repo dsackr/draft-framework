@@ -23,19 +23,18 @@ class ValidationTests(unittest.TestCase):
         self.assertTrue(result.ok, result.stdout + result.stderr)
         self.assertIn("Validated", result.stdout)
 
-    def test_appliance_abb_satisfies_service_like_odc_capabilities_directly(self) -> None:
+    def test_appliance_component_satisfies_service_like_checklist_capabilities_directly(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)
-            catalog = workspace / "catalog" / "abbs"
+            catalog = workspace / "catalog" / "appliance-components"
             catalog.mkdir(parents=True)
             (workspace / "configurations").mkdir()
-            (catalog / "abb-appliance-aws-alb.yaml").write_text(
+            (catalog / "appliance-aws-alb.yaml").write_text(
                 textwrap.dedent(
                     """
                     schemaVersion: "1.0"
-                    id: abb.appliance.aws-alb
-                    type: abb
-                    subtype: appliance
+                    id: appliance.aws-alb
+                    type: appliance_component
                     name: AWS Application Load Balancer
                     vendor: Amazon Web Services
                     productName: Application Load Balancer

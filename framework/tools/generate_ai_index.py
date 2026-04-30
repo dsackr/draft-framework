@@ -21,28 +21,31 @@ FRAMEWORK_ENTRYPOINTS = [
     ("framework/docs/yaml-schema-reference.md", "Quick map from object families to schemas."),
     ("framework/docs/how-to-add-objects.md", "Practical object authoring workflow."),
     ("framework/docs/workspaces.md", "Private workspace layout and source-based workflow."),
-    ("framework/docs/odcs.md", "Object Definition Checklist model and validation behavior."),
+    ("framework/docs/definition-checklists.md", "Definition Checklist model and validation behavior."),
     ("framework/docs/drafting-sessions.md", "How to persist incomplete authoring work."),
-    ("framework/tools/validate.py", "Executable validation for schemas, ODCs, references, and controls."),
+    ("framework/tools/validate.py", "Executable validation for schemas, Definition Checklists, references, and controls."),
     ("framework/tools/generate_browser.py", "Static GitHub Pages browser generator."),
     ("install-draft-table.sh", "Local DRAFT Table installer and onboarding launcher."),
 ]
 
 CONFIGURATION_FOLDERS = [
-    "framework/configurations/odcs",
-    "framework/configurations/compliance-frameworks",
-    "framework/configurations/compliance-profiles",
+    "framework/configurations/definition-checklists",
+    "framework/configurations/compliance-controls",
+    "framework/configurations/control-enforcement-profiles",
     "framework/configurations/domains",
 ]
 
 EXAMPLE_CATALOG_FOLDERS = [
-    "examples/catalog/abbs",
-    "examples/catalog/rbbs",
+    "examples/catalog/technology-components",
+    "examples/catalog/appliance-components",
+    "examples/catalog/host-standards",
+    "examples/catalog/service-standards",
+    "examples/catalog/database-standards",
     "examples/catalog/reference-architectures",
-    "examples/catalog/sdms",
+    "examples/catalog/software-deployment-patterns",
     "examples/catalog/product-services",
     "examples/catalog/saas-services",
-    "examples/catalog/ards",
+    "examples/catalog/decision-records",
     "examples/catalog/sessions",
 ]
 

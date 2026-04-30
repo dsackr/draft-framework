@@ -1,0 +1,163 @@
+schemaVersion: '1.0'
+id: checklist.service-standard
+type: definition_checklist
+name: General Service Definition Checklist
+description: Structured checklist of required questions and answers used to define
+  a complete and correct general Service Standard.
+version: 3.0.0
+catalogStatus: approved
+lifecycleStatus: maintain
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+tags:
+- service
+- checklist
+- definition
+appliesTo:
+  type: service_standard
+  category: service
+  serviceCategory: general
+requirements:
+- id: service-authentication
+  description: The service must address how service identities or administrators authenticate
+    to the service.
+  rationale: A service is incomplete until its service-level authentication model
+    is explicit.
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: authentication
+    example: Centralized identity or authentication service used by the workload.
+  - mechanism: internalComponent
+    criteria:
+      capability: authentication
+    example: A function Technology Component or installed component that provides
+      the service authentication capability.
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: authentication
+    example: A named configuration on the function Technology Component that defines
+      the service authentication model.
+  - mechanism: architecturalDecision
+    key: serviceAuthentication
+    example: A documented service authentication pattern when the implementation is
+      not expressed directly.
+  minimumSatisfactions: 1
+- id: secrets-management
+  description: The service must address how service-level secrets, keys, tokens, or
+    certificates are stored and accessed.
+  rationale: Secret handling is a baseline service capability and cannot be left implicit.
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: certificate-management
+    example: A secrets platform or certificate-management service used by the workload.
+  - mechanism: internalComponent
+    criteria:
+      capability: secrets-management
+    example: A component that locally provides the service secrets-management behavior.
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: secrets-management
+    example: A function Technology Component configuration that defines how service
+      secrets are sourced.
+  - mechanism: architecturalDecision
+    key: secretsManagement
+    example: A documented statement of the service-level secrets pattern.
+  minimumSatisfactions: 1
+- id: service-logging
+  description: The service must address how service-generated logs are produced and
+    delivered beyond host-level logging.
+  rationale: Service logs are distinct from host logs and are required for supportability
+    and evidentiary review.
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: logging
+    example: Centralized logging pipeline for application or service logs.
+  - mechanism: internalComponent
+    criteria:
+      capability: log-management
+    example: A local logging component that handles service log forwarding or collection.
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: log-management
+    example: A function Technology Component configuration that defines service log
+      collection and export.
+  - mechanism: architecturalDecision
+    key: serviceLogging
+    example: A documented service logging pattern when modeled indirectly.
+  minimumSatisfactions: 1
+- id: health-welfare-monitoring
+  description: The service must address how operators observe service health, welfare,
+    and operational telemetry.
+  rationale: A service is incomplete until the monitoring pattern for service-level
+    health is explicit.
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: monitoring
+    example: Centralized monitoring platform used for service telemetry and health
+      evaluation.
+  - mechanism: internalComponent
+    criteria:
+      capability: health-welfare-monitoring
+    example: A component that exports service health and operational telemetry.
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: health-welfare-monitoring
+    example: A function Technology Component configuration that enables service-level
+      health telemetry.
+  - mechanism: architecturalDecision
+    key: healthWelfareMonitoring
+    example: A documented monitoring and telemetry approach for the service.
+  minimumSatisfactions: 1
+- id: availability
+  description: The service must state its availability model.
+  rationale: Availability cannot be inferred from a service name or topology and must
+    be explicitly declared.
+  canBeSatisfiedBy:
+  - mechanism: deploymentConfiguration
+    criteria:
+      quality: availability
+    example: A high-availability deployment configuration on the Service Standard.
+  - mechanism: architecturalDecision
+    key: availabilityModel
+    example: A documented statement of the service availability model.
+  minimumSatisfactions: 1
+- id: scalability
+  description: The service must state its scalability model.
+  rationale: Architects must make the capacity growth pattern explicit for each service.
+  canBeSatisfiedBy:
+  - mechanism: deploymentConfiguration
+    criteria:
+      quality: scalability
+    example: An autoscaling deployment configuration on the Service Standard.
+  - mechanism: architecturalDecision
+    key: scalabilityModel
+    example: A documented statement of the service scalability model.
+  minimumSatisfactions: 1
+- id: recoverability
+  description: The service must state its recoverability model.
+  rationale: Service recovery behavior must be explicit so operators know how the
+    service returns to function after failure.
+  canBeSatisfiedBy:
+  - mechanism: deploymentConfiguration
+    criteria:
+      quality: recoverability
+    example: A deployment configuration that captures failover or restoration behavior.
+  - mechanism: architecturalDecision
+    key: recoverabilityModel
+    example: A documented statement of the service recovery model.
+  minimumSatisfactions: 1
+- id: failure-domain
+  description: The service must state its failure domain.
+  rationale: A service is incomplete until the scope of impact from its failure is
+    explicit.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: failureDomain
+    example: A documented description of the service failure domain, such as per host,
+      per shard, or shared across products.
+  minimumSatisfactions: 1
