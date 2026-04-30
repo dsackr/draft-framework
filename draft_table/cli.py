@@ -30,7 +30,11 @@ def build_parser() -> argparse.ArgumentParser:
     onboard.set_defaults(func=cmd_onboard)
 
     serve = subcommands.add_parser("serve", help="Start the local DRAFT Table web UI.")
-    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument(
+        "--host",
+        default="0.0.0.0",
+        help="Interface to bind. Defaults to 0.0.0.0 for LAN access; use 127.0.0.1 for local-only.",
+    )
     serve.add_argument("--port", type=int, default=0)
     serve.set_defaults(func=cmd_serve)
 
@@ -72,8 +76,6 @@ def cmd_onboard(args: argparse.Namespace) -> int:
 
 
 def cmd_serve(args: argparse.Namespace) -> int:
-    if args.host not in {"127.0.0.1", "localhost"}:
-        raise SystemExit("DRAFT Table binds only to 127.0.0.1 or localhost by default.")
     port = args.port or find_available_port()
     try:
         import uvicorn
@@ -82,7 +84,11 @@ def cmd_serve(args: argparse.Namespace) -> int:
     from .web import create_app
 
     app = create_app()
-    print(f"DRAFT Table running at http://{args.host}:{port}")
+    print(f"DRAFT Table listening on {args.host}:{port}")
+    for label, url in server_urls(args.host, port):
+        print(f"{label}: {url}")
+    if is_lan_bind(args.host):
+        print("LAN mode is the default. Use --host 127.0.0.1 for local-only access.")
     uvicorn.run(app, host=args.host, port=port, log_config=None)
     return 0
 
@@ -171,6 +177,36 @@ def find_available_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.bind(("127.0.0.1", 0))
         return int(sock.getsockname()[1])
+
+
+def is_lan_bind(host: str) -> bool:
+    return host in {"0.0.0.0", "::"}
+
+
+def local_lan_address() -> str:
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.connect(("8.8.8.8", 80))
+            address = str(sock.getsockname()[0])
+            if address and not address.startswith("127."):
+                return address
+    except OSError:
+        pass
+    try:
+        address = socket.gethostbyname(socket.gethostname())
+    except OSError:
+        return ""
+    return "" if address.startswith("127.") else address
+
+
+def server_urls(host: str, port: int) -> list[tuple[str, str]]:
+    if is_lan_bind(host):
+        lan_address = local_lan_address() or "<this-device-lan-ip>"
+        return [
+            ("LAN URL", f"http://{lan_address}:{port}"),
+            ("Local URL", f"http://127.0.0.1:{port}"),
+        ]
+    return [("URL", f"http://{host}:{port}")]
 
 
 def run_command(command: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:

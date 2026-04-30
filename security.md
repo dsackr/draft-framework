@@ -3,10 +3,20 @@
 DRAFT Table is a local-first helper for a DRAFT content repository. It is not a
 credential broker and does not store AI provider API keys.
 
-## Local Binding
+## Network Binding
 
-The web UI binds to `127.0.0.1` by default. Phase 1 rejects non-localhost hosts
-from the CLI because the app is designed for a single user's workstation.
+The web UI binds to `0.0.0.0` by default so another device on the same LAN can
+reach the drafting table. Startup output prints the LAN URL and local URL.
+
+Use local-only binding when working on an untrusted network:
+
+```bash
+draft-table serve --host 127.0.0.1
+```
+
+DRAFT Table is still local-first, but LAN binding means other users on the same
+network may be able to open the UI if firewall rules allow it. Run LAN mode only
+on trusted networks.
 
 ## Provider Credentials
 

@@ -5,7 +5,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from unittest import mock
 
-from draft_table.cli import build_parser, find_available_port
+from draft_table.cli import build_parser, find_available_port, server_urls
 
 
 class CliTests(unittest.TestCase):
@@ -27,6 +27,25 @@ class CliTests(unittest.TestCase):
                 parser.parse_args(["ask", "What is an ABB?"])
 
         self.assertNotEqual(context.exception.code, 0)
+
+    def test_serve_defaults_to_lan_binding(self) -> None:
+        parser = build_parser()
+
+        args = parser.parse_args(["serve"])
+
+        self.assertEqual(args.host, "0.0.0.0")
+
+    def test_server_urls_show_lan_and_local_urls_for_lan_binding(self) -> None:
+        with mock.patch("draft_table.cli.local_lan_address", return_value="192.168.1.20"):
+            urls = server_urls("0.0.0.0", 8765)
+
+        self.assertEqual(
+            urls,
+            [
+                ("LAN URL", "http://192.168.1.20:8765"),
+                ("Local URL", "http://127.0.0.1:8765"),
+            ],
+        )
 
     def test_find_available_port_returns_port_number(self) -> None:
         fake_socket = mock.MagicMock()

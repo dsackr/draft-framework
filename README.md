@@ -90,8 +90,9 @@ draft-table onboard
 draft-table serve
 ```
 
-The web UI binds to `127.0.0.1` by default and prints the selected available
-port.
+The web UI binds to `0.0.0.0` by default so another device on the same LAN can
+reach it. Startup output prints both the LAN URL and the local URL. Use
+`draft-table serve --host 127.0.0.1` for local-only access.
 
 ### DRAFT Table CLI
 
