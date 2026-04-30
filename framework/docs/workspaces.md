@@ -110,6 +110,19 @@ Company-specific changes should remain in top-level `configurations/` as
 overlays or object patches. Avoid editing `.draft/framework/` directly unless
 the intent is to maintain an internal fork of the framework.
 
+New workspaces also include an optional GitHub Actions workflow at
+`.github/workflows/draft-framework-update.yml`. The workflow checks for a newer
+DRAFT Framework version tag, opens an update branch, refreshes
+`.draft/framework/`, updates `.draft/framework.lock`, and validates the
+workspace.
+
+When validation passes, the workflow opens a normal update pull request. When
+validation fails, it opens the pull request anyway with a blocked title and the
+validation output in the body. The branch remains available for the company or
+the Draftsman to repair catalog and configuration issues against the new
+framework version. Disable the workflow in GitHub Actions or delete the file if
+the company wants to manage framework updates manually.
+
 ## Deployable Architecture Direction
 
 The end goal is deployable architecture. Catalog objects should capture facts

@@ -8,6 +8,42 @@ notes, including patch releases.
 Use this section for work that has not been assigned to a release yet. Move the
 notes into a numbered release section before changing `draft-framework.yaml`.
 
+## 0.5.0 - 2026-04-30
+
+### Compatibility Impact
+
+No workspace object migration is required. Company workspaces can adopt this
+release by refreshing their vendored framework and adding the optional update
+workflow.
+
+### Added
+
+- Added a default company-side GitHub Actions workflow template that checks for
+  newer DRAFT Framework versions, opens an update branch and pull request,
+  refreshes `.draft/framework/`, updates `.draft/framework.lock`, and records
+  validation status.
+- Added blocked update PR behavior for failed workspace validation so companies
+  can repair migration issues on the update branch instead of losing the
+  attempted framework update.
+
+### Changed
+
+- Updated DRAFT Table workspace bootstrap so new company workspaces receive the
+  framework update workflow by default.
+- Documented the company framework update notification and PR workflow.
+
+### Fixed
+
+- No fixes in this release.
+
+### Migration Notes
+
+- Existing company workspaces can copy
+  `templates/workspace/.github/workflows/draft-framework-update.yml.tmpl` to
+  `.github/workflows/draft-framework-update.yml`.
+- The workflow is optional. Disable it in GitHub Actions or delete the workflow
+  file if the company wants to manage framework updates manually.
+
 ## 0.4.0 - 2026-04-30
 
 ### Compatibility Impact

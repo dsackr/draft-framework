@@ -131,6 +131,20 @@ Draftsman session.
 Later phases should deepen document/image extraction, add richer validation
 repair loops, and add push and PR workflow.
 
+### Framework Update Workflow
+
+New company workspaces include an optional GitHub Actions workflow at
+`.github/workflows/draft-framework-update.yml`. The workflow checks for newer
+DRAFT Framework version tags, creates an update branch, refreshes the vendored
+`.draft/framework/` copy, updates `.draft/framework.lock`, validates the
+workspace, and opens a pull request.
+
+If validation succeeds, the PR is titled as a normal framework update. If
+validation fails, the workflow still opens the PR but marks it blocked so the
+company can repair catalog or configuration issues on that branch. Companies can
+disable this behavior by disabling the workflow in GitHub Actions or deleting
+the workflow file.
+
 ### Supported AI Providers
 
 DRAFT Table stores only provider type, executable path, optional model name,

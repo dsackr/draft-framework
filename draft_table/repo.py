@@ -30,6 +30,8 @@ WORKSPACE_DIRS = (
     "configurations/compliance-controls",
     "configurations/control-enforcement-profiles",
     "configurations/object-patches",
+    ".github",
+    ".github/workflows",
     ".draft",
     ".draft/providers",
 )
@@ -61,6 +63,9 @@ FRAMEWORK_VENDOR_FILES = (
 
 DEFAULT_FRAMEWORK_SOURCE = "https://github.com/dsackr/draft-framework.git"
 COPY_IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", ".git", ".pytest_cache")
+WORKSPACE_TEMPLATE_FILES = (
+    ("templates/workspace/.github/workflows/draft-framework-update.yml.tmpl", ".github/workflows/draft-framework-update.yml"),
+)
 
 
 def repo_name_from_url(url: str) -> str:
@@ -199,6 +204,42 @@ def copy_optional_framework_file(source_root: Path, source_repo: Path, filename:
     return False
 
 
+def template_destination_name(template: str) -> str:
+    relative = template.replace("templates/workspace/", "", 1)
+    return relative.removesuffix(".tmpl")
+
+
+def copy_workspace_template_file(
+    source_root: Path,
+    source_repo: Path,
+    template: str,
+    destination: Path,
+    overwrite: bool = False,
+) -> bool:
+    for source in (source_repo / template, source_root / template):
+        if not source.exists():
+            continue
+        target = destination / template_destination_name(template)
+        if target.exists() and not overwrite:
+            return False
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+        return True
+    return False
+
+
+def copy_workspace_templates(workspace: Path, framework_repo: Path = REPO_ROOT, overwrite: bool = False) -> list[Path]:
+    workspace = workspace.expanduser()
+    source_root = resolve_framework_root(framework_repo)
+    source_repo = source_root.parent
+    copied: list[Path] = []
+    for template, destination in WORKSPACE_TEMPLATE_FILES:
+        target = workspace / destination
+        if copy_workspace_template_file(source_root, source_repo, template, workspace, overwrite=overwrite):
+            copied.append(target)
+    return copied
+
+
 def vendored_framework_text(text: str) -> str:
     replacements = {
         "framework/docs/": "docs/",
@@ -291,6 +332,7 @@ def ensure_workspace_layout(workspace: Path, framework_repo: Path = REPO_ROOT) -
 
     copied = vendor_framework(workspace, framework_repo, overwrite=False)
     created.extend(copied)
+    created.extend(copy_workspace_templates(workspace, framework_repo, overwrite=False))
 
     workspace_yaml = workspace / ".draft" / "workspace.yaml"
     if not workspace_yaml.exists():
@@ -303,6 +345,7 @@ def ensure_workspace_layout(workspace: Path, framework_repo: Path = REPO_ROOT) -
                         "source": DEFAULT_FRAMEWORK_SOURCE,
                         "vendoredPath": ".draft/framework",
                         "updatePolicy": "explicit",
+                        "updateWorkflow": "enabled",
                     },
                     "paths": {
                         "catalog": "catalog",

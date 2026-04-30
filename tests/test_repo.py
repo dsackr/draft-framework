@@ -33,6 +33,7 @@ class RepoTests(unittest.TestCase):
             self.assertTrue((workspace / "catalog" / "software-deployment-patterns").exists())
             self.assertTrue((workspace / "configurations" / "object-patches").exists())
             self.assertTrue((workspace / "configurations" / "definition-checklists").exists())
+            self.assertTrue((workspace / ".github" / "workflows" / "draft-framework-update.yml").exists())
             self.assertTrue((workspace / ".draft" / "providers").exists())
             self.assertTrue((workspace / ".draft" / "workspace.yaml").exists())
             self.assertTrue((workspace / ".draft" / "framework.lock").exists())
@@ -45,8 +46,9 @@ class RepoTests(unittest.TestCase):
             self.assertTrue((workspace / ".draft" / "framework" / "VERSIONING.md").exists())
             workspace_config = (workspace / ".draft" / "workspace.yaml").read_text(encoding="utf-8")
             self.assertIn("activeControlEnforcementProfiles", workspace_config)
+            self.assertIn("updateWorkflow: enabled", workspace_config)
             lock = yaml.safe_load((workspace / ".draft" / "framework.lock").read_text(encoding="utf-8"))
-            self.assertEqual(lock["framework"]["version"], "0.4.0")
+            self.assertEqual(lock["framework"]["version"], "0.5.0")
             self.assertTrue(created)
             self.assertTrue(is_workspace(workspace))
 

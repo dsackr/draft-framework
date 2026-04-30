@@ -169,6 +169,7 @@ These are sample catalog objects used to validate and demonstrate the framework.
 | templates/technology-component.yaml.tmpl | Template for a standard Technology Component. |
 | templates/workspace/.draft/framework.lock.tmpl | Reusable YAML authoring template. |
 | templates/workspace/.draft/workspace.yaml.tmpl | Reusable YAML authoring template. |
+| templates/workspace/.github/workflows/draft-framework-update.yml.tmpl | Reusable YAML authoring template. |
 | templates/workspace/.gitignore.tmpl | Reusable YAML authoring template. |
 
 ## Validation
