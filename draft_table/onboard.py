@@ -8,14 +8,36 @@ from .providers import SUPPORTED_PROVIDERS, detect_provider, install_hint
 from .repo import clone_or_pull, default_clone_path, ensure_workspace_layout
 
 
+ONBOARDING_BANNER = r"""
++------------------------------------------------+
+|                  DRAFT TABLE                   |
+|         Local Architecture Drafting Table       |
++------------------------------------------------+
+        __________________________________
+       /________________________________/|
+      /______/ D R A F T /____________/ |
+     /________________________________/  |
+    |   ______________        /\      |  |
+    |  /_____________/|      /__\     | /
+    |_______________________________|/
+       ||                         ||
+       ||                         ||
+""".strip("\n")
+
+
 def prompt(default: str, label: str) -> str:
     suffix = f" [{default}]" if default else ""
     value = input(f"{label}{suffix}: ").strip()
     return value or default
 
 
+def print_banner() -> None:
+    print(ONBOARDING_BANNER)
+
+
 def run_onboarding(config_path: Path | None = None) -> int:
     config = load_config(config_path)
+    print_banner()
     print("DRAFT Table onboarding")
     print("This stores repo paths and provider preferences only. It does not store API keys.")
 
