@@ -110,6 +110,38 @@ architectural decision. The ODC's job is to say that the capability must be
 addressed. It is not the ODC's job to prescribe the only acceptable shape of
 the answer.
 
+## Interviewing Capability Requirements
+
+When an ODC requirement is written as a capability, the Draftsman should ask
+what architecture mechanism satisfies that capability. It should not translate
+the capability into an organizational ownership question unless the ODC
+requirement explicitly asks for ownership.
+
+For host baseline capabilities such as authentication, log management, health
+monitoring, security monitoring, and patch management, ask which one of these
+mechanisms applies:
+
+- an internal component ABB installed on the host
+- a named ABB configuration on the selected OS, hardware, agent, or software ABB
+- an external interaction with a platform service
+- an architectural decision that documents the approach when no separate
+  object is modeled
+
+For example, host patch management asks how patches are orchestrated and what
+mechanism applies updates. Good follow-up questions are:
+
+- Is patching handled by an external patch platform such as Automox, WSUS, SCCM,
+  AWS Systems Manager, or another service?
+- Is patch execution handled by an installed agent or software ABB?
+- Does the selected OS ABB have a named configuration that defines the patching
+  approach?
+- If none of those are modeled, what architectural decision describes the patch
+  orchestration model?
+
+Do not ask "which team owns patching?" for `odc.host` patch management. Team
+ownership may be useful object metadata, but it is not the host patch-management
+capability answer.
+
 ## The Current ODC Set
 
 ### `odc.host`
@@ -139,7 +171,11 @@ In interview form, ask:
 
 - Which Operating System ABB defines this host?
 - Which Compute Platform ABB defines this host?
-- How are authentication, logging, monitoring, and patching addressed?
+- For authentication, logging, monitoring, security monitoring, and patching,
+  which mechanism satisfies each capability: internal component, ABB
+  configuration, external interaction, or architectural decision?
+- For patch management specifically, what platform, agent, configuration, or
+  documented orchestration model applies updates?
 
 ### `odc.service`
 

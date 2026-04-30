@@ -364,6 +364,16 @@ If an internal component or external interaction is added beyond what the ODC
 or active control frameworks require, an Architectural Decision is also
 required to explain why.
 
+When interviewing a capability requirement, ask for the mechanism that
+satisfies the capability. Do not convert capability requirements into team
+ownership questions unless the applicable ODC explicitly asks for ownership.
+Ownership metadata can be collected separately, but it is not a substitute for
+an ODC capability answer.
+
+For `odc.host` patch management, ask what patch platform, installed component,
+ABB configuration, or architectural decision satisfies patch orchestration. Do
+not ask which team owns patching as the capability answer.
+
 ## Interview Guidance By Object
 
 ### Host
@@ -384,6 +394,12 @@ Required capabilities:
 
 Capabilities may be answered by ABBs, ABB configurations, external interactions, or
 architectural decisions as allowed by the framework.
+
+For host interviews, ask capability-by-capability which satisfaction mechanism
+applies. For patch management, ask what mechanism applies patches: an external
+patch platform, an internal agent/software ABB, an ABB configuration, or an
+architectural decision. Do not ask for patching team ownership unless the user
+is separately filling object owner metadata.
 
 ### General Service
 

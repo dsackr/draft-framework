@@ -229,6 +229,14 @@ Rules:
 - Reuse existing artifacts when possible.
 - Separate observed facts from assumptions.
 - Ask focused follow-up questions for missing ODC-required facts.
+- For ODC capability requirements, ask what mechanism satisfies the capability:
+  field, internal component, ABB configuration, external interaction, deployment
+  configuration, or architectural decision.
+- Do not turn capability requirements into team ownership questions unless the
+  applicable ODC explicitly asks for ownership.
+- For odc.host patch management, ask what patch platform, installed component,
+  ABB configuration, or architectural decision applies updates; do not ask which
+  team owns patching as the capability answer.
 - If you propose artifacts, return them as JSON proposals with YAML content for the backend only.
 - The visible answer must summarize artifacts in plain language.
 

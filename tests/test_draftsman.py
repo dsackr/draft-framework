@@ -10,6 +10,7 @@ from unittest import mock
 from draft_table.config import save_config
 from draft_table.draftsman import (
     DraftsmanEngine,
+    build_draftsman_prompt,
     invoke_provider,
     parse_provider_response,
     provider_timeout_seconds,
@@ -87,6 +88,14 @@ class DraftsmanTests(unittest.TestCase):
         self.assertEqual(provider_timeout_seconds({"timeout_seconds": 1}), 5)
         self.assertEqual(provider_timeout_seconds({"timeout_seconds": 99999}), 1800)
         self.assertEqual(provider_timeout_seconds({"timeout_seconds": "invalid"}), 180)
+
+    def test_prompt_guides_host_patch_management_as_mechanism_not_team_owner(self) -> None:
+        prompt = build_draftsman_prompt(REPO_ROOT, None, "Build a Windows Server host RBB.", {"uploads": []})
+
+        self.assertIn("For odc.host patch management", prompt)
+        self.assertIn("patch platform, installed component", prompt)
+        self.assertIn("do not ask which", prompt)
+        self.assertIn("team owns patching", prompt)
 
     def test_safe_workspace_path_rejects_escape(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
