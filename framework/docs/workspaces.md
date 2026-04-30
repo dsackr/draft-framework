@@ -19,6 +19,7 @@ The upstream framework repo owns:
 A company private DRAFT repo owns:
 
 - `.draft/framework/` for the vendored framework copy used by that company
+- `.draft/providers/` for optional third-party DRAFT control packs
 - `.draft/workspace.yaml` for tracked workspace metadata
 - `.draft/framework.lock` for the reviewed upstream framework source and synced commit
 - `catalog/` for architecture content
@@ -27,8 +28,9 @@ A company private DRAFT repo owns:
 The effective model is resolved in this order:
 
 1. vendored framework base configuration from `.draft/framework/configurations/`
-2. workspace configuration overlays
-3. workspace catalog content
+2. optional third-party provider configurations from `.draft/providers/*/configurations/`
+3. workspace configuration overlays
+4. workspace catalog content
 
 The public `dsackr/draft-framework` repository is an update source, not a
 runtime dependency for company drafting. DRAFT Table reads the vendored copy in
@@ -39,6 +41,24 @@ framework refresh in its private repo.
 Company overrides should be represented as `object_patch` YAML when the goal is
 to alter a base framework object without editing the vendored framework copy.
 Patch files live under `configurations/object-patches/`.
+
+Workspace compliance activation lives in `.draft/workspace.yaml`, not in the
+presence of YAML files. A framework, provider, or company may publish many
+Control Enforcement Profiles, but the company must explicitly activate the
+profiles it architects against:
+
+```yaml
+compliance:
+  activeControlEnforcementProfiles:
+    - control-enforcement.draft-soc2
+    - control-enforcement.frontline-roper
+  requireActiveProfileDisposition: false
+```
+
+`requireActiveProfileDisposition: false` allows existing inventory to migrate
+incrementally. Draftsman still uses active profiles for new and updated
+objects. Setting it to `true` makes validation require every in-scope object to
+record disposition against every active profile.
 
 ## Authoring Workflow
 

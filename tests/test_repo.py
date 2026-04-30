@@ -31,6 +31,7 @@ class RepoTests(unittest.TestCase):
             self.assertTrue((workspace / "catalog" / "software-deployment-patterns").exists())
             self.assertTrue((workspace / "configurations" / "object-patches").exists())
             self.assertTrue((workspace / "configurations" / "definition-checklists").exists())
+            self.assertTrue((workspace / ".draft" / "providers").exists())
             self.assertTrue((workspace / ".draft" / "workspace.yaml").exists())
             self.assertTrue((workspace / ".draft" / "framework.lock").exists())
             self.assertTrue((workspace / ".draft" / "framework" / "tools" / "validate.py").exists())
@@ -38,6 +39,8 @@ class RepoTests(unittest.TestCase):
             agents = workspace / ".draft" / "framework" / "AGENTS.md"
             self.assertTrue(agents.exists())
             self.assertIn("docs/draftsman.md", agents.read_text(encoding="utf-8"))
+            workspace_config = (workspace / ".draft" / "workspace.yaml").read_text(encoding="utf-8")
+            self.assertIn("activeControlEnforcementProfiles", workspace_config)
             self.assertTrue(created)
             self.assertTrue(is_workspace(workspace))
 

@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: controls.organization-controls
+id: controls.draft-organization-template
 type: compliance_controls
 name: Organization Controls Overlay
 description: 'Template framework for organization-specific controls. Clone this file,
@@ -13,13 +13,20 @@ lifecycleStatus: invest
 owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
+provider:
+  id: provider.draft-framework
+  type: framework
+  name: DRAFT Framework
+authority:
+  name: DRAFT Framework
+  source: Organization control catalog template
 tags:
 - compliance
 - organizational
 - extensibility
 controlsKind: organizational
 notes: 'Use extends to inherit all controls from another framework and override only
-  what differs. Example: extends: [controls.security-compliance-controls]
+  what differs. Example: extends: [controls.draft-security-compliance]
 
   '
 controls: []

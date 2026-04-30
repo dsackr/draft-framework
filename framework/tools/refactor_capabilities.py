@@ -9,26 +9,26 @@ def refactor_file(file_path):
         except Exception as e:
             print(f"Error parsing {file_path}: {e}")
             return False
-            
+
     if not isinstance(data, dict):
         return False
-        
+
     changed = False
 
     # 1. Base object migration
     if 'addressesConcerns' in data:
         data['capabilities'] = data.pop('addressesConcerns')
         changed = True
-        
+
     if 'capability' in data:
         new_caps = data.pop('capability')
         if isinstance(new_caps, str):
             new_caps = [new_caps]
-        
+
         existing_caps = data.get('capabilities', [])
         if not isinstance(existing_caps, list):
             existing_caps = [existing_caps]
-            
+
         data['capabilities'] = list(set(existing_caps + new_caps))
         changed = True
 

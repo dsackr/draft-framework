@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: controls.tx-ramp
+id: controls.draft-tx-ramp
 type: compliance_controls
 name: TX-RAMP
 description: 'Starter TX-RAMP control pack for DRAFT. This file is intended to map
@@ -13,6 +13,13 @@ lifecycleStatus: invest
 owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
+provider:
+  id: provider.draft-framework
+  type: framework
+  name: DRAFT Framework
+authority:
+  name: Texas Department of Information Resources
+  source: TX-RAMP
 tags:
 - compliance
 - tx-ramp

@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: controls.security-compliance-controls
+id: controls.draft-security-compliance
 type: compliance_controls
 name: Security and Compliance Controls
 description: 'Baseline controls pack bundled with DRAFT. Required controls are defined
@@ -13,6 +13,13 @@ lifecycleStatus: maintain
 owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
+provider:
+  id: provider.draft-framework
+  type: framework
+  name: DRAFT Framework
+authority:
+  name: DRAFT Framework
+  source: Security and Compliance Controls
 tags:
 - compliance
 - controls

@@ -42,6 +42,38 @@ class ValidationTests(unittest.TestCase):
 
         self.assertTrue(result.ok, result.stdout + result.stderr)
 
+    def test_active_control_profile_must_exist(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            (workspace / ".draft" / "workspace.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    workspace:
+                      name: bad-compliance-config
+                    framework:
+                      source: https://github.com/dsackr/draft-framework.git
+                      vendoredPath: .draft/framework
+                      updatePolicy: explicit
+                    paths:
+                      catalog: catalog
+                      configurations: configurations
+                    compliance:
+                      activeControlEnforcementProfiles:
+                        - control-enforcement.missing
+                      requireActiveProfileDisposition: false
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("activeControlEnforcementProfiles references unknown", result.stdout)
+
     def test_appliance_component_satisfies_service_like_checklist_capabilities_directly(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)

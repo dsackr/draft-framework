@@ -48,6 +48,7 @@ A company private DRAFT repo should use this shape:
 
 ```text
 .draft/framework/      # Vendored DRAFT framework copy used by that company
+.draft/providers/      # Optional third-party control packs
 .draft/workspace.yaml  # Tracked workspace metadata
 .draft/framework.lock  # Upstream source and synced framework commit
 catalog/                # Company architecture content
@@ -57,9 +58,9 @@ configurations/object-patches/
 ```
 
 The effective model is resolved by reading `.draft/framework/configurations/`
-first, then workspace configuration overlays, then workspace catalog content.
-The public repo is an update source, not a runtime dependency for a company's
-Draftsman.
+first, then optional `.draft/providers/*/configurations/`, then workspace
+configuration overlays, then workspace catalog content. The public repo is an
+update source, not a runtime dependency for a company's Draftsman.
 
 ## DRAFT Table
 
@@ -230,14 +231,21 @@ python3 -m unittest discover -s tests
 
 ## Compliance Claims
 
-Architecture artifacts declare framework compliance explicitly with
-`controlEnforcementProfiles`. When a profile is declared, every applicable control from
-that profile must have a valid `controlImplementations` entry or validation
-fails.
+Control catalogs and Control Enforcement Profiles can be supplied by the DRAFT
+framework, third-party providers, or the company workspace. The company
+activates the profiles it architects against in `.draft/workspace.yaml`.
+
+Architecture artifacts declare compliance explicitly with
+`controlEnforcementProfiles`. When a profile is declared, every applicable
+control from that profile must have a valid `controlImplementations` entry or
+validation fails.
 
 Artifacts without a declared profile are unclaimed inventory. They are not
 labeled non-compliant, but they should not be treated as compliant
 off-the-shelf building blocks for solutions that require that control profile.
+If `requireActiveProfileDisposition` is enabled in the workspace, validation
+also requires every in-scope object to record disposition against every active
+profile.
 
 ## Catalog Browsing
 

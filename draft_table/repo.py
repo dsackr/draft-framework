@@ -31,6 +31,7 @@ WORKSPACE_DIRS = (
     "configurations/control-enforcement-profiles",
     "configurations/object-patches",
     ".draft",
+    ".draft/providers",
 )
 
 FRAMEWORK_VENDOR_DIRS = (
@@ -267,6 +268,10 @@ def ensure_workspace_layout(workspace: Path, framework_repo: Path = REPO_ROOT) -
                     "paths": {
                         "catalog": "catalog",
                         "configurations": "configurations",
+                    },
+                    "compliance": {
+                        "activeControlEnforcementProfiles": [],
+                        "requireActiveProfileDisposition": False,
                     },
                 },
                 sort_keys=False,

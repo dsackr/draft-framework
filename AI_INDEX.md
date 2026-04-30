@@ -15,7 +15,7 @@ python3 framework/tools/generate_ai_index.py
 
 When a user says "I need a draftsman", the AI should immediately assume the
 Draftsman role defined in `framework/docs/draftsman.md`, then use this index,
-the selected framework schemas/configurations, and workspace YAML to guide the conversation and edits.
+the selected framework schemas/configurations, provider packs, and workspace YAML to guide the conversation and edits.
 
 ## Framework Entrypoints
 
@@ -52,7 +52,7 @@ the selected framework schemas/configurations, and workspace YAML to guide the c
 | framework/docs/product-service.md | Product Service | A Product Service is the Standard classification used to represent a first-party |
 | framework/docs/reference-architectures.md | Reference Architectures | A Reference Architecture is a deployment pattern. It tells application |
 | framework/docs/saas-service-standards.md | SaaS Service Standards | A SaaS Service is a vendor-managed service that the adopting organization |
-| framework/docs/security-and-compliance-controls.md | Security and Compliance Controls | DRAFT treats compliance as a pluggable layer rather than a fixed property of |
+| framework/docs/security-and-compliance-controls.md | Security and Compliance Controls | DRAFT treats compliance as an explicitly activated authoring layer rather than |
 | framework/docs/software-deployment-patterns.md | Software Deployment Patterns | A Software Deployment Pattern is a declaration that a specific product is intended |
 | framework/docs/standards.md | Standards | A Standard is a reusable architecture object. It is the layer where the catalog defines |
 | framework/docs/technology-components.md | Technology Components | A Technology Component is a discrete third-party product object. It records one |
@@ -83,7 +83,7 @@ the selected framework schemas/configurations, and workspace YAML to guide the c
 
 ## Base Configurations
 
-These YAML files are framework-owned base configurations. Company workspaces add or override behavior through their private `configurations/` folder while keeping the vendored framework copy under `.draft/framework/` refreshable.
+These YAML files are framework-owned base configurations. Company workspaces add third-party packs under `.draft/providers/` and company behavior through their private `configurations/` folder while keeping the vendored framework copy under `.draft/framework/` refreshable.
 
 | ID | Name | Type | Tags | Description | Path |
 |---|---|---|---|---|---|
@@ -98,16 +98,16 @@ These YAML files are framework-owned base configurations. Company workspaces add
 | checklist.saas-service-standard | SaaS Service Definition Checklist | definition_checklist | saas, checklist, definition | Structured checklist of required questions and answers used to define a complete and correct SaaS Service. A SaaS Ser... | framework/configurations/definition-checklists/checklist-saas-service-standard.yaml |
 | checklist.service-standard | General Service Definition Checklist | definition_checklist | service, checklist, definition | Structured checklist of required questions and answers used to define a complete and correct general Service Standard. | framework/configurations/definition-checklists/checklist-service-standard.yaml |
 | checklist.software-deployment-pattern | Software Deployment Pattern Definition Checklist | definition_checklist | software-deployment-pattern, checklist, definition | Structured checklist of required questions and answers used to define a complete and correct software deployment patt... | framework/configurations/definition-checklists/checklist-software-deployment-pattern.yaml |
-| controls.nist-csf | NIST Cybersecurity Framework | compliance_controls | compliance, nist, starter-pack | Initial NIST Cybersecurity Framework (CSF) 2.0 control pack scoped to the outcomes that can be meaningfully answered... | framework/configurations/compliance-controls/controls-nist-csf.yaml |
-| controls.organization-controls | Organization Controls Overlay | compliance_controls | compliance, organizational, extensibility | Template framework for organization-specific controls. Clone this file, rename the id and name, and populate controls... | framework/configurations/compliance-controls/controls-organization.yaml |
-| controls.security-compliance-controls | Security and Compliance Controls | compliance_controls | compliance, controls, baseline | Baseline controls pack bundled with DRAFT. Required controls are defined inline and are applied to matching Definitio... | framework/configurations/compliance-controls/controls-security-compliance.yaml |
-| controls.soc2 | SOC 2 | compliance_controls | compliance, soc2, starter-pack | Initial SOC 2 control pack based on the AICPA Trust Services Criteria. These controls use DRAFT applicability metadat... | framework/configurations/compliance-controls/controls-soc2.yaml |
-| controls.tx-ramp | TX-RAMP | compliance_controls | compliance, tx-ramp, starter-pack | Starter TX-RAMP control pack for DRAFT. This file is intended to map TX-RAMP control expectations onto the existing D... | framework/configurations/compliance-controls/controls-tx-ramp.yaml |
-| control-enforcement.nist-csf | NIST Cybersecurity Framework Profile | control_enforcement_profile | compliance, nist, starter-pack, control-enforcement-profile | Control Enforcement Profile for NIST Cybersecurity Framework controls. | framework/configurations/control-enforcement-profiles/control-enforcement-nist-csf.yaml |
-| control-enforcement.organization-controls | Organization Controls Overlay Profile | control_enforcement_profile | compliance, organizational, extensibility, control-enforcement-profile | Control Enforcement Profile for Organization Controls Overlay controls. | framework/configurations/control-enforcement-profiles/control-enforcement-organization.yaml |
-| control-enforcement.security-compliance-controls | Security and Compliance Controls Profile | control_enforcement_profile | compliance, controls, baseline, control-enforcement-profile | Control Enforcement Profile for Security and Compliance Controls. | framework/configurations/control-enforcement-profiles/control-enforcement-security-compliance.yaml |
-| control-enforcement.soc2 | SOC 2 Profile | control_enforcement_profile | compliance, soc2, starter-pack, control-enforcement-profile | Control Enforcement Profile for SOC 2 controls. | framework/configurations/control-enforcement-profiles/control-enforcement-soc2.yaml |
-| control-enforcement.tx-ramp | TX-RAMP Profile | control_enforcement_profile | compliance, tx-ramp, starter-pack, control-enforcement-profile | Control Enforcement Profile for TX-RAMP controls. | framework/configurations/control-enforcement-profiles/control-enforcement-tx-ramp.yaml |
+| controls.draft-nist-csf | NIST Cybersecurity Framework | compliance_controls | compliance, nist, starter-pack | Initial NIST Cybersecurity Framework (CSF) 2.0 control pack scoped to the outcomes that can be meaningfully answered... | framework/configurations/compliance-controls/controls-draft-nist-csf.yaml |
+| controls.draft-organization-template | Organization Controls Overlay | compliance_controls | compliance, organizational, extensibility | Template framework for organization-specific controls. Clone this file, rename the id and name, and populate controls... | framework/configurations/compliance-controls/controls-draft-organization-template.yaml |
+| controls.draft-security-compliance | Security and Compliance Controls | compliance_controls | compliance, controls, baseline | Baseline controls pack bundled with DRAFT. Required controls are defined inline and are applied to matching Definitio... | framework/configurations/compliance-controls/controls-draft-security-compliance.yaml |
+| controls.draft-soc2 | SOC 2 | compliance_controls | compliance, soc2, starter-pack | Initial SOC 2 control pack based on the AICPA Trust Services Criteria. These controls use DRAFT applicability metadat... | framework/configurations/compliance-controls/controls-draft-soc2.yaml |
+| controls.draft-tx-ramp | TX-RAMP | compliance_controls | compliance, tx-ramp, starter-pack | Starter TX-RAMP control pack for DRAFT. This file is intended to map TX-RAMP control expectations onto the existing D... | framework/configurations/compliance-controls/controls-draft-tx-ramp.yaml |
+| control-enforcement.draft-nist-csf | NIST Cybersecurity Framework Profile | control_enforcement_profile | compliance, nist, starter-pack, control-enforcement-profile | Control Enforcement Profile for NIST Cybersecurity Framework controls. | framework/configurations/control-enforcement-profiles/control-enforcement-draft-nist-csf.yaml |
+| control-enforcement.draft-organization-template | Organization Controls Overlay Profile | control_enforcement_profile | compliance, organizational, extensibility, control-enforcement-profile | Control Enforcement Profile for Organization Controls Overlay controls. | framework/configurations/control-enforcement-profiles/control-enforcement-draft-organization-template.yaml |
+| control-enforcement.draft-security-compliance | Security and Compliance Controls Profile | control_enforcement_profile | compliance, controls, baseline, control-enforcement-profile | Control Enforcement Profile for Security and Compliance Controls. | framework/configurations/control-enforcement-profiles/control-enforcement-draft-security-compliance.yaml |
+| control-enforcement.draft-soc2 | SOC 2 Profile | control_enforcement_profile | compliance, soc2, starter-pack, control-enforcement-profile | Control Enforcement Profile for SOC 2 controls. | framework/configurations/control-enforcement-profiles/control-enforcement-draft-soc2.yaml |
+| control-enforcement.draft-tx-ramp | TX-RAMP Profile | control_enforcement_profile | compliance, tx-ramp, starter-pack, control-enforcement-profile | Control Enforcement Profile for TX-RAMP controls. | framework/configurations/control-enforcement-profiles/control-enforcement-draft-tx-ramp.yaml |
 | domain.compute | Compute & Runtime | domain |  | Strategic domain covering application runtimes, serverless functions, and physical/virtual compute resources. | framework/configurations/domains/compute.yaml |
 | domain.observability | Observability & Monitoring | domain |  | Strategic domain covering logging, metrics, tracing, and health monitoring across the infrastructure and application... | framework/configurations/domains/observability.yaml |
 | domain.testing | Testing & Quality | domain |  | Strategic domain covering all aspects of software testing, quality assurance, and release gates. | framework/configurations/domains/testing.yaml |

@@ -123,8 +123,12 @@ A Reference Architecture should be generic enough to guide many products, not ju
 
 ## Add A Compliance Controls
 
-1. Create the file in `configurations/compliance-controls/`.
-2. Define the control catalog metadata such as `id`, `name`, `controlsKind`, and lifecycle fields.
+1. Create the file in the provider-owned location:
+   `configurations/compliance-controls/` for company controls, or
+   `.draft/providers/<provider>/configurations/compliance-controls/` for a
+   third-party pack.
+2. Define the control catalog metadata such as `id`, `name`, `controlsKind`,
+   `provider`, `authority`, and lifecycle fields.
 3. Add controls inline under `controls`.
 4. For each control, record only:
    - `controlId`
@@ -135,7 +139,8 @@ A Reference Architecture should be generic enough to guide many products, not ju
 
 ## Add A Control Enforcement Profile
 
-1. Create the file in `configurations/control-enforcement-profiles/`.
+1. Create the file in the matching provider-owned
+   `control-enforcement-profiles/` folder.
 2. Reference the backing control catalog in `controls`.
 3. Add `controlSemantics`.
 4. For each semantic entry, answer the `checklist.control-enforcement-profile` checklist:
@@ -146,7 +151,9 @@ A Reference Architecture should be generic enough to guide many products, not ju
    - conditional applicability when relevant
    - optional related capability
 5. Use `requirementMode: conditional` only when the control is not always in scope and explicitly allow `N/A`.
-6. Run validation.
+6. Activate the profile in `.draft/workspace.yaml` only when the company wants
+   Draftsman and validation to use it for architecture authoring.
+7. Run validation.
 
 An AI should be able to translate a source control catalog into this shape as
 long as the source provides control facts and the profile docs provide the
@@ -155,7 +162,7 @@ DRAFT applicability rules.
 ## Add Object-Level Compliance Claims
 
 1. Add `controlEnforcementProfiles` only for the profiles the artifact explicitly
-   claims.
+   claims and that are active for the workspace.
 2. Add one `controlImplementations` entry for every control in each declared
    profile that applies to the artifact's DRAFT scope.
 3. Use `not-applicable` only when the profile marks the control conditional and

@@ -12,6 +12,8 @@ optionalFields:
 - description
 - version
 - owner
+- provider
+- authority
 - tags
 - controlIdNamespace
 - defaultSelection
@@ -34,6 +36,8 @@ enumFields:
   - organizational
 fieldTypes:
   owner: dict
+  provider: dict
+  authority: dict
   tags: list
   defaultSelection: bool
   controls: list

@@ -1,16 +1,23 @@
 # Template for a Control Enforcement Profile that maps controls to DRAFT semantics.
 schemaVersion: "1.0"
-id: control-enforcement.<profile-slug>
+id: control-enforcement.<provider-slug>-<profile-slug>
 type: control_enforcement_profile
 name: <Profile Name>
 description: <How the control framework applies to DRAFT objects.>
 version: 1.0.0
-controls: controls.<framework-slug>
+controls: controls.<provider-slug>-<framework-slug>
 catalogStatus: stub
 lifecycleStatus: pre-invest
 owner:
   team: <owning-team>
   contact: <team-or-person@example.com>
+provider:
+  id: provider.<provider-slug>
+  type: <framework|third_party|company>
+  name: <Provider name>
+authority:
+  name: <Control authority name>
+  source: <Authoritative source or policy name>
 tags:
   - control-enforcement-profile
 controlSemantics:

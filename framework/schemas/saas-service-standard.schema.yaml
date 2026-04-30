@@ -70,7 +70,7 @@ controlImplementation:
     status:
     - satisfied
     - not-applicable
-    - opted-out
+    - not-compliant
     mechanism:
     - technologyComponent
     - technologyComponentConfiguration

@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: controls.nist-csf
+id: controls.draft-nist-csf
 type: compliance_controls
 name: NIST Cybersecurity Framework
 description: 'Initial NIST Cybersecurity Framework (CSF) 2.0 control pack scoped to
@@ -12,6 +12,13 @@ lifecycleStatus: invest
 owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
+provider:
+  id: provider.draft-framework
+  type: framework
+  name: DRAFT Framework
+authority:
+  name: NIST
+  source: Cybersecurity Framework 2.0
 tags:
 - compliance
 - nist

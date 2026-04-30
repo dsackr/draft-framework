@@ -127,6 +127,13 @@ def discover_yaml_files(root: Path) -> list[Path]:
 
 def workspace_yaml_roots(workspace_root: Path) -> list[Path]:
     roots = [BASE_CONFIGURATION_ROOT]
+    provider_root = workspace_root / ".draft" / "providers"
+    if provider_root.exists():
+        roots.extend(
+            provider_config
+            for provider_config in sorted(provider_root.glob("*/configurations"))
+            if provider_config.exists()
+        )
     workspace_config = workspace_root / "configurations"
     workspace_catalog = workspace_root / "catalog"
     if workspace_config.exists():
@@ -145,6 +152,27 @@ def display_path(path: Path) -> str:
         except ValueError:
             continue
     return path.as_posix()
+
+
+def load_workspace_compliance(workspace_root: Path) -> dict[str, Any]:
+    config_path = workspace_root / ".draft" / "workspace.yaml"
+    if not config_path.exists():
+        return {"activeProfileIds": [], "requireActiveProfileDisposition": False}
+    try:
+        data = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    except Exception:
+        return {"activeProfileIds": [], "requireActiveProfileDisposition": False}
+    if not isinstance(data, dict):
+        return {"activeProfileIds": [], "requireActiveProfileDisposition": False}
+    compliance = data.get("compliance") or {}
+    if not isinstance(compliance, dict):
+        return {"activeProfileIds": [], "requireActiveProfileDisposition": False}
+    active = compliance.get("activeControlEnforcementProfiles") or []
+    active_profiles = [str(profile_id) for profile_id in active if str(profile_id).strip()] if isinstance(active, list) else []
+    return {
+        "activeProfileIds": active_profiles,
+        "requireActiveProfileDisposition": compliance.get("requireActiveProfileDisposition") is True,
+    }
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -430,7 +458,9 @@ def internal_component_refs(obj: dict[str, Any]) -> list[dict[str, str]]:
     return refs
 
 
-def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def build_compliance_payload(registry: dict[str, dict[str, Any]], workspace_root: Path) -> dict[str, Any]:
+    workspace_compliance = load_workspace_compliance(workspace_root)
+    active_profile_ids = set(workspace_compliance["activeProfileIds"])
     frameworks = sorted(
         [obj for obj in registry.values() if obj.get("type") == "compliance_controls"],
         key=lambda item: item.get("name", ""),
@@ -510,6 +540,8 @@ def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, A
                 "controlsKind": framework.get("controlsKind", ""),
                 "catalogStatus": framework.get("catalogStatus", ""),
                 "lifecycleStatus": framework.get("lifecycleStatus", ""),
+                "provider": framework.get("provider", {}),
+                "authority": framework.get("authority", {}),
                 "defaultSelection": framework.get("defaultSelection", False),
                 "description": framework.get("description", ""),
                 "controlCount": len(controls_by_framework.get(framework["id"], [])),
@@ -523,13 +555,18 @@ def build_compliance_payload(registry: dict[str, dict[str, Any]]) -> dict[str, A
                 "controls": profile.get("controls", ""),
                 "catalogStatus": profile.get("catalogStatus", ""),
                 "lifecycleStatus": profile.get("lifecycleStatus", ""),
+                "provider": profile.get("provider", {}),
+                "authority": profile.get("authority", {}),
+                "active": profile["id"] in active_profile_ids,
                 "description": profile.get("description", ""),
                 "controlCount": len(controls_by_profile.get(profile["id"], [])),
             }
             for profile in profiles
         ],
         "defaultFrameworkId": default_framework_id,
-        "defaultProfileId": default_profile_id,
+        "defaultProfileId": next((profile_id for profile_id in workspace_compliance["activeProfileIds"] if profile_id in controls_by_profile), default_profile_id),
+        "activeProfileIds": workspace_compliance["activeProfileIds"],
+        "requireActiveProfileDisposition": workspace_compliance["requireActiveProfileDisposition"],
         "controlsByFramework": controls_by_framework,
         "controlsByProfile": controls_by_profile,
     }
@@ -598,6 +635,8 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
                 "authenticationModel": obj.get("authenticationModel", ""),
                 "incidentNotificationProcess": obj.get("incidentNotificationProcess", ""),
                 "owner": obj.get("owner", {}),
+                "provider": obj.get("provider", {}),
+                "authority": obj.get("authority", {}),
                 "shape": shape_for(obj),
                 "color": f"#{LIFECYCLE_COLORS.get(obj.get('lifecycleStatus'), LIFECYCLE_COLORS['unknown'])}",
                 "source": obj.get("_source", ""),
@@ -649,7 +688,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
         "lifecycleValues": lifecycle_values,
         "referencedBy": referenced_by,
         "warnings": warnings,
-        "compliance": build_compliance_payload(registry),
+        "compliance": build_compliance_payload(registry, workspace_root),
         "repoUrl": repository_web_url(workspace_root) or repository_web_url(REPO_ROOT),
         "catalogName": workspace_repository_name(workspace_root),
         "logoDataUri": logo_data_uri(),
@@ -2265,6 +2304,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     ];
     const lifecycleValues = browserData.lifecycleValues || [];
     const controlEnforcementProfiles = complianceData.profiles || [];
+    const activeControlProfileIds = new Set(complianceData.activeProfileIds || []);
+    const selectableControlProfiles = activeControlProfileIds.size
+      ? controlEnforcementProfiles.filter(profile => activeControlProfileIds.has(profile.id))
+      : controlEnforcementProfiles;
     const CONTROL_SCOPE_OPTIONS = [
       { value: 'host_standard', label: 'Host Standard' },
       { value: 'service_standard', label: 'Service Standard' },
@@ -2320,11 +2363,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     let selectedFrameworkId = (() => {
       try {
         const saved = window.localStorage.getItem('draft-framework:selected-framework');
-        if (saved && objectLookup[saved]) {
+        if (saved && objectLookup[saved] && (!activeControlProfileIds.size || activeControlProfileIds.has(saved))) {
           return saved;
         }
       } catch (error) {}
-      return complianceData.defaultProfileId || controlEnforcementProfiles[0]?.id || null;
+      return complianceData.defaultProfileId || selectableControlProfiles[0]?.id || null;
     })();
     let impactLifecycleFilters = Object.fromEntries(
       impactLifecycleOrder.map(status => [status, status !== 'exit'])
@@ -2555,7 +2598,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function selectedFramework() {
-      return (selectedFrameworkId && objectLookup[selectedFrameworkId]) || controlEnforcementProfiles[0] || null;
+      return (selectedFrameworkId && objectLookup[selectedFrameworkId]) || selectableControlProfiles[0] || null;
     }
 
     function selectedFrameworkControls() {
@@ -2608,19 +2651,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function complianceFrameworkMarkup() {
-      if (!controlEnforcementProfiles.length) {
+      if (!selectableControlProfiles.length) {
         return '';
       }
       const current = selectedFramework();
+      const selectionNote = activeControlProfileIds.size
+        ? 'Workspace-active profiles come from .draft/workspace.yaml. This selector only changes which active profile is shown in checklist detail.'
+        : 'No active profiles are configured in .draft/workspace.yaml. Showing available profiles for reference only.';
       return `
         <div class="sidebar-block">
-          <div class="legend-title">Control Enforcement Profile</div>
+          <div class="legend-title">Compliance Build Profile</div>
           <select id="framework-select" class="sidebar-select">
-            ${controlEnforcementProfiles.map(profile => `
-              <option value="${profile.id}" ${profile.id === current?.id ? 'selected' : ''}>${escapeHtml(profile.name)}</option>
+            ${selectableControlProfiles.map(profile => `
+              <option value="${profile.id}" ${profile.id === current?.id ? 'selected' : ''}>${escapeHtml(profile.name)}${profile.active ? ' [active]' : ''}</option>
             `).join('')}
           </select>
-          <div class="sidebar-help">${escapeHtml(current?.description || 'Select the DRAFT control enforcement profile used to extend the effective Definition Checklist.')}</div>
+          <div class="sidebar-help">${escapeHtml(selectionNote)}</div>
         </div>
       `;
     }
@@ -2654,7 +2700,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const frameworkSelect = document.getElementById('framework-select');
       if (frameworkSelect) {
         frameworkSelect.addEventListener('change', event => {
-          selectedFrameworkId = event.target.value || complianceData.defaultProfileId || controlEnforcementProfiles[0]?.id || null;
+          selectedFrameworkId = event.target.value || complianceData.defaultProfileId || selectableControlProfiles[0]?.id || null;
           try {
             window.localStorage.setItem('draft-framework:selected-framework', selectedFrameworkId || '');
           } catch (error) {}
@@ -3191,8 +3237,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <h3>Capability Map: ${escapeHtml(object.name)}</h3>
           <div class="section-stack">
             ${domainCaps.map(cap => {
-              const satisfyingObjects = allObjects.filter(obj => 
-                (obj.capabilities || []).includes(cap.id) || 
+              const satisfyingObjects = allObjects.filter(obj =>
+                (obj.capabilities || []).includes(cap.id) ||
                 (obj.configurations || []).some(config => (config.capabilities || []).includes(cap.id))
               );
               return `
@@ -3218,16 +3264,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function complianceFrameworkDetailMarkup(object) {
       const frameworkSummary = (complianceData.frameworks || []).find(item => item.id === object.id);
+      const provider = object.provider || {};
+      const authority = object.authority || {};
       return `
         <section class="section-card">
           <h3>Compliance Controls</h3>
           <div class="section-stack">
             <div class="badges">
               <div class="badge">${escapeHtml(object.controlsKind || 'common')}</div>
+              ${provider.name ? `<div class="badge">${escapeHtml(provider.name)}</div>` : ''}
               <div class="badge">${escapeHtml(String(frameworkSummary?.controlCount || object.controlCount || 0))} Controls</div>
               ${lifecycleBadge(object.lifecycleStatus)}
             </div>
             <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
+            ${authority.name ? `<div><strong>Authority:</strong> ${escapeHtml(authority.name)}</div>` : ''}
           </div>
         </section>
       `;
@@ -3235,18 +3285,23 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function complianceProfileDetailMarkup(object) {
       const profileSummary = (complianceData.profiles || []).find(item => item.id === object.id);
-      const framework = objectLookup[object.framework];
+      const framework = objectLookup[object.controls];
+      const provider = object.provider || {};
+      const authority = object.authority || {};
       return `
         <section class="section-card">
           <h3>Control Enforcement Profile</h3>
           <div class="section-stack">
             <div class="badges">
               <div class="badge">${escapeHtml(String(profileSummary?.controlCount || object.semanticCount || 0))} Semantic Controls</div>
+              ${profileSummary?.active ? '<div class="badge">Workspace Active</div>' : ''}
+              ${provider.name ? `<div class="badge">${escapeHtml(provider.name)}</div>` : ''}
               ${lifecycleBadge(object.lifecycleStatus)}
               ${catalogBadge(object.catalogStatus)}
             </div>
             <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
-            <div><strong>Controls:</strong> ${framework ? `<span class="ard-link" data-object-link="${framework.id}">${escapeHtml(framework.name)}</span>` : escapeHtml(object.framework || 'Unknown')}</div>
+            <div><strong>Controls:</strong> ${framework ? `<span class="ard-link" data-object-link="${framework.id}">${escapeHtml(framework.name)}</span>` : escapeHtml(object.controls || 'Unknown')}</div>
+            ${authority.name ? `<div><strong>Authority:</strong> ${escapeHtml(authority.name)}</div>` : ''}
           </div>
         </section>
       `;

@@ -223,6 +223,7 @@ def build_draftsman_prompt(framework_root: Path, workspace: Path | None, message
         ("Workspace Model", framework_root / "docs" / "workspaces.md"),
         ("Schema Reference", framework_root / "docs" / "yaml-schema-reference.md"),
         ("Definition Checklists", framework_root / "docs" / "definition-checklists.md"),
+        ("Compliance Controls", framework_root / "docs" / "security-and-compliance-controls.md"),
     ]
     doc_context = "\n\n".join(f"## {title}\n{path.read_text(encoding='utf-8')[:5000]}" for title, path in docs if path.exists())
     uploads = session.get("uploads", [])[-6:]
@@ -239,6 +240,11 @@ Rules:
 - Reuse existing artifacts when possible.
 - Separate observed facts from assumptions.
 - Ask focused follow-up questions for missing Definition Checklist facts.
+- Use the workspace compliance activation in .draft/workspace.yaml as the source for
+  which Control Enforcement Profiles to push during interviews. Do not enforce an
+  available profile just because its YAML exists.
+- Preserve provider identity on Compliance Controls and Control Enforcement Profiles
+  so DRAFT-provided, third-party-provided, and company-provided control packs remain distinct.
 - For Definition Checklist capability requirements, ask what mechanism satisfies the capability:
   field, internal component, Technology Component configuration, external interaction, deployment
   configuration, or architectural decision.

@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: controls.soc2
+id: controls.draft-soc2
 type: compliance_controls
 name: SOC 2
 description: 'Initial SOC 2 control pack based on the AICPA Trust Services Criteria.
@@ -13,6 +13,13 @@ lifecycleStatus: invest
 owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
+provider:
+  id: provider.draft-framework
+  type: framework
+  name: DRAFT Framework
+authority:
+  name: AICPA
+  source: SOC 2 Trust Services Criteria
 tags:
 - compliance
 - soc2

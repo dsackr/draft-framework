@@ -1,8 +1,8 @@
 schemaVersion: '1.0'
-id: control-enforcement.tx-ramp
+id: control-enforcement.draft-tx-ramp
 type: control_enforcement_profile
 name: TX-RAMP Profile
-controls: controls.tx-ramp
+controls: controls.draft-tx-ramp
 description: Control Enforcement Profile for TX-RAMP controls.
 version: 0.1.0
 catalogStatus: draft
@@ -10,6 +10,13 @@ lifecycleStatus: invest
 owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
+provider:
+  id: provider.draft-framework
+  type: framework
+  name: DRAFT Framework
+authority:
+  name: Texas Department of Information Resources
+  source: TX-RAMP
 tags:
 - compliance
 - tx-ramp

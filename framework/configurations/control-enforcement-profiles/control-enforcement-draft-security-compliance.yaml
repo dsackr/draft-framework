@@ -1,8 +1,8 @@
 schemaVersion: '1.0'
-id: control-enforcement.security-compliance-controls
+id: control-enforcement.draft-security-compliance
 type: control_enforcement_profile
 name: Security and Compliance Controls Profile
-controls: controls.security-compliance-controls
+controls: controls.draft-security-compliance
 description: Control Enforcement Profile for Security and Compliance Controls.
 version: 1.0.0
 catalogStatus: approved
@@ -10,6 +10,13 @@ lifecycleStatus: maintain
 owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
+provider:
+  id: provider.draft-framework
+  type: framework
+  name: DRAFT Framework
+authority:
+  name: DRAFT Framework
+  source: Security and Compliance Controls
 tags:
 - compliance
 - controls

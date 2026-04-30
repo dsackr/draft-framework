@@ -108,6 +108,13 @@ def discover_yaml_files(root: Path) -> list[Path]:
 
 def workspace_yaml_roots(workspace_root: Path) -> list[Path]:
     roots = [BASE_CONFIGURATION_ROOT]
+    provider_root = workspace_root / ".draft" / "providers"
+    if provider_root.exists():
+        roots.extend(
+            provider_config
+            for provider_config in sorted(provider_root.glob("*/configurations"))
+            if provider_config.exists()
+        )
     workspace_config = workspace_root / "configurations"
     workspace_catalog = workspace_root / "catalog"
     if workspace_config.exists():
@@ -150,6 +157,50 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         help="Workspace root containing catalog/ and configurations/. Defaults to examples/.",
     )
     return parser.parse_args(argv)
+
+
+def load_workspace_compliance(workspace_root: Path, failures: list[str]) -> dict[str, Any]:
+    config_path = workspace_root / ".draft" / "workspace.yaml"
+    if not config_path.exists():
+        return {"active_profiles": set(), "require_active_profile_disposition": False}
+    try:
+        data = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    except Exception as exc:  # noqa: BLE001
+        failures.append(f"{config_path}: failed to parse workspace configuration ({exc})")
+        return {"active_profiles": set(), "require_active_profile_disposition": False}
+    if not isinstance(data, dict):
+        failures.append(f"{config_path}: workspace configuration must be a mapping")
+        return {"active_profiles": set(), "require_active_profile_disposition": False}
+
+    compliance = data.get("compliance") or {}
+    if not isinstance(compliance, dict):
+        failures.append(f"{config_path}: compliance must be a mapping")
+        return {"active_profiles": set(), "require_active_profile_disposition": False}
+
+    active = compliance.get("activeControlEnforcementProfiles") or []
+    if not isinstance(active, list):
+        failures.append(f"{config_path}: compliance.activeControlEnforcementProfiles must be a list")
+        active = []
+    active_profiles = {str(profile_id) for profile_id in active if is_non_empty(profile_id)}
+    return {
+        "active_profiles": active_profiles,
+        "require_active_profile_disposition": compliance.get("requireActiveProfileDisposition") is True,
+    }
+
+
+def validate_workspace_compliance(
+    workspace_root: Path,
+    active_profile_ids: set[str],
+    catalog_by_id: dict[str, dict[str, Any]],
+    failures: list[str],
+) -> None:
+    config_path = workspace_root / ".draft" / "workspace.yaml"
+    for profile_id in sorted(active_profile_ids):
+        profile = catalog_by_id.get(profile_id)
+        if not profile or profile.get("type") != "control_enforcement_profile":
+            failures.append(
+                f"{config_path}: compliance.activeControlEnforcementProfiles references unknown control enforcement profile '{profile_id}'"
+            )
 
 
 def deep_merge(base: Any, patch: Any) -> Any:
@@ -563,6 +614,8 @@ def validate_component(
     odcs: dict[str, dict[str, Any]],
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
+    active_profile_ids: set[str] | None = None,
+    require_active_profile_disposition: bool = False,
 ) -> None:
     classification = obj.get("classification")
     if classification not in VALID_TECHNOLOGY_COMPONENT_CLASSIFICATIONS:
@@ -607,7 +660,14 @@ def validate_component(
             valid, message = validate_checklist_requirement(obj, requirement, catalog_by_id)
             if not valid:
                 failures.append(f"{path}: {message}")
-    validate_control_implementations(obj, path, catalog_by_id, failures)
+    validate_control_implementations(
+        obj,
+        path,
+        catalog_by_id,
+        failures,
+        active_profile_ids,
+        require_active_profile_disposition,
+    )
 
 
 def agent_interaction_exception(obj: dict[str, Any], abb_id: str) -> bool:
@@ -692,6 +752,8 @@ def validate_standard(
     catalog_ids: set[str],
     failures: list[str],
     warnings: list[str],
+    active_profile_ids: set[str] | None = None,
+    require_active_profile_disposition: bool = False,
 ) -> None:
     satisfies = obj.get("satisfiesDefinitionChecklist", [])
     if not isinstance(satisfies, list):
@@ -753,7 +815,14 @@ def validate_standard(
                                 f"{path}: deploymentConfigurations[{index}].addressesQualities contains invalid values {invalid}"
                             )
     validate_architectural_decisions(obj, path, failures)
-    validate_control_implementations(obj, path, catalog_by_id, failures)
+    validate_control_implementations(
+        obj,
+        path,
+        catalog_by_id,
+        failures,
+        active_profile_ids,
+        require_active_profile_disposition,
+    )
 
 
 def validate_ra(
@@ -762,6 +831,8 @@ def validate_ra(
     odcs: dict[str, dict[str, Any]],
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
+    active_profile_ids: set[str] | None = None,
+    require_active_profile_disposition: bool = False,
 ) -> None:
     applicable = applicable_checklist_ids(obj, odcs)
     if "checklist.reference-architecture" not in applicable:
@@ -793,7 +864,14 @@ def validate_ra(
         failures.append(
             f"{path}: [{object_id}] Definition Checklist requirement 'deployment-qualities' not satisfied — needs architecturalDecision(architecturalDecisions)"
         )
-    validate_control_implementations(obj, path, catalog_by_id, failures)
+    validate_control_implementations(
+        obj,
+        path,
+        catalog_by_id,
+        failures,
+        active_profile_ids,
+        require_active_profile_disposition,
+    )
 
 
 def validate_software_deployment_pattern(
@@ -802,6 +880,8 @@ def validate_software_deployment_pattern(
     odcs: dict[str, dict[str, Any]],
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
+    active_profile_ids: set[str] | None = None,
+    require_active_profile_disposition: bool = False,
 ) -> None:
     applicable = applicable_checklist_ids(obj, odcs)
     if "checklist.software-deployment-pattern" not in applicable:
@@ -861,7 +941,14 @@ def validate_software_deployment_pattern(
         failures.append(
             f"{path}: [{object_id}] Definition Checklist requirement 'pattern-deviations' not satisfied — needs architecturalDecision(patternDeviations) or architecturalDecision(noPatternDeviations)"
         )
-    validate_control_implementations(obj, path, catalog_by_id, failures)
+    validate_control_implementations(
+        obj,
+        path,
+        catalog_by_id,
+        failures,
+        active_profile_ids,
+        require_active_profile_disposition,
+    )
 
 
 def validate_decision_record(obj: dict[str, Any], path: Path, failures: list[str], warnings: list[str]) -> None:
@@ -1184,6 +1271,8 @@ def validate_control_implementations(
     path: Path,
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
+    active_profile_ids: set[str] | None = None,
+    require_active_profile_disposition: bool = False,
 ) -> None:
     scope = object_scope(obj)
     if not scope:
@@ -1196,6 +1285,28 @@ def validate_control_implementations(
         failures.append(f"{path}: controlEnforcementProfiles must be a list")
         return
     declared_profile_ids = {str(profile_id) for profile_id in profiles}
+    active_profile_ids = active_profile_ids or set()
+    if active_profile_ids:
+        inactive_declared = sorted(declared_profile_ids - active_profile_ids)
+        if inactive_declared:
+            failures.append(
+                f"{path}: controlEnforcementProfiles declares inactive profiles {inactive_declared}; "
+                "activate the profile in .draft/workspace.yaml or remove the claim"
+            )
+        if require_active_profile_disposition:
+            missing_active = sorted(
+                profile_id
+                for profile_id in active_profile_ids
+                if profile_id not in declared_profile_ids
+                and any(
+                    isinstance(semantic, dict) and scope in (semantic.get("appliesTo") or [])
+                    for semantic in catalog_by_id.get(profile_id, {}).get("controlSemantics", [])
+                )
+            )
+            if missing_active:
+                failures.append(
+                    f"{path}: missing active control enforcement profile disposition for {missing_active}"
+                )
 
     implementations = obj.get("controlImplementations", [])
     if implementations is None:
@@ -1235,8 +1346,10 @@ def validate_control_implementations(
             failures.append(f"{context}: controlId '{control_id}' is not defined for scope '{scope}' on profile '{profile_id}'")
             continue
         status = implementation.get("status")
-        if status == "opted-out":
-            failures.append(f"{context}: opted-out controls are non-compliant and must be addressed or removed")
+        if status == "not-compliant":
+            failures.append(
+                f"{context}: status 'not-compliant' records a known gap; validation fails until the control is addressed"
+            )
             continue
         if status == "not-applicable":
             if semantics.get("requirementMode") != "conditional" or semantics.get("naAllowed") is not True:
@@ -1431,6 +1544,7 @@ def main(argv: list[str] | None = None) -> int:
     objects: dict[Path, dict[str, Any]] = {}
     failures: list[str] = []
     warnings: list[str] = []
+    workspace_compliance = load_workspace_compliance(workspace_root, failures)
 
     for path in files:
         try:
@@ -1451,11 +1565,22 @@ def main(argv: list[str] | None = None) -> int:
         object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "appliance_component"
     }
     catalog_ids = set(catalog_by_id.keys())
+    active_profile_ids = workspace_compliance["active_profiles"]
+    require_active_profile_disposition = workspace_compliance["require_active_profile_disposition"]
+    validate_workspace_compliance(workspace_root, active_profile_ids, catalog_by_id, failures)
 
     for path, obj in objects.items():
         validate_against_schema(obj, path, schemas, failures)
         if obj.get("type") in {"technology_component", "appliance_component"}:
-            validate_component(obj, path, odcs, catalog_by_id, failures)
+            validate_component(
+                obj,
+                path,
+                odcs,
+                catalog_by_id,
+                failures,
+                active_profile_ids,
+                require_active_profile_disposition,
+            )
         if obj.get("type") == "decision_record":
             validate_decision_record(obj, path, failures, warnings)
         if obj.get("type") == "drafting_session":
@@ -1465,9 +1590,27 @@ def main(argv: list[str] | None = None) -> int:
         if obj.get("type") == "control_enforcement_profile":
             validate_control_enforcement_profile(obj, path, catalog_by_id, odcs, failures)
         if obj.get("type") in STANDARD_TYPES:
-            validate_standard(obj, path, odcs, catalog_by_id, catalog_ids, failures, warnings)
+            validate_standard(
+                obj,
+                path,
+                odcs,
+                catalog_by_id,
+                catalog_ids,
+                failures,
+                warnings,
+                active_profile_ids,
+                require_active_profile_disposition,
+            )
         if obj.get("type") == "reference_architecture":
-            validate_ra(obj, path, odcs, catalog_by_id, failures)
+            validate_ra(
+                obj,
+                path,
+                odcs,
+                catalog_by_id,
+                failures,
+                active_profile_ids,
+                require_active_profile_disposition,
+            )
             validate_service_group_refs(
                 obj,
                 path,
@@ -1478,7 +1621,15 @@ def main(argv: list[str] | None = None) -> int:
                 require_deployment_target=False,
             )
         if obj.get("type") == "software_deployment_pattern":
-            validate_software_deployment_pattern(obj, path, odcs, catalog_by_id, failures)
+            validate_software_deployment_pattern(
+                obj,
+                path,
+                odcs,
+                catalog_by_id,
+                failures,
+                active_profile_ids,
+                require_active_profile_disposition,
+            )
             validate_service_group_refs(obj, path, decision_record_ids, appliance_component_ids, catalog_by_id, failures)
 
     failing_paths = {entry.split(":", 1)[0] for entry in failures}

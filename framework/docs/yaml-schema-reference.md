@@ -106,15 +106,17 @@ framework objects.
 
 ### Compliance Controls
 
-Compliance Controls are pure control catalogs. They carry metadata and a
-`controls` list containing only control identity fields.
+Compliance Controls are pure control catalogs. They carry provider and
+authority metadata plus a `controls` list containing only control identity
+fields.
 
 - Guide: [security-and-compliance-controls.md](security-and-compliance-controls.md)
 - Schema: [compliance-controls.schema.yaml](../schemas/compliance-controls.schema.yaml)
 
 ### Control Enforcement Profile
 
-Control Enforcement Profiles carry the DRAFT-specific semantics for a control catalog.
+Control Enforcement Profiles carry provider and authority metadata plus the
+DRAFT-specific semantics for a control catalog.
 They define:
 
 - where a control applies
@@ -130,7 +132,8 @@ They define:
 Architecture artifacts use `controlEnforcementProfiles` to claim compliance with a
 Control Enforcement Profile. Each declared profile requires matching `controlImplementations` for
 every applicable control. A missing profile is an absence of a compliance claim,
-not a failed control state.
+not a failed control state unless the workspace has enabled strict active
+profile disposition in `.draft/workspace.yaml`.
 
 ## Practical Rule
 

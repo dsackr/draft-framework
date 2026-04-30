@@ -1,27 +1,34 @@
 schemaVersion: '1.0'
-id: control-enforcement.soc2
+id: control-enforcement.draft-nist-csf
 type: control_enforcement_profile
-name: SOC 2 Profile
-controls: controls.soc2
-description: Control Enforcement Profile for SOC 2 controls.
-version: 2017.0.0
+name: NIST Cybersecurity Framework Profile
+controls: controls.draft-nist-csf
+description: Control Enforcement Profile for NIST Cybersecurity Framework controls.
+version: 2.0.0
 catalogStatus: stub
 lifecycleStatus: invest
 owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
+provider:
+  id: provider.draft-framework
+  type: framework
+  name: DRAFT Framework
+authority:
+  name: NIST
+  source: Cybersecurity Framework 2.0
 tags:
 - compliance
-- soc2
+- nist
 - starter-pack
 - control-enforcement-profile
-notes: 'These entries are DRAFT applicability mappings for the public AICPA Trust
-  Services Criteria. The authoritative criteria remain in the linked AICPA source
-  material.
+notes: 'These entries are DRAFT applicability mappings for public NIST CSF 2.0 outcomes.
+  They intentionally cover only the subset of CSF outcomes that can be answered by
+  Standards, Software Deployment Patterns, and related architecture objects.
 
   '
 controlSemantics:
-- controlId: CC6
+- controlId: PR.AA
   appliesTo:
   - host_standard
   relatedCapability: authentication
@@ -30,7 +37,7 @@ controlSemantics:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-- controlId: CC7
+- controlId: DE.CM
   appliesTo:
   - host_standard
   relatedCapability: log-management
@@ -40,7 +47,7 @@ controlSemantics:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-- controlId: CC7
+- controlId: DE.CM
   appliesTo:
   - host_standard
   relatedCapability: health-welfare-monitoring
@@ -50,7 +57,7 @@ controlSemantics:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-- controlId: CC7
+- controlId: DE.CM
   appliesTo:
   - host_standard
   relatedCapability: security-monitoring
@@ -60,7 +67,7 @@ controlSemantics:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-- controlId: CC8
+- controlId: PR.PS
   appliesTo:
   - host_standard
   relatedCapability: patch-management
@@ -69,7 +76,7 @@ controlSemantics:
   - technologyComponent
   - externalInteraction
   - architecturalDecision
-- controlId: CC6
+- controlId: PR.AA
   appliesTo:
   - database_standard
   relatedCapability: access-control-model
@@ -78,15 +85,7 @@ controlSemantics:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-- controlId: CC7
-  appliesTo:
-  - database_standard
-  relatedCapability: backup-strategy
-  requirementMode: mandatory
-  validAnswerTypes:
-  - field
-  - architecturalDecision
-- controlId: C1
+- controlId: PR.DS
   appliesTo:
   - database_standard
   relatedCapability: encryption-at-rest
@@ -95,7 +94,15 @@ controlSemantics:
   - field
   - technologyComponentConfiguration
   - architecturalDecision
-- controlId: CC6
+- controlId: RC.RP
+  appliesTo:
+  - database_standard
+  relatedCapability: backup-strategy
+  requirementMode: mandatory
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+- controlId: PR.AA
   appliesTo:
   - service_standard
   relatedCapability: secrets-management
@@ -104,7 +111,7 @@ controlSemantics:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-- controlId: CC6
+- controlId: PR.AA
   appliesTo:
   - product_service
   requirementMode: mandatory
@@ -112,15 +119,7 @@ controlSemantics:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-- controlId: A1
-  appliesTo:
-  - software_deployment_pattern
-  relatedCapability: availability-requirement
-  requirementMode: mandatory
-  validAnswerTypes:
-  - field
-  - architecturalDecision
-- controlId: C1
+- controlId: PR.DS
   appliesTo:
   - software_deployment_pattern
   relatedCapability: data-classification
@@ -128,10 +127,10 @@ controlSemantics:
   validAnswerTypes:
   - field
   - architecturalDecision
-- controlId: CC9
+- controlId: RC.RP
   appliesTo:
   - software_deployment_pattern
-  relatedCapability: reference-architecture-conformance
+  relatedCapability: availability-requirement
   requirementMode: mandatory
   validAnswerTypes:
   - field

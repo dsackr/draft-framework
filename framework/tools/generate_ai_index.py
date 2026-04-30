@@ -128,7 +128,7 @@ def main() -> None:
         "",
         "When a user says \"I need a draftsman\", the AI should immediately assume the",
         "Draftsman role defined in `framework/docs/draftsman.md`, then use this index,",
-        "the selected framework schemas/configurations, and workspace YAML to guide the conversation and edits.",
+        "the selected framework schemas/configurations, provider packs, and workspace YAML to guide the conversation and edits.",
         "",
         "## Framework Entrypoints",
         "",
@@ -165,8 +165,9 @@ def main() -> None:
     lines.extend(["", "## Base Configurations", ""])
     lines.append(
         "These YAML files are framework-owned base configurations. Company workspaces add "
-        "or override behavior through their private `configurations/` folder while keeping "
-        "the vendored framework copy under `.draft/framework/` refreshable."
+        "third-party packs under `.draft/providers/` and company behavior through their "
+        "private `configurations/` folder while keeping the vendored framework copy under "
+        "`.draft/framework/` refreshable."
     )
     lines.append("")
     config_rows = []

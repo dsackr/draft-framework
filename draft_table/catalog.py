@@ -70,6 +70,13 @@ def load_effective_catalog(workspace: Path | None, framework_repo: Path = REPO_R
     objects: dict[str, dict[str, Any]] = {}
     roots = [framework_root / "configurations"]
     if workspace and workspace.exists():
+        provider_root = workspace / ".draft" / "providers"
+        if provider_root.exists():
+            roots.extend(
+                provider_config
+                for provider_config in sorted(provider_root.glob("*/configurations"))
+                if provider_config.exists()
+            )
         workspace_config = workspace / "configurations"
         workspace_catalog = workspace / "catalog"
         if workspace_config.exists():

@@ -2,28 +2,37 @@
 
 ## What This Layer Does
 
-DRAFT treats compliance as a pluggable layer rather than a fixed property of
-the Definition Checklist files.
+DRAFT treats compliance as an explicitly activated authoring layer rather than
+a fixed property of the Definition Checklist files or a browser display filter.
 
 For the AI-facing interview and translation rules that turn external control
 catalogs into DRAFT YAML in this repo, see [Draftsman instructions](draftsman.md).
 
 The Definition Checklists define the required capabilities for the architecture
 object. Control Enforcement Profiles define the required controls that extend
-those Definition Checklists at runtime.
+those Definition Checklists during drafting and validation when a workspace
+activates the profile.
 
 That split exists so the same architecture model can be reused under multiple
-compliance regimes. One team may want to work from a baseline control catalog.
-Another may want to align the same requirements to NIST CSF, SOC 2, or an
-internal control catalog that is specific to their organization.
+compliance regimes. One team may activate a DRAFT-provided SOC 2 mapping.
+Another may activate a third-party SOC 2 mapping or its own company-maintained
+SOC 2 mapping. The selected profile identity records which interpretation the
+object was drafted against.
 
 ## How The Model Is Structured
 
-Each base control catalog is a YAML file in
+Each DRAFT-provided control catalog is a YAML file in
 `framework/configurations/compliance-controls/`. Company control catalogs live
-in the company repo under `configurations/compliance-controls/`.
+in the company repo under `configurations/compliance-controls/`. Optional
+third-party control packs may be vendored under
+`.draft/providers/<provider>/configurations/compliance-controls/`.
 The Compliance Controls object contains only control identity data and is governed by
 `checklist.compliance-controls`.
+
+Control catalogs carry provider and authority metadata. Provider identifies who
+authored the DRAFT control pack. Authority identifies the real-world source or
+program the pack maps to. For example, `controls.draft-soc2` is a DRAFT
+Framework-provided control catalog whose authority is AICPA SOC 2.
 
 Each control catalog entry defines:
 
@@ -33,10 +42,29 @@ Each control catalog entry defines:
 - optional `notes`
 
 Each Control Enforcement Profile is a YAML file in
-`framework/configurations/control-enforcement-profiles/` for base profiles or
-`configurations/control-enforcement-profiles/` for company profiles.
+`framework/configurations/control-enforcement-profiles/` for DRAFT-provided
+profiles, `.draft/providers/<provider>/configurations/control-enforcement-profiles/`
+for third-party profiles, or `configurations/control-enforcement-profiles/`
+for company profiles.
 The profile is governed by `checklist.control-enforcement-profile` and carries the DRAFT
 semantics for the controls in a backing control catalog.
+
+A profile existing in any of those folders does not make it active. Workspace
+activation makes a profile part of the company's drafting contract:
+
+```yaml
+compliance:
+  activeControlEnforcementProfiles:
+    - control-enforcement.draft-soc2
+    - control-enforcement.frontline-roper
+  requireActiveProfileDisposition: false
+```
+
+`requireActiveProfileDisposition: false` supports incremental migration:
+Draftsman should push active profile questions for new and updated objects, but
+validation does not fail every existing object that has not yet been
+re-interviewed. Setting it to `true` makes validation require every object in
+scope to record disposition against every active profile.
 
 Each profile semantic entry defines:
 
@@ -48,13 +76,16 @@ Each profile semantic entry defines:
 - optional `applicability` rules for scope handling
 - `validAnswerTypes`
 
-To add a new control group cleanly:
+To add a new company or third-party control group cleanly:
 
-1. add or update the pure control catalog in `configurations/compliance-controls/`
-2. add or update the Control Enforcement Profile in `configurations/control-enforcement-profiles/`
-3. declare object-level `controlEnforcementProfiles` on artifacts that explicitly claim
+1. add or update the pure control catalog in the provider or workspace
+   `configurations/compliance-controls/`
+2. add or update the Control Enforcement Profile in the matching
+   `configurations/control-enforcement-profiles/`
+3. activate the profile in `.draft/workspace.yaml`
+4. declare object-level `controlEnforcementProfiles` on artifacts that explicitly claim
    compliance with the profile
-4. record object-level `controlImplementations` for each applicable control on
+5. record object-level `controlImplementations` for each applicable control on
    those claimed artifacts
 
 This is intentionally AI-friendly. A security specialist or uploaded source
@@ -68,23 +99,33 @@ profile Definition Checklist then tells the AI what DRAFT-specific metadata it s
 
 ## What Ships In The Repo
 
-The framework includes one baseline required-control catalog:
+The framework includes DRAFT-provided control packs. Their IDs include the
+provider namespace so a company or third party can provide a different
+interpretation without silently replacing them:
 
-- Security and Compliance Controls
+- `controls.draft-security-compliance`
+- `controls.draft-soc2`
+- `controls.draft-nist-csf`
+- `controls.draft-tx-ramp`
 
-It also includes starter Compliance Controls for common external control sources
-and for an organization-specific overlay. Those control catalog objects exist so
-implementers can add controls without changing the core architecture model.
+The DRAFT Framework owns and maintains these as drafting aids. It does not claim
+that using them makes a company compliant with SOC 2, NIST CSF, TX-RAMP, or any
+external program. The authoritative source remains the control owner, auditor,
+regulator, or company compliance program.
 
 ## How The Browser Uses It
 
-The browser exposes a Control Enforcement Profile selector in the sidebar. When the
-architect changes the selected profile, the Definition Checklist detail view and the Standard
-Definition Checklist satisfaction panels re-render using the controls defined for that
-profile.
+The browser shows the workspace-active Control Enforcement Profiles from
+`.draft/workspace.yaml`. If no profiles are active, it shows available profiles
+for reference only.
+
+When the architect changes the selected profile in the browser, the Definition
+Checklist detail view and satisfaction panels re-render using that profile's
+controls. That selector is a viewing aid; it is not the workspace activation
+mechanism. Activation belongs in `.draft/workspace.yaml`.
 
 Mandatory controls are treated as always in scope once that Control Enforcement Profile is
-selected. Conditional controls stay visible, but the profile can explicitly
+activated and attached to an object. Conditional controls stay visible, but the profile can explicitly
 signal that `N/A` is an acceptable response when the product or deployment is
 out of scope for that control set. This is the intended model for frameworks
 such as TX-RAMP, PCI, HIPAA, and FedRAMP.
@@ -93,8 +134,15 @@ At the object level, `controlEnforcementProfiles` is the compliance claim. An ar
 that declares a profile must provide valid `controlImplementations` for every
 applicable control in that profile. An artifact that does not declare a profile
 is not labeled non-compliant; it is simply not counted as compliant inventory
-for that control profile. Control implementations are evidence for declared profiles
-only.
+for that control profile. Control implementations are evidence for declared
+profiles only. If a workspace has active profiles, object claims should use
+those active profiles rather than available-but-inactive profiles.
+
+Control implementation status uses:
+
+- `satisfied` when the object has a valid answer for the control
+- `not-applicable` when a conditional control explicitly allows `N/A`
+- `not-compliant` when the gap is known and must remain visible until fixed
 
 Artifact detail headers also show declared control enforcement profiles so architects
 can identify claimed compliant inventory directly.

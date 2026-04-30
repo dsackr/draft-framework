@@ -1,8 +1,8 @@
 # Template for a pure Compliance Controls control catalog.
 schemaVersion: "1.0"
-id: controls.<framework-slug>
+id: controls.<provider-slug>-<framework-slug>
 type: compliance_controls
-name: <Framework Name>
+name: <Control Catalog Name>
 description: <Control catalog description.>
 version: 1.0.0
 controlsKind: <common|organizational>
@@ -11,6 +11,13 @@ lifecycleStatus: pre-invest
 owner:
   team: <owning-team>
   contact: <team-or-person@example.com>
+provider:
+  id: provider.<provider-slug>
+  type: <framework|third_party|company>
+  name: <Provider name>
+authority:
+  name: <Control authority name>
+  source: <Authoritative source or policy name>
 tags:
   - compliance-controls
 controlIdNamespace: <namespace>
