@@ -25,6 +25,14 @@ class WebTests(unittest.TestCase):
         self.assertIn("draft-table ai doctor", INDEX_HTML)
         self.assertIn("draft-table framework refresh", INDEX_HTML)
 
+    def test_ui_includes_new_user_guide(self) -> None:
+        self.assertIn('data-side-tab="guide"', INDEX_HTML)
+        self.assertIn("What DRAFT Is", INDEX_HTML)
+        self.assertIn("How To Navigate", INDEX_HTML)
+        self.assertIn("How Content Gets Updated", INDEX_HTML)
+        self.assertIn("Technology Component", INDEX_HTML)
+        self.assertIn("Software Deployment Pattern", INDEX_HTML)
+
 
 if __name__ == "__main__":
     unittest.main()

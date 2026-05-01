@@ -5,8 +5,28 @@ notes, including patch releases.
 
 ## Unreleased
 
-Use this section for work that has not been assigned to a release yet. Move the
-notes into a numbered release section before changing `draft-framework.yaml`.
+### Compatibility Impact
+
+No workspace object migration is required.
+
+### Added
+
+- Added a DRAFT Table Guide tab that explains what DRAFT is, how to navigate the
+  UI, what the core artifact families mean, and how content updates flow through
+  Draftsman, validation, and Git.
+
+### Changed
+
+- No changes.
+
+### Fixed
+
+- No fixes.
+
+### Migration Notes
+
+- Existing workspaces only need to refresh their vendored framework copy to pick
+  up the updated DRAFT Table UI.
 
 ## 0.5.0 - 2026-04-30
 

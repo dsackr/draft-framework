@@ -647,6 +647,22 @@ INDEX_HTML = """<!doctype html>
       display: grid;
       gap: 10px;
     }
+    .guide-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .guide-list li {
+      padding-left: 14px;
+      border-left: 3px solid rgba(56,189,248,0.45);
+      color: var(--subtle);
+      line-height: 1.55;
+    }
+    .guide-list strong {
+      color: var(--text);
+    }
     .command {
       margin: 0;
       white-space: pre-wrap;
@@ -685,6 +701,7 @@ INDEX_HTML = """<!doctype html>
       </div>
       <div class="side-tabs">
         <button class="side-tab active" data-side-tab="draftsman">Draftsman</button>
+        <button class="side-tab" data-side-tab="guide">Guide</button>
         <button class="side-tab" data-side-tab="catalog">Catalog</button>
         <button class="side-tab" data-side-tab="configuration">Configuration</button>
       </div>
@@ -790,6 +807,8 @@ INDEX_HTML = """<!doctype html>
       if (activeSideTab === 'catalog') {
         panel.innerHTML = catalogSidebarMarkup();
         bindCatalogSidebar();
+      } else if (activeSideTab === 'guide') {
+        panel.innerHTML = guideSidebarMarkup();
       } else if (activeSideTab === 'configuration') {
         panel.innerHTML = configurationSidebarMarkup();
       } else {
@@ -831,6 +850,33 @@ INDEX_HTML = """<!doctype html>
           <button class="action-button primary" id="send-message">Send</button>
         </div>
         ${proposalMarkup}
+      `;
+    }
+
+    function guideSidebarMarkup() {
+      return `
+        <div class="sidebar-block">
+          <h2>New User Guide</h2>
+          <div class="muted">DRAFT is a structured architecture catalog for deployable systems. The Draftsman helps you turn conversations, diagrams, notes, and product intent into architecture artifacts that can be reviewed, validated, and reused.</div>
+        </div>
+        <div class="sidebar-block">
+          <h3>Good First Questions</h3>
+          <ul class="guide-list">
+            <li>What is a Technology Component?</li>
+            <li>What standards already exist for this product?</li>
+            <li>Where is the Falcon agent used?</li>
+            <li>Start a drafting session for my new service.</li>
+          </ul>
+        </div>
+        <div class="sidebar-block">
+          <h3>Daily Path</h3>
+          <ul class="guide-list">
+            <li>Ask the Draftsman to explain or draft.</li>
+            <li>Review the focused artifact on the right.</li>
+            <li>Apply proposed changes when they look right.</li>
+            <li>Validate, commit, and push through Git.</li>
+          </ul>
+        </div>
       `;
     }
 
@@ -920,15 +966,23 @@ INDEX_HTML = """<!doctype html>
     function renderMain() {
       const root = document.getElementById('main-root');
       const canFocus = Boolean(focused);
-      const focusActive = canFocus && activeSideTab !== 'configuration';
+      const mainMode = activeSideTab === 'configuration'
+        ? 'configuration'
+        : activeSideTab === 'guide'
+          ? 'guide'
+          : focused
+            ? 'focus'
+            : 'catalog';
+      const focusActive = mainMode === 'focus';
       root.innerHTML = `
         <div class="top-nav">
-          <button class="nav-button ${!focusActive && activeSideTab !== 'configuration' ? 'active' : ''}" id="nav-catalog">Catalog Browser</button>
+          <button class="nav-button ${mainMode === 'catalog' ? 'active' : ''}" id="nav-catalog">Catalog Browser</button>
           <button class="nav-button ${focusActive ? 'active' : ''}" id="nav-focus" ${canFocus ? '' : 'disabled'}>Focused Artifact</button>
+          <button class="nav-button ${mainMode === 'guide' ? 'active' : ''}" id="nav-guide">Guide</button>
           <button class="nav-button ${activeSideTab === 'configuration' ? 'active' : ''}" id="nav-config">Configuration</button>
           <button class="nav-button" id="nav-refresh">Refresh</button>
         </div>
-        ${activeSideTab === 'configuration' ? renderConfigurationDetail() : focused ? renderFocus() : renderCatalog()}
+        ${mainMode === 'configuration' ? renderConfigurationDetail() : mainMode === 'guide' ? renderGuideDetail() : mainMode === 'focus' ? renderFocus() : renderCatalog()}
       `;
       document.getElementById('nav-catalog')?.addEventListener('click', () => {
         focused = null;
@@ -936,12 +990,13 @@ INDEX_HTML = """<!doctype html>
       });
       document.getElementById('nav-focus')?.addEventListener('click', () => {
         if (!focused) return;
-        if (activeSideTab === 'configuration') {
+        if (activeSideTab === 'configuration' || activeSideTab === 'guide') {
           activeSideTab = 'catalog';
           renderSidebar();
         }
         renderMain();
       });
+      document.getElementById('nav-guide')?.addEventListener('click', () => setSideTab('guide'));
       document.getElementById('nav-config')?.addEventListener('click', () => setSideTab('configuration'));
       document.getElementById('nav-refresh')?.addEventListener('click', refreshAll);
       bindObjectCards();
@@ -950,6 +1005,83 @@ INDEX_HTML = """<!doctype html>
         focused = null;
         renderMain();
       });
+    }
+
+    function renderGuideDetail() {
+      return `
+        <section class="header-card">
+          <div class="header-top">
+            <div class="header-title">
+              <h2>What DRAFT Is</h2>
+              <div class="object-id">Deployable Reference Architecture Framework Toolkit</div>
+            </div>
+            <div class="badges">
+              <span class="badge ok-badge">Architecture Catalog</span>
+              <span class="badge">Git Source Of Truth</span>
+              <span class="badge">AI Assisted</span>
+            </div>
+          </div>
+          <div class="header-description">DRAFT helps a company describe deployable architecture as reusable artifacts. The framework provides the rules, checklists, schemas, examples, and Draftsman guidance. Your company repo contains the private catalog: the standards, product deployments, decisions, and compliance posture that describe how your systems should be built and operated.</div>
+        </section>
+        <div class="detail-grid">
+          <section class="section-card">
+            <h3>How To Navigate</h3>
+            <ul class="guide-list">
+              <li><strong>Draftsman</strong> is the conversation workspace. Ask questions, attach source material, and review proposed artifacts.</li>
+              <li><strong>Guide</strong> explains the working model and the common object types.</li>
+              <li><strong>Catalog</strong> browses the loaded artifacts from the framework and company workspace.</li>
+              <li><strong>Configuration</strong> shows the selected company repo, AI provider, framework copy, validation status, and repair commands.</li>
+            </ul>
+          </section>
+          <section class="section-card">
+            <h3>Core Artifacts</h3>
+            <ul class="guide-list">
+              <li><strong>Technology Component</strong>: a discrete product, operating system, software package, tool, runtime, or agent.</li>
+              <li><strong>Host Standard</strong>: a reusable compute standard built from an operating system, compute platform, and required operational capabilities.</li>
+              <li><strong>Service Standard</strong>: a reusable service building block that combines a host or platform with the primary internal component that makes it useful.</li>
+              <li><strong>Database Standard</strong>: a data service standard with durability, protection, operation, and compliance expectations.</li>
+              <li><strong>Appliance Component</strong>: a vendor product that behaves like a service but does not expose a host model.</li>
+            </ul>
+          </section>
+          <section class="section-card">
+            <h3>Architecture Artifacts</h3>
+            <ul class="guide-list">
+              <li><strong>Reference Architecture</strong>: a reusable architecture pattern for a class of deployments.</li>
+              <li><strong>Software Deployment Pattern</strong>: the intended deployable shape of a product or system that follows a reference architecture.</li>
+              <li><strong>Decision Record</strong>: a documented architecture decision or risk that affects deployment choices.</li>
+              <li><strong>Drafting Session</strong>: a work-in-progress record for assumptions, source material, generated objects, and unanswered questions.</li>
+            </ul>
+          </section>
+          <section class="section-card">
+            <h3>Controls And Completeness</h3>
+            <ul class="guide-list">
+              <li><strong>Definition Checklist</strong>: the required questions an artifact must answer to be complete and reusable.</li>
+              <li><strong>Compliance Controls</strong>: control catalogs grouped by source, such as a framework-provided or company-owned control group.</li>
+              <li><strong>Control Enforcement Profile</strong>: the company decision about where and how selected controls are enforced in DRAFT.</li>
+              <li><strong>Validation</strong>: the executable check that confirms objects follow the framework and resolve their relationships.</li>
+            </ul>
+          </section>
+          <section class="section-card">
+            <h3>How Content Gets Updated</h3>
+            <ul class="guide-list">
+              <li>Start in the Draftsman tab and describe what you are building, changing, or trying to understand.</li>
+              <li>Attach source material when useful: diagrams, documents, notes, inventories, or screenshots.</li>
+              <li>The Draftsman searches the current catalog first, reuses existing artifacts when possible, and asks focused follow-up questions for gaps.</li>
+              <li>Proposed artifacts appear as plain-language review cards. Applying them updates the company repo internally and runs validation.</li>
+              <li>After review, use normal Git workflow to commit, push, and open a pull request when your company requires review.</li>
+            </ul>
+          </section>
+          <section class="section-card">
+            <h3>How To Think About DRAFT</h3>
+            <ul class="guide-list">
+              <li>The framework is shared. The company catalog is private.</li>
+              <li>Artifacts should be reusable, deployable, and specific enough for automation to trust later.</li>
+              <li>Missing facts should be recorded as questions or drafting-session gaps, not hidden in prose.</li>
+              <li>Compliance is selected by the company and then becomes part of the drafting conversation for new and updated artifacts.</li>
+            </ul>
+          </section>
+        </div>
+      `;
     }
 
     function renderCatalog() {
