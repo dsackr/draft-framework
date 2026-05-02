@@ -999,8 +999,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       align-items: flex-start;
     }
     .acceptable-use-capability-title {
-      display: grid;
-      gap: 4px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      align-items: center;
+    }
+    .acceptable-use-capability-title .object-id {
+      flex-basis: 100%;
     }
     .acceptable-use-owner {
       display: grid;
@@ -2755,6 +2760,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
+    function acceptableUseCapabilityCount(rows) {
+      const uniqueRefs = new Set(
+        rows
+          .map(row => row.implementation?.ref)
+          .filter(Boolean)
+      );
+      const count = uniqueRefs.size;
+      return `${count} ${count === 1 ? 'Technology Component' : 'Technology Components'}`;
+    }
+
     function acceptableUseDomainMarkup(group) {
       const capabilityGroups = [];
       group.rows.forEach(row => {
@@ -2777,6 +2792,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 <div class="acceptable-use-capability-header">
                   <div class="acceptable-use-capability-title">
                     <span class="ard-link" data-object-link="${escapeHtml(capability.id)}">${escapeHtml(capability.name)}</span>
+                    <span class="badge">${acceptableUseCapabilityCount(capabilityGroup.rows)}</span>
                     <span class="object-id">${escapeHtml(capability.id)}</span>
                   </div>
                   <div class="acceptable-use-owner">${acceptableUseOwnerMarkup(capability.owner)}</div>

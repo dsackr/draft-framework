@@ -27,6 +27,8 @@ browser view.
   empty domain groups so it remains a Technology Component list.
 - Clarified Draftsman guidance for overlapping base and workspace-activated
   control requirements that share a capability.
+- Added per-capability Technology Component counts to the Acceptable Use
+  Technology browser view.
 
 ### Fixed
 
