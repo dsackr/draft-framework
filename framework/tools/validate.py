@@ -435,6 +435,7 @@ def applicable_requirement_group_ids(
     obj: dict[str, Any],
     requirement_groups: dict[str, dict[str, Any]],
     active_group_ids: set[str] | None = None,
+    require_active_group_disposition: bool = False,
 ) -> list[str]:
     active_group_ids = active_group_ids or set()
     declared = obj.get("requirementGroups", [])
@@ -445,7 +446,9 @@ def applicable_requirement_group_ids(
             continue
         if group.get("activation") == "always":
             applicable.add(group_id)
-        elif group_id in active_group_ids or group_id in declared_ids:
+        elif group_id in declared_ids:
+            applicable.add(group_id)
+        elif require_active_group_disposition and group_id in active_group_ids:
             applicable.add(group_id)
     return sorted(applicable)
 
@@ -1395,12 +1398,17 @@ def validate_applicable_requirements(
         group = requirement_groups.get(group_id)
         if not group:
             failures.append(f"{path}: Replace unknown requirement group '{group_id}' with an existing requirement_group ID")
-        elif group.get("activation") == "workspace" and active_group_ids and group_id not in active_group_ids:
+        elif group.get("activation") == "workspace" and group_id not in active_group_ids:
             failures.append(
                 f"{path}: Activate requirement group '{group_id}' in .draft/workspace.yaml or remove the object claim"
             )
 
-    applicable_group_ids = applicable_requirement_group_ids(obj, requirement_groups, active_group_ids)
+    applicable_group_ids = applicable_requirement_group_ids(
+        obj,
+        requirement_groups,
+        active_group_ids,
+        require_active_group_disposition,
+    )
     for group_id in applicable_group_ids:
         group = requirement_groups[group_id]
         try:

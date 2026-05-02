@@ -19,7 +19,9 @@ No unreleased changes.
 
 ### Fixed
 
-- No fixes.
+- Fixed workspace-mode Requirement Group validation so active groups remain
+  incremental when `requireActiveRequirementGroupDisposition` is false, while
+  still requiring explicit activation before an object can claim them.
 
 ### Migration Notes
 
