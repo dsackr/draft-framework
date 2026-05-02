@@ -106,6 +106,11 @@ python3 .draft/framework/tools/generate_browser.py \
 The generated browser is read-only. Catalog changes are made in YAML and then
 validated.
 
+The browser's Acceptable Use Technology view is generated from the effective
+Capability model. It groups Technology Component lifecycle mappings by domain,
+shows which capability each product satisfies, and lists the company capability
+owner/contact for change requests.
+
 ## Framework Updates
 
 Framework updates are explicit. The workspace records the upstream source and

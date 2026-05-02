@@ -70,3 +70,15 @@ running services, because lifecycle disposition is a decision about a discrete
 vendor product and version. If a SaaS platform or managed service is governed by
 the lifecycle program, model the vendor product as a Technology Component and
 compose the service-facing architecture separately as a Standard.
+
+## Acceptable Use Technology View
+
+The generated browser includes an Acceptable Use Technology view. It groups
+capability implementation mappings by domain and shows the capability owner,
+contact, lifecycle status, Technology Component, vendor/product/version,
+configuration, and notes. This is the human-readable technology lifecycle table
+for a company workspace.
+
+If a user wants a Technology Component added, retired, or moved between
+`pre-invest`, `invest`, `maintain`, `disinvest`, and `exit`, the capability
+owner listed in that view is the contact for the change request.

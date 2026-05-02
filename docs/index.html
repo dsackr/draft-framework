@@ -357,6 +357,26 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+    }
+    .acceptable-use-table {
+      min-width: 1120px;
+    }
+    .acceptable-use-table th:nth-child(1) { width: 17%; }
+    .acceptable-use-table th:nth-child(2) { width: 10%; }
+    .acceptable-use-table th:nth-child(3) { width: 20%; }
+    .acceptable-use-table th:nth-child(4) { width: 18%; }
+    .acceptable-use-table th:nth-child(5) { width: 12%; }
+    .acceptable-use-table th:nth-child(6) { width: 13%; }
+    .acceptable-use-table th:nth-child(7) { width: 10%; }
+    .acceptable-use-table .object-id {
+      margin-top: 4px;
+    }
+    .acceptable-use-table .muted-cell {
+      color: var(--muted);
+    }
     .ard-detail-card {
       display: grid;
       gap: 16px;
@@ -1809,6 +1829,10 @@
       setHashState({ view: 'impact', id: impactSelectedId, q: impactSearchTerm || null });
     }
 
+    function syncHashForAcceptableUseView() {
+      setHashState({ view: 'acceptable-use' });
+    }
+
     function applyRouteFromHash() {
       if (suppressHashSync) return;
       const params = currentHashState();
@@ -1829,6 +1853,10 @@
         renderImpactView();
         return;
       }
+      if (view === 'acceptable-use') {
+        renderAcceptableUseView();
+        return;
+      }
       const category = params.get('category');
       activeCategory = CATEGORY_CONFIG.some(item => item.id === category) ? category : 'architecture';
       const requestedFilter = params.get('filter');
@@ -1847,6 +1875,7 @@
         <div class="top-nav">
           <button class="nav-button ${currentMode === 'list' ? 'active' : ''}" data-nav="list">List View</button>
           <button class="nav-button ${currentMode === 'detail' ? 'active' : ''}" data-nav="detail" ${currentDetailId ? '' : 'disabled'}>Detail View</button>
+          <button class="nav-button ${currentMode === 'acceptable-use' ? 'active' : ''}" data-nav="acceptable-use">Acceptable Use</button>
           <button class="nav-button ${currentMode === 'impact' ? 'active' : ''}" data-nav="impact">Impact Analysis</button>
         </div>
       `;
@@ -1874,6 +1903,10 @@
         renderDetailView();
         return;
       }
+      if (currentMode === 'acceptable-use') {
+        renderAcceptableUseView();
+        return;
+      }
       if (currentMode === 'impact') {
         renderImpactView();
         return;
@@ -1899,6 +1932,10 @@
           }
           if (nav === 'impact') {
             renderImpactView();
+            return;
+          }
+          if (nav === 'acceptable-use') {
+            renderAcceptableUseView();
           }
         });
       });
@@ -1978,6 +2015,198 @@
 
     function abbClassificationLabel(value) {
       return formatTitleCase(String(value || 'unknown').replace(/-/g, ' '));
+    }
+
+    function lifecycleSortRank(status) {
+      return ({
+        'invest': 0,
+        'maintain': 1,
+        'pre-invest': 2,
+        'disinvest': 3,
+        'exit': 4
+      }[status] ?? 99);
+    }
+
+    function implementationConfigurationLabel(technology, implementation) {
+      const configurationId = implementation?.configuration || '';
+      if (!configurationId) return '';
+      const configuration = (technology?.configurations || [])
+        .find(item => item && item.id === configurationId);
+      if (!configuration) return configurationId;
+      return `${configuration.name || configuration.id} (${configurationId})`;
+    }
+
+    function acceptableUseGroups() {
+      const groups = new Map();
+      allObjects
+        .filter(object => object.type === 'capability')
+        .sort((a, b) => {
+          const domainA = objectLookup[a.domain]?.name || a.domain || '';
+          const domainB = objectLookup[b.domain]?.name || b.domain || '';
+          return domainA.localeCompare(domainB) || a.name.localeCompare(b.name);
+        })
+        .forEach(capability => {
+          const domainId = capability.domain || 'domain.unassigned';
+          const domain = objectLookup[domainId] || {
+            id: domainId,
+            name: capability.domain || 'Unassigned Domain',
+            description: ''
+          };
+          if (!groups.has(domainId)) {
+            groups.set(domainId, { domain, rows: [] });
+          }
+          const rows = groups.get(domainId).rows;
+          const implementations = Array.isArray(capability.implementations)
+            ? capability.implementations.slice().sort((a, b) => {
+                const techA = objectLookup[a.ref]?.name || a.ref || '';
+                const techB = objectLookup[b.ref]?.name || b.ref || '';
+                return lifecycleSortRank(a.lifecycleStatus) - lifecycleSortRank(b.lifecycleStatus)
+                  || techA.localeCompare(techB);
+              })
+            : [];
+          if (!implementations.length) {
+            rows.push({ capability, implementation: null, technology: null });
+            return;
+          }
+          implementations.forEach(implementation => {
+            rows.push({
+              capability,
+              implementation,
+              technology: objectLookup[implementation.ref] || null
+            });
+          });
+        });
+      return Array.from(groups.values())
+        .sort((a, b) => (a.domain.name || a.domain.id).localeCompare(b.domain.name || b.domain.id));
+    }
+
+    function acceptableUseSidebarMarkup(groups, mappedCount) {
+      const capabilityCount = groups.reduce((count, group) => {
+        const ids = new Set(group.rows.map(row => row.capability.id));
+        return count + ids.size;
+      }, 0);
+      return `
+        <div class="sidebar-block">
+          <div class="legend-title">Acceptable Use Technology</div>
+          <div class="current-filter"><span class="dot" style="background:#38bdf8"></span><span>${mappedCount} mapped Technology Components</span></div>
+          <div class="current-filter"><span class="dot" style="background:#22c55e"></span><span>${capabilityCount} capabilities</span></div>
+          <div class="current-filter"><span class="dot" style="background:#f59e0b"></span><span>${groups.length} domains</span></div>
+        </div>
+      `;
+    }
+
+    function acceptableUseOwnerMarkup(owner) {
+      if (!owner?.team && !owner?.contact) {
+        return '<span class="muted-cell">Not assigned</span>';
+      }
+      return `
+        <div>${escapeHtml(owner.team || 'Not assigned')}</div>
+        <div class="object-id">${escapeHtml(owner.contact || 'No contact documented')}</div>
+      `;
+    }
+
+    function acceptableUseTechnologyMarkup(technology, implementation) {
+      if (!implementation) {
+        return '<span class="muted-cell">No mapped Technology Component</span>';
+      }
+      if (!technology) {
+        return `<span class="muted-cell">${escapeHtml(implementation.ref || 'Unknown Technology Component')}</span>`;
+      }
+      return `
+        <span class="ard-link" data-object-link="${escapeHtml(technology.id)}">${escapeHtml(technology.name)}</span>
+        <div class="object-id">${escapeHtml(technology.id)}</div>
+      `;
+    }
+
+    function acceptableUseDomainMarkup(group) {
+      return `
+        <section class="section-card">
+          <h3>${escapeHtml(group.domain.name || group.domain.id)}</h3>
+          <div class="object-id">${escapeHtml(group.domain.id || '')}</div>
+          ${group.domain.description ? `<div class="header-description">${escapeHtml(group.domain.description)}</div>` : ''}
+          <div class="table-scroll">
+            <table class="data-table acceptable-use-table">
+              <thead>
+                <tr>
+                  <th>Capability</th>
+                  <th>Status</th>
+                  <th>Technology Component</th>
+                  <th>Vendor / Product / Version</th>
+                  <th>Configuration</th>
+                  <th>Owner / Contact</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${group.rows.map(row => {
+                  const capability = row.capability;
+                  const implementation = row.implementation;
+                  const technology = row.technology;
+                  const configuration = implementationConfigurationLabel(technology, implementation);
+                  return `
+                    <tr>
+                      <td>
+                        <span class="ard-link" data-object-link="${escapeHtml(capability.id)}">${escapeHtml(capability.name)}</span>
+                        <div class="object-id">${escapeHtml(capability.id)}</div>
+                      </td>
+                      <td>${implementation ? lifecycleBadge(implementation.lifecycleStatus || 'unknown') : '<span class="badge">No mapping</span>'}</td>
+                      <td>${acceptableUseTechnologyMarkup(technology, implementation)}</td>
+                      <td>${technology ? escapeHtml([technology.vendor, technology.productName, technology.productVersion].filter(Boolean).join(' / ')) : '<span class="muted-cell">Not documented</span>'}</td>
+                      <td>${configuration ? escapeHtml(configuration) : '<span class="muted-cell">Default</span>'}</td>
+                      <td>${acceptableUseOwnerMarkup(capability.owner)}</td>
+                      <td>${implementation?.notes ? escapeHtml(implementation.notes) : '<span class="muted-cell">No notes</span>'}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderAcceptableUseView() {
+      currentMode = 'acceptable-use';
+      currentDetailId = null;
+      destroyDetailCy();
+      destroyImpactCy();
+      syncHashForAcceptableUseView();
+      const groups = acceptableUseGroups();
+      const mappedCount = groups.reduce(
+        (count, group) => count + group.rows.filter(row => row.implementation).length,
+        0
+      );
+      const capabilityCount = groups.reduce((count, group) => {
+        const ids = new Set(group.rows.map(row => row.capability.id));
+        return count + ids.size;
+      }, 0);
+      renderSidebarContent(acceptableUseSidebarMarkup(groups, mappedCount));
+      pageRoot.innerHTML = `
+        <div class="view-shell">
+          ${topNavMarkup()}
+          <section class="header-card">
+            <div class="header-top">
+              <div class="header-title">
+                <h2>Acceptable Use Technology</h2>
+                <div class="object-id">Capability implementation lifecycle map</div>
+              </div>
+              <div class="badges">
+                <span class="badge">${mappedCount} mapped Technology Components</span>
+                <span class="badge">${capabilityCount} capabilities</span>
+                <span class="badge">${groups.length} domains</span>
+              </div>
+            </div>
+            <div class="header-description">
+              Technology lifecycle by capability and domain. Contact the capability owner when a Technology Component needs to be added, retired, or moved to a different lifecycle status.
+            </div>
+          </section>
+          <div class="content-rows">
+            ${groups.map(acceptableUseDomainMarkup).join('') || '<div class="empty-card" style="padding:24px;">No capabilities are documented.</div>'}
+          </div>
+        </div>
+      `;
+      attachTopNavHandlers();
+      attachObjectLinkHandlers(pageRoot);
     }
 
     function renderListView() {

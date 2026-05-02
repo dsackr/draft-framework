@@ -5,7 +5,30 @@ notes, including patch releases.
 
 ## Unreleased
 
-No unreleased changes.
+### Compatibility Impact
+
+No migration required. Existing capability implementation mappings drive the new
+browser view.
+
+### Added
+
+- Added an Acceptable Use Technology browser view that groups Technology
+  Component lifecycle mappings by domain and capability, including owner/contact
+  information for change requests.
+
+### Changed
+
+- Documented the Acceptable Use Technology view as the generated human-readable
+  table for company technology lifecycle mappings.
+
+### Fixed
+
+- No fixes.
+
+### Migration Notes
+
+- Regenerate `docs/index.html` to publish the Acceptable Use Technology view for
+  a framework or workspace browser.
 
 ## 0.7.0 - 2026-05-02
 
