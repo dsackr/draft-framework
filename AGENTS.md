@@ -79,6 +79,17 @@ Treat `requirementGroups` on an artifact as the explicit compliance claim.
 is not declared, the artifact is not non-compliant; it is simply not eligible
 as compliant off-the-shelf inventory for those requirements.
 
+## Overlapping Requirements
+
+Base DRAFT requirements and workspace-activated compliance requirements may
+name the same `relatedCapability`. Do not merge or override the requirements.
+Ask once by capability when the evidence overlaps, then record disposition
+separately for each requirement that applies. The strictest active requirement
+drives any follow-up questions. The same external interaction, internal
+component, Technology Component configuration, deployment configuration, field,
+or architectural decision may satisfy multiple requirements when it genuinely
+answers each requirement's rationale.
+
 ## Capability Lookup
 
 When a requirement has `relatedCapability`, resolve it before interviewing:

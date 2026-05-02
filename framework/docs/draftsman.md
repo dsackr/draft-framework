@@ -80,6 +80,31 @@ platform, installed component, Technology Component configuration, external
 interaction, or architectural decision applies patches. It does not ask which
 team owns patching.
 
+## Requirement Overlap
+
+Always-on base requirements and workspace-activated control requirements can
+overlap. For example, a Host Standard may have a base log-management
+requirement while an active control group also requires log evidence,
+retention, review, or alerting.
+
+Do not collapse overlapping requirements into one requirement and do not let a
+control requirement override the base requirement. Treat requirements as
+accumulating obligations:
+
+1. Group interview questions by `relatedCapability` so the user is not asked
+   the same capability question repeatedly.
+2. Resolve approved implementations through the Capability Lookup procedure.
+3. Ask follow-up questions only for the facts required by the strictest active
+   requirement.
+4. Reuse the same evidence across requirements when the evidence satisfies each
+   requirement's rationale.
+5. Record `requirementImplementations` separately for every workspace-mode
+   requirement the object claims or must disposition.
+
+If one overlapping requirement is not applicable, mark only that requirement
+`not-applicable` when allowed. Other active or always-on requirements still
+apply.
+
 ## Workspace-Activated Requirements
 
 Workspace-mode Requirement Groups are active only when listed in

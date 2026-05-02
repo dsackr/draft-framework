@@ -25,6 +25,8 @@ browser view.
   instead of repeated in every row.
 - Changed the Acceptable Use Technology view to omit unmapped capabilities and
   empty domain groups so it remains a Technology Component list.
+- Clarified Draftsman guidance for overlapping base and workspace-activated
+  control requirements that share a capability.
 
 ### Fixed
 

@@ -55,6 +55,25 @@ object, reads the company capability owner, and recommends `invest` or
 means compliance questions are grounded in the same capability model as base
 object-definition questions.
 
+## Overlap With Base Requirements
+
+Workspace-mode control requirements often overlap with always-on base
+requirements. This is intentional. A base requirement establishes that an
+architecture object is complete and supportable; a control requirement
+establishes that the object has a specific compliance disposition.
+
+The requirements stay separate even when they share the same
+`relatedCapability`. The Draftsman should ask once by capability, reuse the
+same evidence where valid, and record each active control requirement's
+disposition independently. The stricter requirement determines what additional
+facts must be gathered. For example, base log management may only need the
+logging destination, while a control requirement may also need retention,
+review, alerting, or evidence-protection details.
+
+Marking a control requirement `not-applicable` does not make the matching base
+requirement disappear. It only records the disposition for that specific
+workspace-mode requirement.
+
 ## Browser Behavior
 
 The GitHub Pages browser is read-only. It shows Requirement Groups as framework
