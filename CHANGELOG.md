@@ -23,7 +23,8 @@ browser view.
 
 ### Fixed
 
-- No fixes.
+- Fixed generated browser payloads so Capability domain assignments are included
+  in the Acceptable Use Technology view instead of appearing as unassigned.
 
 ### Migration Notes
 

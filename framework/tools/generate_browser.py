@@ -518,6 +518,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
                 "filterType": filter_type_for(obj),
                 "category": obj.get("category", ""),
                 "serviceCategory": obj.get("serviceCategory", ""),
+                "domain": obj.get("domain", ""),
                 "description": obj.get("description", ""),
                 "version": obj.get("version", ""),
                 "catalogStatus": obj.get("catalogStatus", ""),
