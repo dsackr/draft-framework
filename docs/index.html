@@ -124,6 +124,167 @@
       display: grid;
       gap: 22px;
     }
+    .executive-hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(56,189,248,0.26);
+      border-radius: 18px;
+      padding: 30px;
+      min-height: 260px;
+      background:
+        linear-gradient(135deg, rgba(14,165,233,0.24), rgba(30,41,59,0.88) 46%, rgba(20,184,166,0.15)),
+        repeating-linear-gradient(90deg, rgba(148,163,184,0.06) 0, rgba(148,163,184,0.06) 1px, transparent 1px, transparent 34px);
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+      gap: 26px;
+      align-items: end;
+      box-shadow: 0 18px 42px rgba(2,6,23,0.28);
+    }
+    .executive-hero h2 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 1.06;
+      letter-spacing: 0;
+    }
+    .executive-hero p {
+      margin: 14px 0 0;
+      color: var(--subtle);
+      line-height: 1.6;
+      max-width: 780px;
+    }
+    .executive-hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .executive-snapshot {
+      display: grid;
+      gap: 12px;
+      padding: 18px;
+      border: 1px solid rgba(148,163,184,0.2);
+      border-radius: 16px;
+      background: rgba(15,23,42,0.62);
+    }
+    .executive-snapshot-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--subtle);
+      font-size: 13px;
+    }
+    .executive-snapshot-row strong {
+      color: var(--text);
+      font-size: 20px;
+    }
+    .executive-mosaic {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 16px;
+      align-items: stretch;
+    }
+    .executive-tile,
+    .executive-panel {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(30,41,59,0.74);
+      box-shadow: 0 12px 28px rgba(2,6,23,0.18);
+    }
+    .executive-tile {
+      min-height: 148px;
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+      align-content: space-between;
+      cursor: pointer;
+      transition: border-color 120ms ease, transform 120ms ease, background 120ms ease;
+    }
+    .executive-tile:hover {
+      border-color: rgba(56,189,248,0.58);
+      transform: translateY(-2px);
+      background: rgba(30,41,59,0.9);
+    }
+    .executive-tile:focus-visible {
+      outline: 2px solid rgba(56,189,248,0.82);
+      outline-offset: 2px;
+    }
+    .executive-tile.large { grid-column: span 5; min-height: 190px; }
+    .executive-tile.wide { grid-column: span 6; }
+    .executive-tile.medium { grid-column: span 4; }
+    .executive-tile.small { grid-column: span 3; }
+    .executive-tile.full { grid-column: span 12; }
+    .executive-number {
+      margin: 0;
+      font-size: 44px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+    .executive-number.big {
+      font-size: 58px;
+    }
+    .executive-tile-title {
+      display: grid;
+      gap: 8px;
+    }
+    .executive-tile-title h3 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.3;
+    }
+    .executive-tile-title p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 13px;
+    }
+    .executive-accent-cyan { border-color: rgba(56,189,248,0.42); }
+    .executive-accent-green { border-color: rgba(34,197,94,0.38); }
+    .executive-accent-amber { border-color: rgba(245,158,11,0.42); }
+    .executive-accent-violet { border-color: rgba(168,85,247,0.42); }
+    .executive-accent-rose { border-color: rgba(244,63,94,0.38); }
+    .executive-accent-teal { border-color: rgba(20,184,166,0.42); }
+    .executive-panel {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+    .executive-panel h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+    .executive-panel.wide { grid-column: span 6; }
+    .executive-panel.full { grid-column: span 12; }
+    .executive-bars {
+      display: grid;
+      gap: 10px;
+    }
+    .executive-bar-row {
+      display: grid;
+      grid-template-columns: 110px minmax(0, 1fr) 42px;
+      gap: 10px;
+      align-items: center;
+      color: var(--subtle);
+      font-size: 13px;
+    }
+    .executive-bar-track {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.86);
+      border: 1px solid rgba(148,163,184,0.16);
+      overflow: hidden;
+    }
+    .executive-bar-fill {
+      height: 100%;
+      min-width: 3px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+    .executive-drilldown {
+      display: grid;
+      gap: 14px;
+    }
     .top-nav {
       display: flex;
       flex-wrap: wrap;
@@ -1553,6 +1714,13 @@
     @media (max-width: 1200px) {
       .middle-grid { grid-template-columns: 1fr; }
       .deployment-target-columns { grid-template-columns: 1fr; }
+      .executive-hero { grid-template-columns: 1fr; }
+      .executive-tile.large,
+      .executive-tile.wide,
+      .executive-tile.medium,
+      .executive-panel.wide {
+        grid-column: span 6;
+      }
     }
     @media (max-width: 980px) {
       .page-shell { grid-template-columns: 1fr; }
@@ -1562,6 +1730,21 @@
       .definition-list { grid-template-columns: 1fr; }
       .acceptable-use-capability-header { flex-direction: column; }
       .acceptable-use-owner { text-align: left; }
+      .executive-mosaic { grid-template-columns: 1fr; }
+      .executive-tile.large,
+      .executive-tile.wide,
+      .executive-tile.medium,
+      .executive-tile.small,
+      .executive-tile.full,
+      .executive-panel.wide,
+      .executive-panel.full {
+        grid-column: 1;
+      }
+      .executive-hero { padding: 22px; }
+      .executive-hero h2 { font-size: 34px; }
+      .executive-number.big,
+      .executive-number { font-size: 40px; }
+      .executive-bar-row { grid-template-columns: 86px minmax(0, 1fr) 34px; }
     }
   </style>
 </head>
@@ -1576,7 +1759,7 @@
           <div class="mode-badge" id="browser-mode"></div>
         </div>
       </div>
-      <p>Browse architecture objects, relationships, interactions, and decisions.</p>
+      <p>Review architecture inventory, standards, requirements, relationships, and decisions.</p>
       <div class="sidebar-stack">
         <div id="sidebar-content"></div>
         <div class="legend-block">
@@ -1674,7 +1857,8 @@
     let activeCategory = 'architecture';
     let activeFilter = 'all';
     let currentDetailId = null;
-    let currentMode = 'list';
+    let currentMode = 'executive';
+    let executiveDrilldown = null;
     const navHistory = [];
     let detailCy = null;
     let impactCy = null;
@@ -1712,6 +1896,14 @@
 
     function formatKeyLabel(value) {
       return formatTitleCase(String(value || '').replace(/\./g, '-'));
+    }
+
+    function formatNumber(value) {
+      return Number(value || 0).toLocaleString();
+    }
+
+    function pluralize(count, singular, plural = `${singular}s`) {
+      return `${formatNumber(count)} ${count === 1 ? singular : plural}`;
     }
 
     function relatedCapabilityOptions() {
@@ -1846,6 +2038,13 @@
       return filter?.label || 'All';
     }
 
+    function syncHashForExecutiveView() {
+      setHashState({
+        view: 'executive',
+        drill: executiveDrilldown || null
+      });
+    }
+
     function syncHashForListView() {
       setHashState({
         view: 'list',
@@ -1870,6 +2069,12 @@
       if (suppressHashSync) return;
       const params = currentHashState();
       const view = params.get('view');
+      if (view === 'executive' || (!view && !params.get('category') && !params.get('filter'))) {
+        executiveDrilldown = params.get('drill') || null;
+        currentDetailId = null;
+        renderExecutiveView();
+        return;
+      }
       if (view === 'detail') {
         const objectId = params.get('id');
         if (objectId && objectLookup[objectId]) {
@@ -1890,6 +2095,7 @@
         renderAcceptableUseView();
         return;
       }
+      executiveDrilldown = null;
       const category = params.get('category');
       activeCategory = CATEGORY_CONFIG.some(item => item.id === category) ? category : 'architecture';
       const requestedFilter = params.get('filter');
@@ -1906,7 +2112,8 @@
     function topNavMarkup() {
       return `
         <div class="top-nav">
-          <button class="nav-button ${currentMode === 'list' ? 'active' : ''}" data-nav="list">List View</button>
+          <button class="nav-button ${currentMode === 'executive' ? 'active' : ''}" data-nav="executive">Executive View</button>
+          <button class="nav-button ${currentMode === 'list' ? 'active' : ''}" data-nav="list">Drafting Table</button>
           <button class="nav-button ${currentMode === 'detail' ? 'active' : ''}" data-nav="detail" ${currentDetailId ? '' : 'disabled'}>Detail View</button>
           <button class="nav-button ${currentMode === 'acceptable-use' ? 'active' : ''}" data-nav="acceptable-use">Acceptable Use</button>
           <button class="nav-button ${currentMode === 'impact' ? 'active' : ''}" data-nav="impact">Impact Analysis</button>
@@ -1932,6 +2139,10 @@
     }
 
     function rerenderCurrentView() {
+      if (currentMode === 'executive') {
+        renderExecutiveView();
+        return;
+      }
       if (currentMode === 'detail') {
         renderDetailView();
         return;
@@ -1953,6 +2164,12 @@
       pageRoot.querySelectorAll('[data-nav]').forEach(button => {
         button.addEventListener('click', () => {
           const nav = button.dataset.nav;
+          if (nav === 'executive') {
+            destroyImpactCy();
+            executiveDrilldown = null;
+            renderExecutiveView();
+            return;
+          }
           if (nav === 'list') {
             destroyImpactCy();
             renderListView();
@@ -2118,6 +2335,396 @@
         .sort((a, b) => (a.domain.name || a.domain.id).localeCompare(b.domain.name || b.domain.id));
     }
 
+    function requirementEvidenceRows() {
+      const rows = [];
+      allObjects.forEach(object => {
+        (object.requirementImplementations || []).forEach(implementation => {
+          if (!implementation) return;
+          rows.push({
+            object,
+            implementation,
+            requirementGroup: objectLookup[implementation.requirementGroup] || null
+          });
+        });
+      });
+      return rows;
+    }
+
+    function executiveStats() {
+      const acceptableGroups = acceptableUseGroups();
+      const acceptableRows = acceptableGroups.flatMap(group => group.rows);
+      const uniqueMappedTech = new Set(
+        acceptableRows
+          .map(row => row.implementation?.ref)
+          .filter(Boolean)
+      );
+      const requirementGroups = browserData.requirements?.groups || [];
+      const requirementEvidence = requirementEvidenceRows();
+      const domainStats = acceptableGroups.map(group => {
+        const capabilityIds = new Set(group.rows.map(row => row.capability.id));
+        const technologyRefs = new Set(
+          group.rows
+            .map(row => row.implementation?.ref)
+            .filter(Boolean)
+        );
+        return {
+          domain: group.domain,
+          capabilityCount: capabilityIds.size,
+          technologyCount: technologyRefs.size
+        };
+      }).sort((a, b) => b.technologyCount - a.technologyCount || b.capabilityCount - a.capabilityCount);
+      const lifecycleCounts = {};
+      acceptableRows.forEach(row => {
+        const status = row.implementation?.lifecycleStatus || 'unknown';
+        lifecycleCounts[status] = (lifecycleCounts[status] || 0) + 1;
+      });
+      const objectTypes = {
+        softwareDeploymentPatterns: allObjects.filter(object => object.type === 'software_deployment_pattern').length,
+        referenceArchitectures: allObjects.filter(object => object.type === 'reference_architecture').length,
+        hostStandards: allObjects.filter(object => object.type === 'host_standard').length,
+        serviceStandards: allObjects.filter(object => ['service_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type)).length,
+        databaseStandards: allObjects.filter(object => object.type === 'database_standard').length,
+        applianceComponents: allObjects.filter(object => object.type === 'appliance_component').length
+      };
+      return {
+        objectCount: allObjects.length,
+        technologyCount: allObjects.filter(object => object.type === 'technology_component').length,
+        capabilityCount: allObjects.filter(object => object.type === 'capability').length,
+        softwareDeploymentPatternCount: objectTypes.softwareDeploymentPatterns,
+        referenceArchitectureCount: objectTypes.referenceArchitectures,
+        requirementGroupCount: requirementGroups.length,
+        activeRequirementGroupCount: requirementGroups.filter(group => group.active || group.activation === 'always').length,
+        requirementDefinitionCount: requirementGroups.reduce((count, group) => count + (group.requirementCount || 0), 0),
+        controlEvidenceCount: requirementEvidence.length,
+        controlEvidenceObjectCount: new Set(requirementEvidence.map(row => row.object.id)).size,
+        acceptableUseMappingCount: acceptableRows.length,
+        acceptableUseTechnologyCount: uniqueMappedTech.size,
+        domainCount: allObjects.filter(object => object.type === 'domain').length,
+        domainStats,
+        lifecycleCounts,
+        objectTypes,
+        requirementEvidence
+      };
+    }
+
+    function executiveMetricTile({ target, value, label, description, size = 'medium', accent = 'cyan', big = false }) {
+      return `
+        <article class="executive-tile ${size} executive-accent-${accent}" role="button" tabindex="0" data-executive-target="${escapeHtml(target)}">
+          <div class="executive-tile-title">
+            <p class="executive-number ${big ? 'big' : ''}">${formatNumber(value)}</p>
+            <h3>${escapeHtml(label)}</h3>
+          </div>
+          <p>${escapeHtml(description)}</p>
+        </article>
+      `;
+    }
+
+    function executiveSidebarMarkup(stats) {
+      return `
+        <div class="sidebar-block">
+          <div class="legend-title">Executive View</div>
+          <div class="current-filter"><span class="dot" style="background:#38bdf8"></span><span>${pluralize(stats.objectCount, 'catalog object')}</span></div>
+          <div class="current-filter"><span class="dot" style="background:#22c55e"></span><span>${pluralize(stats.acceptableUseTechnologyCount, 'mapped Technology Component')}</span></div>
+          <div class="current-filter"><span class="dot" style="background:#f59e0b"></span><span>${pluralize(stats.controlEvidenceCount, 'control answer')}</span></div>
+        </div>
+      `;
+    }
+
+    function executiveLifecyclePanelMarkup(stats) {
+      const orderedStatuses = ['invest', 'maintain', 'pre-invest', 'disinvest', 'exit', 'unknown'];
+      const rows = orderedStatuses
+        .filter(status => stats.lifecycleCounts[status])
+        .map(status => ({ status, count: stats.lifecycleCounts[status] }));
+      const maxCount = Math.max(...rows.map(row => row.count), 1);
+      return `
+        <section class="executive-panel wide">
+          <h3>Technology Lifecycle Mix</h3>
+          <div class="executive-bars">
+            ${rows.map(row => {
+              const color = '#' + (lifecycleColors[row.status] || lifecycleColors.unknown);
+              const width = Math.max(6, Math.round((row.count / maxCount) * 100));
+              return `
+                <div class="executive-bar-row">
+                  <span>${escapeHtml(row.status)}</span>
+                  <span class="executive-bar-track"><span class="executive-bar-fill" style="width:${width}%;background:${color};"></span></span>
+                  <strong>${formatNumber(row.count)}</strong>
+                </div>
+              `;
+            }).join('') || '<div class="empty-card">No lifecycle mappings are available.</div>'}
+          </div>
+        </section>
+      `;
+    }
+
+    function executiveDomainPanelMarkup(stats) {
+      return `
+        <section class="executive-panel wide">
+          <h3>Capability Domains</h3>
+          <div class="executive-bars">
+            ${stats.domainStats.slice(0, 6).map(item => `
+              <div class="executive-snapshot-row">
+                <span>${escapeHtml(item.domain.name || item.domain.id)}</span>
+                <strong>${pluralize(item.technologyCount, 'tech')}</strong>
+              </div>
+              <div class="object-id">${pluralize(item.capabilityCount, 'capability', 'capabilities')}</div>
+            `).join('') || '<div class="empty-card">No mapped capability domains are available.</div>'}
+          </div>
+        </section>
+      `;
+    }
+
+    function executiveArchitecturePanelMarkup(stats) {
+      const rows = [
+        ['Software Deployment Patterns', stats.objectTypes.softwareDeploymentPatterns],
+        ['Reference Architectures', stats.objectTypes.referenceArchitectures],
+        ['Host Standards', stats.objectTypes.hostStandards],
+        ['Service Standards', stats.objectTypes.serviceStandards],
+        ['Database Standards', stats.objectTypes.databaseStandards],
+        ['Appliance Components', stats.objectTypes.applianceComponents]
+      ];
+      const maxCount = Math.max(...rows.map(row => row[1]), 1);
+      return `
+        <section class="executive-panel wide">
+          <h3>Architecture Inventory Mix</h3>
+          <div class="executive-bars">
+            ${rows.map(([label, count]) => {
+              const width = Math.max(5, Math.round((count / maxCount) * 100));
+              return `
+                <div class="executive-bar-row">
+                  <span>${escapeHtml(label)}</span>
+                  <span class="executive-bar-track"><span class="executive-bar-fill" style="width:${width}%;"></span></span>
+                  <strong>${formatNumber(count)}</strong>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function executiveControlDrilldownMarkup(stats) {
+      if (executiveDrilldown !== 'controls') {
+        return '';
+      }
+      const grouped = new Map();
+      stats.requirementEvidence.forEach(row => {
+        const existing = grouped.get(row.object.id) || {
+          object: row.object,
+          count: 0,
+          groups: new Set(),
+          statuses: {}
+        };
+        existing.count += 1;
+        if (row.implementation.requirementGroup) {
+          existing.groups.add(row.implementation.requirementGroup);
+        }
+        const status = row.implementation.status || 'unknown';
+        existing.statuses[status] = (existing.statuses[status] || 0) + 1;
+        grouped.set(row.object.id, existing);
+      });
+      const rows = Array.from(grouped.values())
+        .sort((a, b) => b.count - a.count || a.object.name.localeCompare(b.object.name));
+      const requirementGroups = browserData.requirements?.groups || [];
+      return `
+        <section class="executive-panel full executive-drilldown">
+          <div class="header-top">
+            <div>
+              <h3>Control Evidence Drill-Down</h3>
+              <div class="object-id">${pluralize(stats.controlEvidenceCount, 'requirement evidence record')} across ${pluralize(stats.controlEvidenceObjectCount, 'catalog object')}</div>
+            </div>
+            <button class="action-button secondary" data-executive-target="clear-drilldown">Close</button>
+          </div>
+          ${rows.length ? `
+            <div class="table-scroll">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Artifact</th>
+                    <th>Type</th>
+                    <th>Requirement Groups</th>
+                    <th>Evidence</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows.map(row => `
+                    <tr>
+                      <td>
+                        <span class="ard-link" data-object-link="${escapeHtml(row.object.id)}">${escapeHtml(row.object.name)}</span>
+                        <div class="object-id">${escapeHtml(row.object.id)}</div>
+                      </td>
+                      <td>${escapeHtml(row.object.typeLabel)}</td>
+                      <td>${Array.from(row.groups).map(groupId => `<span class="badge">${escapeHtml(shortRefLabel(groupId))}</span>`).join('')}</td>
+                      <td>${formatNumber(row.count)}</td>
+                      <td>${Object.entries(row.statuses).map(([status, count]) => `<span class="badge">${escapeHtml(status)}: ${formatNumber(count)}</span>`).join('')}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : `
+            <div class="empty-card">
+              No object-level requirement evidence has been recorded yet. ${pluralize(stats.requirementDefinitionCount, 'requirement')} are available across ${pluralize(requirementGroups.length, 'Requirement Group')}.
+            </div>
+          `}
+        </section>
+      `;
+    }
+
+    function renderExecutiveView() {
+      currentMode = 'executive';
+      currentDetailId = null;
+      destroyDetailCy();
+      destroyImpactCy();
+      syncHashForExecutiveView();
+      const stats = executiveStats();
+      renderSidebarContent(executiveSidebarMarkup(stats));
+      pageRoot.innerHTML = `
+        <div class="view-shell">
+          ${topNavMarkup()}
+          <section class="executive-hero">
+            <div>
+              <h2>Welcome to DRAFT</h2>
+              <p>${escapeHtml(browserData.catalogName || 'This catalog')} connects architecture standards, technology lifecycle decisions, requirements, and deployment patterns so teams can draft systems from governed building blocks.</p>
+              <div class="executive-hero-actions">
+                <button class="action-button" data-executive-target="drafting-table">Open Drafting Table</button>
+                <button class="action-button secondary" data-executive-target="acceptable-use">Acceptable Use Technology</button>
+              </div>
+            </div>
+            <div class="executive-snapshot">
+              <div class="executive-snapshot-row"><span>Catalog Objects</span><strong>${formatNumber(stats.objectCount)}</strong></div>
+              <div class="executive-snapshot-row"><span>Active Requirement Groups</span><strong>${formatNumber(stats.activeRequirementGroupCount)}</strong></div>
+              <div class="executive-snapshot-row"><span>Mapped Technologies</span><strong>${formatNumber(stats.acceptableUseTechnologyCount)}</strong></div>
+            </div>
+          </section>
+          <section class="executive-mosaic">
+            ${executiveMetricTile({
+              target: 'controls',
+              value: stats.controlEvidenceCount,
+              label: 'Controls Addressed',
+              description: `${pluralize(stats.controlEvidenceObjectCount, 'artifact')} with recorded requirement evidence.`,
+              size: 'large',
+              accent: 'green',
+              big: true
+            })}
+            ${executiveMetricTile({
+              target: 'technologies',
+              value: stats.technologyCount,
+              label: 'Technology Components',
+              description: 'Discrete vendor products and versions available to compose standards.',
+              size: 'medium',
+              accent: 'cyan'
+            })}
+            ${executiveMetricTile({
+              target: 'capabilities',
+              value: stats.capabilityCount,
+              label: 'Capabilities',
+              description: 'The named abilities requirements resolve through before technology is selected.',
+              size: 'small',
+              accent: 'teal'
+            })}
+            ${executiveMetricTile({
+              target: 'deployments',
+              value: stats.softwareDeploymentPatternCount,
+              label: 'Software Deployment Patterns',
+              description: 'Intentional product deployment shapes documented in this catalog.',
+              size: 'wide',
+              accent: 'amber'
+            })}
+            ${executiveMetricTile({
+              target: 'requirements',
+              value: stats.requirementDefinitionCount,
+              label: 'Requirement Definitions',
+              description: `${pluralize(stats.requirementGroupCount, 'Requirement Group')} available for interviews and validation.`,
+              size: 'medium',
+              accent: 'violet'
+            })}
+            ${executiveMetricTile({
+              target: 'acceptable-use',
+              value: stats.acceptableUseMappingCount,
+              label: 'Acceptable Use Mappings',
+              description: `${pluralize(stats.acceptableUseTechnologyCount, 'unique Technology Component')} mapped to capability lifecycle decisions.`,
+              size: 'small',
+              accent: 'rose'
+            })}
+            ${executiveLifecyclePanelMarkup(stats)}
+            ${executiveDomainPanelMarkup(stats)}
+            ${executiveArchitecturePanelMarkup(stats)}
+            ${executiveControlDrilldownMarkup(stats)}
+          </section>
+        </div>
+      `;
+      attachTopNavHandlers();
+      attachExecutiveHandlers();
+      attachObjectLinkHandlers(pageRoot);
+    }
+
+    function navigateExecutiveTarget(target) {
+      if (target === 'drafting-table') {
+        activeCategory = 'architecture';
+        activeFilter = 'all';
+        executiveDrilldown = null;
+        renderListView();
+        return;
+      }
+      if (target === 'technologies') {
+        activeCategory = 'supporting';
+        activeFilter = 'technology_component';
+        executiveDrilldown = null;
+        renderListView();
+        return;
+      }
+      if (target === 'capabilities') {
+        activeCategory = 'framework';
+        activeFilter = 'capability';
+        executiveDrilldown = null;
+        renderListView();
+        return;
+      }
+      if (target === 'deployments') {
+        activeCategory = 'architecture';
+        activeFilter = 'software_deployment_pattern';
+        executiveDrilldown = null;
+        renderListView();
+        return;
+      }
+      if (target === 'requirements') {
+        activeCategory = 'framework';
+        activeFilter = 'requirement_group';
+        executiveDrilldown = null;
+        renderListView();
+        return;
+      }
+      if (target === 'acceptable-use') {
+        executiveDrilldown = null;
+        renderAcceptableUseView();
+        return;
+      }
+      if (target === 'controls') {
+        executiveDrilldown = 'controls';
+        renderExecutiveView();
+        return;
+      }
+      if (target === 'clear-drilldown') {
+        executiveDrilldown = null;
+        renderExecutiveView();
+      }
+    }
+
+    function attachExecutiveHandlers() {
+      pageRoot.querySelectorAll('[data-executive-target]').forEach(item => {
+        item.addEventListener('click', () => {
+          navigateExecutiveTarget(item.dataset.executiveTarget);
+        });
+        item.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            navigateExecutiveTarget(item.dataset.executiveTarget);
+          }
+        });
+      });
+    }
+
     function acceptableUseSidebarMarkup(groups, mappedCount) {
       const capabilityCount = groups.reduce((count, group) => {
         const ids = new Set(group.rows.map(row => row.capability.id));
@@ -2229,6 +2836,7 @@
     function renderAcceptableUseView() {
       currentMode = 'acceptable-use';
       currentDetailId = null;
+      executiveDrilldown = null;
       destroyDetailCy();
       destroyImpactCy();
       syncHashForAcceptableUseView();
@@ -2273,6 +2881,7 @@
     function renderListView() {
       currentMode = 'list';
       currentDetailId = null;
+      executiveDrilldown = null;
       destroyDetailCy();
       destroyImpactCy();
       const category = categoryConfig();
@@ -3402,6 +4011,7 @@
 
     function renderDetailView() {
       currentMode = 'detail';
+      executiveDrilldown = null;
       const object = objectLookup[currentDetailId];
       if (!object) {
         renderListView();
@@ -4249,6 +4859,7 @@
 
     function renderImpactView() {
       currentMode = 'impact';
+      executiveDrilldown = null;
       syncHashForImpactView();
       const selection = impactSelectedId ? computeImpactSelection(impactSelectedId) : { selected: null, impacted: new Set(), siblings: new Set(), supported: false };
       renderSidebarContent(sidebarMarkup(impactSidebarMarkup(selection)));

@@ -12,12 +12,18 @@ browser view.
 
 ### Added
 
+- Added an Executive View as the default generated browser landing page, with
+  clickable metric tiles for controls addressed, Technology Components,
+  Capabilities, Software Deployment Patterns, requirement definitions, and
+  acceptable-use mappings.
 - Added an Acceptable Use Technology browser view that groups Technology
   Component lifecycle mappings by domain and capability, including owner/contact
   information for change requests.
 
 ### Changed
 
+- Renamed the generated browser list navigation to Drafting Table so the
+  executive landing page can hand users into the existing object browser.
 - Documented the Acceptable Use Technology view as the generated human-readable
   table for company technology lifecycle mappings.
 - Changed the Acceptable Use Technology table to group Technology Components
