@@ -20,6 +20,9 @@ browser view.
 
 - Documented the Acceptable Use Technology view as the generated human-readable
   table for company technology lifecycle mappings.
+- Changed the Acceptable Use Technology table to group Technology Components
+  under capability headers, with owner/contact shown on the capability header
+  instead of repeated in every row.
 
 ### Fixed
 

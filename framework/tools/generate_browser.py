@@ -969,20 +969,46 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       overflow-x: auto;
     }
     .acceptable-use-table {
-      min-width: 1120px;
+      min-width: 860px;
     }
-    .acceptable-use-table th:nth-child(1) { width: 17%; }
-    .acceptable-use-table th:nth-child(2) { width: 10%; }
-    .acceptable-use-table th:nth-child(3) { width: 20%; }
+    .acceptable-use-table th:nth-child(1) { width: 18%; }
+    .acceptable-use-table th:nth-child(2) { width: 31%; }
+    .acceptable-use-table th:nth-child(3) { width: 12%; }
     .acceptable-use-table th:nth-child(4) { width: 18%; }
-    .acceptable-use-table th:nth-child(5) { width: 12%; }
-    .acceptable-use-table th:nth-child(6) { width: 13%; }
-    .acceptable-use-table th:nth-child(7) { width: 10%; }
+    .acceptable-use-table th:nth-child(5) { width: 21%; }
     .acceptable-use-table .object-id {
       margin-top: 4px;
     }
     .acceptable-use-table .muted-cell {
       color: var(--muted);
+    }
+    .acceptable-use-capability {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(51,65,85,0.75);
+    }
+    .acceptable-use-capability:first-of-type {
+      margin-top: 16px;
+    }
+    .acceptable-use-capability-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .acceptable-use-capability-title {
+      display: grid;
+      gap: 4px;
+    }
+    .acceptable-use-owner {
+      display: grid;
+      gap: 4px;
+      min-width: 220px;
+      text-align: right;
+      color: var(--muted);
+      font-size: 12px;
     }
     .ard-detail-card {
       display: grid;
@@ -2136,6 +2162,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       .main { padding: 20px; }
       .decisions-grid { grid-template-columns: 1fr; }
       .definition-list { grid-template-columns: 1fr; }
+      .acceptable-use-capability-header { flex-direction: column; }
+      .acceptable-use-owner { text-align: left; }
     }
   </style>
 </head>
@@ -2665,10 +2693,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           const rows = groups.get(domainId).rows;
           const implementations = Array.isArray(capability.implementations)
             ? capability.implementations.slice().sort((a, b) => {
-                const techA = objectLookup[a.ref]?.name || a.ref || '';
-                const techB = objectLookup[b.ref]?.name || b.ref || '';
-                return lifecycleSortRank(a.lifecycleStatus) - lifecycleSortRank(b.lifecycleStatus)
-                  || techA.localeCompare(techB);
+                const objectA = objectLookup[a.ref] || {};
+                const objectB = objectLookup[b.ref] || {};
+                const vendorA = objectA.vendor || '';
+                const vendorB = objectB.vendor || '';
+                const techA = objectA.name || a.ref || '';
+                const techB = objectB.name || b.ref || '';
+                return vendorA.localeCompare(vendorB)
+                  || techA.localeCompare(techB)
+                  || lifecycleSortRank(a.lifecycleStatus) - lifecycleSortRank(b.lifecycleStatus)
+                  || (a.lifecycleStatus || '').localeCompare(b.lifecycleStatus || '');
               })
             : [];
           if (!implementations.length) {
@@ -2704,11 +2738,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function acceptableUseOwnerMarkup(owner) {
       if (!owner?.team && !owner?.contact) {
-        return '<span class="muted-cell">Not assigned</span>';
+        return '<span>Owner: Not assigned</span><span>No contact documented</span>';
       }
       return `
-        <div>${escapeHtml(owner.team || 'Not assigned')}</div>
-        <div class="object-id">${escapeHtml(owner.contact || 'No contact documented')}</div>
+        <span>Owner: ${escapeHtml(owner.team || 'Not assigned')}</span>
+        <span>${escapeHtml(owner.contact || 'No contact documented')}</span>
       `;
     }
 
@@ -2726,48 +2760,63 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function acceptableUseDomainMarkup(group) {
+      const capabilityGroups = [];
+      group.rows.forEach(row => {
+        let capabilityGroup = capabilityGroups[capabilityGroups.length - 1];
+        if (!capabilityGroup || capabilityGroup.capability.id !== row.capability.id) {
+          capabilityGroup = { capability: row.capability, rows: [] };
+          capabilityGroups.push(capabilityGroup);
+        }
+        capabilityGroup.rows.push(row);
+      });
       return `
         <section class="section-card">
           <h3>${escapeHtml(group.domain.name || group.domain.id)}</h3>
           <div class="object-id">${escapeHtml(group.domain.id || '')}</div>
           ${group.domain.description ? `<div class="header-description">${escapeHtml(group.domain.description)}</div>` : ''}
-          <div class="table-scroll">
-            <table class="data-table acceptable-use-table">
-              <thead>
-                <tr>
-                  <th>Capability</th>
-                  <th>Status</th>
-                  <th>Technology Component</th>
-                  <th>Vendor / Product / Version</th>
-                  <th>Configuration</th>
-                  <th>Owner / Contact</th>
-                  <th>Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${group.rows.map(row => {
-                  const capability = row.capability;
-                  const implementation = row.implementation;
-                  const technology = row.technology;
-                  const configuration = implementationConfigurationLabel(technology, implementation);
-                  return `
-                    <tr>
-                      <td>
-                        <span class="ard-link" data-object-link="${escapeHtml(capability.id)}">${escapeHtml(capability.name)}</span>
-                        <div class="object-id">${escapeHtml(capability.id)}</div>
-                      </td>
-                      <td>${implementation ? lifecycleBadge(implementation.lifecycleStatus || 'unknown') : '<span class="badge">No mapping</span>'}</td>
-                      <td>${acceptableUseTechnologyMarkup(technology, implementation)}</td>
-                      <td>${technology ? escapeHtml([technology.vendor, technology.productName, technology.productVersion].filter(Boolean).join(' / ')) : '<span class="muted-cell">Not documented</span>'}</td>
-                      <td>${configuration ? escapeHtml(configuration) : '<span class="muted-cell">Default</span>'}</td>
-                      <td>${acceptableUseOwnerMarkup(capability.owner)}</td>
-                      <td>${implementation?.notes ? escapeHtml(implementation.notes) : '<span class="muted-cell">No notes</span>'}</td>
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
-          </div>
+          ${capabilityGroups.map(capabilityGroup => {
+            const capability = capabilityGroup.capability;
+            return `
+              <div class="acceptable-use-capability">
+                <div class="acceptable-use-capability-header">
+                  <div class="acceptable-use-capability-title">
+                    <span class="ard-link" data-object-link="${escapeHtml(capability.id)}">${escapeHtml(capability.name)}</span>
+                    <span class="object-id">${escapeHtml(capability.id)}</span>
+                  </div>
+                  <div class="acceptable-use-owner">${acceptableUseOwnerMarkup(capability.owner)}</div>
+                </div>
+                <div class="table-scroll">
+                  <table class="data-table acceptable-use-table">
+                    <thead>
+                      <tr>
+                        <th>Vendor</th>
+                        <th>Technology Component</th>
+                        <th>Status</th>
+                        <th>Configuration</th>
+                        <th>Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${capabilityGroup.rows.map(row => {
+                        const implementation = row.implementation;
+                        const technology = row.technology;
+                        const configuration = implementationConfigurationLabel(technology, implementation);
+                        return `
+                          <tr>
+                            <td>${technology?.vendor ? escapeHtml(technology.vendor) : '<span class="muted-cell">Not documented</span>'}</td>
+                            <td>${acceptableUseTechnologyMarkup(technology, implementation)}</td>
+                            <td>${implementation ? lifecycleBadge(implementation.lifecycleStatus || 'unknown') : '<span class="badge">No mapping</span>'}</td>
+                            <td>${configuration ? escapeHtml(configuration) : '<span class="muted-cell">Default</span>'}</td>
+                            <td>${implementation?.notes ? escapeHtml(implementation.notes) : '<span class="muted-cell">No notes</span>'}</td>
+                          </tr>
+                        `;
+                      }).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            `;
+          }).join('')}
         </section>
       `;
     }
