@@ -23,6 +23,8 @@ browser view.
 - Changed the Acceptable Use Technology table to group Technology Components
   under capability headers, with owner/contact shown on the capability header
   instead of repeated in every row.
+- Changed the Acceptable Use Technology view to omit unmapped capabilities and
+  empty domain groups so it remains a Technology Component list.
 
 ### Fixed
 

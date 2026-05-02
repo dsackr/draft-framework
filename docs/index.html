@@ -2074,16 +2074,6 @@
           return domainA.localeCompare(domainB) || a.name.localeCompare(b.name);
         })
         .forEach(capability => {
-          const domainId = capability.domain || 'domain.unassigned';
-          const domain = objectLookup[domainId] || {
-            id: domainId,
-            name: capability.domain || 'Unassigned Domain',
-            description: ''
-          };
-          if (!groups.has(domainId)) {
-            groups.set(domainId, { domain, rows: [] });
-          }
-          const rows = groups.get(domainId).rows;
           const implementations = Array.isArray(capability.implementations)
             ? capability.implementations.slice().sort((a, b) => {
                 const objectA = objectLookup[a.ref] || {};
@@ -2099,9 +2089,18 @@
               })
             : [];
           if (!implementations.length) {
-            rows.push({ capability, implementation: null, technology: null });
             return;
           }
+          const domainId = capability.domain || 'domain.unassigned';
+          const domain = objectLookup[domainId] || {
+            id: domainId,
+            name: capability.domain || 'Unassigned Domain',
+            description: ''
+          };
+          if (!groups.has(domainId)) {
+            groups.set(domainId, { domain, rows: [] });
+          }
+          const rows = groups.get(domainId).rows;
           implementations.forEach(implementation => {
             rows.push({
               capability,
@@ -2123,8 +2122,8 @@
         <div class="sidebar-block">
           <div class="legend-title">Acceptable Use Technology</div>
           <div class="current-filter"><span class="dot" style="background:#38bdf8"></span><span>${mappedCount} mapped Technology Components</span></div>
-          <div class="current-filter"><span class="dot" style="background:#22c55e"></span><span>${capabilityCount} capabilities</span></div>
-          <div class="current-filter"><span class="dot" style="background:#f59e0b"></span><span>${groups.length} domains</span></div>
+          <div class="current-filter"><span class="dot" style="background:#22c55e"></span><span>${capabilityCount} capability groups</span></div>
+          <div class="current-filter"><span class="dot" style="background:#f59e0b"></span><span>${groups.length} domain groups</span></div>
         </div>
       `;
     }
@@ -2140,9 +2139,6 @@
     }
 
     function acceptableUseTechnologyMarkup(technology, implementation) {
-      if (!implementation) {
-        return '<span class="muted-cell">No mapped Technology Component</span>';
-      }
       if (!technology) {
         return `<span class="muted-cell">${escapeHtml(implementation.ref || 'Unknown Technology Component')}</span>`;
       }
@@ -2198,7 +2194,7 @@
                           <tr>
                             <td>${technology?.vendor ? escapeHtml(technology.vendor) : '<span class="muted-cell">Not documented</span>'}</td>
                             <td>${acceptableUseTechnologyMarkup(technology, implementation)}</td>
-                            <td>${implementation ? lifecycleBadge(implementation.lifecycleStatus || 'unknown') : '<span class="badge">No mapping</span>'}</td>
+                            <td>${lifecycleBadge(implementation.lifecycleStatus || 'unknown')}</td>
                             <td>${configuration ? escapeHtml(configuration) : '<span class="muted-cell">Default</span>'}</td>
                             <td>${implementation?.notes ? escapeHtml(implementation.notes) : '<span class="muted-cell">No notes</span>'}</td>
                           </tr>
@@ -2237,20 +2233,20 @@
             <div class="header-top">
               <div class="header-title">
                 <h2>Acceptable Use Technology</h2>
-                <div class="object-id">Capability implementation lifecycle map</div>
+                <div class="object-id">Technology Component lifecycle map</div>
               </div>
               <div class="badges">
                 <span class="badge">${mappedCount} mapped Technology Components</span>
-                <span class="badge">${capabilityCount} capabilities</span>
-                <span class="badge">${groups.length} domains</span>
+                <span class="badge">${capabilityCount} capability groups</span>
+                <span class="badge">${groups.length} domain groups</span>
               </div>
             </div>
             <div class="header-description">
-              Technology lifecycle by capability and domain. Contact the capability owner when a Technology Component needs to be added, retired, or moved to a different lifecycle status.
+              Technology Components grouped by governing domain and capability. Contact the capability owner when a Technology Component needs to be added, retired, or moved to a different lifecycle status.
             </div>
           </section>
           <div class="content-rows">
-            ${groups.map(acceptableUseDomainMarkup).join('') || '<div class="empty-card" style="padding:24px;">No capabilities are documented.</div>'}
+            ${groups.map(acceptableUseDomainMarkup).join('') || '<div class="empty-card" style="padding:24px;">No Technology Component implementations are mapped.</div>'}
           </div>
         </div>
       `;
