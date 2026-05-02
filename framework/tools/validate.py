@@ -519,10 +519,14 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any], catalog_
         return is_non_empty(value)
     if mechanism_type == "externalInteraction":
         capability = mechanism.get("criteria", {}).get("capability")
+        interactions = list(obj.get("externalInteractions", []) or [])
+        for service_group in obj.get("serviceGroups", []) or []:
+            if isinstance(service_group, dict):
+                interactions.extend(service_group.get("externalInteractions", []) or [])
         if capability == "any":
-            return bool(obj.get("externalInteractions"))
+            return bool(interactions)
         # Check if any interaction has the required capability in its capabilities list
-        for interaction in obj.get("externalInteractions", []) or []:
+        for interaction in interactions:
             if not isinstance(interaction, dict):
                 continue
             caps = interaction.get("capabilities", [])

@@ -37,6 +37,9 @@ requirements:
   rationale: A deployment manifest is incomplete until the real deployed service group structure
     is explicit.
   canBeSatisfiedBy:
+  - mechanism: field
+    key: serviceGroups
+    example: Non-empty serviceGroups list with named deployment groups and Standard references
   - mechanism: internalComponent
     criteria:
       role: service-group
@@ -45,6 +48,7 @@ requirements:
   requirementMode: mandatory
   naAllowed: false
   validAnswerTypes:
+  - field
   - internalComponent
 - id: deployment-targets
   description: Every service group must declare where it runs.

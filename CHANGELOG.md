@@ -44,6 +44,12 @@ browser view.
 
 - Fixed generated browser payloads so Capability domain assignments are included
   in the Acceptable Use Technology view instead of appearing as unassigned.
+- Fixed Reference Architecture and Software Deployment Pattern requirement
+  evidence so `serviceGroups`, `patternType`, and `architecturalDecisions`
+  fields satisfy the matching requirement group checks directly.
+- Fixed requirement satisfaction for external interactions declared inside
+  `serviceGroups`, so nested service group interactions count toward the same
+  mechanisms as top-level interactions.
 
 ### Migration Notes
 

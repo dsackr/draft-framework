@@ -19,6 +19,9 @@ requirements:
   rationale: The Reference Architecture must clearly signal when an application should adopt
     this deployment pattern to achieve the intended non-functional outcomes.
   canBeSatisfiedBy:
+  - mechanism: field
+    key: patternType
+    example: multi-tier
   - mechanism: architecturalDecision
     key: patternType
     example: multi-tier
@@ -26,6 +29,7 @@ requirements:
   requirementMode: mandatory
   naAllowed: false
   validAnswerTypes:
+  - field
   - architecturalDecision
 - id: service-groups
   description: How are the required services clustered into service groups and diagram tiers
@@ -34,6 +38,9 @@ requirements:
     and application teams with the same service-group and tier structure they will use in
     a real deployment.
   canBeSatisfiedBy:
+  - mechanism: field
+    key: serviceGroups
+    example: Non-empty serviceGroups list with named tiers and Standard references
   - mechanism: internalComponent
     criteria:
       role: service-group
@@ -43,6 +50,7 @@ requirements:
   requirementMode: mandatory
   naAllowed: false
   validAnswerTypes:
+  - field
   - internalComponent
 - id: deployment-qualities
   description: What non-functional deployment qualities is this Reference Architecture intended
@@ -50,6 +58,9 @@ requirements:
   rationale: A Reference Architecture exists to guide application teams toward supported deployment
     choices that meet availability, recoverability, security, and similar non-functional requirements.
   canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions
+    example: all tiers HA, autoscaling on web tier, AlwaysOn on data tier
   - mechanism: architecturalDecision
     key: architecturalDecisions
     example: all tiers HA, autoscaling on web tier, AlwaysOn on data tier
@@ -57,6 +68,7 @@ requirements:
   requirementMode: mandatory
   naAllowed: false
   validAnswerTypes:
+  - field
   - architecturalDecision
 lifecycleStatus: invest
 tags:
