@@ -49,10 +49,10 @@ the service can be treated as an understood architecture dependency.
 ## Architectural Decision Entries
 
 SaaS Services use the same architectural decision entry trigger logic as every other
-Standard classification. If a Requirement Group or compliance control requires an answer and the
-object does not provide it directly, an architectural decision entry is required to
+Standard classification. If a Requirement Group requires an answer and the object
+does not provide it directly, an architectural decision entry is required to
 explain the answer. The same applies when an internal component or external
-interaction is added beyond what the checklist or controls require.
+interaction is added beyond what the Requirement Group requires.
 
 ## YAML Shape
 

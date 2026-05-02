@@ -31,8 +31,8 @@ At minimum, a Standard YAML should include:
 - `externalInteractions`
 
 `architecturalDecisions` is optional at the schema level, but it becomes
-required whenever a Requirement Group requirement or attached compliance control needs an
-answer that the object does not provide directly.
+required whenever a Requirement Group requirement needs an answer that the
+object does not provide directly.
 
 Standards may also declare `deploymentConfigurations`. These are optional reusable
 deployment overlays on the Standard itself. A deployment configuration can carry
@@ -88,15 +88,14 @@ non-obvious additions.
 
 An architectural decision entry is required when:
 
-- a Requirement Group question or compliance control requires an answer and the object does
-  not provide that answer directly
-- an internal component is added that is not required by a Requirement Group or compliance
-  control
+- a Requirement Group requirement requires an answer and the object does not
+  provide that answer directly
+- an internal component is added that is not required by a Requirement Group
 - an external interaction is added that is not required by a Requirement Group or
-  compliance control
+  requirement evidence
 
 Architectural decision entries should reference the triggering Requirement Group requirement,
-compliance control, or added component or interaction.
+or added component or interaction.
 
 ## Host Classification
 

@@ -51,8 +51,8 @@ At minimum, a Product Service YAML should include:
 - `lifecycleStatus`
 
 Most Product Services also include `description`. `architecturalDecisions` is
-used when the Software Deployment Pattern or an attached compliance controls needs an answer that is
-not otherwise expressed directly in the YAML.
+used when the Software Deployment Pattern or an attached Requirement Group needs
+an answer that is not otherwise expressed directly in the YAML.
 
 ## What A Product Service Documents
 

@@ -12,7 +12,8 @@ vendor a reviewed framework copy under `.draft/framework/`.
 - Draftsman AI guidance: framework/docs/draftsman-ai-configuration.md
 - Framework index: AI_INDEX.md
 - Schema reference: framework/docs/yaml-schema-reference.md
-- Definition Checklists: framework/docs/definition-checklists.md
+- Requirement Groups: framework/docs/requirement-groups.md
+- Capabilities: framework/docs/capabilities.md
 - Validation command: python3 framework/tools/validate.py
 
 ## Core Concepts
@@ -25,9 +26,10 @@ vendor a reviewed framework copy under `.draft/framework/`.
   building blocks.
 - Reference Architecture: a reusable deployment pattern.
 - Software Deployment Pattern: a product-specific intended deployment shape.
-- Definition Checklist: the interview and completeness model.
-- Compliance Controls: a source-grouped list of controls.
-- Control Enforcement Profile: where and how controls apply in DRAFT.
+- Requirement Group: the unified interview, completeness, and control evidence
+  model.
+- Capability: an architecture capability that resolves to company-approved
+  Technology Component implementations.
 - Decision Record: a deployment risk or architecture decision.
 - Drafting Session: resumable state for incomplete authoring work.
 - Effective Model: vendored framework base configurations plus private company
