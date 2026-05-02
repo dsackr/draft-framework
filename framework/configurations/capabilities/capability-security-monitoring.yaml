@@ -5,7 +5,8 @@ name: Security Monitoring
 description: Threat detection, intrusion detection, security event monitoring, and audit telemetry.
 version: 1.0.0
 catalogStatus: approved
-owner:
+definitionOwner:
+  provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
 domain: domain.observability

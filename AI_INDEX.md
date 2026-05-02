@@ -70,7 +70,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | Path | Scope | Required Fields |
 |---|---|---|
 | framework/schemas/appliance-component.schema.yaml | appliance_component | schemaVersion, id, type, name, vendor, productName, productVersion, classification, catalogStatus, lifecycleStatus |
-| framework/schemas/capability.schema.yaml | capability | schemaVersion, id, type, name, description, catalogStatus, owner, domain, implementations |
+| framework/schemas/capability.schema.yaml | capability | schemaVersion, id, type, name, description, catalogStatus, definitionOwner, domain, implementations |
 | framework/schemas/database-standard.schema.yaml | database_standard | schemaVersion, id, type, name, hostStandard, primaryTechnologyComponent, internalComponents, catalogStatus, lifecycleStatus |
 | framework/schemas/decision-record.schema.yaml | decision_record | schemaVersion, id, type, name, category, status, catalogStatus, lifecycleStatus |
 | framework/schemas/domain.schema.yaml | domain | schemaVersion, id, type, name, capabilities |

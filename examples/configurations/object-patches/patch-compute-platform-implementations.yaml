@@ -8,6 +8,9 @@ catalogStatus: draft
 lifecycleStatus: maintain
 target: capability.compute-platform
 patch:
+  owner:
+    team: example-architecture
+    contact: architecture@example.com
   implementations:
   - ref: technology.compute.amazon-ec2-standard
     lifecycleStatus: maintain

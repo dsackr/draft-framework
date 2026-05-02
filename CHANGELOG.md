@@ -5,23 +5,44 @@ notes, including patch releases.
 
 ## Unreleased
 
+No unreleased changes.
+
+## 0.7.0 - 2026-05-02
+
 ### Compatibility Impact
 
-No migration required. Existing name-only external interactions remain valid,
-but shared platforms should be modeled and referenced when known.
+Breaking workspace migration is required for capability overlays that assign
+Technology Component implementations. DRAFT is still pre-1.0, so breaking
+object model changes are allowed in 0.MINOR.0 releases when documented with
+migration notes.
+
+Existing name-only external interactions remain valid, but shared platforms
+should be modeled and referenced when known.
 
 ### Added
 
 - Added validation that `externalInteractions[].ref` values point to existing
   catalog objects.
+- Added `definitionOwner` to Capability objects so framework, provider, and
+  company vocabulary ownership is separate from company implementation
+  authority.
+- Added validation requiring `owner.team` on the effective Capability whenever
+  implementations are assigned.
 
 ### Changed
 
+- Changed framework base Capabilities to carry `definitionOwner` only and leave
+  company `owner` to workspace overlays.
+- Clarified that Capability implementation lifecycle entries must reference
+  Technology Components only, because lifecycle disposition applies to a
+  discrete vendor product and version.
 - Clarified that central logging and other shared enterprise platforms should be
   modeled as Standards or service classifications rather than left as permanent
   name-only external interactions.
 - Updated Requirement Group examples and the host template to prefer resolved
   logging platform references.
+- Updated the browser to distinguish Capability definition owner from company
+  owner.
 
 ### Fixed
 
@@ -33,6 +54,14 @@ but shared platforms should be modeled and referenced when known.
 
 ### Migration Notes
 
+- Refresh the vendored framework copy.
+- Add `definitionOwner` to any workspace-owned Capability files.
+- Add `patch.owner.team` or full `patch.owner` to object patches that assign
+  Capability implementations.
+- Keep Capability `implementations[].ref` pointed at Technology Components
+  only. If a SaaS or managed service is lifecycle-governed, model the specific
+  vendor product and version as a Technology Component and compose the
+  service-facing Standard separately.
 - Existing black-box external interactions can stay as drafting placeholders.
   When the target platform is known, add or reuse the modeled DRAFT object and
   set `externalInteractions[].ref`.

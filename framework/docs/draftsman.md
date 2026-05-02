@@ -22,9 +22,11 @@ Resolve the effective model in this order:
 3. company configuration overlays in `configurations/`
 4. company architecture content in `catalog/`
 
-Framework base capability files ship with empty `implementations`. Company
-workspaces own capability implementation mappings through
-`configurations/capabilities/` or `configurations/object-patches/`.
+Framework base capability files ship with empty `implementations` and a
+`definitionOwner`. Company workspaces own the `owner` and implementation
+mappings through `configurations/capabilities/` or
+`configurations/object-patches/`. The `owner` is the company decision authority
+for Technology Component lifecycle disposition.
 
 ## Source Of Truth Order
 
@@ -48,10 +50,21 @@ Always use this named lookup procedure when a requirement has
 1. Resolve the Requirement Group requirement.
 2. Read `relatedCapability`.
 3. Resolve the capability object from the effective model.
-4. Read capability `implementations` from the workspace overlay first, then base.
-5. Prefer implementations with `lifecycleStatus: invest`, then `maintain`.
-6. Recommend the referenced Technology Component or named configuration.
-7. If no implementation exists, ask which mechanism satisfies the capability.
+4. Read capability `owner` from the effective model; this is the company
+   decision authority for lifecycle choices.
+5. Read capability `implementations` from the workspace overlay first, then base.
+6. Prefer implementations with `lifecycleStatus: invest`, then `maintain`.
+7. Recommend the referenced Technology Component or named configuration.
+8. If no implementation exists, ask which Technology Component should satisfy
+   the capability and note that the capability owner must approve the lifecycle
+   entry.
+
+Capability implementations must reference Technology Components only. Do not
+put a Host Standard, Service Standard, Database Standard, PaaS Service Standard,
+SaaS Service Standard, or running service in a capability lifecycle list. If a
+SaaS or managed platform is governed by lifecycle, model the vendor product and
+version as a Technology Component, then compose the architecture-facing Standard
+from it.
 
 When the answer is an `externalInteraction` for a shared enterprise platform
 such as central logging, identity, monitoring, security monitoring, patching, or

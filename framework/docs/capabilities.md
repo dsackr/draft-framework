@@ -26,9 +26,14 @@ configurations/object-patches/
 ```
 
 Framework base capability files intentionally ship with empty
-`implementations`. A company owns the implementation decisions because
-`lifecycleStatus` on an implementation is a company disposition, not a vendor
-fact.
+`implementations` and a `definitionOwner`, not a company `owner`. The
+definition owner maintains the capability vocabulary. The company owner is the
+team accountable for deciding which vendor products may satisfy the capability.
+
+When a workspace assigns any implementation lifecycle entries, the effective
+capability must include `owner.team`. That owner is the decision authority for
+moving Technology Components through `pre-invest`, `invest`, `maintain`,
+`disinvest`, and `exit`.
 
 ## Capability Lookup Procedure
 
@@ -39,11 +44,13 @@ procedure:
 2. Read `relatedCapability`.
 3. Resolve the capability object from the effective model, checking workspace
    overlays before framework base.
-4. Read `implementations`.
-5. Prefer implementations with `lifecycleStatus: invest`, then `maintain`.
-6. Recommend the referenced Technology Component or named configuration.
-7. If no implementation exists, ask which Technology Component or external
-   interaction satisfies the capability.
+4. Read `owner` to identify the company decision authority.
+5. Read `implementations`.
+6. Prefer implementations with `lifecycleStatus: invest`, then `maintain`.
+7. Recommend the referenced Technology Component or named configuration.
+8. If no implementation exists, ask which Technology Component should satisfy
+   the capability and flag that the capability owner must approve the lifecycle
+   entry.
 
 This keeps interviews grounded in the company's current technology standards.
 
@@ -58,3 +65,8 @@ Each implementation entry contains:
 
 The framework keeps vendor support facts on Technology Components in
 `vendorLifecycle`. Company adoption lives here, on the capability mapping.
+Implementation entries must reference Technology Components, not Standards or
+running services, because lifecycle disposition is a decision about a discrete
+vendor product and version. If a SaaS platform or managed service is governed by
+the lifecycle program, model the vendor product as a Technology Component and
+compose the service-facing architecture separately as a Standard.

@@ -337,6 +337,103 @@ class ValidationTests(unittest.TestCase):
         self.assertFalse(result.ok, result.stdout + result.stderr)
         self.assertIn("externalInteractions[0].ref references unknown object", result.stdout)
 
+    def test_capability_implementation_requires_company_owner(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            patch_dir = workspace / "configurations" / "object-patches"
+            tech_dir = workspace / "catalog" / "technology-components"
+            patch_dir.mkdir(parents=True)
+            tech_dir.mkdir(parents=True)
+            (tech_dir / "technology-agent-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    id: technology.agent.test
+                    type: technology_component
+                    name: Test Agent
+                    vendor: Test Vendor
+                    productName: Test Agent
+                    productVersion: "1"
+                    classification: agent
+                    catalogStatus: draft
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (patch_dir / "patch-security-monitoring.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    id: patch.test.security-monitoring
+                    type: object_patch
+                    name: Test Security Monitoring Implementation
+                    target: capability.security-monitoring
+                    catalogStatus: draft
+                    lifecycleStatus: maintain
+                    patch:
+                      implementations:
+                        - ref: technology.agent.test
+                          lifecycleStatus: invest
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("Add owner.team before assigning capability implementations", result.stdout)
+
+    def test_capability_implementation_ref_must_be_technology_component(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            patch_dir = workspace / "configurations" / "object-patches"
+            service_dir = workspace / "catalog" / "service-standards"
+            patch_dir.mkdir(parents=True)
+            service_dir.mkdir(parents=True)
+            (service_dir / "service-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    id: service.test
+                    type: service_standard
+                    name: Test Service
+                    catalogStatus: stub
+                    lifecycleStatus: maintain
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (patch_dir / "patch-security-monitoring.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    id: patch.test.security-monitoring
+                    type: object_patch
+                    name: Test Security Monitoring Implementation
+                    target: capability.security-monitoring
+                    catalogStatus: draft
+                    lifecycleStatus: maintain
+                    patch:
+                      owner:
+                        team: security-engineering
+                      implementations:
+                        - ref: service.test
+                          lifecycleStatus: invest
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("capability lifecycle applies only to discrete vendor product versions", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

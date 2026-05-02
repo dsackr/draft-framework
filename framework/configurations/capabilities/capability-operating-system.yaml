@@ -5,7 +5,8 @@ name: Operating System
 description: Supported operating system product used to define managed host standards.
 version: 1.0.0
 catalogStatus: approved
-owner:
+definitionOwner:
+  provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
 domain: domain.compute

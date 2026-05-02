@@ -8,6 +8,9 @@ catalogStatus: draft
 lifecycleStatus: maintain
 target: capability.security-monitoring
 patch:
+  owner:
+    team: example-architecture
+    contact: architecture@example.com
   implementations:
   - ref: technology.agent.crowdstrike-falcon
     lifecycleStatus: maintain

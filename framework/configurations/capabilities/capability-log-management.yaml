@@ -6,7 +6,8 @@ description: Aggregation, retention, searchability, and forwarding of system or 
   logs.
 version: 1.0.0
 catalogStatus: approved
-owner:
+definitionOwner:
+  provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
 domain: domain.observability

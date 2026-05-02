@@ -5,7 +5,8 @@ name: Compute Platform
 description: Compute substrate or virtualized platform used to run host standards.
 version: 1.0.0
 catalogStatus: approved
-owner:
+definitionOwner:
+  provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
 domain: domain.compute

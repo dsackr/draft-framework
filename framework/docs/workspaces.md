@@ -60,9 +60,19 @@ incrementally. Draftsman still uses active groups for new and updated
 objects. Setting it to `true` makes validation require every in-scope object to
 record disposition against every active group.
 
-Framework base capability files ship with empty `implementations`. Company
-workspaces own the mapping from capability to approved Technology Component by
-adding capability overlays or object patches under `configurations/`.
+Framework base capability files ship with empty `implementations` and a
+`definitionOwner`. Company workspaces own the capability `owner` and the mapping
+from capability to approved Technology Components by adding capability overlays
+or object patches under `configurations/`. Validation requires `owner.team` in
+the effective capability whenever implementations are assigned.
+
+The distinction matters:
+
+- `definitionOwner` says who maintains the capability definition and vocabulary.
+- `owner` says which company team can approve lifecycle disposition for vendor
+  products that satisfy the capability.
+- `implementations` list only Technology Components, because lifecycle
+  disposition applies to a discrete vendor product and version.
 
 ## Authoring Workflow
 
@@ -135,8 +145,8 @@ that can later inform pipeline and infrastructure automation:
 - Standards describe reusable deployable building blocks.
 - Reference Architectures describe deployable patterns.
 - Software Deployment Patterns describe product deployment reality.
-- Capabilities describe architecture outcomes and company-approved technology
-  implementations.
+- Capabilities describe architecture outcomes, company decision owners, and
+  approved Technology Component implementations.
 - Requirement Groups describe required authoring and compliance answers.
 - Future automation mappings can translate approved objects into pipeline and
   IaC inputs.

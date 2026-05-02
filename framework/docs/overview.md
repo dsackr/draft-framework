@@ -37,6 +37,6 @@ If an AI assistant is using this repo directly to author content, start with
 
 | Object Type | Purpose |
 |---|---|
-| Capability | A first-class architecture capability such as authentication, log management, operating system, or patch management. Company workspaces map capabilities to approved Technology Component implementations. |
+| Capability | A first-class architecture capability such as authentication, log management, operating system, or patch management. Frameworks and providers define the vocabulary; company capability owners approve Technology Component implementations. |
 | Requirement Group | The unified requirement model for DRAFT. Always-on groups define the required questions for object completeness. Workspace-mode groups represent explicitly activated compliance or company requirements. |
 | Domain | A strategy grouping for related capabilities, used by the Draftsman to navigate from requirement to capability to approved implementation. |

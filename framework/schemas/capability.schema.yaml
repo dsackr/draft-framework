@@ -1,7 +1,8 @@
 schemaVersion: '1.0'
 type: capability
-aiHint: A Capability is a first-class architecture capability that an AI resolves to company-approved
-  Technology Component implementations before recommending a standard answer.
+aiHint: A Capability is a first-class architecture capability that an AI resolves to the
+  company owner and approved Technology Component implementations before recommending
+  a standard answer.
 requiredFields:
 - schemaVersion
 - id
@@ -9,12 +10,13 @@ requiredFields:
 - name
 - description
 - catalogStatus
-- owner
+- definitionOwner
 - domain
 - implementations
 optionalFields:
 - version
 - tags
+- owner
 idPattern: ^capability\.[a-z0-9.-]+$
 enumFields:
   catalogStatus:
@@ -22,6 +24,7 @@ enumFields:
   - draft
   - approved
 fieldTypes:
+  definitionOwner: dict
   owner: dict
   tags: list
   implementations: list
@@ -35,10 +38,13 @@ fieldDescriptions:
   name: Use the plain-language capability name.
   description: Explain what architecture outcome this capability represents.
   catalogStatus: Use catalog maturity for the capability definition itself.
-  owner: Identify the team accountable for lifecycle decisions on this capability.
+  definitionOwner: Identify the framework, provider, or company team accountable for
+    maintaining the capability definition and vocabulary.
+  owner: Identify the company team accountable for lifecycle decisions on this capability;
+    required in the effective workspace when implementations are assigned.
   domain: Reference the owning domain object ID.
   implementations: List company-approved Technology Component implementations; framework base
-    files usually leave this empty.
+    files must leave this empty because the framework does not make company adoption decisions.
 implementation:
   requiredFields:
   - ref

@@ -5,7 +5,8 @@ name: Application Performance Monitoring
 description: Tracing and performance analysis of application runtimes.
 version: 1.0.0
 catalogStatus: approved
-owner:
+definitionOwner:
+  provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
 domain: domain.observability

@@ -84,13 +84,16 @@ as compliant off-the-shelf inventory for those requirements.
 When a requirement has `relatedCapability`, resolve it before interviewing:
 
 1. requirement -> `relatedCapability`
-2. capability object -> `implementations`
-3. implementations filtered first to `lifecycleStatus: invest`, then `maintain`
-4. referenced Technology Component or configuration
+2. capability object -> company `owner`
+3. capability object -> `implementations`
+4. implementations filtered first to `lifecycleStatus: invest`, then `maintain`
+5. referenced Technology Component or configuration
 
 If no implementation exists, ask what mechanism satisfies the capability rather
-than asking for organizational ownership unless the requirement explicitly asks
-for ownership.
+than asking who performs the work. If the answer would create a lifecycle
+implementation, record that the company capability owner must approve it.
+Capability implementation lifecycle entries must reference Technology
+Components only, never Standards or running services.
 
 ## Editing Rules
 

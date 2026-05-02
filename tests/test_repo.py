@@ -49,7 +49,7 @@ class RepoTests(unittest.TestCase):
             self.assertIn("activeRequirementGroups", workspace_config)
             self.assertIn("updateWorkflow: enabled", workspace_config)
             lock = yaml.safe_load((workspace / ".draft" / "framework.lock").read_text(encoding="utf-8"))
-            self.assertEqual(lock["framework"]["version"], "0.6.0")
+            self.assertEqual(lock["framework"]["version"], "0.7.0")
             self.assertTrue(created)
             self.assertTrue(is_workspace(workspace))
 

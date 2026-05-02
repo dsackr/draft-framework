@@ -26,7 +26,7 @@ The framework uses two sources of truth for YAML validation:
 | SaaS Service Standard | `catalog/saas-services/` | [saas-service-standard.schema.yaml](../schemas/saas-service-standard.schema.yaml) | Vendor-managed external service where data or traffic may leave the infrastructure boundary. |
 | Decision Record | `catalog/decision-records/` | [decision-record.schema.yaml](../schemas/decision-record.schema.yaml) | Risk, decision, mitigation, or follow-up record. |
 | Drafting Session | `catalog/sessions/` | [drafting-session.schema.yaml](../schemas/drafting-session.schema.yaml) | Incomplete authoring state, generated objects, assumptions, and unresolved questions. |
-| Capability | `configurations/capabilities/` | [capability.schema.yaml](../schemas/capability.schema.yaml) | First-class capability that can map to company-approved Technology Component implementations. |
+| Capability | `configurations/capabilities/` | [capability.schema.yaml](../schemas/capability.schema.yaml) | First-class capability with a definition owner, optional company owner, and company-approved Technology Component implementations. |
 | Requirement Group | `configurations/requirement-groups/` | [requirement-group.schema.yaml](../schemas/requirement-group.schema.yaml) | Unified authoring and validation requirements, including always-on definition requirements and workspace-activated compliance requirements. |
 | Domain | `configurations/domains/` | [domain.schema.yaml](../schemas/domain.schema.yaml) | Groups capability IDs for strategy navigation. |
 | Object Patch | `configurations/object-patches/` | [object-patch.schema.yaml](../schemas/object-patch.schema.yaml) | Workspace overlay that deep-merges selected fields into a base framework object. |
@@ -38,8 +38,9 @@ When a requirement names `relatedCapability`, resolve:
 1. Requirement Group requirement
 2. `relatedCapability`
 3. capability object
-4. capability `implementations`
-5. recommended Technology Component or configuration
+4. company capability `owner`
+5. capability `implementations`
+6. recommended Technology Component or configuration
 
 Workspace-mode Requirement Groups are activated in `.draft/workspace.yaml` under
 `requirements.activeRequirementGroups`.

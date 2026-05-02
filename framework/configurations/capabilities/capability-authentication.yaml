@@ -6,7 +6,8 @@ description: Identity and access authentication capability for users, services, 
   or workloads.
 version: 1.0.0
 catalogStatus: approved
-owner:
+definitionOwner:
+  provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
 domain: domain.compute

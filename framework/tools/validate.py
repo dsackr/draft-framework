@@ -1270,6 +1270,12 @@ def validate_capability(
     if not isinstance(implementations, list):
         failures.append(f"{path}: Change implementations to a list of Technology Component mappings")
         return
+    owner = obj.get("owner")
+    if implementations and not (isinstance(owner, dict) and is_non_empty(owner.get("team"))):
+        failures.append(
+            f"{path}: Add owner.team before assigning capability implementations; "
+            "the company capability owner approves Technology Component lifecycle decisions"
+        )
     for index, implementation in enumerate(implementations):
         context = f"{path}: implementations[{index}]"
         if not isinstance(implementation, dict):
@@ -1278,7 +1284,7 @@ def validate_capability(
         ref = implementation.get("ref")
         target = catalog_by_id.get(str(ref)) if is_non_empty(ref) else None
         if not target or target.get("type") != "technology_component":
-            failures.append(f"{context}: Set ref to an existing Technology Component ID")
+            failures.append(f"{context}: Set ref to an existing Technology Component ID; capability lifecycle applies only to discrete vendor product versions")
         lifecycle_status = implementation.get("lifecycleStatus")
         if lifecycle_status not in VALID_IMPLEMENTATION_STATUSES:
             failures.append(

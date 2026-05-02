@@ -8,6 +8,9 @@ catalogStatus: draft
 lifecycleStatus: maintain
 target: capability.operating-system
 patch:
+  owner:
+    team: example-architecture
+    contact: architecture@example.com
   implementations:
   - ref: technology.os.canonical-ubuntu-2204
     lifecycleStatus: maintain

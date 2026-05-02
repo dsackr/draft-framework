@@ -77,7 +77,9 @@ the `capability.security-monitoring` capability.
 Company adoption of a Technology Component is not recorded as top-level
 `lifecycleStatus` on the Technology Component. It is recorded on the relevant
 Capability implementation entry, because one company may invest in the product
-for one capability and only maintain it for another.
+for one capability and only maintain it for another. The capability owner, not
+the framework definition owner, is the authority that assigns those lifecycle
+states.
 
 ## What A Technology Component Is Not
 
@@ -180,12 +182,18 @@ control.
 1. Decide whether the object is an Operating System, Compute Platform, Software, or Agent Technology Component.
 2. Choose the correct ID pattern and make sure the ID is lowercase.
 3. Create the YAML file in the correct folder.
-4. Fill in the shared base fields: schema version, ID, type, name, description, version, catalog status, lifecycle status, owner, and tags.
+4. Fill in the shared base fields: schema version, ID, type, name, description, version, catalog status, owner, and tags.
 5. Fill in the Technology Component-specific fields: `classification`, `vendor`, `productName`, `productVersion`, optional `platformDependency`, and vendor lifecycle.
 6. Add `capabilities` if the Technology Component itself satisfies reusable host capabilities.
 7. Add `configurations` if a named Technology Component configuration satisfies reusable host capabilities.
 8. If the vendor publishes lifecycle dates, include them. If the vendor does not publish them, say so explicitly in `vendorLifecycle.notes` and leave the dates null rather than guessing.
 9. Run `python3 framework/tools/validate.py`.
+
+Do not place a Service Standard, Host Standard, Database Standard, PaaS Service
+Standard, or SaaS Service Standard in a capability implementation lifecycle
+list. If a service is governed by technology lifecycle, model the specific
+vendor product and version as a Technology Component and let the Standard
+compose that product into a useful architecture.
 
 ## FAQ
 

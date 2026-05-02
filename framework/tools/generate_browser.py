@@ -545,6 +545,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
                 "authenticationModel": obj.get("authenticationModel", ""),
                 "incidentNotificationProcess": obj.get("incidentNotificationProcess", ""),
                 "owner": obj.get("owner", {}),
+                "definitionOwner": obj.get("definitionOwner", {}),
                 "provider": obj.get("provider", {}),
                 "authority": obj.get("authority", {}),
                 "shape": shape_for(obj),
@@ -3008,7 +3009,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 <article class="odc-card">
                   <div class="odc-name">${capability.id ? `<span class="ard-link" data-object-link="${capability.id}">${escapeHtml(capability.name || capId)}</span>` : escapeHtml(capId)}</div>
                   <div class="header-description">${escapeHtml(capability.description || '')}</div>
-                  <div class="interaction-notes"><strong>Approved implementations:</strong></div>
+                  <div class="interaction-notes"><strong>Lifecycle implementations:</strong></div>
                   <div class="related-list">
                     ${(capability.implementations || []).length ? capability.implementations.map(implementation => {
                       const implObject = objectLookup[implementation.ref] || {};
@@ -3035,6 +3036,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <div class="section-stack">
             <dl class="definition-list">
               <dt>Domain</dt><dd>${object.domain && objectLookup[object.domain] ? `<span class="ard-link" data-object-link="${object.domain}">${escapeHtml(objectLookup[object.domain].name)}</span>` : escapeHtml(object.domain || 'Not documented')}</dd>
+              <dt>Definition owner</dt><dd>${escapeHtml(object.definitionOwner?.team || object.definitionOwner?.provider || 'Not documented')}</dd>
+              <dt>Company owner</dt><dd>${escapeHtml(object.owner?.team || 'Not assigned')}</dd>
               <dt>Implementations</dt><dd>${escapeHtml(String((object.implementations || []).length))}</dd>
             </dl>
             <div class="related-list">
@@ -3540,7 +3543,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const schema = object.editorSchema || {};
       const required = schema.requiredFields || [];
       const optional = schema.optionalFields || [];
-      const priority = ['schemaVersion', 'id', 'type', 'name', 'description', 'version', 'catalogStatus', 'lifecycleStatus', 'owner', 'tags'];
+      const priority = ['schemaVersion', 'id', 'type', 'name', 'description', 'version', 'catalogStatus', 'lifecycleStatus', 'definitionOwner', 'owner', 'tags'];
       const ordered = [];
       const seen = new Set();
       [...priority, ...required, ...optional, ...Object.keys(sanitizeDetailObject(object))].forEach(field => {
@@ -3739,10 +3742,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </div>
           </div>
           <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
-          <div class="owner-line">
-            <span><strong>Owner:</strong> ${escapeHtml(object.owner?.team || 'Unknown')}</span>
-            <span><strong>Contact:</strong> ${escapeHtml(object.owner?.contact || 'Unknown')}</span>
-          </div>
+          ${object.type === 'capability' ? `
+            <div class="owner-line">
+              <span><strong>Definition owner:</strong> ${escapeHtml(object.definitionOwner?.team || object.definitionOwner?.provider || 'Unknown')}</span>
+              <span><strong>Company owner:</strong> ${escapeHtml(object.owner?.team || 'Not assigned')}</span>
+            </div>
+          ` : `
+            <div class="owner-line">
+              <span><strong>Owner:</strong> ${escapeHtml(object.owner?.team || 'Unknown')}</span>
+              <span><strong>Contact:</strong> ${escapeHtml(object.owner?.contact || 'Unknown')}</span>
+            </div>
+          `}
         </section>
       `;
 

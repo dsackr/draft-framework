@@ -5,7 +5,8 @@ name: Test Authoring
 description: Tools and frameworks used to author automated tests.
 version: 1.0.0
 catalogStatus: approved
-owner:
+definitionOwner:
+  provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
 domain: domain.testing
