@@ -53,6 +53,14 @@ Always use this named lookup procedure when a requirement has
 6. Recommend the referenced Technology Component or named configuration.
 7. If no implementation exists, ask which mechanism satisfies the capability.
 
+When the answer is an `externalInteraction` for a shared enterprise platform
+such as central logging, identity, monitoring, security monitoring, patching, or
+secrets management, search for a modeled Standard first. If it exists, set
+`externalInteractions[].ref` to that object. If it does not exist and the user
+can identify the platform, create the appropriate Service Standard, PaaS Service
+Standard, SaaS Service Standard, or Appliance Component instead of leaving a
+permanent bare name.
+
 Do not convert a capability question into team ownership unless the requirement
 explicitly asks for ownership. For example, host patch management asks what
 platform, installed component, Technology Component configuration, external

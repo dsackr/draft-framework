@@ -66,7 +66,7 @@ requirements:
   - mechanism: externalInteraction
     criteria:
       capability: capability.log-management
-    example: The appliance forwards audit events to a centralized logging or SIEM platform.
+    example: The appliance forwards audit events to a modeled central logging Standard or SIEM platform referenced by externalInteractions.ref.
   - mechanism: technologyComponentConfiguration
     criteria:
       capability: capability.log-management

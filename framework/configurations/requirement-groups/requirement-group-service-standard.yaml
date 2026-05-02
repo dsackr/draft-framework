@@ -83,7 +83,7 @@ requirements:
   - mechanism: externalInteraction
     criteria:
       capability: capability.log-management
-    example: Centralized logging pipeline for application or service logs.
+    example: A modeled central logging Service Standard, PaaS Service Standard, or SIEM platform referenced by externalInteractions.ref.
   - mechanism: internalComponent
     criteria:
       capability: capability.log-management

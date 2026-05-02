@@ -7,15 +7,21 @@ notes, including patch releases.
 
 ### Compatibility Impact
 
-No unreleased changes.
+No migration required. Existing name-only external interactions remain valid,
+but shared platforms should be modeled and referenced when known.
 
 ### Added
 
-- No changes.
+- Added validation that `externalInteractions[].ref` values point to existing
+  catalog objects.
 
 ### Changed
 
-- No changes.
+- Clarified that central logging and other shared enterprise platforms should be
+  modeled as Standards or service classifications rather than left as permanent
+  name-only external interactions.
+- Updated Requirement Group examples and the host template to prefer resolved
+  logging platform references.
 
 ### Fixed
 
@@ -27,7 +33,9 @@ No unreleased changes.
 
 ### Migration Notes
 
-- No migration required.
+- Existing black-box external interactions can stay as drafting placeholders.
+  When the target platform is known, add or reuse the modeled DRAFT object and
+  set `externalInteractions[].ref`.
 
 ## 0.6.0 - 2026-05-01
 

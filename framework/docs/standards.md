@@ -181,20 +181,23 @@ wrapper. Because they do not inherit `requirement-group.host-standard` or `requi
 Requirement Group asks the required operating and governance capability questions directly on
 the appliance Technology Component.
 
-## External Interactions As Black Boxes
+## External Interactions And Modeled Shared Services
 
-External interactions are treated as black boxes by design.
+External interactions identify systems, services, or platforms outside the
+Standard boundary. During early discovery they may be recorded as black boxes so
+drafting can continue while details are incomplete.
 
-A Standard is complete if it documents the fact that it interacts with
-authentication, logging, monitoring, patching, or another platform, regardless
-of whether the interacted-with thing exists in the catalog as a first-class
-object. The `ref` field is optional enrichment, not a prerequisite for
-completeness.
+Shared enterprise platforms should not remain unmodeled once the platform is
+known. Central logging, identity, monitoring, security monitoring, patching,
+secrets management, and similar reusable services should be represented as the
+appropriate DRAFT object: Service Standard, PaaS Service Standard, SaaS Service
+Standard, or Appliance Component. The dependent object should then use
+`externalInteractions[].ref` to point to that modeled object.
 
-That means a host Standard can be complete even if its logging platform is not
-modeled elsewhere in the repo. The point is to declare the dependency clearly,
-not to block architecture documentation until every connected platform has been
-cataloged.
+A name-only external interaction is acceptable as a temporary drafting state,
+but it is weaker than a resolved reference. For example, a host should not treat
+`Centralized Logging` as a permanent service label when the catalog can model
+the central logging standard that receives those logs.
 
 ## How To Add A New Standard
 

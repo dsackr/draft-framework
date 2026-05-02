@@ -306,6 +306,37 @@ class ValidationTests(unittest.TestCase):
 
         self.assertTrue(result.ok, result.stdout + result.stderr)
 
+    def test_external_interaction_ref_must_resolve(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            host_dir = workspace / "catalog" / "host-standards"
+            host_dir.mkdir(parents=True)
+            (workspace / "configurations").mkdir()
+            (host_dir / "host-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    id: host.test
+                    type: host_standard
+                    name: Test Host
+                    catalogStatus: stub
+                    lifecycleStatus: maintain
+                    externalInteractions:
+                      - name: Missing Logging Standard
+                        ref: service.missing.logging
+                        capabilities:
+                          - capability.log-management
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("externalInteractions[0].ref references unknown object", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

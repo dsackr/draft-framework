@@ -684,6 +684,27 @@ def validate_architectural_decisions(obj: dict[str, Any], path: Path, failures: 
             )
 
 
+def validate_external_interaction_refs(
+    obj: dict[str, Any],
+    path: Path,
+    catalog_by_id: dict[str, dict[str, Any]],
+    failures: list[str],
+) -> None:
+    interactions = obj.get("externalInteractions", [])
+    if not isinstance(interactions, list):
+        return
+    for index, interaction in enumerate(interactions):
+        if not isinstance(interaction, dict):
+            continue
+        ref = interaction.get("ref")
+        if ref and ref not in catalog_by_id:
+            failures.append(
+                f"{path}: externalInteractions[{index}].ref references unknown object '{ref}' — "
+                "model the interacted platform as a Standard, PaaS Service Standard, SaaS Service Standard, or Appliance Component, "
+                "or remove ref until the target object exists"
+            )
+
+
 def validate_component(
     obj: dict[str, Any],
     path: Path,
@@ -1737,6 +1758,7 @@ def main(argv: list[str] | None = None) -> int:
 
     for path, obj in objects.items():
         validate_against_schema(obj, path, schemas, failures)
+        validate_external_interaction_refs(obj, path, catalog_by_id, failures)
         if obj.get("type") == "capability":
             validate_capability(obj, path, catalog_by_id, domain_ids, failures)
         if obj.get("type") == "requirement_group":
