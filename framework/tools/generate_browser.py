@@ -840,7 +840,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       font-size: 18px;
       line-height: 1.3;
     }
-    .executive-tile-title p {
+    .executive-tile-title .executive-number {
+      color: var(--text);
+      font-size: 58px;
+      line-height: 1;
+    }
+    .executive-tile > p {
       margin: 0;
       color: var(--muted);
       line-height: 1.45;

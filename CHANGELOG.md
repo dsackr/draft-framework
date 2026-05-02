@@ -26,6 +26,8 @@ browser view.
   executive landing page can hand users into the existing object browser.
 - Increased Executive View metric and tile heading sizes so each collage tile
   carries equal visual weight.
+- Fixed Executive View tile CSS so the shared large metric size is not
+  overridden by paragraph styling.
 - Documented the Acceptable Use Technology view as the generated human-readable
   table for company technology lifecycle mappings.
 - Changed the Acceptable Use Technology table to group Technology Components
