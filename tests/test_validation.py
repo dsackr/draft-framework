@@ -95,6 +95,73 @@ class ValidationTests(unittest.TestCase):
         self.assertFalse(result.ok, result.stdout + result.stderr)
         self.assertIn("Satisfy requirement 'company-required-field'", result.stdout)
 
+    def test_requirement_implementation_evidence_satisfies_declared_workspace_group(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            self._write_workspace_requirement_fixture(workspace, require_disposition=False)
+            (workspace / "configurations" / "requirement-groups" / "requirement-group-company-control.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    id: requirement-group.company-control
+                    type: requirement_group
+                    name: Company Control
+                    description: Workspace-mode control group used by validation tests.
+                    catalogStatus: draft
+                    owner:
+                      team: test
+                    activation: workspace
+                    appliesTo:
+                      - product_service
+                    requirements:
+                      - id: company-required-field
+                        description: Product services must provide company evidence.
+                        rationale: Test requirement for workspace-mode evidence.
+                        requirementMode: mandatory
+                        naAllowed: false
+                        canBeSatisfiedBy:
+                          - mechanism: architecturalDecision
+                            key: missingDecision
+                        minimumSatisfactions: 1
+                        validAnswerTypes:
+                          - architecturalDecision
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (workspace / "catalog" / "product-services" / "product-service-test-app.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    id: product-service.test.app
+                    type: product_service
+                    name: Test App
+                    product: Test
+                    runsOn: host.test
+                    catalogStatus: approved
+                    lifecycleStatus: maintain
+                    requirementGroups:
+                      - requirement-group.company-control
+                    architecturalDecisions:
+                      companyEvidence: Provided by explicit object-level evidence.
+                    requirementImplementations:
+                      - requirementGroup: requirement-group.company-control
+                        requirementId: company-required-field
+                        status: satisfied
+                        mechanism: architecturalDecision
+                        key: companyEvidence
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertTrue(result.ok, result.stdout + result.stderr)
+
     def _write_workspace_requirement_fixture(self, workspace: Path, require_disposition: bool) -> None:
         (workspace / ".draft" / "workspace.yaml").write_text(
             textwrap.dedent(

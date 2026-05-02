@@ -605,13 +605,30 @@ def validate_requirement(
     group_id: str,
     catalog_by_id: dict[str, dict[str, Any]],
 ) -> tuple[bool, str]:
+    requirement_id = requirement.get("id", "unknown")
+    valid_answer_types = requirement.get("validAnswerTypes", [])
+    for implementation in obj.get("requirementImplementations", []) or []:
+        if not isinstance(implementation, dict):
+            continue
+        if implementation.get("requirementGroup") != group_id or implementation.get("requirementId") != requirement_id:
+            continue
+        status = implementation.get("status")
+        if status == "not-applicable" and requirement.get("naAllowed") is True:
+            return True, ""
+        mechanism = implementation.get("mechanism")
+        if (
+            status == "satisfied"
+            and mechanism in valid_answer_types
+            and implementation_resolves(obj, implementation, catalog_by_id)
+        ):
+            return True, ""
+
     mechanisms = requirement.get("canBeSatisfiedBy", [])
     minimum = int(requirement.get("minimumSatisfactions", 1))
     satisfied = [mechanism for mechanism in mechanisms if mechanism_satisfied(obj, mechanism, catalog_by_id)]
     if len(satisfied) >= minimum:
         return True, ""
 
-    requirement_id = requirement.get("id", "unknown")
     related = requirement.get("relatedCapability")
     mechanism_text = " or ".join(mechanism_description(mechanism) for mechanism in mechanisms)
     if minimum > 1:

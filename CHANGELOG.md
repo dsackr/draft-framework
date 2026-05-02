@@ -22,6 +22,8 @@ No unreleased changes.
 - Fixed workspace-mode Requirement Group validation so active groups remain
   incremental when `requireActiveRequirementGroupDisposition` is false, while
   still requiring explicit activation before an object can claim them.
+- Fixed Requirement Group validation so resolving `requirementImplementations`
+  satisfy the matching requirement evidence during workspace control validation.
 
 ### Migration Notes
 
