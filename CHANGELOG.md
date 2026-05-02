@@ -24,6 +24,8 @@ browser view.
 
 - Renamed the generated browser list navigation to Drafting Table so the
   executive landing page can hand users into the existing object browser.
+- Increased Executive View metric and tile heading sizes so each collage tile
+  carries equal visual weight.
 - Documented the Acceptable Use Technology view as the generated human-readable
   table for company technology lifecycle mappings.
 - Changed the Acceptable Use Technology table to group Technology Components
