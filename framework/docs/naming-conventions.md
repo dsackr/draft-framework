@@ -14,10 +14,11 @@ A good ID is not just readable. It is durable. Once an ID is in use, other objec
 | Technology Component compute platform | `technology.compute.<vendor>-<product>` | `technology.compute.amazon-ec2-standard` |
 | Technology Component software | `technology.software.<vendor>-<product>-<ver>` | `technology.software.microsoft-sqlserver-2019` |
 | Technology Component agent | `technology.agent.<vendor>-<product>` | `technology.agent.crowdstrike-falcon` |
+| Capability | `capability.<capability-slug>` | `capability.log-management` |
 | Host Standard | `host.<os>.<platform>.<variant>` | `host.windows.2022.ec2.standard` |
 | Service Standard | `service.<category>.<product>` | `service.web.nginx-126` |
 | Database Standard | `database.<engine-version>` | `database.sqlserver-2022` |
-| Definition Checklist | `checklist.<name>` | `checklist.host-standard`, `checklist.database-standard` |
+| Requirement Group | `requirement-group.<name>` | `requirement-group.host-standard`, `requirement-group.database-standard` |
 | Reference architecture | `reference-architecture.<pattern-slug>` | `reference-architecture.dotnet.three-tier.ha` |
 | Software Deployment Pattern | `software-deployment.<product-slug>` | `software-deployment.student-health` |
 

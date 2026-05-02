@@ -7,13 +7,11 @@ notes, including patch releases.
 
 ### Compatibility Impact
 
-No workspace object migration is required.
+No unreleased changes.
 
 ### Added
 
-- Added a DRAFT Table Guide tab that explains what DRAFT is, how to navigate the
-  UI, what the core artifact families mean, and how content updates flow through
-  Draftsman, validation, and Git.
+- No changes.
 
 ### Changed
 
@@ -25,8 +23,67 @@ No workspace object migration is required.
 
 ### Migration Notes
 
-- Existing workspaces only need to refresh their vendored framework copy to pick
-  up the updated DRAFT Table UI.
+- No migration required.
+
+## 0.6.0 - 2026-05-01
+
+### Compatibility Impact
+
+Breaking workspace migration is required for pre-0.6.0 content that uses
+Definition Checklists, Compliance Controls, Control Enforcement Profiles, or
+top-level Technology Component `lifecycleStatus`. DRAFT is still pre-1.0, so
+breaking object model changes are allowed in 0.MINOR.0 releases when documented
+with migration notes.
+
+### Added
+
+- Added first-class `capability` objects in `framework/configurations/capabilities/`.
+- Added unified `requirement_group` objects in
+  `framework/configurations/requirement-groups/`.
+- Added sample workspace capability implementation patches under
+  `examples/configurations/object-patches/`.
+- Added AI-first schema `aiHint` metadata and required-field descriptions.
+- Added a DRAFT Table Guide tab that explains what DRAFT is, how to navigate the
+  UI, what the core artifact families mean, and how content updates flow through
+  Draftsman, validation, and Git.
+
+### Changed
+
+- Replaced Definition Checklists and Compliance Controls plus Control
+  Enforcement Profiles with the unified Requirement Group model.
+- Replaced workspace `compliance.activeControlEnforcementProfiles` with
+  `requirements.activeRequirementGroups`.
+- Replaced object-level `controlEnforcementProfiles` and
+  `controlImplementations` with `requirementGroups` and
+  `requirementImplementations`.
+- Changed Technology Component `capabilities` to reference capability object IDs.
+- Removed top-level Technology Component `lifecycleStatus`; company disposition
+  now lives on capability implementation mappings.
+- Updated the browser to remove the Compliance Build Profile selector and show
+  Capabilities and Requirement Groups as framework content.
+- Updated Draftsman guidance to use the named requirement-to-capability lookup
+  chain before asking users open-ended questions.
+
+### Fixed
+
+- Improved validation failures so missing schema fields and requirement gaps are
+  written as actionable instructions.
+
+### Migration Notes
+
+- Move any workspace Definition Checklist files to `requirement_group` objects
+  under `configurations/requirement-groups/`.
+- Move active compliance profile configuration to:
+  `requirements.activeRequirementGroups`.
+- Rename object evidence fields from `controlEnforcementProfiles` and
+  `controlImplementations` to `requirementGroups` and
+  `requirementImplementations`.
+- Convert bare capability strings such as `log-management` to namespaced
+  capability IDs such as `capability.log-management`.
+- Move Technology Component adoption disposition into capability implementation
+  mappings. Keep vendor support dates in Technology Component `vendorLifecycle`.
+- Refresh the vendored framework copy and run
+  `python3 .draft/framework/tools/validate.py --workspace .`.
 
 ## 0.5.0 - 2026-04-30
 

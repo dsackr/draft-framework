@@ -1,0 +1,224 @@
+schemaVersion: '1.0'
+id: requirement-group.appliance-component
+type: requirement_group
+name: Appliance Component Requirement Group
+description: >
+  Structured requirements used to define a complete and correct Appliance
+  Component. An Appliance Component is a vendor product deployed within the
+  organization's infrastructure boundary where the underlying host is blackbox.
+  The organization configures the appliance but has no visibility into or
+  responsibility for the underlying infrastructure. Because there is no Host
+  Standard or Service Standard wrapper to inherit baseline Requirement Group
+  requirements, this group collects the appliance's consumer-facing service
+  capabilities directly on the Appliance Component.
+version: 1.1.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+activation: always
+appliesTo:
+- appliance_component
+requirements:
+- id: function
+  description: What capabilities does this appliance provide?
+  rationale: The capabilities are the reason the appliance exists in the architecture.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: capabilities
+    example: 'capabilities: [load-balancing]'
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - field
+  minimumSatisfactions: 1
+- id: authentication-access-model
+  description: How is administrative, user, or service access to the appliance authenticated?
+  rationale: A blackbox appliance still needs an explicit access-control answer because it
+    provides a deployed capability without inheriting the host or service Requirement Group
+    baseline.
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.authentication
+    example: The appliance authenticates administrators through an enterprise identity platform.
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.authentication
+    example: A named appliance configuration defines the authentication model.
+  - mechanism: architecturalDecision
+    key: authenticationAccessModel
+    example: Administrator access is federated through SAML SSO; service access uses appliance-managed
+      mTLS.
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - architecturalDecision
+  - externalInteraction
+  - technologyComponentConfiguration
+  minimumSatisfactions: 1
+- id: log-audit-visibility
+  description: What operational logs, audit records, or events are visible to the adopter,
+    and where do they go?
+  rationale: A blackbox appliance must state the log or audit visibility the adopter can rely
+    on because hidden host logs are not modeled.
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.log-management
+    example: The appliance forwards audit events to a centralized logging or SIEM platform.
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.log-management
+    example: A named appliance configuration enables audit export or log forwarding.
+  - mechanism: architecturalDecision
+    key: logAuditVisibility
+    example: Administrative actions are exported to CloudTrail and retained in the enterprise
+      SIEM.
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - architecturalDecision
+  - externalInteraction
+  - technologyComponentConfiguration
+  minimumSatisfactions: 1
+- id: health-status-visibility
+  description: How does the adopter observe appliance health, status, incidents, or operational
+    telemetry?
+  rationale: The appliance provides a service-like capability, so consumers need to know how
+    health and status are observed even though the internal host is hidden.
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.health-welfare-monitoring
+    example: The appliance publishes health metrics to the enterprise monitoring platform.
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.health-welfare-monitoring
+    example: A named appliance configuration enables health checks, status endpoints, or metrics
+      export.
+  - mechanism: architecturalDecision
+    key: healthStatusVisibility
+    example: Health is observed through managed service status, target health checks, and
+      alert rules.
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - architecturalDecision
+  - externalInteraction
+  - technologyComponentConfiguration
+  minimumSatisfactions: 1
+- id: patch-update-model
+  description: Who or what is responsible for appliance firmware, software, and hidden host
+    updates, and what mechanism applies them?
+  rationale: The hidden host prevents normal host patch-management modeling, so the appliance
+    must document the update responsibility and mechanism directly.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: patchingOwner
+    example: 'patchingOwner: vendor-managed'
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.patch-management
+    example: Updates are orchestrated through a vendor or cloud-provider patch service.
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.patch-management
+    example: A named appliance configuration defines update windows or managed update policy.
+  - mechanism: architecturalDecision
+    key: patchUpdateModel
+    example: Firmware and hidden host updates are vendor-managed; the adopter controls only
+      maintenance windows.
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - architecturalDecision
+  - externalInteraction
+  - field
+  - technologyComponentConfiguration
+  minimumSatisfactions: 1
+- id: resilience-model
+  description: "What is the resilience model of this appliance \u2014 is it inherently highly\
+    \ available, single instance, or clustered?\n"
+  rationale: A blackbox appliance still needs an explicit answer for the resilience posture
+    the adopter is depending on.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: resilienceModel
+    example: Inherently highly available within the managed service control plane
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - architecturalDecision
+  minimumSatisfactions: 1
+- id: network-placement
+  description: Where does this appliance sit in the network topology?
+  rationale: Placement defines exposure and traffic path.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: networkPlacement
+    example: 'networkPlacement: public-facing'
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - field
+  minimumSatisfactions: 1
+- id: patching-ownership
+  description: Who is responsible for firmware and software updates?
+  rationale: A blackbox component still needs clear update ownership.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: patchingOwner
+    example: 'patchingOwner: aws-managed'
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - field
+  minimumSatisfactions: 1
+- id: configurable-surface
+  description: 'What configuration surface does the organization control on this appliance?
+
+    '
+  rationale: The object should capture what the adopter can actually configure rather than
+    pretending the hidden host is visible.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: configurableSurface
+    example: Listener rules, target groups, and TLS certificates are customer-managed
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - architecturalDecision
+  minimumSatisfactions: 1
+- id: failure-domain
+  description: What failure domain does this appliance introduce?
+  rationale: Blackbox shared components can create broad impact boundaries that must be explicit.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: failureDomain
+    example: Shared dependency for all traffic entering the protected application path
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - architecturalDecision
+  minimumSatisfactions: 1
+- id: compliance-posture
+  description: What compliance certifications does this appliance carry?
+  rationale: Compliance posture must be explicit when the underlying implementation is opaque.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: complianceCerts
+    allowEmpty: true
+    example: 'complianceCerts: [SOC2, ISO27001]'
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - field
+  minimumSatisfactions: 1
+lifecycleStatus: invest
+tags:
+- appliance
+- requirement-group
+- definition
+appliesToQualifiers:
+  subtype: appliance

@@ -12,7 +12,7 @@ authoring requests.
 3. Use [framework/schemas/](framework/schemas/) as the authoritative object
    contract.
 4. Use [framework/configurations/](framework/configurations/) as the
-   authoritative base checklist, compliance, and domain model.
+   authoritative base capability, Requirement Group, and domain model.
 5. Validate changes with `python3 framework/tools/validate.py`.
 
 ## Draftsman Activation
@@ -25,7 +25,7 @@ Do not ask what "draftsman" means. In this repo, it means:
 
 - resolve the user's intent
 - search the effective catalog inventory first
-- read the matching schema and Definition Checklist
+- read the matching schema and Requirement Group
 - interview the user only for missing architecture facts
 - create or update valid YAML in the appropriate framework or workspace path
 - preserve unresolved uncertainty in a Drafting Session when needed
@@ -41,7 +41,7 @@ Company-specific artifacts belong in a private DRAFT repository:
 
 - `.draft/framework/` for the vendored framework copy used during normal drafting
 - `catalog/` for architecture content
-- `configurations/` for Definition Checklist, compliance, domain, and object-patch overlays
+- `configurations/` for capability mappings, Requirement Groups, domains, and object-patch overlays
 - `.draft/workspace.yaml` and `.draft/framework.lock` for tracked workspace metadata and framework sync state
 
 Use `examples/catalog/` only as sample content for validating and demonstrating
@@ -64,7 +64,7 @@ AI agents should treat DRAFT as a deterministic authoring system:
 
 - Load the effective model from the vendored framework base configuration,
   workspace configuration overlays, and workspace catalog content.
-- Use schemas and Definition Checklists to determine required facts.
+- Use schemas and Requirement Groups to determine required facts.
 - Edit YAML directly when asked to make changes.
 - Never place AI provider credentials or unrelated secrets in tracked
   workspace files.
@@ -74,15 +74,28 @@ AI agents should treat DRAFT as a deterministic authoring system:
 
 ## Compliance Claims
 
-Treat `controlEnforcementProfiles` on an artifact as the explicit compliance claim.
-`controlImplementations` are evidence for declared profiles only. If a profile
+Treat `requirementGroups` on an artifact as the explicit compliance claim.
+`requirementImplementations` are evidence for declared workspace-mode groups only. If a group
 is not declared, the artifact is not non-compliant; it is simply not eligible
-as compliant off-the-shelf inventory for those controls.
+as compliant off-the-shelf inventory for those requirements.
+
+## Capability Lookup
+
+When a requirement has `relatedCapability`, resolve it before interviewing:
+
+1. requirement -> `relatedCapability`
+2. capability object -> `implementations`
+3. implementations filtered first to `lifecycleStatus: invest`, then `maintain`
+4. referenced Technology Component or configuration
+
+If no implementation exists, ask what mechanism satisfies the capability rather
+than asking for organizational ownership unless the requirement explicitly asks
+for ownership.
 
 ## Editing Rules
 
 - Keep generated files current by running `python3 framework/tools/generate_ai_index.py`
-  when framework docs, schemas, Definition Checklists, templates, or catalog YAML changes.
+  when framework docs, schemas, Requirement Groups, templates, or catalog YAML changes.
 - Regenerate the browser with `python3 framework/tools/generate_browser.py` when YAML
   catalog content changes.
 - Do not invent new object types, fields, lifecycle states, or taxonomy values

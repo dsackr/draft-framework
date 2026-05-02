@@ -183,8 +183,7 @@ def catalog_object_payload(object_id: str, obj: dict[str, Any], referenced_by: l
         "tags": string_list(obj.get("tags")),
         "owner": obj.get("owner") if isinstance(obj.get("owner"), dict) else {},
         "capabilities": string_list(obj.get("capabilities")),
-        "definitionChecklists": string_list(obj.get("satisfiesDefinitionChecklist")),
-        "controlEnforcementProfiles": string_list(obj.get("controlEnforcementProfiles")),
+        "requirementGroups": string_list(obj.get("requirementGroups")),
         "outboundRefs": [{"ref": ref, "path": path} for ref, path in extract_refs(obj)],
         "referencedBy": referenced_by,
         "summaryFields": summary_fields(obj),
@@ -217,12 +216,10 @@ def summary_fields(obj: dict[str, Any]) -> list[dict[str, str]]:
         "owner",
         "catalogStatus",
         "lifecycleStatus",
-        "satisfiesDefinitionChecklist",
-        "controlEnforcementProfiles",
-        "controlImplementations",
+        "requirementGroups",
+        "requirementImplementations",
         "requirements",
-        "controls",
-        "controlSemantics",
+        "implementations",
     }
     fields: list[dict[str, str]] = []
     for key, value in obj.items():
@@ -257,10 +254,9 @@ def type_label(object_type: str) -> str:
         "saas_service_standard": "SaaS Service Standard",
         "reference_architecture": "Reference Architecture",
         "software_deployment_pattern": "Software Deployment Pattern",
-        "definition_checklist": "Definition Checklist",
+        "capability": "Capability",
+        "requirement_group": "Requirement Group",
         "decision_record": "Decision Record",
-        "compliance_controls": "Compliance Controls",
-        "control_enforcement_profile": "Control Enforcement Profile",
         "drafting_session": "Drafting Session",
         "domain": "Domain",
     }
@@ -1055,9 +1051,8 @@ INDEX_HTML = """<!doctype html>
           <section class="section-card">
             <h3>Controls And Completeness</h3>
             <ul class="guide-list">
-              <li><strong>Definition Checklist</strong>: the required questions an artifact must answer to be complete and reusable.</li>
-              <li><strong>Compliance Controls</strong>: control catalogs grouped by source, such as a framework-provided or company-owned control group.</li>
-              <li><strong>Control Enforcement Profile</strong>: the company decision about where and how selected controls are enforced in DRAFT.</li>
+              <li><strong>Capability</strong>: a first-class capability that can point the Draftsman to approved Technology Component implementations.</li>
+              <li><strong>Requirement Group</strong>: the required questions an artifact must answer, including always-on definition requirements and workspace-activated controls.</li>
               <li><strong>Validation</strong>: the executable check that confirms objects follow the framework and resolve their relationships.</li>
             </ul>
           </section>
@@ -1183,8 +1178,7 @@ INDEX_HTML = """<!doctype html>
               ['Source', object.source],
               ['Owner', object.owner?.team || object.owner?.contact || ''],
               ['Capabilities', (object.capabilities || []).join(', ')],
-              ['Definition Checklists', (object.definitionChecklists || []).join(', ')],
-              ['Control Enforcement Profiles', (object.controlEnforcementProfiles || []).join(', ')]
+              ['Requirement Groups', (object.requirementGroups || []).join(', ')]
             ])}
           </section>
           <section class="section-card">

@@ -1,0 +1,12 @@
+schemaVersion: '1.0'
+id: capability.health-welfare-monitoring
+type: capability
+name: Health and Welfare Monitoring
+description: Runtime health, uptime, metrics, and operational welfare visibility.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+domain: domain.observability
+implementations: []

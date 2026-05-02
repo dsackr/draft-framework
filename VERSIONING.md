@@ -27,7 +27,7 @@ Rules:
   cleanup.
 - Patch releases must not intentionally change the object contract.
 - Every release, including patch releases, requires release notes.
-- Every object, schema, Definition Checklist, compliance, or validation contract
+- Every object, schema, Requirement Group, compliance, or validation contract
   change requires a compatibility statement.
 
 ## At 1.0.0

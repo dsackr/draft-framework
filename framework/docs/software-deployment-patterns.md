@@ -97,9 +97,9 @@ This field is metadata only. It is useful because it says whether the product is
 If no suitable Reference Architecture exists yet, that gap should be made
 explicit through an architectural decision entry rather than hidden.
 
-## Definition Checklist Expectations
+## Requirement Group Expectations
 
-The Software Deployment Pattern Definition Checklist is the deployment-reality checklist. It requires the architect to
+The Software Deployment Pattern Requirement Group is the deployment-reality checklist. It requires the architect to
 document:
 
 - the selected Reference Architecture, or why no applicable Reference Architecture exists

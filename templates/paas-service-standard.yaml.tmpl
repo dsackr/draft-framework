@@ -1,5 +1,4 @@
-# Template for a PaaS Service Standard.
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: paas-service.<vendor-product>
 type: paas_service_standard
 category: service
@@ -13,18 +12,17 @@ owner:
   team: <owning-team>
   contact: <team-or-person@example.com>
 tags:
-  - paas
+- paas
 vendor: <Vendor>
 capabilities:
-  - <capability-id>
-# Declare only profiles this standard explicitly claims.
-controlEnforcementProfiles: []
-controlImplementations: []
+- capability.<capability-slug>
 vendorSLA: <Vendor SLA or support posture.>
 authenticationModel: <iam|api-key|other>
 complianceCerts:
-  - <certification-name>
+- <certification-name>
 architecturalDecisions:
   resilienceModel: <Resilience posture the adopter depends on.>
   dataBoundary: <Whether data remains inside the organization's cloud boundary.>
   failureDomain: <Failure domain introduced by this PaaS service.>
+requirementGroups: []
+requirementImplementations: []

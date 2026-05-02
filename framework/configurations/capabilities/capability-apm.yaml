@@ -1,0 +1,12 @@
+schemaVersion: '1.0'
+id: capability.apm
+type: capability
+name: Application Performance Monitoring
+description: Tracing and performance analysis of application runtimes.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+domain: domain.observability
+implementations: []

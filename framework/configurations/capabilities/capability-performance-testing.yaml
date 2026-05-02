@@ -1,0 +1,12 @@
+schemaVersion: '1.0'
+id: capability.performance-testing
+type: capability
+name: Performance and Load Testing
+description: Capabilities to simulate load and measure system behavior under stress.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+domain: domain.testing
+implementations: []

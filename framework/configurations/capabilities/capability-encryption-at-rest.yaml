@@ -1,0 +1,12 @@
+schemaVersion: '1.0'
+id: capability.encryption-at-rest
+type: capability
+name: Encryption At Rest
+description: Protection of persisted data through encryption or equivalent storage safeguards.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+domain: domain.compute
+implementations: []

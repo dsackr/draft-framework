@@ -30,7 +30,8 @@ BASE_CONFIGURATION_ROOT = FRAMEWORK_ROOT / "configurations"
 DEFAULT_WORKSPACE_ROOT = REPO_ROOT / "examples"
 LOGO_PATH = REPO_ROOT / "draftlogo.png"
 CATALOG_FOLDERS = [
-    "definition-checklists",
+    "capabilities",
+    "requirement-groups",
     "object-patches",
     "technology-components",
     "appliance-components",
@@ -42,8 +43,6 @@ CATALOG_FOLDERS = [
     "saas-services",
     "decision-records",
     "objects",
-    "compliance-controls",
-    "control-enforcement-profiles",
     "object-types",
     "automation-targets",
     "sessions",
@@ -73,9 +72,13 @@ REF_CONTAINER_KEYS = {
     "primaryObjectId",
     "riskRef",
     "controls",
+    "domain",
+    "relatedCapability",
+    "requirementGroup",
     "target",
 }
 CATALOG_ID_PREFIXES = (
+    "capability.",
     "technology.",
     "appliance.",
     "host.",
@@ -85,9 +88,7 @@ CATALOG_ID_PREFIXES = (
     "reference-architecture.",
     "software-deployment.",
     "decision.",
-    "checklist.",
-    "controls.",
-    "control-enforcement.",
+    "requirement-group.",
     "patch.",
     "saas-service.",
     "paas-service.",
@@ -154,24 +155,24 @@ def display_path(path: Path) -> str:
     return path.as_posix()
 
 
-def load_workspace_compliance(workspace_root: Path) -> dict[str, Any]:
+def load_workspace_requirements(workspace_root: Path) -> dict[str, Any]:
     config_path = workspace_root / ".draft" / "workspace.yaml"
     if not config_path.exists():
-        return {"activeProfileIds": [], "requireActiveProfileDisposition": False}
+        return {"activeRequirementGroups": [], "requireActiveRequirementGroupDisposition": False}
     try:
         data = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
     except Exception:
-        return {"activeProfileIds": [], "requireActiveProfileDisposition": False}
+        return {"activeRequirementGroups": [], "requireActiveRequirementGroupDisposition": False}
     if not isinstance(data, dict):
-        return {"activeProfileIds": [], "requireActiveProfileDisposition": False}
-    compliance = data.get("compliance") or {}
-    if not isinstance(compliance, dict):
-        return {"activeProfileIds": [], "requireActiveProfileDisposition": False}
-    active = compliance.get("activeControlEnforcementProfiles") or []
-    active_profiles = [str(profile_id) for profile_id in active if str(profile_id).strip()] if isinstance(active, list) else []
+        return {"activeRequirementGroups": [], "requireActiveRequirementGroupDisposition": False}
+    requirements = data.get("requirements") or {}
+    if not isinstance(requirements, dict):
+        return {"activeRequirementGroups": [], "requireActiveRequirementGroupDisposition": False}
+    active = requirements.get("activeRequirementGroups") or []
+    active_groups = [str(group_id) for group_id in active if str(group_id).strip()] if isinstance(active, list) else []
     return {
-        "activeProfileIds": active_profiles,
-        "requireActiveProfileDisposition": compliance.get("requireActiveProfileDisposition") is True,
+        "activeRequirementGroups": active_groups,
+        "requireActiveRequirementGroupDisposition": requirements.get("requireActiveRequirementGroupDisposition") is True,
     }
 
 
@@ -367,12 +368,10 @@ def shape_for(obj: dict[str, Any]) -> str:
         return "star"
     if obj["type"] == "drafting_session":
         return "round-rectangle"
-    if obj["type"] == "definition_checklist":
+    if obj["type"] == "capability":
+        return "ellipse"
+    if obj["type"] == "requirement_group":
         return "barrel"
-    if obj["type"] == "compliance_controls":
-        return "hexagon"
-    if obj["type"] == "control_enforcement_profile":
-        return "hexagon"
     if obj["type"] == "decision_record":
         return "round-rectangle"
     if obj["type"] == "technology_component":
@@ -403,12 +402,10 @@ def type_label_for(obj: dict[str, Any]) -> str:
     if obj["type"] == "appliance_component":
         classification = humanize_slug(str(obj.get("classification", "unknown")))
         return f"Appliance Component / {classification}"
-    if obj["type"] == "definition_checklist":
-        return "Definition Checklist"
-    if obj["type"] == "compliance_controls":
-        return "Compliance Controls"
-    if obj["type"] == "control_enforcement_profile":
-        return "Control Enforcement Profile"
+    if obj["type"] == "capability":
+        return "Capability"
+    if obj["type"] == "requirement_group":
+        return "Requirement Group"
     if obj["type"] == "decision_record":
         return f"Decision Record / {obj.get('category', 'risk')}"
     if obj["type"] == "reference_architecture":
@@ -458,117 +455,30 @@ def internal_component_refs(obj: dict[str, Any]) -> list[dict[str, str]]:
     return refs
 
 
-def build_compliance_payload(registry: dict[str, dict[str, Any]], workspace_root: Path) -> dict[str, Any]:
-    workspace_compliance = load_workspace_compliance(workspace_root)
-    active_profile_ids = set(workspace_compliance["activeProfileIds"])
-    frameworks = sorted(
-        [obj for obj in registry.values() if obj.get("type") == "compliance_controls"],
+def build_requirement_payload(registry: dict[str, dict[str, Any]], workspace_root: Path) -> dict[str, Any]:
+    workspace_requirements = load_workspace_requirements(workspace_root)
+    groups = sorted(
+        [obj for obj in registry.values() if obj.get("type") == "requirement_group"],
         key=lambda item: item.get("name", ""),
     )
-    frameworks_by_id = {framework["id"]: framework for framework in frameworks}
-    profiles = sorted(
-        [obj for obj in registry.values() if obj.get("type") == "control_enforcement_profile"],
-        key=lambda item: item.get("name", ""),
-    )
-
-    controls_by_framework: dict[str, list[dict[str, Any]]] = {}
-    for framework in frameworks:
-        raw_controls = framework.get("controls") or []
-        normalized_controls: list[dict[str, Any]] = []
-        if isinstance(raw_controls, list):
-            for control in raw_controls:
-                if not isinstance(control, dict):
-                    continue
-                normalized_controls.append(
-                    {
-                        "controlId": str(control.get("controlId", "")),
-                        "name": str(control.get("name", "")),
-                        "externalReference": str(control.get("externalReference", "")),
-                        "notes": str(control.get("notes", "")),
-                    }
-                )
-        controls_by_framework[framework["id"]] = normalized_controls
-
-    controls_by_profile: dict[str, list[dict[str, Any]]] = {}
-    for profile in profiles:
-        raw_semantics = profile.get("controlSemantics") or []
-        framework_controls = {
-            control.get("controlId"): control
-            for control in controls_by_framework.get(str(profile.get("controls", "")), [])
-            if isinstance(control, dict)
-        }
-        normalized_controls: list[dict[str, Any]] = []
-        if isinstance(raw_semantics, list):
-            for semantic in raw_semantics:
-                if not isinstance(semantic, dict):
-                    continue
-                catalog_control = framework_controls.get(semantic.get("controlId"), {})
-                normalized_controls.append(
-                    {
-                        "controlId": str(semantic.get("controlId", "")),
-                        "name": str(catalog_control.get("name", "")),
-                        "externalReference": str(catalog_control.get("externalReference", "")),
-                        "appliesTo": [str(scope) for scope in semantic.get("appliesTo", []) if str(scope).strip()],
-                        "relatedCapability": str(semantic.get("relatedCapability", "")),
-                        "requirementMode": str(semantic.get("requirementMode", "mandatory")),
-                        "naAllowed": bool(semantic.get("naAllowed", False)),
-                        "applicability": semantic.get("applicability", {}),
-                        "validAnswerTypes": [str(value) for value in semantic.get("validAnswerTypes", []) if str(value).strip()],
-                        "notes": str(semantic.get("notes", "")),
-                    }
-                )
-        controls_by_profile[profile["id"]] = normalized_controls
-
-    default_framework_id = next(
-        (framework["id"] for framework in frameworks if framework.get("defaultSelection") is True),
-        frameworks[0]["id"] if frameworks else "",
-    )
-    default_profile_id = next(
-        (
-            profile["id"]
-            for profile in profiles
-            if frameworks_by_id.get(str(profile.get("controls", "")), {}).get("defaultSelection") is True
-        ),
-        profiles[0]["id"] if profiles else "",
-    )
-
+    active_ids = set(workspace_requirements["activeRequirementGroups"])
     return {
-        "frameworks": [
+        "groups": [
             {
-                "id": framework["id"],
-                "name": framework.get("name", framework["id"]),
-                "controlsKind": framework.get("controlsKind", ""),
-                "catalogStatus": framework.get("catalogStatus", ""),
-                "lifecycleStatus": framework.get("lifecycleStatus", ""),
-                "provider": framework.get("provider", {}),
-                "authority": framework.get("authority", {}),
-                "defaultSelection": framework.get("defaultSelection", False),
-                "description": framework.get("description", ""),
-                "controlCount": len(controls_by_framework.get(framework["id"], [])),
+                "id": group["id"],
+                "name": group.get("name", group["id"]),
+                "activation": group.get("activation", ""),
+                "catalogStatus": group.get("catalogStatus", ""),
+                "provider": group.get("provider", {}),
+                "authority": group.get("authority", {}),
+                "active": group["id"] in active_ids,
+                "description": group.get("description", ""),
+                "requirementCount": len(group.get("requirements", [])) if isinstance(group.get("requirements"), list) else 0,
             }
-            for framework in frameworks
+            for group in groups
         ],
-        "profiles": [
-            {
-                "id": profile["id"],
-                "name": profile.get("name", profile["id"]),
-                "controls": profile.get("controls", ""),
-                "catalogStatus": profile.get("catalogStatus", ""),
-                "lifecycleStatus": profile.get("lifecycleStatus", ""),
-                "provider": profile.get("provider", {}),
-                "authority": profile.get("authority", {}),
-                "active": profile["id"] in active_profile_ids,
-                "description": profile.get("description", ""),
-                "controlCount": len(controls_by_profile.get(profile["id"], [])),
-            }
-            for profile in profiles
-        ],
-        "defaultFrameworkId": default_framework_id,
-        "defaultProfileId": next((profile_id for profile_id in workspace_compliance["activeProfileIds"] if profile_id in controls_by_profile), default_profile_id),
-        "activeProfileIds": workspace_compliance["activeProfileIds"],
-        "requireActiveProfileDisposition": workspace_compliance["requireActiveProfileDisposition"],
-        "controlsByFramework": controls_by_framework,
-        "controlsByProfile": controls_by_profile,
+        "activeRequirementGroups": workspace_requirements["activeRequirementGroups"],
+        "requireActiveRequirementGroupDisposition": workspace_requirements["requireActiveRequirementGroupDisposition"],
     }
 
 
@@ -626,8 +536,8 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
                 "networkPlacement": obj.get("networkPlacement", ""),
                 "patchingOwner": obj.get("patchingOwner", ""),
                 "complianceCerts": obj.get("complianceCerts", []),
-                "controlEnforcementProfiles": obj.get("controlEnforcementProfiles", []),
-                "controlImplementations": obj.get("controlImplementations", []),
+                "requirementGroups": obj.get("requirementGroups", []),
+                "requirementImplementations": obj.get("requirementImplementations", []),
                 "dataLeavesInfrastructure": obj.get("dataLeavesInfrastructure", None),
                 "dataResidencyCommitment": obj.get("dataResidencyCommitment", ""),
                 "dpaNotes": obj.get("dpaNotes", ""),
@@ -646,7 +556,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
                 "externalInteractions": obj.get("externalInteractions", []),
                 "architecturalDecisions": obj.get("architecturalDecisions", {}),
                 "requirements": obj.get("requirements", []),
-                "satisfiesDefinitionChecklist": obj.get("satisfiesDefinitionChecklist", []),
+                "implementations": obj.get("implementations", []),
                 "appliesTo": obj.get("appliesTo", {}),
                 "inherits": obj.get("inherits", ""),
                 "scalingUnits": obj.get("scalingUnits", []),
@@ -659,10 +569,8 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
                 "decisionRationale": obj.get("decisionRationale", ""),
                 "relatedDecisionRecords": obj.get("relatedDecisionRecords", []),
                 "linkedSoftwareDeployment": obj.get("linkedSoftwareDeployment", ""),
-                "controlsKind": obj.get("controlsKind", ""),
                 "defaultSelection": obj.get("defaultSelection", False),
-                "controlCount": len(obj.get("controls", [])) if obj.get("type") == "compliance_controls" and isinstance(obj.get("controls"), list) else 0,
-                "semanticCount": len(obj.get("controlSemantics", [])) if obj.get("type") == "control_enforcement_profile" and isinstance(obj.get("controlSemantics"), list) else 0,
+                "requirementCount": len(obj.get("requirements", [])) if obj.get("type") == "requirement_group" and isinstance(obj.get("requirements"), list) else 0,
                 "hasRiskRef": obj.get("id") in risk_marked_rbb_ids,
                 "outboundRefs": outbound_refs.get(object_id, []),
                 "referencedBy": referenced_by.get(object_id, []),
@@ -688,7 +596,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
         "lifecycleValues": lifecycle_values,
         "referencedBy": referenced_by,
         "warnings": warnings,
-        "compliance": build_compliance_payload(registry, workspace_root),
+        "requirements": build_requirement_payload(registry, workspace_root),
         "repoUrl": repository_web_url(workspace_root) or repository_web_url(REPO_ROOT),
         "catalogName": workspace_repository_name(workspace_root),
         "logoDataUri": logo_data_uri(),
@@ -1259,7 +1167,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .requirement-description,
     .requirement-rationale,
     .mechanism-line,
-    .odc-control-line {
+    .odc-requirement-line {
       color: var(--muted);
       font-size: 13px;
       line-height: 1.5;
@@ -1293,14 +1201,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       font-size: 12px;
       line-height: 1.5;
     }
-    .control-badges,
-    .odc-control-badges {
+    .requirement-badges,
+    .odc-requirement-badges {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
     }
-    .control-badge {
+    .requirement-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -1312,12 +1220,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border: 1px solid #3b82f6;
       color: #93c5fd;
     }
-    .control-badge.conditional {
+    .requirement-badge.conditional {
       background: #4a3414;
       border-color: #f59e0b;
       color: #fcd34d;
     }
-    .control-mode {
+    .requirement-mode {
       display: inline-block;
       padding: 1px 8px;
       border-radius: 999px;
@@ -2173,12 +2081,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .requirement-description,
     .requirement-rationale,
     .mechanism-line,
-    .odc-control-line,
+    .odc-requirement-line,
     .requirement-rationale-label,
     .mechanism-label,
     .mechanism-text,
     .mechanism-example,
-    .control-badge,
+    .requirement-badge,
     .location-badge,
     .lane-label,
     .scaling-unit-badge,
@@ -2240,7 +2148,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     const allObjects = browserData.objects.slice().sort((a, b) => a.name.localeCompare(b.name));
     const objectLookup = browserData.lookup;
     const referencedByIndex = browserData.referencedBy || {};
-    const complianceData = browserData.compliance || {};
     const repoUrl = browserData.repoUrl || '';
     const pageRoot = document.getElementById('page-root');
     const sidebarContent = document.getElementById('sidebar-content');
@@ -2250,7 +2157,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     document.getElementById('catalog-name').textContent = browserData.catalogName || 'Catalog';
     document.getElementById('browser-mode').textContent = 'GitHub Pages';
     let editorState = null;
-    let controlImportState = null;
+    let requirementImportState = null;
     const CATEGORY_CONFIG = [
       {
         id: 'architecture',
@@ -2288,55 +2195,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         id: 'framework',
         label: 'Framework Content',
         filters: [
-          { id: 'all', label: 'All', types: ['definition_checklist', 'compliance_controls', 'control_enforcement_profile', 'domain'] },
-          { id: 'definition_checklist', label: 'Definition Checklists', types: ['definition_checklist'] },
-          { id: 'compliance_controls', label: 'Compliance Controls', types: ['compliance_controls'] },
-          { id: 'control_enforcement_profile', label: 'Control Enforcement Profiles', types: ['control_enforcement_profile'] },
+          { id: 'all', label: 'All', types: ['capability', 'requirement_group', 'domain'] },
+          { id: 'capability', label: 'Capabilities', types: ['capability'] },
+          { id: 'requirement_group', label: 'Requirement Groups', types: ['requirement_group'] },
           { id: 'domain', label: 'Strategy Map', types: ['domain'] }
         ],
         rows: [
-          { id: 'definition_checklist', label: 'Definition Checklists', types: ['definition_checklist'] },
-          { id: 'compliance_controls', label: 'Compliance Controls', types: ['compliance_controls'] },
-          { id: 'control_enforcement_profile', label: 'Control Enforcement Profiles', types: ['control_enforcement_profile'] },
+          { id: 'capability', label: 'Capabilities', types: ['capability'] },
+          { id: 'requirement_group', label: 'Requirement Groups', types: ['requirement_group'] },
           { id: 'domain', label: 'Strategy Domains', types: ['domain'] }
         ]
       }
     ];
     const lifecycleValues = browserData.lifecycleValues || [];
-    const controlEnforcementProfiles = complianceData.profiles || [];
-    const activeControlProfileIds = new Set(complianceData.activeProfileIds || []);
-    const selectableControlProfiles = activeControlProfileIds.size
-      ? controlEnforcementProfiles.filter(profile => activeControlProfileIds.has(profile.id))
-      : controlEnforcementProfiles;
-    const CONTROL_SCOPE_OPTIONS = [
-      { value: 'host_standard', label: 'Host Standard' },
-      { value: 'service_standard', label: 'Service Standard' },
-      { value: 'database_standard', label: 'Database Standard' },
-      { value: 'product_service', label: 'Product Service' },
-      { value: 'paas_service_standard', label: 'PaaS Service Standard' },
-      { value: 'saas_service_standard', label: 'SaaS Service Standard' },
-      { value: 'reference_architecture', label: 'Reference Architecture' },
-      { value: 'software_deployment_pattern', label: 'Software Deployment Pattern' },
-      { value: 'appliance_component', label: 'Appliance Component' }
-    ];
-    const CONTROL_ANSWER_TYPE_OPTIONS = [
-      { value: 'technologyComponent', label: 'Technology Component' },
-      { value: 'technologyComponentConfiguration', label: 'Technology Component Configuration' },
-      { value: 'deploymentConfiguration', label: 'Deployment Configuration' },
-      { value: 'externalInteraction', label: 'External Interaction' },
-      { value: 'architecturalDecision', label: 'Architectural Decision Entry' },
-      { value: 'field', label: 'Direct Field Answer' }
-    ];
-    const APPLICABILITY_FIELD_OPTIONS = [
-      'architecturalContext.soldInTexas',
-      'architecturalContext.servesTexasAgencies',
-      'architecturalContext.handlesCardholderData',
-      'architecturalContext.handlesPHI',
-      'architecturalContext.servesFederalCustomers'
-    ];
     const deployableTypes = new Set(
       allObjects
-        .filter(object => !['definition_checklist', 'decision_record', 'compliance_controls', 'control_enforcement_profile'].includes(object.type))
+        .filter(object => !['capability', 'requirement_group', 'domain', 'decision_record'].includes(object.type))
         .map(object => object.type)
     );
     const impactOrder = [
@@ -2360,15 +2234,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     let impactSearchTerm = '';
     let currentSdmScalingFilter = 'all';
     let suppressHashSync = false;
-    let selectedFrameworkId = (() => {
-      try {
-        const saved = window.localStorage.getItem('draft-framework:selected-framework');
-        if (saved && objectLookup[saved] && (!activeControlProfileIds.size || activeControlProfileIds.has(saved))) {
-          return saved;
-        }
-      } catch (error) {}
-      return complianceData.defaultProfileId || selectableControlProfiles[0]?.id || null;
-    })();
     let impactLifecycleFilters = Object.fromEntries(
       impactLifecycleOrder.map(status => [status, status !== 'exit'])
     );
@@ -2404,7 +2269,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     function relatedCapabilityOptions() {
       const values = new Set();
       allObjects
-        .filter(object => object.type === 'definition_checklist')
+        .filter(object => object.type === 'requirement_group')
         .forEach(object => {
           (object.requirements || []).forEach(requirement => {
             if (requirement?.id) {
@@ -2422,12 +2287,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (normalized === 'host_standard') return 'Host Standard';
       if (normalized === 'service_standard') return 'Service Standard';
       if (normalized === 'database_standard') return 'Database Standard';
-      if (normalized === 'definition_checklist') return 'Definition Checklist';
+      if (normalized === 'capability') return 'Capability';
+      if (normalized === 'requirement_group') return 'Requirement Group';
       if (normalized === 'decision_record') return 'Decision Record';
       if (normalized === 'software_deployment_pattern') return 'Software Deployment Pattern';
       if (normalized === 'reference_architecture') return 'Reference Architecture';
-      if (normalized === 'compliance_controls') return 'Compliance Controls';
-      if (normalized === 'control_enforcement_profile') return 'Control Enforcement Profile';
       return formatTitleCase(normalized.replace(/[._-]/g, ' '));
     }
 
@@ -2597,80 +2461,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       sidebarContent.innerHTML = contentHtml;
     }
 
-    function selectedFramework() {
-      return (selectedFrameworkId && objectLookup[selectedFrameworkId]) || selectableControlProfiles[0] || null;
-    }
-
-    function selectedFrameworkControls() {
-      return complianceData.controlsByProfile?.[selectedFrameworkId] || [];
-    }
-
-    function controlModeLabel(control) {
-      if ((control.requirementMode || 'mandatory') === 'conditional') {
-        return control.naAllowed ? 'Conditional / N-A allowed' : 'Conditional';
-      }
-      return 'Required';
-    }
-
-    function scopeForObject(object) {
-      if (!object) return null;
-      if (object.type === 'definition_checklist') {
-        const appliesTo = object.appliesTo || {};
-        return appliesTo.type || null;
-      }
-      if ([
-        'host_standard',
-        'service_standard',
-        'database_standard',
-        'product_service',
-        'paas_service_standard',
-        'saas_service_standard',
-        'reference_architecture',
-        'software_deployment_pattern',
-        'appliance_component'
-      ].includes(object.type)) return object.type;
-      return null;
-    }
-
-    function controlsForRequirement(object, requirementId) {
-      const scope = scopeForObject(object);
-      if (!scope || !requirementId) return [];
-      return selectedFrameworkControls().filter(control =>
-        (control.appliesTo || []).includes(scope) &&
-        (control.relatedCapability || '') === requirementId
-      );
-    }
-
-    function additionalControlsForObject(object) {
-      const scope = scopeForObject(object);
-      if (!scope) return [];
-      return selectedFrameworkControls().filter(control =>
-        (control.appliesTo || []).includes(scope) &&
-        !(control.relatedCapability || '').trim()
-      );
-    }
-
-    function complianceFrameworkMarkup() {
-      if (!selectableControlProfiles.length) {
-        return '';
-      }
-      const current = selectedFramework();
-      const selectionNote = activeControlProfileIds.size
-        ? 'Workspace-active profiles come from .draft/workspace.yaml. This selector only changes which active profile is shown in checklist detail.'
-        : 'No active profiles are configured in .draft/workspace.yaml. Showing available profiles for reference only.';
-      return `
-        <div class="sidebar-block">
-          <div class="legend-title">Compliance Build Profile</div>
-          <select id="framework-select" class="sidebar-select">
-            ${selectableControlProfiles.map(profile => `
-              <option value="${profile.id}" ${profile.id === current?.id ? 'selected' : ''}>${escapeHtml(profile.name)}${profile.active ? ' [active]' : ''}</option>
-            `).join('')}
-          </select>
-          <div class="sidebar-help">${escapeHtml(selectionNote)}</div>
-        </div>
-      `;
-    }
-
     function currentFilterMarkup() {
       return `
         <div class="sidebar-block">
@@ -2681,7 +2471,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function sidebarMarkup(extraMarkup = '') {
-      return `${complianceFrameworkMarkup()}${currentFilterMarkup()}${extraMarkup}`;
+      return `${currentFilterMarkup()}${extraMarkup}`;
     }
 
     function rerenderCurrentView() {
@@ -2696,18 +2486,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       renderListView();
     }
 
-    function attachSidebarHandlers() {
-      const frameworkSelect = document.getElementById('framework-select');
-      if (frameworkSelect) {
-        frameworkSelect.addEventListener('change', event => {
-          selectedFrameworkId = event.target.value || complianceData.defaultProfileId || selectableControlProfiles[0]?.id || null;
-          try {
-            window.localStorage.setItem('draft-framework:selected-framework', selectedFrameworkId || '');
-          } catch (error) {}
-          rerenderCurrentView();
-        });
-      }
-    }
+    function attachSidebarHandlers() {}
 
     function attachTopNavHandlers() {
       pageRoot.querySelectorAll('[data-nav]').forEach(button => {
@@ -2768,10 +2547,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function objectCardTitle(object) {
-      if (object.type !== 'definition_checklist') {
+      if (object.type !== 'requirement_group') {
         return object.name;
       }
-      const trimmed = String(object.name || '').replace(/\s+Object Definition Checklist$/i, '');
+      const trimmed = String(object.name || '').replace(/\s+Requirement Group$/i, '');
       if (trimmed === 'Appliance Component') {
         return 'Appliance';
       }
@@ -2931,23 +2710,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return mechanism.mechanism || 'unknown';
     }
 
-    function controlBadges(controls) {
-      if (!controls || !controls.length) {
-        return '<span class="interaction-notes">No required controls added by the selected control enforcement profile.</span>';
-      }
-      return controls.map(control => `
-        ${control.externalReference
-          ? `<a class="control-badge ${control.requirementMode === 'conditional' ? 'conditional' : ''}" href="${escapeHtml(control.externalReference)}" target="_blank" rel="noopener noreferrer">${escapeHtml(control.controlId || '')}${control.name ? ` - ${escapeHtml(control.name)}` : ''}<span class="control-mode">${escapeHtml(controlModeLabel(control))}</span></a>`
-          : `<span class="control-badge ${control.requirementMode === 'conditional' ? 'conditional' : ''}">${escapeHtml(control.controlId || '')}${control.name ? ` - ${escapeHtml(control.name)}` : ''}<span class="control-mode">${escapeHtml(controlModeLabel(control))}</span></span>`}
-      `).join('');
-    }
-
     function odcRequirementsMarkup(object) {
       const requirements = object.requirements || [];
-      const framework = selectedFramework();
-      const extraControls = additionalControlsForObject(object);
       if (!requirements.length) {
-        return '<div class="empty-card">No requirements are documented for this Definition Checklist.</div>';
+        return '<div class="empty-card">No requirements are documented for this Requirement Group.</div>';
       }
       return `
         <section class="section-card">
@@ -2956,13 +2722,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${requirements.map(requirement => `
               <article class="requirement-card">
                 <div class="requirement-name">${escapeHtml(formatTitleCase(requirement.id || 'requirement'))}</div>
+                <div class="requirement-badges">
+                  ${requirement.externalControlId ? `<span class="requirement-badge">${escapeHtml(requirement.externalControlId)}</span>` : ''}
+                  ${requirement.relatedCapability ? `<span class="requirement-badge">${escapeHtml(requirement.relatedCapability)}</span>` : ''}
+                  <span class="requirement-badge ${requirement.requirementMode === 'conditional' ? 'conditional' : ''}">${escapeHtml(requirement.requirementMode || 'mandatory')}</span>
+                  ${requirement.naAllowed ? '<span class="requirement-badge conditional">N/A allowed</span>' : ''}
+                </div>
                 <div class="requirement-description">${escapeHtml(requirement.description || '')}</div>
                 ${requirement.rationale ? `
                   <div class="requirement-rationale-label">Rationale</div>
                   <div class="requirement-rationale">${escapeHtml(requirement.rationale)}</div>
                 ` : ''}
-                <div class="mechanism-label">Required Controls${framework ? ` / ${escapeHtml(framework.name)}` : ''}</div>
-                <div class="control-badges">${controlBadges(controlsForRequirement(object, requirement.id || ''))}</div>
                 <div class="mechanism-label">Can be satisfied by</div>
                 <div class="mechanism-list">
                   ${(requirement.canBeSatisfiedBy || []).map(mechanism => `
@@ -2975,33 +2745,28 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               </article>
             `).join('')}
           </div>
-          ${extraControls.length ? `
-            <div class="mechanism-label" style="margin-top:16px;">Additional Framework Controls</div>
-            <div class="control-badges">${controlBadges(extraControls)}</div>
-          ` : ''}
         </section>
       `;
     }
 
     function rbbOdcMarkup(object) {
-      const odcIds = object.satisfiesDefinitionChecklist || [];
-      const framework = selectedFramework();
-      if (!odcIds.length) {
+      const groupIds = object.requirementGroups || [];
+      if (!groupIds.length) {
         return '';
       }
       return `
         <section class="section-card">
-          <h3>Definition Checklist Satisfaction${framework ? ` / ${escapeHtml(framework.name)}` : ''}</h3>
+          <h3>Requirement Groups</h3>
           <div class="section-stack">
-            ${odcIds.map(odcId => {
-              const odc = objectLookup[odcId];
-              const requirements = odc?.requirements || [];
+            ${groupIds.map(groupId => {
+              const group = objectLookup[groupId];
+              const requirements = group?.requirements || [];
               return `
                 <article class="odc-card">
-                  <div class="odc-name">Satisfies: ${escapeHtml(odcId)}</div>
+                  <div class="odc-name">Addresses: ${escapeHtml(groupId)}</div>
                   ${requirements.length ? requirements.map(requirement => `
-                    <div class="odc-control-line">└─ ${escapeHtml(requirement.id || 'requirement')} → ${escapeHtml(controlsForRequirement(odc, requirement.id || '').map(control => control.controlId).join(', ') || 'No required controls')}</div>
-                  `).join('') : '<div class="interaction-notes">No requirements found on referenced Definition Checklist.</div>'}
+                    <div class="odc-requirement-line">- ${escapeHtml(requirement.id || 'requirement')}${requirement.relatedCapability ? ` (${escapeHtml(requirement.relatedCapability)})` : ''}</div>
+                  `).join('') : '<div class="interaction-notes">No requirements found on referenced Requirement Group.</div>'}
                 </article>
               `;
             }).join('')}
@@ -3127,7 +2892,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <div class="section-stack">
             <div class="badges">
               ${object.subtype === 'appliance' ? applianceBadge() : ''}
-              ${lifecycleBadge(object.lifecycleStatus)}
+              ${object.lifecycleStatus ? lifecycleBadge(object.lifecycleStatus) : ''}
               ${catalogBadge(object.catalogStatus)}
             </div>
             <dl class="definition-list">
@@ -3155,7 +2920,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ` : ''}
           </div>
         </section>
-        ${object.subtype === 'appliance' && objectLookup['checklist.appliance-component'] ? odcRequirementsMarkup(objectLookup['checklist.appliance-component']) : ''}
+        ${object.subtype === 'appliance' && objectLookup['requirement-group.appliance-component'] ? odcRequirementsMarkup(objectLookup['requirement-group.appliance-component']) : ''}
       `;
     }
 
@@ -3203,7 +2968,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${object.incidentNotificationProcess ? `<div class="interaction-notes"><strong>Incident Notification:</strong> ${escapeHtml(object.incidentNotificationProcess)}</div>` : ''}
           </div>
         </section>
-        ${objectLookup['checklist.saas-service-standard'] ? odcRequirementsMarkup(objectLookup['checklist.saas-service-standard']) : ''}
+        ${objectLookup['requirement-group.saas-service-standard'] ? odcRequirementsMarkup(objectLookup['requirement-group.saas-service-standard']) : ''}
       `;
     }
 
@@ -3226,7 +2991,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </dl>
           </div>
         </section>
-        ${objectLookup['checklist.paas-service-standard'] ? odcRequirementsMarkup(objectLookup['checklist.paas-service-standard']) : ''}
+        ${objectLookup['requirement-group.paas-service-standard'] ? odcRequirementsMarkup(objectLookup['requirement-group.paas-service-standard']) : ''}
       `;
     }
 
@@ -3237,22 +3002,23 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <h3>Capability Map: ${escapeHtml(object.name)}</h3>
           <div class="section-stack">
             ${domainCaps.map(cap => {
-              const satisfyingObjects = allObjects.filter(obj =>
-                (obj.capabilities || []).includes(cap.id) ||
-                (obj.configurations || []).some(config => (config.capabilities || []).includes(cap.id))
-              );
+              const capId = String(cap);
+              const capability = objectLookup[capId] || {};
               return `
                 <article class="odc-card">
-                  <div class="odc-name">${escapeHtml(cap.name || cap.id)}</div>
-                  <div class="header-description">${escapeHtml(cap.description || '')}</div>
-                  <div class="interaction-notes"><strong>Satisfied by:</strong></div>
+                  <div class="odc-name">${capability.id ? `<span class="ard-link" data-object-link="${capability.id}">${escapeHtml(capability.name || capId)}</span>` : escapeHtml(capId)}</div>
+                  <div class="header-description">${escapeHtml(capability.description || '')}</div>
+                  <div class="interaction-notes"><strong>Approved implementations:</strong></div>
                   <div class="related-list">
-                    ${satisfyingObjects.length ? satisfyingObjects.map(obj => `
-                      <a href="#${obj.id}" class="related-link">
-                        <span class="related-icon">${topologyNodeIcon({ref: obj.id}, obj.subtype === 'appliance' ? 'appliance' : 'host_standard').icon}</span>
-                        ${escapeHtml(obj.name)}
+                    ${(capability.implementations || []).length ? capability.implementations.map(implementation => {
+                      const implObject = objectLookup[implementation.ref] || {};
+                      return `
+                      <a href="#${escapeHtml(implementation.ref)}" class="related-link">
+                        <span class="related-icon">${topologyNodeIcon({ref: implementation.ref}, 'host_standard').icon}</span>
+                        ${escapeHtml(implObject.name || implementation.ref)}
+                        <span class="badge">${escapeHtml(implementation.lifecycleStatus || '')}</span>
                       </a>
-                    `).join('') : '<div class="empty-card">No architectural artifacts currently address this capability.</div>'}
+                    `}).join('') : '<div class="empty-card">No workspace implementations are mapped for this capability.</div>'}
                   </div>
                 </article>
               `;
@@ -3262,46 +3028,27 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
-    function complianceFrameworkDetailMarkup(object) {
-      const frameworkSummary = (complianceData.frameworks || []).find(item => item.id === object.id);
-      const provider = object.provider || {};
-      const authority = object.authority || {};
+    function capabilityDetailMarkup(object) {
       return `
         <section class="section-card">
-          <h3>Compliance Controls</h3>
+          <h3>Capability</h3>
           <div class="section-stack">
-            <div class="badges">
-              <div class="badge">${escapeHtml(object.controlsKind || 'common')}</div>
-              ${provider.name ? `<div class="badge">${escapeHtml(provider.name)}</div>` : ''}
-              <div class="badge">${escapeHtml(String(frameworkSummary?.controlCount || object.controlCount || 0))} Controls</div>
-              ${lifecycleBadge(object.lifecycleStatus)}
+            <dl class="definition-list">
+              <dt>Domain</dt><dd>${object.domain && objectLookup[object.domain] ? `<span class="ard-link" data-object-link="${object.domain}">${escapeHtml(objectLookup[object.domain].name)}</span>` : escapeHtml(object.domain || 'Not documented')}</dd>
+              <dt>Implementations</dt><dd>${escapeHtml(String((object.implementations || []).length))}</dd>
+            </dl>
+            <div class="related-list">
+              ${(object.implementations || []).length ? object.implementations.map(implementation => {
+                const implObject = objectLookup[implementation.ref] || {};
+                return `
+                  <a href="#${escapeHtml(implementation.ref)}" class="related-link">
+                    <span class="related-icon">${topologyNodeIcon({ref: implementation.ref}, 'host_standard').icon}</span>
+                    ${escapeHtml(implObject.name || implementation.ref)}
+                    <span class="badge">${escapeHtml(implementation.lifecycleStatus || '')}</span>
+                  </a>
+                `;
+              }).join('') : '<div class="empty-card">No workspace implementations are mapped for this capability.</div>'}
             </div>
-            <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
-            ${authority.name ? `<div><strong>Authority:</strong> ${escapeHtml(authority.name)}</div>` : ''}
-          </div>
-        </section>
-      `;
-    }
-
-    function complianceProfileDetailMarkup(object) {
-      const profileSummary = (complianceData.profiles || []).find(item => item.id === object.id);
-      const framework = objectLookup[object.controls];
-      const provider = object.provider || {};
-      const authority = object.authority || {};
-      return `
-        <section class="section-card">
-          <h3>Control Enforcement Profile</h3>
-          <div class="section-stack">
-            <div class="badges">
-              <div class="badge">${escapeHtml(String(profileSummary?.controlCount || object.semanticCount || 0))} Semantic Controls</div>
-              ${profileSummary?.active ? '<div class="badge">Workspace Active</div>' : ''}
-              ${provider.name ? `<div class="badge">${escapeHtml(provider.name)}</div>` : ''}
-              ${lifecycleBadge(object.lifecycleStatus)}
-              ${catalogBadge(object.catalogStatus)}
-            </div>
-            <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
-            <div><strong>Controls:</strong> ${framework ? `<span class="ard-link" data-object-link="${framework.id}">${escapeHtml(framework.name)}</span>` : escapeHtml(object.controls || 'Unknown')}</div>
-            ${authority.name ? `<div><strong>Authority:</strong> ${escapeHtml(authority.name)}</div>` : ''}
           </div>
         </section>
       `;
@@ -3957,594 +3704,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       };
     }
 
-    function normalizeFrameworkControl(control = {}) {
-      const applicability = control.applicability || {};
-      const applicabilityMode = Array.isArray(applicability.allOf) && applicability.allOf.length ? 'allOf' : 'anyOf';
-      const clauses = Array.isArray(applicability[applicabilityMode]) ? applicability[applicabilityMode] : [];
-      return {
-        controlId: String(control.controlId || ''),
-        name: String(control.name || ''),
-        externalReference: String(control.externalReference || ''),
-        relatedCapability: String(control.relatedCapability || ''),
-        requirementMode: control.requirementMode === 'conditional' ? 'conditional' : 'mandatory',
-        appliesTo: Array.isArray(control.appliesTo) ? control.appliesTo.map(value => String(value)) : [],
-        validAnswerTypes: Array.isArray(control.validAnswerTypes) ? control.validAnswerTypes.map(value => String(value)) : [],
-        applicabilityMode,
-        applicabilityClauses: clauses.length ? clauses.map(normalizeApplicabilityClause) : [blankApplicabilityClause()],
-        description: String(control.description || ''),
-        notes: String(control.notes || '')
-      };
-    }
-
-    function parseImportedControlSeed(text) {
-      const parsed = jsyaml.load(text);
-      if (!parsed) return [];
-      if (Array.isArray(parsed)) return parsed;
-      if (Array.isArray(parsed.controls)) return parsed.controls;
-      if (parsed.controlId || parsed.name || parsed.externalReference) return [parsed];
-      throw new Error('Imported YAML must be a control list, a { controls: [...] } mapping, or a single control object.');
-    }
-
-    function cloneFrameworkControl(control) {
-      return {
-        ...control,
-        appliesTo: [...(control.appliesTo || [])],
-        validAnswerTypes: [...(control.validAnswerTypes || [])],
-        applicabilityClauses: (control.applicabilityClauses || []).map(clause => ({ ...clause }))
-      };
-    }
-
-    function mergeImportedControls(existingControls, importedControls) {
-      const merged = existingControls.map(cloneFrameworkControl);
-      importedControls.forEach(rawControl => {
-        const controlId = String(rawControl?.controlId || '').trim();
-        const name = String(rawControl?.name || '').trim();
-        const externalReference = String(rawControl?.externalReference || '').trim();
-        if (!controlId || !name || !externalReference) {
-          throw new Error('Each imported control must declare controlId, name, and externalReference.');
-        }
-        const existingIndex = merged.findIndex(control => control.controlId === controlId);
-        if (existingIndex >= 0) {
-          merged[existingIndex].name = name;
-          merged[existingIndex].externalReference = externalReference;
-        } else {
-          merged.push({
-            ...normalizeFrameworkControl({}),
-            controlId,
-            name,
-            externalReference
-          });
-        }
-      });
-      return merged;
-    }
-
-    function serializeControlImportFramework(object) {
-      const framework = sanitizeDetailObject(object);
-      framework.controls = controlImportState.controls.map((control, index) => {
-        const controlId = String(control.controlId || '').trim();
-        const name = String(control.name || '').trim();
-        const externalReference = String(control.externalReference || '').trim();
-        if (!controlId || !name || !externalReference) {
-          throw new Error(`Control ${index + 1} must include controlId, name, and externalReference.`);
-        }
-        if (!Array.isArray(control.appliesTo) || !control.appliesTo.length) {
-          throw new Error(`Control ${controlId} must declare at least one appliesTo scope.`);
-        }
-        if (!Array.isArray(control.validAnswerTypes) || !control.validAnswerTypes.length) {
-          throw new Error(`Control ${controlId} must declare at least one valid answer type.`);
-        }
-        const serialized = {
-          controlId,
-          name,
-          externalReference,
-          appliesTo: [...control.appliesTo],
-          requirementMode: control.requirementMode === 'conditional' ? 'conditional' : 'mandatory',
-          validAnswerTypes: [...control.validAnswerTypes]
-        };
-        const relatedCapability = String(control.relatedCapability || '').trim();
-        if (relatedCapability) {
-          serialized.relatedCapability = relatedCapability;
-        }
-        if (control.description) {
-          serialized.description = control.description;
-        }
-        if (control.notes) {
-          serialized.notes = control.notes;
-        }
-        if (serialized.requirementMode === 'conditional') {
-          serialized.naAllowed = true;
-          const clauses = (control.applicabilityClauses || []).map(clause => {
-            const field = String(clause.field || '').trim();
-            if (!field) {
-              throw new Error(`Control ${controlId} has a conditional applicability rule without a field.`);
-            }
-            if (clause.operator === 'truthy') {
-              return { field, truthy: clause.truthy !== 'false' };
-            }
-            if (clause.operator === 'in') {
-              const values = String(clause.valuesText || '')
-                .split(',')
-                .map(value => value.trim())
-                .filter(Boolean);
-              if (!values.length) {
-                throw new Error(`Control ${controlId} has an applicability "in" rule without values.`);
-              }
-              return { field, in: values };
-            }
-            const value = String(clause.value || '').trim();
-            if (!value) {
-              throw new Error(`Control ${controlId} has an applicability ${clause.operator} rule without a value.`);
-            }
-            return clause.operator === 'contains'
-              ? { field, contains: value }
-              : { field, equals: value };
-          });
-          if (!clauses.length) {
-            throw new Error(`Control ${controlId} must declare at least one applicability rule.`);
-          }
-          serialized.applicability = {
-            [control.applicabilityMode === 'allOf' ? 'allOf' : 'anyOf']: clauses
-          };
-        }
-        return serialized;
-      });
-      return framework;
-    }
-
-    function updateControlImportPreview(object) {
-      const errorNode = editorOverlay.querySelector('#control-import-error');
-      const previewNode = editorOverlay.querySelector('#control-import-preview');
-      if (!controlImportState || !errorNode || !previewNode) return;
-      try {
-        const serialized = serializeControlImportFramework(object);
-        controlImportState.serialized = serialized;
-        previewNode.textContent = jsyaml.dump(serialized, { lineWidth: 100, noRefs: true });
-        errorNode.textContent = '';
-      } catch (error) {
-        controlImportState.serialized = null;
-        previewNode.textContent = '';
-        errorNode.textContent = error instanceof Error ? error.message : String(error);
-      }
-    }
-
-    function closeEditor() {
-      editorOverlay.classList.remove('open');
-      editorOverlay.innerHTML = '';
-      editorState = null;
-      controlImportState = null;
-    }
-
-    function openEditor(object) {
-      const sourceObject = sanitizeDetailObject(object);
-      const fields = orderedEditorFields(object);
-      editorState = {
-        objectId: object.id,
-        fieldValues: { ...sourceObject },
-        originalValues: JSON.parse(JSON.stringify(sourceObject)),
-        serialized: null,
-      };
-      editorOverlay.innerHTML = `
-        <div class="editor-panel">
-          <div class="editor-header">
-              <div class="editor-title">
-                <h3>Edit ${escapeHtml(object.name)}</h3>
-              <p>GitHub Pages is read-only. Use this panel to draft local YAML changes, then validate the source files.</p>
-              </div>
-              <div class="editor-actions">
-              <button class="action-button secondary" id="editor-reset">Reset</button>
-              <button class="action-button secondary" id="editor-close">Close</button>
-            </div>
-          </div>
-          <div class="editor-grid">
-            <section class="editor-card">
-              <h4>Editable Fields</h4>
-              <div class="editor-meta">Schema: ${escapeHtml(object.editorSchema?.schemaPath || 'No matching schema found')}</div>
-              <div class="editor-form">
-                ${fields.map(field => fieldInputMarkup(object, field, sourceObject[field])).join('')}
-              </div>
-            </section>
-            <section class="editor-card">
-              <h4>Structured Preview</h4>
-              <div class="editor-help">This preview updates as you edit.</div>
-              <div id="editor-error" class="editor-error"></div>
-              <div id="editor-structured-preview" class="structured-preview"></div>
-              <div class="editor-actions">
-                <button class="action-button" id="editor-copy">Copy</button>
-                <button class="action-button" id="editor-download">Download</button>
-              </div>
-            </section>
-          </div>
-        </div>
-      `;
-      editorOverlay.classList.add('open');
-
-      editorOverlay.querySelectorAll('[data-editor-field]').forEach(input => {
-        input.addEventListener('input', () => {
-          const field = input.dataset.editorField;
-          editorState.fieldValues[field] = input.type === 'checkbox' ? input.checked : input.value;
-          updateEditorPreview(object);
-        });
-        if (input.type === 'checkbox') {
-          input.addEventListener('change', () => {
-            const field = input.dataset.editorField;
-            editorState.fieldValues[field] = input.checked;
-            updateEditorPreview(object);
-          });
-        }
-      });
-
-      editorOverlay.querySelector('#editor-close').addEventListener('click', closeEditor);
-      editorOverlay.querySelector('#editor-reset').addEventListener('click', () => {
-        openEditor(object);
-      });
-      editorOverlay.querySelector('#editor-copy').addEventListener('click', async () => {
-        if (!editorState?.serialized) return;
-        const yamlText = jsyaml.dump(editorState.serialized, { lineWidth: 100, noRefs: true });
-        await navigator.clipboard.writeText(yamlText);
-      });
-      editorOverlay.querySelector('#editor-download').addEventListener('click', () => {
-        if (!editorState?.serialized) return;
-        const yamlText = jsyaml.dump(editorState.serialized, { lineWidth: 100, noRefs: true });
-        const blob = new Blob([yamlText], { type: 'text/yaml;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = (object.source || `${object.id}.yaml`).split('/').pop();
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
-      });
-      editorOverlay.addEventListener('click', event => {
-        if (event.target === editorOverlay) {
-          closeEditor();
-        }
-      }, { once: true });
-      updateEditorPreview(object);
-    }
-
-    function controlCheckboxMarkup(kind, controlIndex, optionValue, optionLabel, selectedValues) {
-      return `
-        <label class="editor-choice">
-          <input type="checkbox" data-control-checkbox="${kind}" data-control-index="${controlIndex}" value="${escapeHtml(optionValue)}" ${selectedValues.includes(optionValue) ? 'checked' : ''}>
-          <span>${escapeHtml(optionLabel)}</span>
-        </label>
-      `;
-    }
-
-    function applicabilityClauseMarkup(controlIndex, clauseIndex, clause) {
-      const fieldListId = `applicability-fields-${controlIndex}-${clauseIndex}`;
-      const operator = clause.operator || 'equals';
-      const valueField = operator === 'truthy'
-        ? `
-          <div class="editor-field">
-            <label>Truthy</label>
-            <select data-clause-field="truthy" data-control-index="${controlIndex}" data-clause-index="${clauseIndex}">
-              <option value="true" ${clause.truthy !== 'false' ? 'selected' : ''}>true</option>
-              <option value="false" ${clause.truthy === 'false' ? 'selected' : ''}>false</option>
-            </select>
-          </div>
-        `
-        : operator === 'in'
-          ? `
-            <div class="editor-field">
-              <label>Values</label>
-              <input type="text" value="${escapeHtml(clause.valuesText || '')}" data-clause-field="valuesText" data-control-index="${controlIndex}" data-clause-index="${clauseIndex}" placeholder="value1, value2">
-            </div>
-          `
-          : `
-            <div class="editor-field">
-              <label>Value</label>
-              <input type="text" value="${escapeHtml(clause.value || '')}" data-clause-field="value" data-control-index="${controlIndex}" data-clause-index="${clauseIndex}">
-            </div>
-          `;
-      return `
-        <div class="import-card">
-          <div class="import-card-header">
-            <div class="import-card-title">
-              <h5>Applicability Rule ${clauseIndex + 1}</h5>
-              <div class="import-card-meta">Build the condition that makes this control apply.</div>
-            </div>
-            <button class="action-button secondary" data-remove-clause="${controlIndex}" data-remove-clause-index="${clauseIndex}">Remove Rule</button>
-          </div>
-          <div class="editor-subgrid">
-            <div class="editor-field">
-              <label>Field</label>
-              <input type="text" value="${escapeHtml(clause.field || '')}" list="${fieldListId}" data-clause-field="field" data-control-index="${controlIndex}" data-clause-index="${clauseIndex}">
-              <datalist id="${fieldListId}">
-                ${APPLICABILITY_FIELD_OPTIONS.map(option => `<option value="${escapeHtml(option)}"></option>`).join('')}
-              </datalist>
-            </div>
-            <div class="editor-field">
-              <label>Operator</label>
-              <select data-clause-field="operator" data-control-index="${controlIndex}" data-clause-index="${clauseIndex}">
-                <option value="equals" ${operator === 'equals' ? 'selected' : ''}>equals</option>
-                <option value="contains" ${operator === 'contains' ? 'selected' : ''}>contains</option>
-                <option value="in" ${operator === 'in' ? 'selected' : ''}>in</option>
-                <option value="truthy" ${operator === 'truthy' ? 'selected' : ''}>truthy</option>
-              </select>
-            </div>
-          </div>
-          ${valueField}
-        </div>
-      `;
-    }
-
-    function controlCardMarkup(control, controlIndex) {
-      const capabilityOptions = ['<option value=""></option>']
-        .concat(relatedCapabilityOptions().map(option => `<option value="${escapeHtml(option)}" ${control.relatedCapability === option ? 'selected' : ''}>${escapeHtml(option)}</option>`))
-        .join('');
-      const conditional = control.requirementMode === 'conditional';
-      return `
-        <div class="import-card">
-          <div class="import-card-header">
-            <div class="import-card-title">
-              <h5>${escapeHtml(control.controlId || `New Control ${controlIndex + 1}`)}</h5>
-              <div class="import-card-meta">${escapeHtml(control.name || 'Add the control identity, then map the DRAFT semantics below.')}</div>
-            </div>
-            <button class="action-button secondary" data-remove-control="${controlIndex}">Remove Control</button>
-          </div>
-          <div class="editor-subgrid">
-            <div class="editor-field">
-              <label>Control ID</label>
-              <input type="text" value="${escapeHtml(control.controlId || '')}" data-control-field="controlId" data-control-index="${controlIndex}">
-            </div>
-            <div class="editor-field">
-              <label>Friendly Name</label>
-              <input type="text" value="${escapeHtml(control.name || '')}" data-control-field="name" data-control-index="${controlIndex}">
-            </div>
-          </div>
-          <div class="editor-field">
-            <label>External Reference</label>
-            <input type="text" value="${escapeHtml(control.externalReference || '')}" data-control-field="externalReference" data-control-index="${controlIndex}">
-          </div>
-          <div class="editor-subgrid">
-            <div class="editor-field">
-              <label>Requirement Mode</label>
-              <select data-control-field="requirementMode" data-control-index="${controlIndex}">
-                <option value="mandatory" ${control.requirementMode === 'mandatory' ? 'selected' : ''}>Mandatory</option>
-                <option value="conditional" ${control.requirementMode === 'conditional' ? 'selected' : ''}>Conditional</option>
-              </select>
-            </div>
-            <div class="editor-field">
-              <label>Related Capability</label>
-              <select data-control-field="relatedCapability" data-control-index="${controlIndex}">
-                ${capabilityOptions}
-              </select>
-            </div>
-          </div>
-          <div class="editor-field">
-            <label>Applies To</label>
-            <div class="editor-checkbox-grid">
-              ${CONTROL_SCOPE_OPTIONS.map(option => controlCheckboxMarkup('appliesTo', controlIndex, option.value, option.label, control.appliesTo)).join('')}
-            </div>
-          </div>
-          <div class="editor-field">
-            <label>Valid Answer Types</label>
-            <div class="editor-checkbox-grid">
-              ${CONTROL_ANSWER_TYPE_OPTIONS.map(option => controlCheckboxMarkup('validAnswerTypes', controlIndex, option.value, option.label, control.validAnswerTypes)).join('')}
-            </div>
-          </div>
-          ${conditional ? `
-            <div class="editor-divider"></div>
-            <div class="editor-inline-actions">
-              <span class="editor-pill">Conditional control / N-A allowed</span>
-              <div class="editor-field" style="min-width: 220px;">
-                <label>Applicability Group</label>
-                <select data-control-field="applicabilityMode" data-control-index="${controlIndex}">
-                  <option value="anyOf" ${control.applicabilityMode !== 'allOf' ? 'selected' : ''}>anyOf</option>
-                  <option value="allOf" ${control.applicabilityMode === 'allOf' ? 'selected' : ''}>allOf</option>
-                </select>
-              </div>
-              <button class="action-button secondary" data-add-clause="${controlIndex}">Add Rule</button>
-            </div>
-            <div class="editor-note">Use applicability rules to describe when this control is in scope. Conditional controls automatically allow N/A.</div>
-            <div class="editor-form">
-              ${(control.applicabilityClauses || []).map((clause, clauseIndex) => applicabilityClauseMarkup(controlIndex, clauseIndex, clause)).join('')}
-            </div>
-          ` : ''}
-        </div>
-      `;
-    }
-
-    function openControlImporter(object) {
-      const framework = sanitizeDetailObject(object);
-      controlImportState = {
-        objectId: object.id,
-        framework,
-        controls: Array.isArray(framework.controls) ? framework.controls.map(normalizeFrameworkControl) : [],
-        serialized: null
-      };
-
-      const renderImporter = () => {
-        editorOverlay.innerHTML = `
-          <div class="editor-panel">
-            <div class="editor-header">
-              <div class="editor-title">
-                <h3>Import Controls Into ${escapeHtml(object.name)}</h3>
-                <p>Import minimal control identity data and answer the DRAFT semantics with constrained options. GitHub Pages stays read-only.</p>
-              </div>
-              <div class="editor-actions">
-                <button class="action-button secondary" id="control-import-reset">Reset</button>
-                <button class="action-button secondary" id="control-import-close">Close</button>
-              </div>
-            </div>
-            <div class="editor-grid">
-              <section class="editor-card">
-                <h4>Import Source</h4>
-                <div class="editor-help">Paste a list of controls, a single control object, or a controls collection. Each imported control only needs control ID, name, and external reference.</div>
-                <div class="editor-field">
-                  <label for="control-import-source">Control Data</label>
-                  <textarea id="control-import-source" placeholder="- controlId: 4.4.1&#10;  name: Password Policy&#10;  externalReference: https://example.com/control"></textarea>
-                </div>
-                <div class="editor-inline-actions">
-                  <input type="file" id="control-import-file" accept=".yaml,.yml,text/yaml,text/x-yaml">
-                  <button class="action-button" id="control-import-parse">Import</button>
-                  <button class="action-button secondary" id="control-import-add">Add Control</button>
-                </div>
-                <div class="editor-divider"></div>
-                <h4>Control Semantics</h4>
-                <div class="editor-help">Imported controls keep their identity fields. Use the options below to tell DRAFT where each control applies and how an object can answer it.</div>
-                <div id="control-import-list" class="editor-scroll">
-                  ${controlImportState.controls.length ? controlImportState.controls.map((control, index) => controlCardMarkup(control, index)).join('') : '<div class="editor-help">No controls loaded yet. Import a YAML file or add one control manually.</div>'}
-                </div>
-              </section>
-              <section class="editor-card">
-                <h4>Framework Preview</h4>
-                <div class="editor-help">This preview updates as you edit control semantics.</div>
-                <div id="control-import-error" class="editor-error"></div>
-                <div id="control-import-preview" class="structured-preview"></div>
-                <div class="editor-actions">
-                  <button class="action-button" id="control-import-copy">Copy</button>
-                  <button class="action-button" id="control-import-download">Download</button>
-                </div>
-              </section>
-            </div>
-          </div>
-        `;
-        editorOverlay.classList.add('open');
-
-        const sourceArea = editorOverlay.querySelector('#control-import-source');
-        const fileInput = editorOverlay.querySelector('#control-import-file');
-        editorOverlay.querySelector('#control-import-close').addEventListener('click', closeEditor);
-        editorOverlay.querySelector('#control-import-reset').addEventListener('click', () => openControlImporter(object));
-        editorOverlay.querySelector('#control-import-add').addEventListener('click', () => {
-          controlImportState.controls.push(normalizeFrameworkControl({}));
-          renderImporter();
-        });
-        editorOverlay.querySelector('#control-import-parse').addEventListener('click', () => {
-          try {
-            const imported = parseImportedControlSeed(sourceArea.value);
-            controlImportState.controls = mergeImportedControls(controlImportState.controls, imported);
-            sourceArea.value = '';
-            renderImporter();
-          } catch (error) {
-            const errorNode = editorOverlay.querySelector('#control-import-error');
-            if (errorNode) {
-              errorNode.textContent = error instanceof Error ? error.message : String(error);
-            }
-          }
-        });
-        fileInput.addEventListener('change', async () => {
-          const file = fileInput.files?.[0];
-          if (!file) return;
-          try {
-            const text = await file.text();
-            sourceArea.value = text;
-            const imported = parseImportedControlSeed(text);
-            controlImportState.controls = mergeImportedControls(controlImportState.controls, imported);
-            sourceArea.value = '';
-            renderImporter();
-          } catch (error) {
-            const errorNode = editorOverlay.querySelector('#control-import-error');
-            if (errorNode) {
-              errorNode.textContent = error instanceof Error ? error.message : String(error);
-            }
-          }
-        });
-        editorOverlay.querySelector('#control-import-copy').addEventListener('click', async () => {
-          if (!controlImportState?.serialized) return;
-          const yamlText = jsyaml.dump(controlImportState.serialized, { lineWidth: 100, noRefs: true });
-          await navigator.clipboard.writeText(yamlText);
-        });
-        editorOverlay.querySelector('#control-import-download').addEventListener('click', () => {
-          if (!controlImportState?.serialized) return;
-          const yamlText = jsyaml.dump(controlImportState.serialized, { lineWidth: 100, noRefs: true });
-          const blob = new Blob([yamlText], { type: 'text/yaml;charset=utf-8' });
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = (object.source || `${object.id}.yaml`).split('/').pop();
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          URL.revokeObjectURL(url);
-        });
-
-        editorOverlay.querySelectorAll('[data-control-field]').forEach(input => {
-          const eventName = input.tagName === 'SELECT' ? 'change' : 'input';
-          input.addEventListener(eventName, () => {
-            const controlIndex = Number(input.dataset.controlIndex);
-            const field = input.dataset.controlField;
-            controlImportState.controls[controlIndex][field] = input.value;
-            if (field === 'requirementMode') {
-              controlImportState.controls[controlIndex].requirementMode = input.value === 'conditional' ? 'conditional' : 'mandatory';
-              renderImporter();
-              return;
-            }
-            updateControlImportPreview(object);
-          });
-        });
-
-        editorOverlay.querySelectorAll('[data-control-checkbox]').forEach(input => {
-          input.addEventListener('change', () => {
-            const controlIndex = Number(input.dataset.controlIndex);
-            const kind = input.dataset.controlCheckbox;
-            const bucket = controlImportState.controls[controlIndex][kind];
-            if (input.checked) {
-              if (!bucket.includes(input.value)) bucket.push(input.value);
-            } else {
-              controlImportState.controls[controlIndex][kind] = bucket.filter(value => value !== input.value);
-            }
-            updateControlImportPreview(object);
-          });
-        });
-
-        editorOverlay.querySelectorAll('[data-clause-field]').forEach(input => {
-          const eventName = input.tagName === 'SELECT' ? 'change' : 'input';
-          input.addEventListener(eventName, () => {
-            const controlIndex = Number(input.dataset.controlIndex);
-            const clauseIndex = Number(input.dataset.clauseIndex);
-            const field = input.dataset.clauseField;
-            controlImportState.controls[controlIndex].applicabilityClauses[clauseIndex][field] = input.value;
-            if (field === 'operator') {
-              renderImporter();
-              return;
-            }
-            updateControlImportPreview(object);
-          });
-        });
-
-        editorOverlay.querySelectorAll('[data-remove-control]').forEach(button => {
-          button.addEventListener('click', () => {
-            const controlIndex = Number(button.dataset.removeControl);
-            controlImportState.controls.splice(controlIndex, 1);
-            renderImporter();
-          });
-        });
-
-        editorOverlay.querySelectorAll('[data-add-clause]').forEach(button => {
-          button.addEventListener('click', () => {
-            const controlIndex = Number(button.dataset.addClause);
-            controlImportState.controls[controlIndex].applicabilityClauses.push(blankApplicabilityClause());
-            renderImporter();
-          });
-        });
-
-        editorOverlay.querySelectorAll('[data-remove-clause]').forEach(button => {
-          button.addEventListener('click', () => {
-            const controlIndex = Number(button.dataset.removeClause);
-            const clauseIndex = Number(button.dataset.removeClauseIndex);
-            const clauses = controlImportState.controls[controlIndex].applicabilityClauses;
-            clauses.splice(clauseIndex, 1);
-            if (!clauses.length) clauses.push(blankApplicabilityClause());
-            renderImporter();
-          });
-        });
-
-        editorOverlay.addEventListener('click', event => {
-          if (event.target === editorOverlay) {
-            closeEditor();
-          }
-        }, { once: true });
-
-        updateControlImportPreview(object);
-      };
-
-      renderImporter();
-    }
-
     function showDetailView(id, pushHistory = true) {
       if (pushHistory && currentDetailId) {
         navHistory.push(currentDetailId);
@@ -4574,9 +3733,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </div>
             <div class="badges">
               <span class="badge">${escapeHtml(object.typeLabel)}</span>
-              ${lifecycleBadge(object.lifecycleStatus)}
+              ${object.lifecycleStatus ? lifecycleBadge(object.lifecycleStatus) : ''}
               ${catalogBadge(object.catalogStatus)}
-              ${(object.controlEnforcementProfiles || []).map(profileId => `<span class="badge">Complies: ${escapeHtml(shortRefLabel(profileId))}</span>`).join('')}
+              ${(object.requirementGroups || []).map(groupId => `<span class="badge">Requirement: ${escapeHtml(shortRefLabel(groupId))}</span>`).join('')}
             </div>
           </div>
           <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
@@ -4588,22 +3747,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
 
       let detailBody = '';
-      if (object.type === 'definition_checklist') {
+      if (object.type === 'requirement_group') {
         detailBody = `
           ${headerMarkup}
           ${odcRequirementsMarkup(object)}
           ${usedByMarkup(object)}
         `;
-      } else if (object.type === 'compliance_controls') {
+      } else if (object.type === 'capability') {
         detailBody = `
           ${headerMarkup}
-          ${complianceFrameworkDetailMarkup(object)}
-          ${usedByMarkup(object)}
-        `;
-      } else if (object.type === 'control_enforcement_profile') {
-        detailBody = `
-          ${headerMarkup}
-          ${complianceProfileDetailMarkup(object)}
+          ${capabilityDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
       } else if (object.type === 'domain') {
@@ -4771,10 +3924,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (openEditorButton) {
         openEditorButton.addEventListener('click', () => openEditor(object));
       }
-      const openControlImportButton = document.getElementById('open-control-import-button');
-      if (openControlImportButton) {
-        openControlImportButton.addEventListener('click', () => openControlImporter(object));
-      }
 
       attachTopNavHandlers();
       attachSidebarHandlers();
@@ -4832,7 +3981,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         renderTopologyIntoCanvas();
       }
-      if (!['definition_checklist', 'decision_record', 'software_deployment_pattern', 'compliance_controls', 'control_enforcement_profile'].includes(object.type) && !(object.type === 'appliance_component') && !(['host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type) && ['saas', 'paas'].includes(object.serviceCategory || ''))) {
+      if (!['requirement_group', 'capability', 'domain', 'decision_record', 'software_deployment_pattern'].includes(object.type) && !(object.type === 'appliance_component') && !(['host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type) && ['saas', 'paas'].includes(object.serviceCategory || ''))) {
         renderInternalDiagram(detailDiagramSource);
       }
     }

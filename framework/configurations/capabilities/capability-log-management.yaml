@@ -1,0 +1,13 @@
+schemaVersion: '1.0'
+id: capability.log-management
+type: capability
+name: Log Management
+description: Aggregation, retention, searchability, and forwarding of system or application
+  logs.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+domain: domain.observability
+implementations: []

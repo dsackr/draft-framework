@@ -92,7 +92,7 @@ class DraftsmanTests(unittest.TestCase):
     def test_prompt_guides_host_patch_management_as_mechanism_not_team_owner(self) -> None:
         prompt = build_draftsman_prompt(REPO_ROOT, None, "Build a Windows Server Host Standard.", {"uploads": []})
 
-        self.assertIn("For checklist.host-standard patch management", prompt)
+        self.assertIn("For requirement-group.host-standard patch management", prompt)
         self.assertIn("patch platform, installed component", prompt)
         self.assertIn("do not ask which", prompt)
         self.assertIn("team owns patching", prompt)

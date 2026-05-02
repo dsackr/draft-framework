@@ -1,0 +1,12 @@
+schemaVersion: '1.0'
+id: capability.security-monitoring
+type: capability
+name: Security Monitoring
+description: Threat detection, intrusion detection, security event monitoring, and audit telemetry.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+domain: domain.observability
+implementations: []

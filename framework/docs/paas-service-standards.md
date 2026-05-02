@@ -33,7 +33,7 @@ If the managed dependency is outside the adopter's cloud boundary, use
 
 PaaS Service Standards follow the authoritative
 [paas-service-standard.schema.yaml](../schemas/paas-service-standard.schema.yaml) schema and
-are governed by `checklist.paas-service-standard`.
+are governed by `requirement-group.paas-service-standard`.
 
 They are modeled as Standards with:
 
@@ -52,7 +52,7 @@ At minimum, a PaaS Service Standard should include:
 
 ## Required Questions
 
-The PaaS Definition Checklist requires the architect to answer:
+The PaaS Requirement Group requires the architect to answer:
 
 - what capability the platform provides
 - what resilience model the platform offers

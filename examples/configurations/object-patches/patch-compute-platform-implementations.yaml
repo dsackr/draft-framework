@@ -1,0 +1,14 @@
+schemaVersion: '1.0'
+id: patch.examples.compute-platform-implementations
+type: object_patch
+name: Example capability.compute-platform implementations
+description: Example workspace-owned capability implementation mapping.
+version: 1.0.0
+catalogStatus: draft
+lifecycleStatus: maintain
+target: capability.compute-platform
+patch:
+  implementations:
+  - ref: technology.compute.amazon-ec2-standard
+    lifecycleStatus: maintain
+    notes: Example workspace maps EC2 to the compute platform capability.

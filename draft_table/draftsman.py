@@ -154,8 +154,8 @@ def answer_locally(message: str, workspace: Path | None, framework_root: Path) -
         return LocalAnswer(read_doc_section(framework_root / "docs" / "technology-components.md", "What A Technology Component Is"), [], [])
     if is_framework_definition_question(lowered, "host standard") or is_framework_definition_question(lowered, "service standard"):
         return LocalAnswer(read_doc_intro(framework_root / "docs" / "standards.md"), [], [])
-    if is_framework_definition_question(lowered, "definition checklist"):
-        return LocalAnswer(read_doc_intro(framework_root / "docs" / "definition-checklists.md"), [], [])
+    if is_framework_definition_question(lowered, "requirement group") or is_framework_definition_question(lowered, "definition checklist"):
+        return LocalAnswer(read_doc_intro(framework_root / "docs" / "requirement-groups.md"), [], [])
     if is_framework_definition_question(lowered, "software deployment pattern"):
         return LocalAnswer(read_doc_intro(framework_root / "docs" / "software-deployment-patterns.md"), [], [])
     if "where" in lowered and any(term in lowered for term in ("used", "referenced", "use")):
@@ -172,7 +172,7 @@ def answer_usage_question(message: str, workspace: Path | None, framework_root: 
     matches = search_objects(objects, message, 3)
     content_matches = [
         match for match in matches
-        if match.get("type") not in {"definition_checklist", "compliance_controls", "control_enforcement_profile", "domain"}
+        if match.get("type") not in {"requirement_group", "capability", "domain"}
     ]
     if content_matches:
         matches = content_matches
@@ -222,8 +222,8 @@ def build_draftsman_prompt(framework_root: Path, workspace: Path | None, message
         ("Draftsman Instructions", framework_root / "docs" / "draftsman.md"),
         ("Workspace Model", framework_root / "docs" / "workspaces.md"),
         ("Schema Reference", framework_root / "docs" / "yaml-schema-reference.md"),
-        ("Definition Checklists", framework_root / "docs" / "definition-checklists.md"),
-        ("Compliance Controls", framework_root / "docs" / "security-and-compliance-controls.md"),
+        ("Requirement Groups", framework_root / "docs" / "requirement-groups.md"),
+        ("Capabilities", framework_root / "docs" / "capabilities.md"),
     ]
     doc_context = "\n\n".join(f"## {title}\n{path.read_text(encoding='utf-8')[:5000]}" for title, path in docs if path.exists())
     uploads = session.get("uploads", [])[-6:]
@@ -239,24 +239,27 @@ Rules:
 - Do not show raw YAML to the user.
 - Reuse existing artifacts when possible.
 - Separate observed facts from assumptions.
-- Ask focused follow-up questions for missing Definition Checklist facts.
-- Use the workspace compliance activation in .draft/workspace.yaml as the source for
-  which Control Enforcement Profiles to push during interviews. Do not enforce an
-  available profile just because its YAML exists.
-- Preserve provider identity on Compliance Controls and Control Enforcement Profiles
-  so DRAFT-provided, third-party-provided, and company-provided control packs remain distinct.
-- For Definition Checklist capability requirements, ask what mechanism satisfies the capability:
+- Ask focused follow-up questions for missing Requirement Group facts.
+- Use requirements.activeRequirementGroups in .draft/workspace.yaml as the source for
+  which workspace-activated requirement groups to push during interviews. Do not enforce an
+  available workspace-mode group just because its YAML exists.
+- Preserve provider identity on workspace-activated Requirement Groups so DRAFT-provided,
+  third-party-provided, and company-provided control interpretations remain distinct.
+- For Requirement Group entries with relatedCapability, resolve the capability object first,
+  check workspace capability implementations, prefer implementations with lifecycleStatus invest,
+  and present those as recommended options before asking an open question.
+- For capability requirements, ask what mechanism satisfies the capability:
   field, internal component, Technology Component configuration, external interaction, deployment
   configuration, or architectural decision.
 - Do not turn capability requirements into team ownership questions unless the
-  applicable Definition Checklist explicitly asks for ownership.
-- For checklist.host-standard patch management, ask what patch platform, installed component,
+  applicable Requirement Group explicitly asks for ownership.
+- For requirement-group.host-standard patch management, ask what patch platform, installed component,
   Technology Component configuration, or architectural decision applies updates; do not ask which
   team owns patching as the capability answer.
 - For Appliance Components, remember that the object maps directly to a vendor-product
   identity but carries service-like operating capability answers because there
-  is no Host Standard or Service Standard wrapper to inherit checklist.host-standard
-  or checklist.service-standard.
+  is no Host Standard or Service Standard wrapper to inherit requirement-group.host-standard
+  or requirement-group.service-standard.
 - If you propose artifacts, return them as JSON proposals with YAML content for the backend only.
 - The visible answer must summarize artifacts in plain language.
 
@@ -280,7 +283,7 @@ Return JSON only with this shape:
     {{
       "id": "short proposal id",
       "action": "create|update",
-      "artifactType": "Technology Component|Appliance Component|Host Standard|Service Standard|Database Standard|Reference Architecture|Software Deployment Pattern|Definition Checklist|Decision Record|Compliance Controls|Control Enforcement Profile|Drafting Session",
+      "artifactType": "Technology Component|Appliance Component|Host Standard|Service Standard|Database Standard|Reference Architecture|Software Deployment Pattern|Capability|Requirement Group|Decision Record|Drafting Session",
       "name": "artifact name",
       "summary": "plain-language summary",
       "path": "relative file path under the company DRAFT repo",

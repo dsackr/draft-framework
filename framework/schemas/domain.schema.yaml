@@ -13,14 +13,13 @@ optionalFields:
 - tags
 idPattern: ^domain\.[a-z0-9-]+$
 fieldTypes:
-  owner: dict
-  tags: list
   capabilities: list
-collectionSchemas:
-  capabilities: capabilityDefinition
-capabilityDefinition:
-  requiredFields:
-  - id
-  - name
-  optionalFields:
-  - description
+fieldDescriptions:
+  schemaVersion: Use the schema version string supported by this framework release, normally
+    "1.0".
+  id: Use a stable domain ID such as domain.compute.
+  type: Use domain.
+  name: Name the strategy or capability domain.
+  capabilities: List capability object IDs owned by this domain.
+aiHint: A Domain groups capability objects so an AI can navigate from strategy area to capability
+  to approved implementations.

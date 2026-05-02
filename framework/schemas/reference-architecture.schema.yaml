@@ -17,8 +17,8 @@ optionalFields:
 - applicableDefinitionChecklist
 - scalingUnits
 - serviceGroups
-- controlEnforcementProfiles
-- controlImplementations
+- requirementGroups
+- requirementImplementations
 idPattern: ^reference-architecture\.[a-z0-9.-]+$
 enumFields:
   catalogStatus:
@@ -37,12 +37,12 @@ fieldTypes:
   architecturalDecisions: dict
   scalingUnits: list
   serviceGroups: list
-  controlEnforcementProfiles: list
-  controlImplementations: list
+  requirementGroups: list
+  requirementImplementations: list
 collectionSchemas:
   scalingUnits: scalingUnit
   serviceGroups: serviceGroup
-  controlImplementations: controlImplementation
+  requirementImplementations: requirementImplementation
 scalingUnit:
   requiredFields:
   - name
@@ -108,10 +108,10 @@ externalInteraction:
     - external
   fieldTypes:
     capabilities: list
-controlImplementation:
+requirementImplementation:
   requiredFields:
-  - profile
-  - controlId
+  - requirementGroup
+  - requirementId
   - status
   optionalFields:
   - mechanism
@@ -120,6 +120,10 @@ controlImplementation:
   - criteria
   - ref
   - notes
+  fieldDescriptions:
+    requirementGroup: Reference the requirement_group object that owns this requirement.
+    requirementId: Reference the requirement id within the requirement group.
+    status: Use satisfied, not-applicable, or not-compliant to record the object disposition.
   enumFields:
     status:
     - satisfied
@@ -130,7 +134,20 @@ controlImplementation:
     - technologyComponentConfiguration
     - deploymentConfiguration
     - externalInteraction
+    - internalComponent
     - architecturalDecision
     - field
   fieldTypes:
     criteria: dict
+aiHint: A Reference Architecture defines a reusable deployment pattern that Software Deployment
+  Patterns can follow.
+fieldDescriptions:
+  schemaVersion: Use the schema version string supported by this framework release, normally
+    "1.0".
+  id: Use a stable, namespaced object ID that matches this schema idPattern when one is declared.
+  type: Use the exact object type declared by the matching schema.
+  name: Use a clear human-readable name for the object.
+  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption
+    disposition.
+  lifecycleStatus: Use pre-invest, invest, maintain, disinvest, or exit where this object
+    still carries a lifecycle signal.

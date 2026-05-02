@@ -1,0 +1,14 @@
+schemaVersion: '1.0'
+id: patch.examples.security-monitoring-implementations
+type: object_patch
+name: Example capability.security-monitoring implementations
+description: Example workspace-owned capability implementation mapping.
+version: 1.0.0
+catalogStatus: draft
+lifecycleStatus: maintain
+target: capability.security-monitoring
+patch:
+  implementations:
+  - ref: technology.agent.crowdstrike-falcon
+    lifecycleStatus: maintain
+    notes: Example endpoint security monitoring agent.

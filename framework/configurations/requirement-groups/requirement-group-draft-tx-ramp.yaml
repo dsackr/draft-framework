@@ -1,0 +1,385 @@
+schemaVersion: '1.0'
+id: requirement-group.draft-tx-ramp
+type: requirement_group
+name: TX-RAMP Requirement Group
+description: >
+  Starter TX-RAMP requirement group for DRAFT. This file is intended to map
+  TX-RAMP control expectations onto the unified DRAFT requirement model.
+version: 0.1.0
+catalogStatus: draft
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+activation: workspace
+appliesTo:
+- database_standard
+- host_standard
+- product_service
+- service_standard
+- software_deployment_pattern
+provider:
+  id: provider.draft-framework
+  type: framework
+  name: DRAFT Framework
+authority:
+  name: Texas Department of Information Resources
+  source: TX-RAMP
+requirements:
+- id: AC-2
+  externalControlId: AC-2
+  name: Account Management and Centralized Authentication
+  description: Account Management and Centralized Authentication
+  rationale: Record how this object satisfies AC-2 for TX-RAMP.
+  appliesTo:
+  - host_standard
+  requirementMode: conditional
+  naAllowed: true
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.authentication
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.authentication
+  - mechanism: architecturalDecision
+    key: authentication
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.authentication
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- id: AU-2
+  externalControlId: AU-2
+  name: Auditable Event Logging
+  description: Auditable Event Logging
+  rationale: Record how this object satisfies AU-2 for TX-RAMP.
+  appliesTo:
+  - host_standard
+  requirementMode: conditional
+  naAllowed: true
+  canBeSatisfiedBy:
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.log-management
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.log-management
+  - mechanism: architecturalDecision
+    key: log_management
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.log-management
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- id: SI-4
+  externalControlId: SI-4
+  name: Security Monitoring
+  description: Security Monitoring
+  rationale: Record how this object satisfies SI-4 for TX-RAMP.
+  appliesTo:
+  - host_standard
+  requirementMode: conditional
+  naAllowed: true
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.security-monitoring
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.security-monitoring
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.security-monitoring
+  - mechanism: architecturalDecision
+    key: security_monitoring
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.security-monitoring
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- id: CM-3
+  externalControlId: CM-3
+  name: Configuration Change Control and Patching
+  description: Configuration Change Control and Patching
+  rationale: Record how this object satisfies CM-3 for TX-RAMP.
+  appliesTo:
+  - host_standard
+  requirementMode: conditional
+  naAllowed: true
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.patch-management
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.patch-management
+  - mechanism: architecturalDecision
+    key: patch_management
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.patch-management
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- id: SC-28
+  externalControlId: SC-28
+  name: Data Protection for Database Services
+  description: Data Protection for Database Services
+  rationale: Record how this object satisfies SC-28 for TX-RAMP.
+  appliesTo:
+  - database_standard
+  requirementMode: conditional
+  naAllowed: true
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.encryption_at_rest
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.encryption-at-rest
+  - mechanism: architecturalDecision
+    key: encryption_at_rest
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.encryption-at-rest
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- id: AC-6
+  externalControlId: AC-6
+  name: Least Privilege for Database Services
+  description: Least Privilege for Database Services
+  rationale: Record how this object satisfies AC-6 for TX-RAMP.
+  appliesTo:
+  - database_standard
+  requirementMode: conditional
+  naAllowed: true
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.access-control-model
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.access-control-model
+  - mechanism: architecturalDecision
+    key: access_control_model
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.access-control-model
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- id: CP-9
+  externalControlId: CP-9
+  name: Backup and Recovery
+  description: Backup and Recovery
+  rationale: Record how this object satisfies CP-9 for TX-RAMP.
+  appliesTo:
+  - database_standard
+  requirementMode: conditional
+  naAllowed: true
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.backup_strategy
+  - mechanism: architecturalDecision
+    key: backup_strategy
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  relatedCapability: capability.backup-strategy
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- id: IA-5
+  externalControlId: IA-5
+  name: Secrets and Authenticator Management
+  description: Secrets and Authenticator Management
+  rationale: Record how this object satisfies IA-5 for TX-RAMP.
+  appliesTo:
+  - service_standard
+  requirementMode: conditional
+  naAllowed: true
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.secrets-management
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.secrets-management
+  - mechanism: architecturalDecision
+    key: secrets_management
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.secrets-management
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- id: IA-5.product_service
+  externalControlId: IA-5
+  name: Product Service Secrets and Authenticator Management
+  description: Product Service Secrets and Authenticator Management
+  rationale: Record how this object satisfies IA-5 for TX-RAMP.
+  appliesTo:
+  - product_service
+  requirementMode: conditional
+  naAllowed: true
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+  - mechanism: technologyComponentConfiguration
+  - mechanism: architecturalDecision
+    key: product_service
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- id: PL-2
+  externalControlId: PL-2
+  name: Data Classification Declaration
+  description: Data Classification Declaration
+  rationale: Record how this object satisfies PL-2 for TX-RAMP.
+  appliesTo:
+  - software_deployment_pattern
+  requirementMode: conditional
+  naAllowed: true
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.data_classification
+  - mechanism: architecturalDecision
+    key: data_classification
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- id: CP-2
+  externalControlId: CP-2
+  name: Availability and Recovery Objectives
+  description: Availability and Recovery Objectives
+  rationale: Record how this object satisfies CP-2 for TX-RAMP.
+  appliesTo:
+  - software_deployment_pattern
+  requirementMode: conditional
+  naAllowed: true
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.availability_requirement
+  - mechanism: architecturalDecision
+    key: availability_requirement
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+- id: CA-2
+  externalControlId: CA-2
+  name: Architecture and Control Conformance
+  description: Architecture and Control Conformance
+  rationale: Record how this object satisfies CA-2 for TX-RAMP.
+  appliesTo:
+  - software_deployment_pattern
+  requirementMode: conditional
+  naAllowed: true
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.reference_architecture_conformance
+  - mechanism: architecturalDecision
+    key: reference_architecture_conformance
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  applicability:
+    anyOf:
+    - field: complianceContext.txRampInScope
+      equals: true
+    - field: complianceContext.soldInTexas
+      equals: true
+  externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
+lifecycleStatus: invest
+tags:
+- compliance
+- tx-ramp
+- starter-pack
+- requirement-group
+notes: 'Starter mapping aligned to the public TX-RAMP program information. Replace the shared
+  program link with deeper authoritative links later if stable per-control references become
+  available.
+
+  '

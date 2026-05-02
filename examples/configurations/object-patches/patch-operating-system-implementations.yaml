@@ -1,0 +1,14 @@
+schemaVersion: '1.0'
+id: patch.examples.operating-system-implementations
+type: object_patch
+name: Example capability.operating-system implementations
+description: Example workspace-owned capability implementation mapping.
+version: 1.0.0
+catalogStatus: draft
+lifecycleStatus: maintain
+target: capability.operating-system
+patch:
+  implementations:
+  - ref: technology.os.canonical-ubuntu-2204
+    lifecycleStatus: maintain
+    notes: Example operating system implementation.

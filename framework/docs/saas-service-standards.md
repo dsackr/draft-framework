@@ -25,9 +25,9 @@ The question to ask is simple: does traffic or data pass into vendor-managed
 infrastructure outside the infrastructure boundary? If yes, model it as a SaaS
 Service.
 
-## Definition Checklist Expectations
+## Requirement Group Expectations
 
-The SaaS Service Definition Checklist treats the vendor platform as a blackbox. It does not ask
+The SaaS Service Requirement Group treats the vendor platform as a blackbox. It does not ask
 for host, runtime, internal components, or vendor implementation topology. It
 focuses only on the answers the consuming organization can know and must
 document:
@@ -49,7 +49,7 @@ the service can be treated as an understood architecture dependency.
 ## Architectural Decision Entries
 
 SaaS Services use the same architectural decision entry trigger logic as every other
-Standard classification. If a Definition Checklist or compliance control requires an answer and the
+Standard classification. If a Requirement Group or compliance control requires an answer and the
 object does not provide it directly, an architectural decision entry is required to
 explain the answer. The same applies when an internal component or external
 interaction is added beyond what the checklist or controls require.

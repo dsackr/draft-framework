@@ -9,8 +9,8 @@ repo so normal Draftsman use is private, deterministic, and reviewable.
 The upstream framework repo owns:
 
 - `framework/schemas/` for object contracts
-- `framework/configurations/` for base Definition Checklists, control enforcement profiles, control
-  catalogs, and domains
+- `framework/configurations/` for base capabilities, Requirement Groups, domains,
+  and object-patchable configuration
 - `framework/tools/` for validation and generation
 - `templates/` for object and company repo templates
 - `examples/catalog/` for demonstration content only
@@ -19,11 +19,11 @@ The upstream framework repo owns:
 A company private DRAFT repo owns:
 
 - `.draft/framework/` for the vendored framework copy used by that company
-- `.draft/providers/` for optional third-party DRAFT control packs
+- `.draft/providers/` for optional third-party DRAFT requirement packs
 - `.draft/workspace.yaml` for tracked workspace metadata
 - `.draft/framework.lock` for the reviewed upstream framework source and synced commit
 - `catalog/` for architecture content
-- `configurations/` for company overlays and extensions
+- `configurations/` for company capability mappings, Requirement Groups, and object patches
 
 The effective model is resolved in this order:
 
@@ -42,23 +42,27 @@ Company overrides should be represented as `object_patch` YAML when the goal is
 to alter a base framework object without editing the vendored framework copy.
 Patch files live under `configurations/object-patches/`.
 
-Workspace compliance activation lives in `.draft/workspace.yaml`, not in the
+Workspace requirement activation lives in `.draft/workspace.yaml`, not in the
 presence of YAML files. A framework, provider, or company may publish many
-Control Enforcement Profiles, but the company must explicitly activate the
-profiles it architects against:
+workspace-mode Requirement Groups, but the company must explicitly activate the
+groups it architects against:
 
 ```yaml
-compliance:
-  activeControlEnforcementProfiles:
-    - control-enforcement.draft-soc2
-    - control-enforcement.frontline-roper
-  requireActiveProfileDisposition: false
+requirements:
+  activeRequirementGroups:
+    - requirement-group.draft-soc2
+    - requirement-group.frontline-roper
+  requireActiveRequirementGroupDisposition: false
 ```
 
-`requireActiveProfileDisposition: false` allows existing inventory to migrate
-incrementally. Draftsman still uses active profiles for new and updated
+`requireActiveRequirementGroupDisposition: false` allows existing inventory to migrate
+incrementally. Draftsman still uses active groups for new and updated
 objects. Setting it to `true` makes validation require every in-scope object to
-record disposition against every active profile.
+record disposition against every active group.
+
+Framework base capability files ship with empty `implementations`. Company
+workspaces own the mapping from capability to approved Technology Component by
+adding capability overlays or object patches under `configurations/`.
 
 ## Authoring Workflow
 
@@ -66,7 +70,7 @@ The default workspace workflow is source based:
 
 1. Create or update YAML in `catalog/` or `configurations/`.
 2. Use the matching template from `.draft/framework/templates/` when creating a new object.
-3. Read the relevant schema and Definition Checklist before filling in fields.
+3. Read the relevant schema and Requirement Group before filling in fields.
 4. Preserve unresolved facts in `catalog/sessions/` as Drafting Sessions.
 5. Run `python3 .draft/framework/tools/validate.py --workspace /path/to/workspace`.
 6. Review and commit the workspace changes through normal Git workflow.
@@ -131,7 +135,9 @@ that can later inform pipeline and infrastructure automation:
 - Standards describe reusable deployable building blocks.
 - Reference Architectures describe deployable patterns.
 - Software Deployment Patterns describe product deployment reality.
-- Control Enforcement Profiles describe required controls.
+- Capabilities describe architecture outcomes and company-approved technology
+  implementations.
+- Requirement Groups describe required authoring and compliance answers.
 - Future automation mappings can translate approved objects into pipeline and
   IaC inputs.
 

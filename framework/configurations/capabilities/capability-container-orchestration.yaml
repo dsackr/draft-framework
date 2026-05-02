@@ -1,0 +1,12 @@
+schemaVersion: '1.0'
+id: capability.container-orchestration
+type: capability
+name: Container Orchestration
+description: Management of containerized workload lifecycles.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+domain: domain.compute
+implementations: []

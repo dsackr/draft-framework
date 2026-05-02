@@ -1,0 +1,86 @@
+schemaVersion: '1.0'
+id: requirement-group.paas-service-standard
+type: requirement_group
+name: PaaS Service Requirement Group
+description: >
+  Structured requirements used to define a complete and correct PaaS Service. A
+  PaaS Service is a vendor-managed platform component deployed within the
+  organization's cloud boundary.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+activation: always
+appliesTo:
+- paas_service_standard
+requirements:
+- id: function
+  description: What capability does this PaaS service provide?
+  rationale: The capability is the core reason the service exists.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: capabilities
+    example: 'capabilities: [data-persistence]'
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - field
+  minimumSatisfactions: 1
+- id: resilience-model
+  description: "What is the resilience model of this service \u2014 is it inherently highly\
+    \ available within the region, or does it require multi-region config?\n"
+  rationale: Adopters must know the managed availability baseline.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: resilienceModel
+    example: Inherently multi-AZ within the AWS region.
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - architecturalDecision
+  minimumSatisfactions: 1
+- id: authentication-model
+  description: How is access to this service authenticated?
+  rationale: Defines the identity and security integration, for example IAM.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: authenticationModel
+    example: 'authenticationModel: iam'
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - field
+  minimumSatisfactions: 1
+- id: configurable-surface
+  description: What configuration surface does the organization control?
+  rationale: Captures the customer-managed portion of the managed platform.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: configurableSurface
+    example: Bucket policies, encryption settings, and lifecycle rules.
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - architecturalDecision
+  minimumSatisfactions: 1
+- id: failure-domain
+  description: What is the failure domain of this platform dependency?
+  rationale: Required to understand the blast radius of a vendor-managed outage.
+  canBeSatisfiedBy:
+  - mechanism: architecturalDecision
+    key: failureDomain
+    example: Scoped to the AWS region and account.
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - architecturalDecision
+  minimumSatisfactions: 1
+lifecycleStatus: invest
+tags:
+- paas
+- requirement-group
+- definition
+appliesToQualifiers:
+  category: service
+  serviceCategory: paas

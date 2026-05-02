@@ -1,17 +1,15 @@
-# Template for a standard Technology Component.
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: technology.<classification-or-domain>.<vendor-product-version>
 type: technology_component
 name: <Product Name And Version>
 description: <Third-party product definition.>
 version: 1.0.0
 catalogStatus: stub
-lifecycleStatus: pre-invest
 owner:
   team: <owning-team>
   contact: <team-or-person@example.com>
 tags:
-  - technology-component
+- technology-component
 vendor: <Vendor>
 productName: <Product name>
 productVersion: <Version>
@@ -21,10 +19,10 @@ vendorLifecycle:
   extendedSupportEnd: <YYYY-MM-DD or TBD>
   notes: <Lifecycle notes.>
 capabilities:
-  - <capability-id>
+- capability.<capability-slug>
 configurations:
-  - id: <configuration-slug>
-    name: <Configuration Name>
-    description: <Reusable configuration description.>
-    capabilities:
-      - <capability-id>
+- id: <configuration-slug>
+  name: <Configuration Name>
+  description: <Reusable configuration description.>
+  capabilities:
+  - capability.<capability-slug>

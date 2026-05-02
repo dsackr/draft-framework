@@ -1,0 +1,15 @@
+schemaVersion: '1.0'
+id: patch.examples.log-management-implementations
+type: object_patch
+name: Example capability.log-management implementations
+description: Example workspace-owned capability implementation mapping.
+version: 1.0.0
+catalogStatus: draft
+lifecycleStatus: maintain
+target: capability.log-management
+patch:
+  implementations:
+  - ref: technology.os.canonical-ubuntu-2204
+    configuration: centralized-log-forwarding
+    lifecycleStatus: maintain
+    notes: Example OS configuration for centralized log forwarding.

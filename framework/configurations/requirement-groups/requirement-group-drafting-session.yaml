@@ -1,0 +1,89 @@
+schemaVersion: '1.0'
+id: requirement-group.drafting-session
+type: requirement_group
+name: Drafting Session Requirement Group
+description: Structured checklist used to capture partial architecture-authoring sessions,
+  generated outputs, and unresolved follow-up questions in a machine-readable way.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+activation: always
+appliesTo:
+- drafting_session
+requirements:
+- id: target-object
+  description: The session must state what object type it is trying to produce and, when available,
+    the concrete object id it is building toward.
+  rationale: A drafting session is only useful if a later reviewer can tell what the session
+    is trying to create or refine.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: primaryObjectType
+    example: software_deployment_pattern
+  - mechanism: field
+    key: primaryObjectId
+    example: software-deployment.tx-erp-sis-hrms
+  minimumSatisfactions: 1
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - field
+- id: source-artifacts
+  description: The session must record the source materials that informed the drafting work.
+  rationale: Later reviewers need to know what pages, diagrams, interviews, or files the best-effort
+    answers came from.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: sourceArtifacts
+    example: Confluence page, interview notes, architecture diagram
+  minimumSatisfactions: 1
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - field
+- id: generated-objects
+  description: The session must record what YAML objects were created, proposed, or stubbed
+    during the session.
+  rationale: Session output should be directly traceable to the architecture content it produced.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: generatedObjects
+    example: software-deployment.tx-erp-sis-hrms, product-service.tx-erp.application, decision.tx-erp.001
+  minimumSatisfactions: 1
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - field
+- id: unresolved-questions
+  description: The session must explicitly capture the questions that remain open.
+  rationale: Partial drafting only scales if open questions are machine-readable and easy
+    to revisit later.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: unresolvedQuestions
+    example: Is each district deployed with exactly one DB engine?
+  minimumSatisfactions: 1
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - field
+- id: next-steps
+  description: The session must record the follow-up actions needed to close the remaining
+    gaps.
+  rationale: An unresolved question without a next step is easy to lose and hard to revisit.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: nextSteps
+    example: Confirm ECS-native Java runtime and rebind the application component
+  minimumSatisfactions: 1
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - field
+lifecycleStatus: invest
+tags:
+- drafting-session
+- requirement-group
+- intake

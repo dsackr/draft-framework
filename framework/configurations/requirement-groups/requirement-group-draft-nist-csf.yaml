@@ -1,0 +1,327 @@
+schemaVersion: '1.0'
+id: requirement-group.draft-nist-csf
+type: requirement_group
+name: NIST Cybersecurity Framework Requirement Group
+description: >
+  Initial NIST Cybersecurity Framework (CSF) 2.0 requirement group scoped to the
+  outcomes that can be meaningfully answered by DRAFT objects.
+version: 2.0.0
+catalogStatus: stub
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+activation: workspace
+appliesTo:
+- database_standard
+- host_standard
+- product_service
+- service_standard
+- software_deployment_pattern
+provider:
+  id: provider.draft-framework
+  type: framework
+  name: DRAFT Framework
+authority:
+  name: NIST
+  source: Cybersecurity Framework 2.0
+requirements:
+- id: PR.AA
+  externalControlId: PR.AA
+  name: Identity Management, Authentication, and Access Control
+  description: Identity Management, Authentication, and Access Control
+  rationale: Record how this object satisfies PR.AA for NIST Cybersecurity Framework.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.authentication
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.authentication
+  - mechanism: architecturalDecision
+    key: authentication
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.authentication
+  externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+- id: DE.CM
+  externalControlId: DE.CM
+  name: Continuous Monitoring
+  description: Continuous Monitoring
+  rationale: Record how this object satisfies DE.CM for NIST Cybersecurity Framework.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.log-management
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.log-management
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.log-management
+  - mechanism: architecturalDecision
+    key: log_management
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.log-management
+  externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+- id: DE.CM.health-welfare-monitoring
+  externalControlId: DE.CM
+  name: Continuous Monitoring
+  description: Continuous Monitoring
+  rationale: Record how this object satisfies DE.CM for NIST Cybersecurity Framework.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.health-welfare-monitoring
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.health-welfare-monitoring
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.health-welfare-monitoring
+  - mechanism: architecturalDecision
+    key: health_welfare_monitoring
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.health-welfare-monitoring
+  externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+- id: DE.CM.security-monitoring
+  externalControlId: DE.CM
+  name: Continuous Monitoring
+  description: Continuous Monitoring
+  rationale: Record how this object satisfies DE.CM for NIST Cybersecurity Framework.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.security-monitoring
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.security-monitoring
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.security-monitoring
+  - mechanism: architecturalDecision
+    key: security_monitoring
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.security-monitoring
+  externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+- id: PR.PS
+  externalControlId: PR.PS
+  name: Platform Security
+  description: Platform Security
+  rationale: Record how this object satisfies PR.PS for NIST Cybersecurity Framework.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.patch-management
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.patch-management
+  - mechanism: architecturalDecision
+    key: patch_management
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.patch-management
+  externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+- id: PR.AA.access-control-model
+  externalControlId: PR.AA
+  name: Identity Management, Authentication, and Access Control
+  description: Identity Management, Authentication, and Access Control
+  rationale: Record how this object satisfies PR.AA for NIST Cybersecurity Framework.
+  appliesTo:
+  - database_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.access-control-model
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.access-control-model
+  - mechanism: architecturalDecision
+    key: access_control_model
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.access-control-model
+  externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+- id: PR.DS
+  externalControlId: PR.DS
+  name: Data Security
+  description: Data Security
+  rationale: Record how this object satisfies PR.DS for NIST Cybersecurity Framework.
+  appliesTo:
+  - database_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.encryption_at_rest
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.encryption-at-rest
+  - mechanism: architecturalDecision
+    key: encryption_at_rest
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.encryption-at-rest
+  externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+- id: RC.RP
+  externalControlId: RC.RP
+  name: Recovery Plan Execution
+  description: Recovery Plan Execution
+  rationale: Record how this object satisfies RC.RP for NIST Cybersecurity Framework.
+  appliesTo:
+  - database_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.backup_strategy
+  - mechanism: architecturalDecision
+    key: backup_strategy
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  relatedCapability: capability.backup-strategy
+  externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+- id: PR.AA.secrets-management
+  externalControlId: PR.AA
+  name: Identity Management, Authentication, and Access Control
+  description: Identity Management, Authentication, and Access Control
+  rationale: Record how this object satisfies PR.AA for NIST Cybersecurity Framework.
+  appliesTo:
+  - service_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.secrets-management
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.secrets-management
+  - mechanism: architecturalDecision
+    key: secrets_management
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.secrets-management
+  externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+- id: PR.AA.product_service
+  externalControlId: PR.AA
+  name: Identity Management, Authentication, and Access Control
+  description: Identity Management, Authentication, and Access Control
+  rationale: Record how this object satisfies PR.AA for NIST Cybersecurity Framework.
+  appliesTo:
+  - product_service
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+  - mechanism: technologyComponentConfiguration
+  - mechanism: architecturalDecision
+    key: product_service
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+- id: PR.DS.data-classification
+  externalControlId: PR.DS
+  name: Data Security
+  description: Data Security
+  rationale: Record how this object satisfies PR.DS for NIST Cybersecurity Framework.
+  appliesTo:
+  - software_deployment_pattern
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.data_classification
+  - mechanism: architecturalDecision
+    key: data_classification
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+- id: RC.RP.availability-requirement
+  externalControlId: RC.RP
+  name: Recovery Plan Execution
+  description: Recovery Plan Execution
+  rationale: Record how this object satisfies RC.RP for NIST Cybersecurity Framework.
+  appliesTo:
+  - software_deployment_pattern
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.availability_requirement
+  - mechanism: architecturalDecision
+    key: availability_requirement
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
+lifecycleStatus: invest
+tags:
+- compliance
+- nist
+- starter-pack
+- requirement-group
+notes: 'These entries are DRAFT applicability mappings for public NIST CSF 2.0 outcomes. They
+  intentionally cover only the subset of CSF outcomes that can be answered by Standards, Software
+  Deployment Patterns, and related architecture objects.
+
+  '

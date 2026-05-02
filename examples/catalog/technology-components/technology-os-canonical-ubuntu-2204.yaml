@@ -2,13 +2,11 @@ schemaVersion: '1.0'
 id: technology.os.canonical-ubuntu-2204
 type: technology_component
 name: Ubuntu 22.04 LTS
-description: 'Canonical Ubuntu Server 22.04 LTS operating system product definition
-  for Linux host patterns.
-
-  '
+description: >
+  Canonical Ubuntu Server 22.04 LTS operating system product definition for
+  Linux host patterns.
 version: 1.0.0
 catalogStatus: draft
-lifecycleStatus: maintain
 owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
@@ -22,9 +20,9 @@ classification: operating-system
 configurations:
 - id: centralized-log-forwarding
   name: Centralized Log Forwarding
-  description: 'Standard operating system logging configuration that forwards host
-    logs to the centralized logging destination.
+  description: 'Standard operating system logging configuration that forwards host logs to
+    the centralized logging destination.
 
     '
   capabilities:
-  - log-management
+  - capability.log-management

@@ -1,0 +1,424 @@
+schemaVersion: '1.0'
+id: requirement-group.draft-security-compliance
+type: requirement_group
+name: Security and Security Compliance Requirement Group
+description: >
+  Baseline security and compliance requirement group bundled with DRAFT.
+  Requirements are applied to matching object types based on their target scope.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+activation: workspace
+appliesTo:
+- database_standard
+- host_standard
+- product_service
+- service_standard
+- software_deployment_pattern
+provider:
+  id: provider.draft-framework
+  type: framework
+  name: DRAFT Framework
+authority:
+  name: DRAFT Framework
+  source: Security Compliance Requirements
+requirements:
+- id: CC.SecurityCompliance.04.2.2
+  externalControlId: CC.SecurityCompliance.04.2.2
+  name: Centralized Administrative Authentication
+  description: Centralized Administrative Authentication
+  rationale: Record how this object satisfies CC.SecurityCompliance.04.2.2 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.authentication
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.authentication
+  - mechanism: architecturalDecision
+    key: authentication
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.authentication
+  externalReference: https://controls.example.com/security-compliance/04.2.2
+- id: CC.SecurityCompliance.04.4.1
+  externalControlId: CC.SecurityCompliance.04.4.1
+  name: Password Policy
+  description: Password Policy
+  rationale: Record how this object satisfies CC.SecurityCompliance.04.4.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.authentication
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.authentication
+  - mechanism: architecturalDecision
+    key: authentication
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.authentication
+  externalReference: https://controls.example.com/security-compliance/04.4.1
+- id: CC.SecurityCompliance.04.4.1.access-control-model
+  externalControlId: CC.SecurityCompliance.04.4.1
+  name: Database Password Policy
+  description: Database Password Policy
+  rationale: Record how this object satisfies CC.SecurityCompliance.04.4.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - database_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.access-control-model
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.access-control-model
+  - mechanism: architecturalDecision
+    key: access_control_model
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.access-control-model
+  externalReference: https://controls.example.com/security-compliance/04.4.1
+- id: CC.SecurityCompliance.06.1.1
+  externalControlId: CC.SecurityCompliance.06.1.1
+  name: Centralized Log Management
+  description: Centralized Log Management
+  rationale: Record how this object satisfies CC.SecurityCompliance.06.1.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.log-management
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.log-management
+  - mechanism: architecturalDecision
+    key: log_management
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.log-management
+  externalReference: https://controls.example.com/security-compliance/06.1.1
+- id: CC.SecurityCompliance.06.2.1
+  externalControlId: CC.SecurityCompliance.06.2.1
+  name: Host Health and Welfare Monitoring
+  description: Host Health and Welfare Monitoring
+  rationale: Record how this object satisfies CC.SecurityCompliance.06.2.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.health-welfare-monitoring
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.health-welfare-monitoring
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.health-welfare-monitoring
+  - mechanism: architecturalDecision
+    key: health_welfare_monitoring
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.health-welfare-monitoring
+  externalReference: https://controls.example.com/security-compliance/06.2.1
+- id: CC.SecurityCompliance.06.3.1
+  externalControlId: CC.SecurityCompliance.06.3.1
+  name: Security Event Monitoring
+  description: Security Event Monitoring
+  rationale: Record how this object satisfies CC.SecurityCompliance.06.3.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.security-monitoring
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.security-monitoring
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.security-monitoring
+  - mechanism: architecturalDecision
+    key: security_monitoring
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.security-monitoring
+  externalReference: https://controls.example.com/security-compliance/06.3.1
+- id: CC.SecurityCompliance.03.1.1
+  externalControlId: CC.SecurityCompliance.03.1.1
+  name: Patch Governance
+  description: Patch Governance
+  rationale: Record how this object satisfies CC.SecurityCompliance.03.1.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.patch-management
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.patch-management
+  - mechanism: architecturalDecision
+    key: patch_management
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.patch-management
+  externalReference: https://controls.example.com/security-compliance/03.1.1
+- id: CC.SecurityCompliance.03.2.1
+  externalControlId: CC.SecurityCompliance.03.2.1
+  name: Patch Execution Workflow
+  description: Patch Execution Workflow
+  rationale: Record how this object satisfies CC.SecurityCompliance.03.2.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.patch-management
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.patch-management
+  - mechanism: architecturalDecision
+    key: patch_management
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.patch-management
+  externalReference: https://controls.example.com/security-compliance/03.2.1
+- id: CC.SecurityCompliance.10.1.1
+  externalControlId: CC.SecurityCompliance.10.1.1
+  name: Reference Architecture Conformance
+  description: Reference Architecture Conformance
+  rationale: Record how this object satisfies CC.SecurityCompliance.10.1.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - software_deployment_pattern
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.reference_architecture_conformance
+  - mechanism: architecturalDecision
+    key: reference_architecture_conformance
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  externalReference: https://controls.example.com/security-compliance/10.1.1
+- id: CC.SecurityCompliance.10.1.2
+  externalControlId: CC.SecurityCompliance.10.1.2
+  name: Availability Requirement
+  description: Availability Requirement
+  rationale: Record how this object satisfies CC.SecurityCompliance.10.1.2 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - software_deployment_pattern
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.availability_requirement
+  - mechanism: architecturalDecision
+    key: availability_requirement
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  externalReference: https://controls.example.com/security-compliance/10.1.2
+- id: CC.SecurityCompliance.00.2.1
+  externalControlId: CC.SecurityCompliance.00.2.1
+  name: Data Classification
+  description: Data Classification
+  rationale: Record how this object satisfies CC.SecurityCompliance.00.2.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - software_deployment_pattern
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.data_classification
+  - mechanism: architecturalDecision
+    key: data_classification
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  externalReference: https://controls.example.com/security-compliance/00.2.1
+- id: CC.SecurityCompliance.00.2.1.access-control-model
+  externalControlId: CC.SecurityCompliance.00.2.1
+  name: Database Data Classification Context
+  description: Database Data Classification Context
+  rationale: Record how this object satisfies CC.SecurityCompliance.00.2.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - database_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.access_control_model
+  - mechanism: architecturalDecision
+    key: access_control_model
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  relatedCapability: capability.access-control-model
+  externalReference: https://controls.example.com/security-compliance/00.2.1
+- id: CC.SecurityCompliance.10.2.1
+  externalControlId: CC.SecurityCompliance.10.2.1
+  name: Database Backup Strategy
+  description: Database Backup Strategy
+  rationale: Record how this object satisfies CC.SecurityCompliance.10.2.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - database_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.backup_strategy
+  - mechanism: architecturalDecision
+    key: backup_strategy
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  relatedCapability: capability.backup-strategy
+  externalReference: https://controls.example.com/security-compliance/10.2.1
+- id: CC.SecurityCompliance.04.1.1
+  externalControlId: CC.SecurityCompliance.04.1.1
+  name: Database Access Control Model
+  description: Database Access Control Model
+  rationale: Record how this object satisfies CC.SecurityCompliance.04.1.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - database_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.access-control-model
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.access-control-model
+  - mechanism: architecturalDecision
+    key: access_control_model
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.access-control-model
+  externalReference: https://controls.example.com/security-compliance/04.1.1
+- id: CC.SecurityCompliance.04.3.1
+  externalControlId: CC.SecurityCompliance.04.3.1
+  name: Secrets Management
+  description: Secrets Management
+  rationale: Record how this object satisfies CC.SecurityCompliance.04.3.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - service_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.secrets-management
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.secrets-management
+  - mechanism: architecturalDecision
+    key: secrets_management
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.secrets-management
+  externalReference: https://controls.example.com/security-compliance/04.3.1
+- id: CC.SecurityCompliance.04.3.1.product_service
+  externalControlId: CC.SecurityCompliance.04.3.1
+  name: Product Service Secrets Management
+  description: Product Service Secrets Management
+  rationale: Record how this object satisfies CC.SecurityCompliance.04.3.1 for Security and
+    Security Compliance Requirements.
+  appliesTo:
+  - product_service
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+  - mechanism: technologyComponentConfiguration
+  - mechanism: architecturalDecision
+    key: product_service
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  externalReference: https://controls.example.com/security-compliance/04.3.1
+lifecycleStatus: maintain
+tags:
+- compliance
+- controls
+- baseline
+- requirement-group

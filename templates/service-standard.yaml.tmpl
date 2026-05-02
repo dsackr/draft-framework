@@ -1,5 +1,4 @@
-# Template for a general Service Standard.
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: service.<service-slug>
 type: service_standard
 name: <Service Name>
@@ -11,14 +10,9 @@ owner:
   team: <owning-team>
   contact: <team-or-person@example.com>
 tags:
-  - service
+- service
 category: service
 serviceCategory: general
-satisfiesDefinitionChecklist:
-  - checklist.service-standard
-# Declare only profiles this standard explicitly claims.
-controlEnforcementProfiles: []
-controlImplementations: []
 hostStandard: host.<os>.<platform>.<variant>
 primaryTechnologyComponent: technology.software.<vendor-product-version>
 architecturalDecisions:
@@ -31,12 +25,15 @@ architecturalDecisions:
   recoverabilityModel: <Recovery model.>
   failureDomain: <Scope of impact from service failure.>
 internalComponents:
-  - ref: host.<os>.<platform>.<variant>
-    role: host
-  - ref: technology.software.<vendor-product-version>
-    role: function
+- ref: host.<os>.<platform>.<variant>
+  role: host
+- ref: technology.software.<vendor-product-version>
+  role: function
 externalInteractions:
-  - name: <Service Monitoring>
-    notes: <Service-level monitoring beyond the host baseline.>
-    capabilities:
-      - monitoring
+- name: <Service Monitoring>
+  notes: <Service-level monitoring beyond the host baseline.>
+  capabilities:
+  - monitoring
+requirementGroups:
+- requirement-group.service-standard
+requirementImplementations: []

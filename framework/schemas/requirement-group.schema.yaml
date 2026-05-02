@@ -1,0 +1,99 @@
+schemaVersion: '1.0'
+type: requirement_group
+aiHint: A Requirement Group is the unified authoring and validation contract an AI uses for
+  always-on object requirements and workspace-activated compliance requirements.
+requiredFields:
+- schemaVersion
+- id
+- type
+- name
+- description
+- catalogStatus
+- owner
+- activation
+- appliesTo
+- requirements
+optionalFields:
+- version
+- tags
+- lifecycleStatus
+- provider
+- authority
+- notes
+- inherits
+- appliesToQualifiers
+idPattern: ^requirement-group\.[a-z0-9.-]+$
+enumFields:
+  catalogStatus:
+  - stub
+  - draft
+  - approved
+  activation:
+  - always
+  - workspace
+  lifecycleStatus:
+  - pre-invest
+  - invest
+  - maintain
+  - disinvest
+  - exit
+fieldTypes:
+  owner: dict
+  tags: list
+  provider: dict
+  authority: dict
+  appliesTo: list
+  requirements: list
+  appliesToQualifiers: dict
+collectionSchemas:
+  requirements: requirement
+fieldDescriptions:
+  schemaVersion: Use the schema version string supported by this framework release, normally
+    "1.0".
+  id: Use a stable requirement group ID such as requirement-group.host-standard or requirement-group.draft-soc2.
+  type: Use requirement_group.
+  name: Name the authoring or control group.
+  description: Explain what this group requires and when the Draftsman should apply it.
+  catalogStatus: Use catalog maturity for the requirement group definition.
+  owner: Identify the team accountable for maintaining this requirement group.
+  activation: Use always for base authoring requirements or workspace for explicitly activated
+    compliance/control groups.
+  appliesTo: List object types governed by this group.
+  requirements: List the requirement entries the Draftsman asks and the validator checks.
+requirement:
+  requiredFields:
+  - id
+  - description
+  - requirementMode
+  - naAllowed
+  - canBeSatisfiedBy
+  - minimumSatisfactions
+  - validAnswerTypes
+  optionalFields:
+  - name
+  - rationale
+  - relatedCapability
+  - appliesTo
+  - applicability
+  - externalControlId
+  - externalReference
+  - notes
+  fieldDescriptions:
+    id: Use a unique requirement ID within this group.
+    description: Write the question or required answer in actionable language.
+    requirementMode: Use mandatory for always-in-scope requirements or conditional for requirements
+      with applicability logic.
+    naAllowed: Use true only when the requirement can be recorded as not applicable.
+    canBeSatisfiedBy: List the mechanisms that can satisfy this requirement.
+    minimumSatisfactions: Set how many mechanisms must resolve for the requirement to be satisfied.
+    validAnswerTypes: List the allowed mechanisms for object-level requirement implementation
+      evidence.
+  enumFields:
+    requirementMode:
+    - mandatory
+    - conditional
+  fieldTypes:
+    canBeSatisfiedBy: list
+    validAnswerTypes: list
+    appliesTo: list
+    applicability: dict

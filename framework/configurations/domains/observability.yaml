@@ -2,21 +2,11 @@ schemaVersion: '1.0'
 id: domain.observability
 type: domain
 name: Observability & Monitoring
-description: 'Strategic domain covering logging, metrics, tracing, and health monitoring  across
-  the infrastructure and application stacks.
-
-  '
+description: >
+  Strategic domain covering logging, metrics, tracing, and health monitoring
+  across infrastructure and application stacks.
 capabilities:
-- id: health-monitoring
-  name: Health & Welfare Monitoring
-  description: Real-time visibility into the uptime and basic health of components.
-- id: log-management
-  name: Log Management
-  description: Aggregation, retention, and searchability of system and application
-    logs.
-- id: security-monitoring
-  name: Security Monitoring
-  description: Threat detection, intrusion detection, and security event auditing.
-- id: apm
-  name: Application Performance Monitoring (APM)
-  description: Deep tracing and performance analysis of application runtimes.
+- capability.health-welfare-monitoring
+- capability.log-management
+- capability.security-monitoring
+- capability.apm

@@ -1,0 +1,346 @@
+schemaVersion: '1.0'
+id: requirement-group.draft-soc2
+type: requirement_group
+name: SOC 2 Requirement Group
+description: >
+  Initial SOC 2 requirement group based on the AICPA Trust Services Criteria.
+  These requirements use DRAFT applicability metadata so they can extend the
+  relevant object types without changing always-on Requirement Groups.
+version: 2017.0.0
+catalogStatus: stub
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+activation: workspace
+appliesTo:
+- database_standard
+- host_standard
+- product_service
+- service_standard
+- software_deployment_pattern
+provider:
+  id: provider.draft-framework
+  type: framework
+  name: DRAFT Framework
+authority:
+  name: AICPA
+  source: SOC 2 Trust Services Criteria
+requirements:
+- id: CC6
+  externalControlId: CC6
+  name: Logical and Physical Access Controls
+  description: Logical and Physical Access Controls
+  rationale: Record how this object satisfies CC6 for SOC 2.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.authentication
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.authentication
+  - mechanism: architecturalDecision
+    key: authentication
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.authentication
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- id: CC7
+  externalControlId: CC7
+  name: System Operations
+  description: System Operations
+  rationale: Record how this object satisfies CC7 for SOC 2.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.log-management
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.log-management
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.log-management
+  - mechanism: architecturalDecision
+    key: log_management
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.log-management
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- id: CC7.health-welfare-monitoring
+  externalControlId: CC7
+  name: System Operations
+  description: System Operations
+  rationale: Record how this object satisfies CC7 for SOC 2.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.health-welfare-monitoring
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.health-welfare-monitoring
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.health-welfare-monitoring
+  - mechanism: architecturalDecision
+    key: health_welfare_monitoring
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.health-welfare-monitoring
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- id: CC7.security-monitoring
+  externalControlId: CC7
+  name: System Operations
+  description: System Operations
+  rationale: Record how this object satisfies CC7 for SOC 2.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.security-monitoring
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.security-monitoring
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.security-monitoring
+  - mechanism: architecturalDecision
+    key: security_monitoring
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - technologyComponentConfiguration
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.security-monitoring
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- id: CC8
+  externalControlId: CC8
+  name: Change Management
+  description: Change Management
+  rationale: Record how this object satisfies CC8 for SOC 2.
+  appliesTo:
+  - host_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: technologyComponent
+    criteria:
+      capability: capability.patch-management
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.patch-management
+  - mechanism: architecturalDecision
+    key: patch_management
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - technologyComponent
+  - externalInteraction
+  - architecturalDecision
+  relatedCapability: capability.patch-management
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- id: CC6.access-control-model
+  externalControlId: CC6
+  name: Logical and Physical Access Controls
+  description: Logical and Physical Access Controls
+  rationale: Record how this object satisfies CC6 for SOC 2.
+  appliesTo:
+  - database_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.access-control-model
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.access-control-model
+  - mechanism: architecturalDecision
+    key: access_control_model
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.access-control-model
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- id: CC7.backup-strategy
+  externalControlId: CC7
+  name: System Operations
+  description: System Operations
+  rationale: Record how this object satisfies CC7 for SOC 2.
+  appliesTo:
+  - database_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.backup_strategy
+  - mechanism: architecturalDecision
+    key: backup_strategy
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  relatedCapability: capability.backup-strategy
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- id: C1
+  externalControlId: C1
+  name: Confidentiality
+  description: Confidentiality
+  rationale: Record how this object satisfies C1 for SOC 2.
+  appliesTo:
+  - database_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.encryption_at_rest
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.encryption-at-rest
+  - mechanism: architecturalDecision
+    key: encryption_at_rest
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.encryption-at-rest
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- id: CC6.secrets-management
+  externalControlId: CC6
+  name: Logical and Physical Access Controls
+  description: Logical and Physical Access Controls
+  rationale: Record how this object satisfies CC6 for SOC 2.
+  appliesTo:
+  - service_standard
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: capability.secrets-management
+  - mechanism: technologyComponentConfiguration
+    criteria:
+      capability: capability.secrets-management
+  - mechanism: architecturalDecision
+    key: secrets_management
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  relatedCapability: capability.secrets-management
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- id: CC6.product_service
+  externalControlId: CC6
+  name: Product Service Access and Secrets Controls
+  description: Product Service Access and Secrets Controls
+  rationale: Record how this object satisfies CC6 for SOC 2.
+  appliesTo:
+  - product_service
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+  - mechanism: technologyComponentConfiguration
+  - mechanism: architecturalDecision
+    key: product_service
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - externalInteraction
+  - technologyComponentConfiguration
+  - architecturalDecision
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- id: A1
+  externalControlId: A1
+  name: Availability
+  description: Availability
+  rationale: Record how this object satisfies A1 for SOC 2.
+  appliesTo:
+  - software_deployment_pattern
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.availability_requirement
+  - mechanism: architecturalDecision
+    key: availability_requirement
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- id: C1.data-classification
+  externalControlId: C1
+  name: Confidentiality
+  description: Confidentiality
+  rationale: Record how this object satisfies C1 for SOC 2.
+  appliesTo:
+  - software_deployment_pattern
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.data_classification
+  - mechanism: architecturalDecision
+    key: data_classification
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+- id: CC9
+  externalControlId: CC9
+  name: Risk Mitigation
+  description: Risk Mitigation
+  rationale: Record how this object satisfies CC9 for SOC 2.
+  appliesTo:
+  - software_deployment_pattern
+  requirementMode: mandatory
+  naAllowed: false
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: architecturalDecisions.reference_architecture_conformance
+  - mechanism: architecturalDecision
+    key: reference_architecture_conformance
+  minimumSatisfactions: 1
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
+lifecycleStatus: invest
+tags:
+- compliance
+- soc2
+- starter-pack
+- requirement-group
+notes: 'These entries are DRAFT applicability mappings for the public AICPA Trust Services
+  Criteria. The authoritative criteria remain in the linked AICPA source material.
+
+  '

@@ -272,7 +272,7 @@ def validate_changed_files(
         and current_version.patch > old_version.patch
         and contract
     ):
-        errors.append("Patch releases must not include schema, Definition Checklist, compliance, or validation contract changes.")
+        errors.append("Patch releases must not include schema, requirement group, capability, or validation contract changes.")
 
     return errors
 

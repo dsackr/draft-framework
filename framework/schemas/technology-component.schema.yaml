@@ -10,7 +10,6 @@ requiredFields:
 - productVersion
 - classification
 - catalogStatus
-- lifecycleStatus
 optionalFields:
 - description
 - version
@@ -32,12 +31,6 @@ enumFields:
   - stub
   - draft
   - approved
-  lifecycleStatus:
-  - pre-invest
-  - invest
-  - maintain
-  - disinvest
-  - exit
   classification:
   - operating-system
   - compute-platform
@@ -61,3 +54,17 @@ configuration:
   - capabilities
   fieldTypes:
     capabilities: list
+aiHint: A Technology Component is a discrete vendor product that an AI may recommend through
+  capability implementations and use inside Standards.
+fieldDescriptions:
+  schemaVersion: Use the schema version string supported by this framework release, normally
+    "1.0".
+  id: Use a stable, namespaced object ID that matches this schema idPattern when one is declared.
+  type: Use the exact object type declared by the matching schema.
+  name: Use a clear human-readable name for the object.
+  vendor: Name the external vendor or provider for this technology or service.
+  productName: Name the vendor product independently from the DRAFT object name.
+  productVersion: Record the product version, release train, or managed/current marker.
+  classification: Choose the one classification that describes the technology role.
+  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption
+    disposition.

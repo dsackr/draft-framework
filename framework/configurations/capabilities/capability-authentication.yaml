@@ -1,0 +1,13 @@
+schemaVersion: '1.0'
+id: capability.authentication
+type: capability
+name: Authentication
+description: Identity and access authentication capability for users, services, administrators,
+  or workloads.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+domain: domain.compute
+implementations: []

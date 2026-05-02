@@ -126,3 +126,21 @@ nextStep:
     relatedObjects: list
   collectionSchemas:
     relatedObjects: objectRef
+aiHint: A Drafting Session captures incomplete AI authoring work, assumptions, source material,
+  generated objects, and unresolved questions.
+fieldDescriptions:
+  schemaVersion: Use the schema version string supported by this framework release, normally
+    "1.0".
+  id: Use a stable, namespaced object ID that matches this schema idPattern when one is declared.
+  type: Use the exact object type declared by the matching schema.
+  name: Use a clear human-readable name for the object.
+  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption
+    disposition.
+  lifecycleStatus: Use pre-invest, invest, maintain, disinvest, or exit where this object
+    still carries a lifecycle signal.
+  sessionStatus: Provide a valid sessionStatus value for this drafting_session object.
+  primaryObjectType: Provide a valid primaryObjectType value for this drafting_session object.
+  sourceArtifacts: Provide a valid sourceArtifacts value for this drafting_session object.
+  generatedObjects: Provide a valid generatedObjects value for this drafting_session object.
+  unresolvedQuestions: Provide a valid unresolvedQuestions value for this drafting_session
+    object.

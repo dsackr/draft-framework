@@ -1,5 +1,4 @@
-# Template for a Drafting Session that preserves incomplete authoring state.
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: session.<topic-slug>
 type: drafting_session
 name: <Topic> Drafting Session
@@ -12,36 +11,36 @@ owner:
   team: <owning-team>
   contact: <team-or-person@example.com>
 tags:
-  - drafting-session
-primaryObjectType: <host_standard|service_standard|database_standard|reference_architecture|software_deployment_pattern|technology_component|appliance_component|compliance_controls|control_enforcement_profile>
+- drafting-session
+primaryObjectType: <host_standard|service_standard|database_standard|reference_architecture|software_deployment_pattern|technology_component|appliance_component|capability|requirement_group>
 primaryObjectId: <optional-existing-or-created-object-id>
 sourceArtifacts:
-  - name: <Source name>
-    type: <interview|diagram|document|spreadsheet|repository|other>
-    location: <path-or-url-if-available>
-    notes: <What this source contributed.>
+- name: <Source name>
+  type: <interview|diagram|document|spreadsheet|repository|other>
+  location: <path-or-url-if-available>
+  notes: <What this source contributed.>
 generatedObjects:
-  - name: <Object name>
-    type: <object-type>
-    status: <created|proposed|stubbed|deferred>
-    ref: <object-id-if-created>
-    proposedId: <object-id-if-not-created>
-    notes: <Why this object exists or remains pending.>
+- name: <Object name>
+  type: <object-type>
+  status: <created|proposed|stubbed|deferred>
+  ref: <object-id-if-created>
+  proposedId: <object-id-if-not-created>
+  notes: <Why this object exists or remains pending.>
 unresolvedQuestions:
-  - id: <question-slug>
-    question: <Question that still needs an answer.>
-    status: open
-    reason: <Why this blocks completion or approval.>
-    currentBestGuess: <Current assumption, if any.>
-    impact: <What changes when this is answered.>
+- id: <question-slug>
+  question: <Question that still needs an answer.>
+  status: open
+  reason: <Why this blocks completion or approval.>
+  currentBestGuess: <Current assumption, if any.>
+  impact: <What changes when this is answered.>
 assumptions:
-  - id: <assumption-slug>
-    statement: <Explicit assumption made to keep drafting moving.>
-    rationale: <Why the assumption is reasonable.>
-    impact: <What may need revision if this is wrong.>
+- id: <assumption-slug>
+  statement: <Explicit assumption made to keep drafting moving.>
+  rationale: <Why the assumption is reasonable.>
+  impact: <What may need revision if this is wrong.>
 nextSteps:
-  - id: <next-step-slug>
-    action: <Follow-up action.>
-    status: open
-    owner: <person-or-team>
-    notes: <Additional detail.>
+- id: <next-step-slug>
+  action: <Follow-up action.>
+  status: open
+  owner: <person-or-team>
+  notes: <Additional detail.>

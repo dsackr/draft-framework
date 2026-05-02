@@ -15,12 +15,11 @@ optionalFields:
 - version
 - owner
 - tags
-- satisfiesDefinitionChecklist
+- requirementGroups
 - architecturalDecisions
 - externalInteractions
 - deploymentConfigurations
-- controlEnforcementProfiles
-- controlImplementations
+- requirementImplementations
 idPattern: ^service\.[a-z0-9.-]+$
 enumFields:
   catalogStatus:
@@ -36,18 +35,17 @@ enumFields:
 fieldTypes:
   owner: dict
   tags: list
-  satisfiesDefinitionChecklist: list
   architecturalDecisions: dict
   internalComponents: list
   externalInteractions: list
   deploymentConfigurations: list
-  controlEnforcementProfiles: list
-  controlImplementations: list
+  requirementGroups: list
+  requirementImplementations: list
 collectionSchemas:
   internalComponents: internalComponent
   externalInteractions: externalInteraction
   deploymentConfigurations: deploymentConfiguration
-  controlImplementations: controlImplementation
+  requirementImplementations: requirementImplementation
 internalComponent:
   requiredFields:
   - ref
@@ -85,10 +83,10 @@ deploymentConfiguration:
     addsInternalComponents: list
     addsExternalInteractions: list
     addsArchitecturalDecisions: dict
-controlImplementation:
+requirementImplementation:
   requiredFields:
-  - profile
-  - controlId
+  - requirementGroup
+  - requirementId
   - status
   optionalFields:
   - mechanism
@@ -97,6 +95,10 @@ controlImplementation:
   - criteria
   - ref
   - notes
+  fieldDescriptions:
+    requirementGroup: Reference the requirement_group object that owns this requirement.
+    requirementId: Reference the requirement id within the requirement group.
+    status: Use satisfied, not-applicable, or not-compliant to record the object disposition.
   enumFields:
     status:
     - satisfied
@@ -107,7 +109,24 @@ controlImplementation:
     - technologyComponentConfiguration
     - deploymentConfiguration
     - externalInteraction
+    - internalComponent
     - architecturalDecision
     - field
   fieldTypes:
     criteria: dict
+aiHint: A Service Standard defines a reusable service pattern built from a host and a primary
+  Technology Component.
+fieldDescriptions:
+  schemaVersion: Use the schema version string supported by this framework release, normally
+    "1.0".
+  id: Use a stable, namespaced object ID that matches this schema idPattern when one is declared.
+  type: Use the exact object type declared by the matching schema.
+  name: Use a clear human-readable name for the object.
+  hostStandard: Provide a valid hostStandard value for this service_standard object.
+  primaryTechnologyComponent: Provide a valid primaryTechnologyComponent value for this service_standard
+    object.
+  internalComponents: Provide a valid internalComponents value for this service_standard object.
+  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption
+    disposition.
+  lifecycleStatus: Use pre-invest, invest, maintain, disinvest, or exit where this object
+    still carries a lifecycle signal.

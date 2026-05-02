@@ -1,5 +1,4 @@
-# Template for a SaaS Service Standard.
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: saas-service.<vendor-product>
 type: saas_service_standard
 category: service
@@ -13,22 +12,21 @@ owner:
   team: <owning-team>
   contact: <team-or-person@example.com>
 tags:
-  - saas
+- saas
 vendor: <Vendor>
 capabilities:
-  - <capability-id>
-# Declare only profiles this standard explicitly claims.
-controlEnforcementProfiles: []
-controlImplementations: []
+- capability.<capability-slug>
 dataLeavesInfrastructure: true
 dataResidencyCommitment: <Residency commitment or TBD.>
 dpaNotes: <DPA or contractual data protection notes.>
 vendorSLA: <Vendor SLA or support posture.>
 authenticationModel: <api-key|oauth|saml|other|TBD>
 complianceCerts:
-  - <certification-name>
+- <certification-name>
 incidentNotificationProcess: <How vendor incidents are communicated.>
 architecturalDecisions:
   auditVisibility: <Logging, audit, or event visibility available to the adopter.>
   healthStatusVisibility: <How vendor health, status, or incidents are observed.>
   failureDomain: <Failure domain introduced by this SaaS dependency.>
+requirementGroups: []
+requirementImplementations: []

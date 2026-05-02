@@ -1,0 +1,12 @@
+schemaVersion: '1.0'
+id: capability.backup-strategy
+type: capability
+name: Backup Strategy
+description: Backup, restore, and recovery point capability for durable data stores.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+domain: domain.compute
+implementations: []

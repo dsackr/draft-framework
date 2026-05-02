@@ -1,5 +1,4 @@
-# Template for an Appliance Component.
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: appliance.<vendor-product>
 type: appliance_component
 subtype: appliance
@@ -12,17 +11,17 @@ owner:
   team: <owning-team>
   contact: <team-or-person@example.com>
 tags:
-  - appliance
+- appliance
 vendor: <Vendor>
 productName: <Product name>
 productVersion: <Version>
 classification: software
 capabilities:
-  - <capability-id>
+- capability.<capability-slug>
 networkPlacement: <public-facing|internal|vpc-private>
 patchingOwner: <aws-managed|organization-scheduled|vendor-managed>
 complianceCerts:
-  - <certification-name>
+- <certification-name>
 architecturalDecisions:
   resilienceModel: <Appliance resilience posture.>
   configurableSurface: <Configuration surface controlled by the organization.>

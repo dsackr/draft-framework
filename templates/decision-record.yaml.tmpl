@@ -1,5 +1,4 @@
-# Template for a Decision Record.
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: decision.<scope-slug>.001
 type: decision_record
 name: <Risk Or Decision Name>
@@ -11,7 +10,7 @@ owner:
   team: <owning-team>
   contact: <team-or-person@example.com>
 tags:
-  - decision-record
+- decision-record
 category: <risk|decision>
 status: <open|accepted|mitigated|resolved>
 affectedComponent: <object-id-or-component-name>
@@ -20,6 +19,6 @@ mitigationPath: <Mitigation path if this is a risk.>
 decisionRationale: <Required when category is decision.>
 linkedSoftwareDeployment: software-deployment.<product-slug>
 relatedDecisionRecords:
-  - decision.<scope-slug>.002
+- decision.<scope-slug>.002
 controlReferences:
-  - <controls-or-control-reference>
+- <controls-or-control-reference>

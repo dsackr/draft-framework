@@ -1,5 +1,4 @@
-# Template for a Host Standard.
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: host.<os>.<platform>.<variant>
 type: host_standard
 name: <Host Name>
@@ -11,38 +10,36 @@ owner:
   team: <owning-team>
   contact: <team-or-person@example.com>
 tags:
-  - host
+- host
 category: host
-satisfiesDefinitionChecklist:
-  - checklist.host-standard
-# Declare only profiles this standard explicitly claims.
-controlEnforcementProfiles: []
-controlImplementations: []
 operatingSystemComponent: technology.os.<vendor-product-version>
 computePlatformComponent: technology.compute.<vendor-product>
 internalComponents:
-  - ref: technology.os.<vendor-product-version>
-    role: os
-  - ref: technology.compute.<vendor-product>
-    role: hardware
+- ref: technology.os.<vendor-product-version>
+  role: os
+- ref: technology.compute.<vendor-product>
+  role: hardware
 externalInteractions:
-  - name: <Authentication Platform>
-    notes: <How administrators and service identities authenticate.>
-    capabilities:
-      - authentication
-  - name: <Logging Platform>
-    notes: <How host logs are collected.>
-    capabilities:
-      - logging
-  - name: <Monitoring Platform>
-    notes: <How host health and welfare are monitored.>
-    capabilities:
-      - monitoring
-  - name: <Security Monitoring Platform>
-    notes: <How security telemetry is collected.>
-    capabilities:
-      - security
-  - name: <Patch Management Platform>
-    notes: <How operating system and host patching is governed.>
-    capabilities:
-      - patch-management
+- name: <Authentication Platform>
+  notes: <How administrators and service identities authenticate.>
+  capabilities:
+  - capability.authentication
+- name: <Logging Platform>
+  notes: <How host logs are collected.>
+  capabilities:
+  - logging
+- name: <Monitoring Platform>
+  notes: <How host health and welfare are monitored.>
+  capabilities:
+  - monitoring
+- name: <Security Monitoring Platform>
+  notes: <How security telemetry is collected.>
+  capabilities:
+  - security
+- name: <Patch Management Platform>
+  notes: <How operating system and host patching is governed.>
+  capabilities:
+  - capability.patch-management
+requirementGroups:
+- requirement-group.host-standard
+requirementImplementations: []

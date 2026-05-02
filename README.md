@@ -37,7 +37,7 @@ updating, or validating DRAFT artifacts.
 ```text
 framework/              # Core schemas, tools, docs, and base configurations
 framework/configurations/
-                        # Base Definition Checklists, Compliance Controls, Control Enforcement Profiles, domains
+                        # Base Requirement Groups, Requirement Groups, Requirement Groups, domains
 examples/catalog/       # Sample content used to validate and demo the framework
 templates/              # Object and company repo templates
 docs/index.html         # Generated static browser for the example workspace
@@ -52,7 +52,7 @@ A company private DRAFT repo should use this shape:
 .draft/workspace.yaml  # Tracked workspace metadata
 .draft/framework.lock  # Upstream source and synced framework commit
 catalog/                # Company architecture content
-configurations/         # Company Definition Checklist, compliance, domain, and patch overlays
+configurations/         # Company Requirement Group, compliance, domain, and patch overlays
 configurations/object-patches/
                         # Patch objects for framework or catalog overrides
 ```
@@ -200,11 +200,12 @@ See [security.md](security.md) for the threat model and credential boundary.
 - [Technology Components](framework/docs/technology-components.md)
 - [Decision Records](framework/docs/decision-records.md)
 - [Drafting Sessions](framework/docs/drafting-sessions.md)
+- [Capabilities](framework/docs/capabilities.md)
 
 ### Extensible Framework Content
 
-- [Definition Checklists](framework/docs/definition-checklists.md)
-- [Compliance Controls and Control Enforcement Profiles](framework/docs/security-and-compliance-controls.md)
+- [Requirement Groups](framework/docs/requirement-groups.md)
+- [Requirement Groups and Compliance](framework/docs/security-and-compliance-controls.md)
 
 ## Validate And Generate
 
@@ -254,21 +255,21 @@ python3 framework/tools/check_release_notes.py
 
 ## Compliance Claims
 
-Control catalogs and Control Enforcement Profiles can be supplied by the DRAFT
-framework, third-party providers, or the company workspace. The company
-activates the profiles it architects against in `.draft/workspace.yaml`.
+Workspace-mode Requirement Groups can be supplied by the DRAFT framework,
+third-party providers, or the company workspace. The company activates the
+groups it architects against in `.draft/workspace.yaml`.
 
 Architecture artifacts declare compliance explicitly with
-`controlEnforcementProfiles`. When a profile is declared, every applicable
-control from that profile must have a valid `controlImplementations` entry or
-validation fails.
+`requirementGroups`. When a workspace-mode group is declared, every applicable
+requirement from that group must have a valid `requirementImplementations`
+entry before the object can be approved.
 
-Artifacts without a declared profile are unclaimed inventory. They are not
+Artifacts without a declared group are unclaimed inventory. They are not
 labeled non-compliant, but they should not be treated as compliant
-off-the-shelf building blocks for solutions that require that control profile.
-If `requireActiveProfileDisposition` is enabled in the workspace, validation
+off-the-shelf building blocks for solutions that require that requirement group.
+If `requireActiveRequirementGroupDisposition` is enabled in the workspace, validation
 also requires every in-scope object to record disposition against every active
-profile.
+group.
 
 ## Catalog Browsing
 

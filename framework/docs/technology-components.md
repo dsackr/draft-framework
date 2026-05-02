@@ -32,7 +32,6 @@ At minimum, a Technology Component YAML should include:
 - `productVersion`
 - `classification`
 - `catalogStatus`
-- `lifecycleStatus`
 
 These fields are not optional modeling guidance. The validator enforces them.
 
@@ -45,9 +44,9 @@ choices responsibly. It includes:
 - product name
 - product version
 - Technology Component classification
-- framework lifecycle status
 - vendor lifecycle dates when those dates are known
 - optional `platformDependency`
+- capability references when the product itself can satisfy a capability
 
 ## Technology Component Classifications
 
@@ -64,7 +63,7 @@ These classifications are machine-readable semantics, not just documentation
 labels. The validator can use them when checking whether a Standard is built from
 the right kinds of Technology Components.
 
-Technology Components may also carry reusable host-control metadata:
+Technology Components may also carry reusable capability metadata:
 
 - `capabilities` when the Technology Component itself satisfies one or more host capabilities
 - `configurations` when a named Technology Component configuration satisfies one or more host
@@ -73,7 +72,12 @@ Technology Components may also carry reusable host-control metadata:
 A good example is the CrowdStrike Falcon agent. The Technology Component captures the fact that
 the agent is installed locally on a host, but it also acknowledges that the
 agent exists to connect the host to the CrowdStrike platform by providing
-the `security-monitoring` capability.
+the `capability.security-monitoring` capability.
+
+Company adoption of a Technology Component is not recorded as top-level
+`lifecycleStatus` on the Technology Component. It is recorded on the relevant
+Capability implementation entry, because one company may invest in the product
+for one capability and only maintain it for another.
 
 ## What A Technology Component Is Not
 
@@ -142,10 +146,10 @@ compose. Architecturally, however, it behaves like a deployed service
 capability: adopters depend on it to do useful work inside their infrastructure
 boundary.
 
-That blackbox boundary is why the appliance Definition Checklist carries service-like operating
+That blackbox boundary is why the appliance Requirement Group carries service-like operating
 questions directly on the Technology Component. A normal host Standard inherits the host baseline
-through `checklist.host-standard`, and a normal service Standard inherits service requirements
-through `checklist.service-standard`. An Appliance Component does neither. It must therefore answer
+through `requirement-group.host-standard`, and a normal service Standard inherits service requirements
+through `requirement-group.service-standard`. An Appliance Component does neither. It must therefore answer
 consumer-facing capabilities such as authentication/access, log or audit
 visibility, health/status visibility, patch/update model, resilience, network
 placement, configurable surface, failure domain, and compliance posture on the

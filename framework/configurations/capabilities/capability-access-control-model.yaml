@@ -1,0 +1,12 @@
+schemaVersion: '1.0'
+id: capability.access-control-model
+type: capability
+name: Access Control Model
+description: Authorization model that controls access to a service or data platform.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+domain: domain.compute
+implementations: []

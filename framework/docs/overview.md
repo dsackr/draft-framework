@@ -37,6 +37,6 @@ If an AI assistant is using this repo directly to author content, start with
 
 | Object Type | Purpose |
 |---|---|
-| Definition Checklists | Structured checklists of required questions and answers used to define a complete and correct architecture object. They are written to work as human or AI interview checklists once the object taxonomy has been chosen. |
-| Compliance Controls | Selectable control catalogs that sit beside the architecture model. They let the same Definition Checklist capability set be extended with source-specific required controls without changing the architecture objects themselves. Compliance Controls are governed by `checklist.compliance-controls`. |
-| Control Enforcement Profile | The DRAFT-specific mapping that says where and how Compliance Controls apply to architecture objects. Control Enforcement Profiles are governed by `checklist.control-enforcement-profile`. |
+| Capability | A first-class architecture capability such as authentication, log management, operating system, or patch management. Company workspaces map capabilities to approved Technology Component implementations. |
+| Requirement Group | The unified requirement model for DRAFT. Always-on groups define the required questions for object completeness. Workspace-mode groups represent explicitly activated compliance or company requirements. |
+| Domain | A strategy grouping for related capabilities, used by the Draftsman to navigate from requirement to capability to approved implementation. |

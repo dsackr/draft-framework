@@ -1,0 +1,12 @@
+schemaVersion: '1.0'
+id: capability.test-authoring
+type: capability
+name: Test Authoring
+description: Tools and frameworks used to author automated tests.
+version: 1.0.0
+catalogStatus: approved
+owner:
+  team: cloud-architecture
+  contact: cloud-architecture@example.com
+domain: domain.testing
+implementations: []

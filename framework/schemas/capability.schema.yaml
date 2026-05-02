@@ -1,0 +1,59 @@
+schemaVersion: '1.0'
+type: capability
+aiHint: A Capability is a first-class architecture capability that an AI resolves to company-approved
+  Technology Component implementations before recommending a standard answer.
+requiredFields:
+- schemaVersion
+- id
+- type
+- name
+- description
+- catalogStatus
+- owner
+- domain
+- implementations
+optionalFields:
+- version
+- tags
+idPattern: ^capability\.[a-z0-9.-]+$
+enumFields:
+  catalogStatus:
+  - stub
+  - draft
+  - approved
+fieldTypes:
+  owner: dict
+  tags: list
+  implementations: list
+collectionSchemas:
+  implementations: implementation
+fieldDescriptions:
+  schemaVersion: Use the schema version string supported by this framework release, normally
+    "1.0".
+  id: Use a namespaced capability ID such as capability.log-management.
+  type: Use capability.
+  name: Use the plain-language capability name.
+  description: Explain what architecture outcome this capability represents.
+  catalogStatus: Use catalog maturity for the capability definition itself.
+  owner: Identify the team accountable for lifecycle decisions on this capability.
+  domain: Reference the owning domain object ID.
+  implementations: List company-approved Technology Component implementations; framework base
+    files usually leave this empty.
+implementation:
+  requiredFields:
+  - ref
+  - lifecycleStatus
+  optionalFields:
+  - configuration
+  - notes
+  fieldDescriptions:
+    ref: Reference a Technology Component approved to satisfy this capability.
+    lifecycleStatus: 'Record the company disposition for this implementation: pre-invest,
+      invest, maintain, disinvest, or exit.'
+  enumFields:
+    lifecycleStatus:
+    - pre-invest
+    - invest
+    - maintain
+    - disinvest
+    - exit

@@ -31,7 +31,7 @@ At minimum, a Standard YAML should include:
 - `externalInteractions`
 
 `architecturalDecisions` is optional at the schema level, but it becomes
-required whenever a Definition Checklist requirement or attached compliance control needs an
+required whenever a Requirement Group requirement or attached compliance control needs an
 answer that the object does not provide directly.
 
 Standards may also declare `deploymentConfigurations`. These are optional reusable
@@ -88,14 +88,14 @@ non-obvious additions.
 
 An architectural decision entry is required when:
 
-- a Definition Checklist question or compliance control requires an answer and the object does
+- a Requirement Group question or compliance control requires an answer and the object does
   not provide that answer directly
-- an internal component is added that is not required by a Definition Checklist or compliance
+- an internal component is added that is not required by a Requirement Group or compliance
   control
-- an external interaction is added that is not required by a Definition Checklist or
+- an external interaction is added that is not required by a Requirement Group or
   compliance control
 
-Architectural decision entries should reference the triggering Definition Checklist requirement,
+Architectural decision entries should reference the triggering Requirement Group requirement,
 compliance control, or added component or interaction.
 
 ## Host Classification
@@ -105,7 +105,7 @@ A host Standard represents a standardized host platform. It typically includes:
 - one Operating System Technology Component
 - one Compute Platform Technology Component
 - any Agent Technology Components physically installed on the host
-- any host-baseline architectural decision entries needed to answer Definition Checklist or compliance
+- any host-baseline architectural decision entries needed to answer Requirement Group or compliance
   questions that are not otherwise explicit
 
 Those are not the same thing as external interactions. An internal component is
@@ -122,7 +122,7 @@ Required host capabilities such as logging, monitoring, security monitoring, and
 patch management may be satisfied through an Agent Technology Component, a Software Technology Component, a
 named Technology Component configuration, an external interaction, or an architectural decision.
 
-Host Definition Checklists should define the host itself and its baseline controls. They should
+Host Requirement Groups should define the host itself and its baseline controls. They should
 not force service or data capabilities such as backup strategy onto the host object.
 
 ## General Service And Database Service Classifications
@@ -145,7 +145,7 @@ For a General Service, the structural baseline is:
 - one `hostStandard`
 - one `primaryTechnologyComponent`
 
-The General Service Definition Checklist then asks for the required service answers:
+The General Service Requirement Group then asks for the required service answers:
 
 - service authentication
 - secrets management
@@ -178,8 +178,8 @@ service-side Standard classifications with additional metadata fields.
 Appliance Components are the deliberate exception to the Standard composition path. They
 are Technology Components because they map directly to vendor products, but they provide a
 deployed service-like capability without exposing a host Standard or service Standard
-wrapper. Because they do not inherit `checklist.host-standard` or `checklist.service-standard`, the appliance
-Definition Checklist asks the required operating and governance capability questions directly on
+wrapper. Because they do not inherit `requirement-group.host-standard` or `requirement-group.service-standard`, the appliance
+Requirement Group asks the required operating and governance capability questions directly on
 the appliance Technology Component.
 
 ## External Interactions As Black Boxes
@@ -205,12 +205,12 @@ cataloged.
 4. If the Standard is a host, specify the internal components that live on the host.
 5. If it is a service, specify the host or managed substrate it runs on and the
    function-defining component that gives the service its purpose.
-6. Add any architectural decision entries required by the Definition Checklist or attached compliance
+6. Add any architectural decision entries required by the Requirement Group or attached compliance
    profile when the object does not answer the question directly.
-7. Add `controlEnforcementProfiles` only for Control Enforcement Profiles the Standard explicitly claims to
-   satisfy, then add valid `controlImplementations` for every applicable
+7. Add `requirementGroups` only for Requirement Groups the Standard explicitly claims to
+   satisfy, then add valid `requirementImplementations` for every applicable
    control in each declared profile.
-8. Set `satisfiesDefinitionChecklist` and run validation.
+8. Set `requirementGroups` and run validation.
 
 The validation step matters more for Standards than for any other object type
 because this is where the checklist and compliance model are enforced.

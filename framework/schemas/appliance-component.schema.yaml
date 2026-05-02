@@ -24,8 +24,8 @@ optionalFields:
 - complianceCerts
 - architecturalDecisions
 - notes
-- controlEnforcementProfiles
-- controlImplementations
+- requirementGroups
+- requirementImplementations
 idPattern: ^appliance\.[a-z0-9-]+$
 enumFields:
   catalogStatus:
@@ -59,12 +59,12 @@ fieldTypes:
   externalInteractions: list
   complianceCerts: list
   architecturalDecisions: dict
-  controlEnforcementProfiles: list
-  controlImplementations: list
+  requirementGroups: list
+  requirementImplementations: list
 collectionSchemas:
   configurations: configuration
   externalInteractions: externalInteraction
-  controlImplementations: controlImplementation
+  requirementImplementations: requirementImplementation
 configuration:
   requiredFields:
   - id
@@ -83,10 +83,10 @@ externalInteraction:
   - enabledBy
   fieldTypes:
     capabilities: list
-controlImplementation:
+requirementImplementation:
   requiredFields:
-  - profile
-  - controlId
+  - requirementGroup
+  - requirementId
   - status
   optionalFields:
   - mechanism
@@ -95,6 +95,10 @@ controlImplementation:
   - criteria
   - ref
   - notes
+  fieldDescriptions:
+    requirementGroup: Reference the requirement_group object that owns this requirement.
+    requirementId: Reference the requirement id within the requirement group.
+    status: Use satisfied, not-applicable, or not-compliant to record the object disposition.
   enumFields:
     status:
     - satisfied
@@ -105,7 +109,24 @@ controlImplementation:
     - technologyComponentConfiguration
     - deploymentConfiguration
     - externalInteraction
+    - internalComponent
     - architecturalDecision
     - field
   fieldTypes:
     criteria: dict
+aiHint: An Appliance Component is a vendor product that behaves like a service but has no
+  modeled host, so an AI must answer service-like requirements directly on it.
+fieldDescriptions:
+  schemaVersion: Use the schema version string supported by this framework release, normally
+    "1.0".
+  id: Use a stable, namespaced object ID that matches this schema idPattern when one is declared.
+  type: Use the exact object type declared by the matching schema.
+  name: Use a clear human-readable name for the object.
+  vendor: Name the external vendor or provider for this technology or service.
+  productName: Name the vendor product independently from the DRAFT object name.
+  productVersion: Record the product version, release train, or managed/current marker.
+  classification: Choose the one classification that describes the technology role.
+  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption
+    disposition.
+  lifecycleStatus: Use pre-invest, invest, maintain, disinvest, or exit where this object
+    still carries a lifecycle signal.

@@ -25,17 +25,17 @@ FRAMEWORK_ENTRYPOINTS = [
     ("framework/docs/yaml-schema-reference.md", "Quick map from object families to schemas."),
     ("framework/docs/how-to-add-objects.md", "Practical object authoring workflow."),
     ("framework/docs/workspaces.md", "Private workspace layout and source-based workflow."),
-    ("framework/docs/definition-checklists.md", "Definition Checklist model and validation behavior."),
+    ("framework/docs/requirement-groups.md", "Unified requirement group authoring and validation behavior."),
+    ("framework/docs/capabilities.md", "Capability object model and implementation lookup behavior."),
     ("framework/docs/drafting-sessions.md", "How to persist incomplete authoring work."),
-    ("framework/tools/validate.py", "Executable validation for schemas, Definition Checklists, references, and controls."),
+    ("framework/tools/validate.py", "Executable validation for schemas, Requirement Groups, capabilities, and references."),
     ("framework/tools/generate_browser.py", "Static GitHub Pages browser generator."),
     ("install-draft-table.sh", "Local DRAFT Table installer and onboarding launcher."),
 ]
 
 CONFIGURATION_FOLDERS = [
-    "framework/configurations/definition-checklists",
-    "framework/configurations/compliance-controls",
-    "framework/configurations/control-enforcement-profiles",
+    "framework/configurations/capabilities",
+    "framework/configurations/requirement-groups",
     "framework/configurations/domains",
 ]
 

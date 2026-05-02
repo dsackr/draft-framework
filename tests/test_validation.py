@@ -42,7 +42,7 @@ class ValidationTests(unittest.TestCase):
 
         self.assertTrue(result.ok, result.stdout + result.stderr)
 
-    def test_active_control_profile_must_exist(self) -> None:
+    def test_active_requirement_group_must_exist(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)
             ensure_workspace_layout(workspace)
@@ -59,10 +59,10 @@ class ValidationTests(unittest.TestCase):
                     paths:
                       catalog: catalog
                       configurations: configurations
-                    compliance:
-                      activeControlEnforcementProfiles:
-                        - control-enforcement.missing
-                      requireActiveProfileDisposition: false
+                    requirements:
+                      activeRequirementGroups:
+                        - requirement-group.missing
+                      requireActiveRequirementGroupDisposition: false
                     """
                 ).strip()
                 + "\n",
@@ -72,7 +72,7 @@ class ValidationTests(unittest.TestCase):
             result = validate_workspace(workspace)
 
         self.assertFalse(result.ok, result.stdout + result.stderr)
-        self.assertIn("activeControlEnforcementProfiles references unknown", result.stdout)
+        self.assertIn("was not found", result.stdout)
 
     def test_appliance_component_satisfies_service_like_checklist_capabilities_directly(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -94,22 +94,22 @@ class ValidationTests(unittest.TestCase):
                     catalogStatus: draft
                     lifecycleStatus: invest
                     capabilities:
-                      - compute
+                      - capability.compute
                     configurations:
                       - id: enterprise-access
                         name: Enterprise Access
                         description: SAML-authenticated administrative access.
                         capabilities:
-                          - authentication
+                          - capability.authentication
                       - id: managed-health
                         name: Managed Health Visibility
                         description: Publishes target and appliance health.
                         capabilities:
-                          - health-welfare-monitoring
+                          - capability.health-welfare-monitoring
                     externalInteractions:
                       - name: Centralized logging
                         capabilities:
-                          - log-management
+                          - capability.log-management
                     networkPlacement: public-facing
                     patchingOwner: aws-managed
                     complianceCerts: []

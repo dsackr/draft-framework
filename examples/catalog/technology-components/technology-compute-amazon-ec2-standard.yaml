@@ -2,13 +2,11 @@ schemaVersion: '1.0'
 id: technology.compute.amazon-ec2-standard
 type: technology_component
 name: Amazon EC2 Standard Compute Platform
-description: 'Standard Amazon EC2 virtual machine substrate used for general-purpose
-  host patterns.
-
-  '
+description: >
+  Standard Amazon EC2 virtual machine substrate used for general-purpose host
+  patterns.
 version: 1.0.0
 catalogStatus: draft
-lifecycleStatus: maintain
 owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com

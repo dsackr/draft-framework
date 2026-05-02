@@ -1,5 +1,4 @@
-# Template for a Reference Architecture.
-schemaVersion: "1.0"
+schemaVersion: '1.0'
 id: reference-architecture.<pattern-slug>
 type: reference_architecture
 name: <Reference Architecture Name>
@@ -11,20 +10,19 @@ owner:
   team: <owning-team>
   contact: <team-or-person@example.com>
 tags:
-  - reference-architecture
-# Declare only profiles this artifact explicitly claims.
-controlEnforcementProfiles: []
-controlImplementations: []
+- reference-architecture
 patternType: <pattern-family>
 architecturalDecisions:
   availabilityModel: <Pattern-level availability outcome.>
   scalabilityModel: <Pattern-level scalability outcome.>
   recoverabilityModel: <Pattern-level recoverability outcome.>
 serviceGroups:
-  - name: <Service Group Name>
-    deploymentTarget: <Deployment target or substrate.>
-    standards:
-      - ref: <existing-standard-id>
-        diagramTier: <presentation|application|data|utility>
-        intent: <ha|sa>
-        notes: <Role in this pattern.>
+- name: <Service Group Name>
+  deploymentTarget: <Deployment target or substrate.>
+  standards:
+  - ref: <existing-standard-id>
+    diagramTier: <presentation|application|data|utility>
+    intent: <ha|sa>
+    notes: <Role in this pattern.>
+requirementGroups: []
+requirementImplementations: []

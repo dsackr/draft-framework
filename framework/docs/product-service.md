@@ -33,7 +33,7 @@ Product Services use the
 [product-service.schema.yaml](../schemas/product-service.schema.yaml) schema and are modeled as a Standard
 classification.
 
-Product Service does not have its own Definition Checklist because it is not a starting-point
+Product Service does not have its own Requirement Group because it is not a starting-point
 architecture interview object. It emerges only when a Software Deployment Pattern expresses that a
 specific first-party component is deployed on a reusable runtime/service
 substrate.

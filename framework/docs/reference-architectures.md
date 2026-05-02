@@ -15,7 +15,7 @@ answer belongs in a Software Deployment Pattern.
 ## YAML Shape
 
 Reference Architectures are validated by
-[`framework/tools/validate.py`](../tools/validate.py) and `checklist.reference-architecture`.
+[`framework/tools/validate.py`](../tools/validate.py) and `requirement-group.reference-architecture`.
 
 At minimum, a Reference Architecture YAML should include:
 
