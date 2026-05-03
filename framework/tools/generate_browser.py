@@ -755,14 +755,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       line-height: 1.06;
       letter-spacing: 0;
     }
-    .executive-title-row {
-      display: flex;
-      align-items: center;
-      gap: 18px;
+    .executive-hero-copy {
+      display: grid;
+      grid-template-columns: 132px minmax(0, 1fr);
+      align-items: start;
+      gap: 24px;
     }
     .executive-hero-logo {
-      width: 76px;
-      height: 76px;
+      width: 132px;
+      height: 132px;
       object-fit: contain;
       flex: 0 0 auto;
       filter: drop-shadow(0 12px 22px rgba(2,6,23,0.28));
@@ -2368,8 +2369,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
       .executive-hero { padding: 22px; }
       .executive-hero h2 { font-size: 34px; }
-      .executive-title-row { align-items: flex-start; gap: 14px; }
-      .executive-hero-logo { width: 58px; height: 58px; }
+      .executive-hero-copy { grid-template-columns: 92px minmax(0, 1fr); gap: 16px; }
+      .executive-hero-logo { width: 92px; height: 92px; }
       .executive-number.big,
       .executive-number { font-size: 46px; }
       .executive-bar-row { grid-template-columns: 86px minmax(0, 1fr) 34px; }
@@ -3211,15 +3212,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <div class="view-shell">
           ${topNavMarkup()}
           <section class="executive-hero">
-            <div>
-              <div class="executive-title-row">
-                <img class="executive-hero-logo" src="${escapeHtml(browserData.logoDataUri || 'draft-logo.png')}" alt="DRAFT">
+            <div class="executive-hero-copy">
+              <img class="executive-hero-logo" src="${escapeHtml(browserData.logoDataUri || 'draft-logo.png')}" alt="DRAFT">
+              <div>
                 <h2>Welcome to the DRAFTing Table</h2>
-              </div>
-              <p>${escapeHtml(browserData.catalogName || 'This catalog')} connects architecture standards, technology lifecycle decisions, requirements, and deployment patterns so teams can draft systems from governed building blocks.</p>
-              <div class="executive-hero-actions">
-                <button class="action-button" data-executive-target="drafting-table">Open Drafting Table</button>
-                <button class="action-button secondary" data-executive-target="acceptable-use">Acceptable Use Technology</button>
+                <p>${escapeHtml(browserData.catalogName || 'This catalog')} connects architecture standards, technology lifecycle decisions, requirements, and deployment patterns so teams can draft systems from governed building blocks.</p>
+                <div class="executive-hero-actions">
+                  <button class="action-button" data-executive-target="drafting-table">Open Drafting Table</button>
+                  <button class="action-button secondary" data-executive-target="acceptable-use">Acceptable Use Technology</button>
+                </div>
               </div>
             </div>
             <div class="executive-snapshot">
