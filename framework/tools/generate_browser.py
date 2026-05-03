@@ -28,7 +28,8 @@ OUTPUT_PATH = REPO_ROOT / "docs" / "index.html"
 SCHEMA_ROOT = FRAMEWORK_ROOT / "schemas"
 BASE_CONFIGURATION_ROOT = FRAMEWORK_ROOT / "configurations"
 DEFAULT_WORKSPACE_ROOT = REPO_ROOT / "examples"
-LOGO_PATH = REPO_ROOT / "draftlogo.png"
+LOGO_PATH = REPO_ROOT / "draft-logo.png"
+LEGACY_LOGO_PATH = REPO_ROOT / "draftlogo.png"
 CATALOG_FOLDERS = [
     "capabilities",
     "requirement-groups",
@@ -317,9 +318,10 @@ def workspace_repository_name(workspace_root: Path) -> str:
 
 
 def logo_data_uri() -> str:
-    if not LOGO_PATH.exists():
+    logo_path = LOGO_PATH if LOGO_PATH.exists() else LEGACY_LOGO_PATH
+    if not logo_path.exists():
         return ""
-    encoded = base64.b64encode(LOGO_PATH.read_bytes()).decode("ascii")
+    encoded = base64.b64encode(logo_path.read_bytes()).decode("ascii")
     return f"data:image/png;base64,{encoded}"
 
 
@@ -752,6 +754,18 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       font-size: 42px;
       line-height: 1.06;
       letter-spacing: 0;
+    }
+    .executive-title-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .executive-hero-logo {
+      width: 76px;
+      height: 76px;
+      object-fit: contain;
+      flex: 0 0 auto;
+      filter: drop-shadow(0 12px 22px rgba(2,6,23,0.28));
     }
     .executive-hero p {
       margin: 14px 0 0;
@@ -2354,6 +2368,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
       .executive-hero { padding: 22px; }
       .executive-hero h2 { font-size: 34px; }
+      .executive-title-row { align-items: flex-start; gap: 14px; }
+      .executive-hero-logo { width: 58px; height: 58px; }
       .executive-number.big,
       .executive-number { font-size: 46px; }
       .executive-bar-row { grid-template-columns: 86px minmax(0, 1fr) 34px; }
@@ -3196,7 +3212,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           ${topNavMarkup()}
           <section class="executive-hero">
             <div>
-              <h2>Welcome to DRAFT</h2>
+              <div class="executive-title-row">
+                <img class="executive-hero-logo" src="${escapeHtml(browserData.logoDataUri || 'draft-logo.png')}" alt="DRAFT">
+                <h2>Welcome to the DRAFTing Table</h2>
+              </div>
               <p>${escapeHtml(browserData.catalogName || 'This catalog')} connects architecture standards, technology lifecycle decisions, requirements, and deployment patterns so teams can draft systems from governed building blocks.</p>
               <div class="executive-hero-actions">
                 <button class="action-button" data-executive-target="drafting-table">Open Drafting Table</button>
