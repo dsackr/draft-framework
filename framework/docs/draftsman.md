@@ -154,6 +154,28 @@ For Software Deployment Pattern work, create or update the Software Deployment
 Pattern first. Create Product Services only for distinct first-party runtime
 behavior needed by that pattern.
 
+## Source Provenance
+
+When source material produces or materially changes an artifact, record
+provenance on that artifact itself. A Drafting Session may summarize the
+overall intake, but it is not sufficient provenance for every generated object.
+
+For repository discovery:
+
+- Product Services should record their direct repository evidence in
+  `architecturalDecisions.sourceRepository`, `repositoryName`,
+  `repositoryPrimaryLanguage`, `observedRuntimeSignals`, and
+  `observedManifestPaths` when those facts are available.
+- Software Deployment Patterns generated from repositories should aggregate the
+  contributing repositories in `architecturalDecisions.sourceRepositories`.
+  Each entry should include the Product Service ref, repository name, repository
+  URL, primary language, and runtime signals.
+- If one Software Deployment Pattern groups multiple repositories, record every
+  contributing repository. Do not point only to the shared Drafting Session.
+- If a repository was reviewed but intentionally excluded, keep that decision in
+  the Drafting Session or a Decision Record rather than adding it as pattern
+  provenance.
+
 ## Artifact Updates
 
 Resolve update targets in this order:

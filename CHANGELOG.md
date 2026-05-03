@@ -3,6 +3,35 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.8.2 - 2026-05-03
+
+### Compatibility Impact
+
+No schema, validation, or catalog object compatibility impact. Existing
+workspaces remain valid.
+
+### Added
+
+- Added generated browser rendering for Software Deployment Pattern source
+  repositories when repository provenance is recorded on the object.
+
+### Changed
+
+- Updated Draftsman guidance so repository-discovered artifacts record
+  provenance on each generated object, not only in a shared Drafting Session.
+
+### Fixed
+
+- Fixed generated browser rendering for nested architectural decision arrays so
+  structured provenance entries do not appear as `[object Object]`.
+
+### Migration Notes
+
+No workspace data migration is required. Repository-discovered Software
+Deployment Patterns can optionally add
+`architecturalDecisions.sourceRepositories` to make per-pattern provenance
+visible in the generated browser.
+
 ## 0.8.1 - 2026-05-03
 
 ### Compatibility Impact

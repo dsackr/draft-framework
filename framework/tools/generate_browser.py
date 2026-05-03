@@ -3573,18 +3573,30 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function flattenDecisionEntries(prefix, value, entries) {
+      if (Array.isArray(value)) {
+        if (value.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
+          value.forEach((item, index) => {
+            flattenDecisionEntries(`${prefix}[${index + 1}]`, item, entries);
+          });
+        } else {
+          entries.push({ key: prefix, value: value.join(', ') });
+        }
+        return;
+      }
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         Object.entries(value).forEach(([childKey, childValue]) => {
           flattenDecisionEntries(prefix ? `${prefix}.${childKey}` : childKey, childValue, entries);
         });
         return;
       }
-      const rendered = Array.isArray(value) ? value.join(', ') : String(value);
-      entries.push({ key: prefix, value: rendered });
+      entries.push({ key: prefix, value: String(value) });
     }
 
-    function decisionMarkup(object) {
-      const decisions = object.architecturalDecisions || {};
+    function decisionMarkup(object, excludedRootKeys = []) {
+      const excluded = new Set(excludedRootKeys);
+      const decisions = Object.fromEntries(
+        Object.entries(object.architecturalDecisions || {}).filter(([key]) => !excluded.has(key))
+      );
       const entries = [];
       flattenDecisionEntries('', decisions, entries);
       if (!entries.length) {
@@ -3599,6 +3611,52 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </dl>
           </section>
         </div>
+      `;
+    }
+
+    function sourceRepositoryMarkup(object) {
+      const repos = object.architecturalDecisions?.sourceRepositories || [];
+      if (!Array.isArray(repos) || !repos.length) {
+        return '';
+      }
+      return `
+        <section class="section-card">
+          <h3>Source Repositories</h3>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Repository</th>
+                  <th>Product Service</th>
+                  <th>Language</th>
+                  <th>Signals</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${repos.map(repo => {
+                  const productService = repo.productService || '';
+                  const service = productService ? objectLookup[productService] : null;
+                  const repoName = repo.repositoryName || repo.sourceRepository || 'Unknown repository';
+                  const repoUrl = repo.sourceRepository || '';
+                  return `
+                    <tr>
+                      <td>
+                        ${repoUrl ? `<a href="${escapeHtml(repoUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(repoName)}</a>` : escapeHtml(repoName)}
+                        ${repoUrl && repoUrl !== repoName ? `<div class="object-id">${escapeHtml(repoUrl)}</div>` : ''}
+                      </td>
+                      <td>
+                        ${service ? `<span class="ard-link" data-object-link="${escapeHtml(productService)}">${escapeHtml(service.name)}</span>` : escapeHtml(productService || 'Not linked')}
+                        ${productService ? `<div class="object-id">${escapeHtml(productService)}</div>` : ''}
+                      </td>
+                      <td>${escapeHtml(repo.repositoryPrimaryLanguage || '')}</td>
+                      <td>${escapeHtml(repo.observedRuntimeSignals || '')}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </section>
       `;
     }
 
@@ -4747,13 +4805,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           ${usedByMarkup(object)}
         `;
       } else if (object.type === 'software_deployment_pattern') {
+        const hasSourceRepositories = Array.isArray(object.architecturalDecisions?.sourceRepositories) && object.architecturalDecisions.sourceRepositories.length > 0;
         detailBody = `
           ${headerMarkup}
           <div class="detail-tabs">
-            <button class="detail-tab" data-sdm-tab="details">Details</button>
-            <button class="detail-tab active" data-sdm-tab="topology">Deployment Topology</button>
+            <button class="detail-tab ${hasSourceRepositories ? 'active' : ''}" data-sdm-tab="details">Details</button>
+            <button class="detail-tab ${hasSourceRepositories ? '' : 'active'}" data-sdm-tab="topology">Deployment Topology</button>
           </div>
-          <div class="detail-panel" data-sdm-panel="details" hidden>
+          <div class="detail-panel" data-sdm-panel="details" ${hasSourceRepositories ? '' : 'hidden'}>
             <section class="section-card">
               <h3>Applied Pattern</h3>
               <div class="section-stack">
@@ -4764,14 +4823,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </section>
             ${sdmServiceGroupsMarkup(object)}
             ${sdmRisksMarkup(object)}
+            ${sourceRepositoryMarkup(object)}
             <section class="decisions-card">
               <h3>Architectural Decision Entries</h3>
-            ${object.architecturalDecisions && Object.keys(object.architecturalDecisions).length
-                ? `<div class="decisions-grid single"><section class="decision-card"><dl class="definition-list">${Object.entries(object.architecturalDecisions).map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(Array.isArray(value) ? value.join(', ') : String(value))}</dd>`).join('')}</dl></section></div>`
-                : '<div class="empty-card">No architectural decisions are defined for this object.</div>'}
+              ${decisionMarkup(object, ['sourceRepositories'])}
             </section>
           </div>
-          <div class="detail-panel" data-sdm-panel="topology">
+          <div class="detail-panel" data-sdm-panel="topology" ${hasSourceRepositories ? 'hidden' : ''}>
             <section class="section-card">
               <h3>Deployment Topology</h3>
               <div id="topology-canvas"></div>
@@ -4790,9 +4848,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${sdmServiceGroupsMarkup(object)}
             <section class="decisions-card">
               <h3>Architectural Decision Entries</h3>
-            ${object.architecturalDecisions && Object.keys(object.architecturalDecisions).length
-                ? `<div class="decisions-grid single"><section class="decision-card"><dl class="definition-list">${Object.entries(object.architecturalDecisions).map(([key, value]) => `<dt>${escapeHtml(key)}</dt><dd>${escapeHtml(Array.isArray(value) ? value.join(', ') : String(value))}</dd>`).join('')}</dl></section></div>`
-                : '<div class="empty-card">No architectural decisions are defined for this object.</div>'}
+              ${decisionMarkup(object)}
             </section>
           </div>
           <div class="detail-panel" data-sdm-panel="topology">

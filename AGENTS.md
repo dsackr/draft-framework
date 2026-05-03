@@ -70,6 +70,10 @@ AI agents should treat DRAFT as a deterministic authoring system:
   workspace files.
 - Run validation before presenting completed file changes.
 - Preserve unresolved facts in Drafting Sessions.
+- Record source provenance on each generated or materially updated artifact,
+  not only in a shared Drafting Session. For repository discovery, Software
+  Deployment Patterns should aggregate contributing repositories in
+  `architecturalDecisions.sourceRepositories`.
 - Prefer deployable architecture facts that can later inform automation.
 
 ## Compliance Claims
