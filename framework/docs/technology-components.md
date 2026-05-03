@@ -76,10 +76,10 @@ the `capability.security-monitoring` capability.
 
 Company adoption of a Technology Component is not recorded as top-level
 `lifecycleStatus` on the Technology Component. It is recorded on the relevant
-Capability implementation entry, because one company may invest in the product
-for one capability and only maintain it for another. The capability owner, not
-the framework definition owner, is the authority that assigns those lifecycle
-states.
+Capability implementation entry, because one company may mark the product
+`preferred` for one capability and `existing-only` for another. The
+capability owner, not the framework definition owner, is the authority that
+assigns those lifecycle states.
 
 ## What A Technology Component Is Not
 

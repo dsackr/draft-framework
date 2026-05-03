@@ -195,7 +195,7 @@ requirements:
   - externalInteraction
   - internalComponent
   - technologyComponentConfiguration
-lifecycleStatus: maintain
+lifecycleStatus: existing-only
 tags:
 - host
 - requirement-group

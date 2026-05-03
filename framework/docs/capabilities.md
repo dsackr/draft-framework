@@ -32,8 +32,8 @@ team accountable for deciding which vendor products may satisfy the capability.
 
 When a workspace assigns any implementation lifecycle entries, the effective
 capability must include `owner.team`. That owner is the decision authority for
-moving Technology Components through `pre-invest`, `invest`, `maintain`,
-`disinvest`, and `exit`.
+moving Technology Components through `candidate`, `preferred`, `existing-only`,
+`deprecated`, and `retired`.
 
 ## Capability Lookup Procedure
 
@@ -46,7 +46,7 @@ procedure:
    overlays before framework base.
 4. Read `owner` to identify the company decision authority.
 5. Read `implementations`.
-6. Prefer implementations with `lifecycleStatus: invest`, then `maintain`.
+6. Prefer implementations with `lifecycleStatus: preferred`, then `existing-only`.
 7. Recommend the referenced Technology Component or named configuration.
 8. If no implementation exists, ask which Technology Component should satisfy
    the capability and flag that the capability owner must approve the lifecycle
@@ -80,5 +80,5 @@ configuration, and notes. This is the human-readable technology lifecycle table
 for a company workspace.
 
 If a user wants a Technology Component added, retired, or moved between
-`pre-invest`, `invest`, `maintain`, `disinvest`, and `exit`, the capability
+`candidate`, `preferred`, `existing-only`, `deprecated`, and `retired`, the capability
 owner listed in that view is the contact for the change request.

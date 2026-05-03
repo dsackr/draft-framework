@@ -32,11 +32,11 @@ enumFields:
   - always
   - workspace
   lifecycleStatus:
-  - pre-invest
-  - invest
-  - maintain
-  - disinvest
-  - exit
+  - candidate
+  - preferred
+  - existing-only
+  - deprecated
+  - retired
 fieldTypes:
   owner: dict
   tags: list

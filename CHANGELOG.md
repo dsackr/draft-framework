@@ -3,12 +3,15 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
-## Unreleased
+## 0.8.0 - 2026-05-03
 
 ### Compatibility Impact
 
-No migration required. Existing capability implementation mappings drive the new
-browser view.
+Breaking pre-1.0 lifecycle vocabulary migration required. Workspaces must
+replace the old lifecycle labels with the new plain-language labels across
+catalog objects and capability implementation mappings: `pre-invest` becomes
+`candidate`, `invest` becomes `preferred`, `maintain` becomes `existing-only`,
+`disinvest` becomes `deprecated`, and `exit` becomes `retired`.
 
 ### Added
 
@@ -22,13 +25,15 @@ browser view.
 
 ### Changed
 
+- Renamed lifecycle vocabulary to plainer adopting-company language:
+  `candidate`, `preferred`, `existing-only`, `deprecated`, and `retired`.
 - Renamed the generated browser list navigation to Drafting Table so the
   executive landing page can hand users into the existing object browser.
 - Documented Reference Architecture lifecycle policy: cloud-forward patterns are
-  `invest`, legacy supported patterns are `maintain`, and patterns containing
-  end-of-support Technology Components are `disinvest`. Patterns containing
-  extended-support Technology Components default to `disinvest`, may be
-  `maintain` with explicit rationale, and must not be `invest`.
+  `preferred`, legacy supported patterns are `existing-only`, and patterns containing
+  end-of-support Technology Components are `deprecated`. Patterns containing
+  extended-support Technology Components default to `deprecated`, may be
+  `existing-only` with explicit rationale, and must not be `preferred`.
 - Increased Executive View metric and tile heading sizes so each collage tile
   carries equal visual weight.
 - Fixed Executive View tile CSS so the shared large metric size is not
@@ -57,13 +62,17 @@ browser view.
   mechanisms as top-level interactions.
 - Fixed Reference Architecture validation so patterns that include Technology
   Components past `vendorLifecycle.extendedSupportEnd` must be marked
-  `disinvest`.
+  `deprecated`.
 - Fixed Reference Architecture validation so patterns that include Technology
   Components past `vendorLifecycle.mainstreamSupportEnd` cannot be marked
-  `invest`; `maintain` requires an explicit lifecycle rationale.
+  `preferred`; `existing-only` requires an explicit lifecycle rationale.
 
 ### Migration Notes
 
+- Replace lifecycle labels in workspace YAML:
+  `pre-invest` -> `candidate`, `invest` -> `preferred`,
+  `maintain` -> `existing-only`, `disinvest` -> `deprecated`,
+  and `exit` -> `retired`.
 - Regenerate `docs/index.html` to publish the Acceptable Use Technology view for
   a framework or workspace browser.
 

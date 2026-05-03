@@ -11,7 +11,7 @@ description: >
   responsibility exist at this layer.
 version: 1.0.0
 catalogStatus: draft
-lifecycleStatus: invest
+lifecycleStatus: preferred
 owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com

@@ -314,7 +314,7 @@ requirements:
   - field
   - architecturalDecision
   externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
-lifecycleStatus: invest
+lifecycleStatus: preferred
 tags:
 - compliance
 - nist

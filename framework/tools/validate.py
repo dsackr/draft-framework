@@ -58,7 +58,7 @@ VALID_REQUIREMENT_ANSWER_TYPES = {
 }
 VALID_REQUIREMENT_MODES = {"mandatory", "conditional"}
 VALID_REQUIREMENT_ACTIVATIONS = {"always", "workspace"}
-VALID_IMPLEMENTATION_STATUSES = {"pre-invest", "invest", "maintain", "disinvest", "exit"}
+VALID_IMPLEMENTATION_STATUSES = {"candidate", "preferred", "existing-only", "deprecated", "retired"}
 STANDARD_TYPES = {
     "host_standard",
     "service_standard",
@@ -1031,26 +1031,26 @@ def validate_ra(
 
     object_id = obj.get("id", "unknown")
     expired_technologies, extended_support_technologies = vendor_lifecycle_risk_technologies(obj, catalog_by_id)
-    if expired_technologies and obj.get("lifecycleStatus") != "disinvest":
+    if expired_technologies and obj.get("lifecycleStatus") != "deprecated":
         details = ", ".join(f"{ref} extendedSupportEnd {support_end.isoformat()}" for ref, support_end in expired_technologies)
         failures.append(
-            f"{path}: Set lifecycleStatus: disinvest on Reference Architecture '{object_id}' because it includes end-of-support Technology Components: {details}"
+            f"{path}: Set lifecycleStatus: deprecated on Reference Architecture '{object_id}' because it includes end-of-support Technology Components: {details}"
         )
-    if extended_support_technologies and obj.get("lifecycleStatus") == "invest":
+    if extended_support_technologies and obj.get("lifecycleStatus") == "preferred":
         details = ", ".join(
             f"{ref} mainstreamSupportEnd {mainstream_end.isoformat()}"
             + (f", extendedSupportEnd {support_end.isoformat()}" if support_end else ", extendedSupportEnd not declared")
             for ref, mainstream_end, support_end in extended_support_technologies
         )
         failures.append(
-            f"{path}: Set lifecycleStatus: disinvest by default, or maintain with architecturalDecisions.lifecycleRationale, on Reference Architecture '{object_id}' because it includes Technology Components in extended support: {details}"
+            f"{path}: Set lifecycleStatus: deprecated by default, or existing-only with architecturalDecisions.lifecycleRationale, on Reference Architecture '{object_id}' because it includes Technology Components in extended support: {details}"
         )
-    if extended_support_technologies and obj.get("lifecycleStatus") == "maintain":
+    if extended_support_technologies and obj.get("lifecycleStatus") == "existing-only":
         decisions = obj.get("architecturalDecisions") or {}
         if not isinstance(decisions, dict) or not is_non_empty(decisions.get("lifecycleRationale")):
             details = ", ".join(f"{ref} mainstreamSupportEnd {mainstream_end.isoformat()}" for ref, mainstream_end, _ in extended_support_technologies)
             failures.append(
-                f"{path}: Add architecturalDecisions.lifecycleRationale to explain why Reference Architecture '{object_id}' remains maintain while these Technology Components are in extended support: {details}"
+                f"{path}: Add architecturalDecisions.lifecycleRationale to explain why Reference Architecture '{object_id}' remains existing-only while these Technology Components are in extended support: {details}"
             )
 
     if not is_non_empty(obj.get("patternType")):

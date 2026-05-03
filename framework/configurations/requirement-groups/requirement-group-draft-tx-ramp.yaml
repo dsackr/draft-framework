@@ -372,7 +372,7 @@ requirements:
     - field: complianceContext.soldInTexas
       equals: true
   externalReference: https://dir.texas.gov/information-security/texas-risk-and-authorization-management-program-tx-ramp
-lifecycleStatus: invest
+lifecycleStatus: preferred
 tags:
 - compliance
 - tx-ramp

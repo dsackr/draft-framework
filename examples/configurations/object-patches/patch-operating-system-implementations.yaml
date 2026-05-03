@@ -5,7 +5,7 @@ name: Example capability.operating-system implementations
 description: Example workspace-owned capability implementation mapping.
 version: 1.0.0
 catalogStatus: draft
-lifecycleStatus: maintain
+lifecycleStatus: existing-only
 target: capability.operating-system
 patch:
   owner:
@@ -13,5 +13,5 @@ patch:
     contact: architecture@example.com
   implementations:
   - ref: technology.os.canonical-ubuntu-2204
-    lifecycleStatus: maintain
+    lifecycleStatus: existing-only
     notes: Example operating system implementation.

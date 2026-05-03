@@ -201,7 +201,7 @@ requirements:
   naAllowed: false
   validAnswerTypes:
   - architecturalDecision
-lifecycleStatus: maintain
+lifecycleStatus: existing-only
 tags:
 - service
 - requirement-group

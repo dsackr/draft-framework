@@ -54,12 +54,12 @@ implementation:
   - notes
   fieldDescriptions:
     ref: Reference a Technology Component approved to satisfy this capability.
-    lifecycleStatus: 'Record the company disposition for this implementation: pre-invest,
-      invest, maintain, disinvest, or exit.'
+    lifecycleStatus: 'Record the company disposition for this implementation: candidate,
+      preferred, existing-only, deprecated, or retired.'
   enumFields:
     lifecycleStatus:
-    - pre-invest
-    - invest
-    - maintain
-    - disinvest
-    - exit
+    - candidate
+    - preferred
+    - existing-only
+    - deprecated
+    - retired

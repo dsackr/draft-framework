@@ -53,7 +53,7 @@ Always use this named lookup procedure when a requirement has
 4. Read capability `owner` from the effective model; this is the company
    decision authority for lifecycle choices.
 5. Read capability `implementations` from the workspace overlay first, then base.
-6. Prefer implementations with `lifecycleStatus: invest`, then `maintain`.
+6. Prefer implementations with `lifecycleStatus: preferred`, then `existing-only`.
 7. Recommend the referenced Technology Component or named configuration.
 8. If no implementation exists, ask which Technology Component should satisfy
    the capability and note that the capability owner must approve the lifecycle

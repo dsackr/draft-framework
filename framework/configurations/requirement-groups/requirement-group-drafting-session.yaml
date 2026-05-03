@@ -82,7 +82,7 @@ requirements:
   naAllowed: false
   validAnswerTypes:
   - field
-lifecycleStatus: invest
+lifecycleStatus: preferred
 tags:
 - drafting-session
 - requirement-group

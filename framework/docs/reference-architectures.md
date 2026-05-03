@@ -34,25 +34,26 @@ Most Reference Architectures also include `description`, `patternType`, and
 The `lifecycleStatus` on a Reference Architecture describes the company's
 position on using that deployment pattern:
 
-- `invest` for cloud-forward or target-state patterns that should be preferred
-  for new architecture
-- `maintain` for legacy patterns that remain supported for existing systems
-- `disinvest` for patterns that should be migrated away from
-- `exit` for patterns being actively retired
+- `preferred` for cloud-forward or target-state patterns that should be used for
+  new architecture
+- `candidate` for patterns being evaluated before they become preferred
+- `existing-only` for legacy patterns that remain supported for existing systems
+- `deprecated` for patterns that should be migrated away from
+- `retired` for patterns being actively retired
 
 A Reference Architecture that includes a Technology Component whose
 `vendorLifecycle.extendedSupportEnd` date has passed must be marked
-`disinvest`. The validator follows the pattern's `serviceGroups` through the
+`deprecated`. The validator follows the pattern's `serviceGroups` through the
 referenced Standards to the underlying Technology Components and enforces this
 rule.
 
 A Reference Architecture that includes a Technology Component whose
 `vendorLifecycle.mainstreamSupportEnd` date has passed but whose
 `extendedSupportEnd` date has not passed is in extended support. The default
-position for these patterns is `disinvest`. A company may mark the pattern
-`maintain` while extended support is active, but it must document that exception
+position for these patterns is `deprecated`. A company may mark the pattern
+`existing-only` while extended support is active, but it must document that exception
 in `architecturalDecisions.lifecycleRationale`. Extended-support Technology
-Components must not appear in an `invest` Reference Architecture.
+Components must not appear in a `preferred` Reference Architecture.
 
 ## What `serviceGroups` Means
 

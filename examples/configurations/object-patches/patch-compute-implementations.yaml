@@ -5,7 +5,7 @@ name: Example capability.compute implementations
 description: Example workspace-owned capability implementation mapping.
 version: 1.0.0
 catalogStatus: draft
-lifecycleStatus: maintain
+lifecycleStatus: existing-only
 target: capability.compute
 patch:
   owner:
@@ -13,5 +13,5 @@ patch:
     contact: architecture@example.com
   implementations:
   - ref: technology.compute.amazon-ec2-standard
-    lifecycleStatus: maintain
+    lifecycleStatus: existing-only
     notes: Example general-purpose compute implementation.

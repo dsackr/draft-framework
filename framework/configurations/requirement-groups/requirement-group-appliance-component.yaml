@@ -215,7 +215,7 @@ requirements:
   validAnswerTypes:
   - field
   minimumSatisfactions: 1
-lifecycleStatus: invest
+lifecycleStatus: preferred
 tags:
 - appliance
 - requirement-group

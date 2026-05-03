@@ -76,7 +76,7 @@ requirements:
   validAnswerTypes:
   - architecturalDecision
   minimumSatisfactions: 1
-lifecycleStatus: invest
+lifecycleStatus: preferred
 tags:
 - paas
 - requirement-group

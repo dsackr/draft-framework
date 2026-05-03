@@ -97,7 +97,7 @@ When a requirement has `relatedCapability`, resolve it before interviewing:
 1. requirement -> `relatedCapability`
 2. capability object -> company `owner`
 3. capability object -> `implementations`
-4. implementations filtered first to `lifecycleStatus: invest`, then `maintain`
+4. implementations filtered first to `lifecycleStatus: preferred`, then `existing-only`
 5. referenced Technology Component or configuration
 
 If no implementation exists, ask what mechanism satisfies the capability rather

@@ -416,7 +416,7 @@ requirements:
   - technologyComponentConfiguration
   - architecturalDecision
   externalReference: https://controls.example.com/security-compliance/04.3.1
-lifecycleStatus: maintain
+lifecycleStatus: existing-only
 tags:
 - compliance
 - controls

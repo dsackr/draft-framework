@@ -69,7 +69,7 @@ workspace disposition is enabled.
 
 For every requirement with `relatedCapability`, the Draftsman resolves the
 capability before asking the user. The Draftsman reads the capability owner,
-then presents `invest` implementations first and `maintain` implementations
+then presents `preferred` implementations first and `existing-only` implementations
 second as recommended options. The question should not be open-ended unless the
 company has not mapped an implementation. If no implementation is mapped, the
 Draftsman asks which Technology Component should satisfy the capability and

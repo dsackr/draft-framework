@@ -33,11 +33,11 @@ enumFields:
   - draft
   - approved
   lifecycleStatus:
-  - pre-invest
-  - invest
-  - maintain
-  - disinvest
-  - exit
+  - candidate
+  - preferred
+  - existing-only
+  - deprecated
+  - retired
   networkPlacement:
   - public-facing
   - internal
@@ -128,5 +128,5 @@ fieldDescriptions:
   classification: Choose the one classification that describes the technology role.
   catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption
     disposition.
-  lifecycleStatus: Use pre-invest, invest, maintain, disinvest, or exit where this object
+  lifecycleStatus: Use candidate, preferred, existing-only, deprecated, or retired where this object
     still carries a lifecycle signal.

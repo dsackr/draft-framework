@@ -50,8 +50,8 @@ Objects use `requirementGroups` to claim a workspace-mode group and
 - `not-compliant`: the gap is known and must remain visible until fixed
 
 When a requirement has `relatedCapability`, the Draftsman resolves the capability
-object, reads the company capability owner, and recommends `invest` or
-`maintain` Technology Component implementations before asking the user. This
+object, reads the company capability owner, and recommends `preferred` or
+`existing-only` Technology Component implementations before asking the user. This
 means compliance questions are grounded in the same capability model as base
 object-definition questions.
 

@@ -51,11 +51,11 @@ CATALOG_FOLDERS = [
     "domains",
 ]
 LIFECYCLE_COLORS = {
-    "invest": "10b981",
-    "maintain": "3b82f6",
-    "disinvest": "f59e0b",
-    "exit": "ef4444",
-    "pre-invest": "8b5cf6",
+    "preferred": "10b981",
+    "existing-only": "3b82f6",
+    "deprecated": "f59e0b",
+    "retired": "ef4444",
+    "candidate": "8b5cf6",
     "unknown": "475569",
 }
 REF_CONTAINER_KEYS = {
@@ -586,8 +586,8 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
     filter_values = sorted({obj["type"] for obj in objects})
     lifecycle_values = sorted(
         {obj.get("lifecycleStatus", "unknown") for obj in objects},
-        key=lambda value: ["pre-invest", "invest", "maintain", "disinvest", "exit", "unknown"].index(value)
-        if value in {"pre-invest", "invest", "maintain", "disinvest", "exit", "unknown"}
+        key=lambda value: ["preferred", "existing-only", "candidate", "deprecated", "retired", "unknown"].index(value)
+        if value in {"preferred", "existing-only", "candidate", "deprecated", "retired", "unknown"}
         else 999,
     )
     return {
@@ -1975,11 +1975,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border-color: transparent;
       opacity: 1;
     }
-    .lifecycle-filter-button.exit-filter {
+    .lifecycle-filter-button.retired-filter {
       border-style: dashed;
       opacity: 0.55;
     }
-    .lifecycle-filter-button.exit-filter:not(.active) {
+    .lifecycle-filter-button.retired-filter:not(.active) {
       text-decoration: line-through;
     }
     #impact-cy {
@@ -2479,7 +2479,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     let currentSdmScalingFilter = 'all';
     let suppressHashSync = false;
     let impactLifecycleFilters = Object.fromEntries(
-      impactLifecycleOrder.map(status => [status, status !== 'exit'])
+      impactLifecycleOrder.map(status => [status, status !== 'retired'])
     );
 
     Object.entries(lifecycleColors).forEach(([label, value]) => {
@@ -2881,11 +2881,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function lifecycleSortRank(status) {
       return ({
-        'invest': 0,
-        'maintain': 1,
-        'pre-invest': 2,
-        'disinvest': 3,
-        'exit': 4
+        'preferred': 0,
+        'existing-only': 1,
+        'candidate': 2,
+        'deprecated': 3,
+        'retired': 4
       }[status] ?? 99);
     }
 
@@ -3043,7 +3043,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function executiveLifecyclePanelMarkup(stats) {
-      const orderedStatuses = ['invest', 'maintain', 'pre-invest', 'disinvest', 'exit', 'unknown'];
+      const orderedStatuses = ['preferred', 'existing-only', 'candidate', 'deprecated', 'retired', 'unknown'];
       const rows = orderedStatuses
         .filter(status => stats.lifecycleCounts[status])
         .map(status => ({ status, count: stats.lifecycleCounts[status] }));
@@ -5178,7 +5178,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           ${impactLifecycleOrder.map(status => {
             const active = !!impactLifecycleFilters[status];
             const color = '#' + lifecycleColors[status];
-            const classes = ['lifecycle-filter-button', active ? 'active' : '', status === 'exit' ? 'exit-filter' : '']
+            const classes = ['lifecycle-filter-button', active ? 'active' : '', status === 'retired' ? 'retired-filter' : '']
               .filter(Boolean)
               .join(' ');
             const style = active ? `background:${color};` : '';

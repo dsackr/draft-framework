@@ -70,7 +70,7 @@ requirements:
   validAnswerTypes:
   - field
   - architecturalDecision
-lifecycleStatus: invest
+lifecycleStatus: preferred
 tags:
 - reference-architecture
 - requirement-group

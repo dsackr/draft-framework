@@ -140,7 +140,7 @@ requirements:
   naAllowed: false
   validAnswerTypes:
   - architecturalDecision
-lifecycleStatus: invest
+lifecycleStatus: preferred
 tags:
 - software-deployment-pattern
 - requirement-group

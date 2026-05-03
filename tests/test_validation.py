@@ -141,7 +141,7 @@ class ValidationTests(unittest.TestCase):
                     product: Test
                     runsOn: host.test
                     catalogStatus: approved
-                    lifecycleStatus: maintain
+                    lifecycleStatus: existing-only
                     requirementGroups:
                       - requirement-group.company-control
                     architecturalDecisions:
@@ -228,7 +228,7 @@ class ValidationTests(unittest.TestCase):
                 type: host_standard
                 name: Test Host
                 catalogStatus: stub
-                lifecycleStatus: maintain
+                lifecycleStatus: existing-only
                 """
             ).strip()
             + "\n",
@@ -246,7 +246,7 @@ class ValidationTests(unittest.TestCase):
                 product: Test
                 runsOn: host.test
                 catalogStatus: approved
-                lifecycleStatus: maintain
+                lifecycleStatus: existing-only
                 """
             ).strip()
             + "\n",
@@ -271,7 +271,7 @@ class ValidationTests(unittest.TestCase):
                     productVersion: managed
                     classification: software
                     catalogStatus: draft
-                    lifecycleStatus: invest
+                    lifecycleStatus: preferred
                     capabilities:
                       - capability.compute
                     configurations:
@@ -320,7 +320,7 @@ class ValidationTests(unittest.TestCase):
                     type: host_standard
                     name: Test Host
                     catalogStatus: stub
-                    lifecycleStatus: maintain
+                    lifecycleStatus: existing-only
                     externalInteractions:
                       - name: Missing Logging Standard
                         ref: service.missing.logging
@@ -370,11 +370,11 @@ class ValidationTests(unittest.TestCase):
                     name: Test Security Monitoring Implementation
                     target: capability.security-monitoring
                     catalogStatus: draft
-                    lifecycleStatus: maintain
+                    lifecycleStatus: existing-only
                     patch:
                       implementations:
                         - ref: technology.agent.test
-                          lifecycleStatus: invest
+                          lifecycleStatus: preferred
                     """
                 ).strip()
                 + "\n",
@@ -401,7 +401,7 @@ class ValidationTests(unittest.TestCase):
                     type: service_standard
                     name: Test Service
                     catalogStatus: stub
-                    lifecycleStatus: maintain
+                    lifecycleStatus: existing-only
                     """
                 ).strip()
                 + "\n",
@@ -416,13 +416,13 @@ class ValidationTests(unittest.TestCase):
                     name: Test Security Monitoring Implementation
                     target: capability.security-monitoring
                     catalogStatus: draft
-                    lifecycleStatus: maintain
+                    lifecycleStatus: existing-only
                     patch:
                       owner:
                         team: security-engineering
                       implementations:
                         - ref: service.test
-                          lifecycleStatus: invest
+                          lifecycleStatus: preferred
                     """
                 ).strip()
                 + "\n",

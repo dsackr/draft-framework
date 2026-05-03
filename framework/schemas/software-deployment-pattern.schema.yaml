@@ -27,11 +27,11 @@ enumFields:
   - draft
   - approved
   lifecycleStatus:
-  - pre-invest
-  - invest
-  - maintain
-  - disinvest
-  - exit
+  - candidate
+  - preferred
+  - existing-only
+  - deprecated
+  - retired
 fieldTypes:
   owner: dict
   tags: list
@@ -158,5 +158,5 @@ fieldDescriptions:
   name: Use a clear human-readable name for the object.
   catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption
     disposition.
-  lifecycleStatus: Use pre-invest, invest, maintain, disinvest, or exit where this object
+  lifecycleStatus: Use candidate, preferred, existing-only, deprecated, or retired where this object
     still carries a lifecycle signal.

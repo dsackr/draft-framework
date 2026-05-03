@@ -152,7 +152,7 @@ requirements:
   validAnswerTypes:
   - field
   minimumSatisfactions: 1
-lifecycleStatus: invest
+lifecycleStatus: preferred
 tags:
 - saas
 - requirement-group

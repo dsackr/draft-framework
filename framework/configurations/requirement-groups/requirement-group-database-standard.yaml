@@ -97,7 +97,7 @@ requirements:
   validAnswerTypes:
   - architecturalDecision
   - externalInteraction
-lifecycleStatus: maintain
+lifecycleStatus: existing-only
 tags:
 - service
 - dbms

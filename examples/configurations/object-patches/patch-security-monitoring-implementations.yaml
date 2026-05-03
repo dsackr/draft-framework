@@ -5,7 +5,7 @@ name: Example capability.security-monitoring implementations
 description: Example workspace-owned capability implementation mapping.
 version: 1.0.0
 catalogStatus: draft
-lifecycleStatus: maintain
+lifecycleStatus: existing-only
 target: capability.security-monitoring
 patch:
   owner:
@@ -13,5 +13,5 @@ patch:
     contact: architecture@example.com
   implementations:
   - ref: technology.agent.crowdstrike-falcon
-    lifecycleStatus: maintain
+    lifecycleStatus: existing-only
     notes: Example endpoint security monitoring agent.
