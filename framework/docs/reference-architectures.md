@@ -29,6 +29,31 @@ At minimum, a Reference Architecture YAML should include:
 Most Reference Architectures also include `description`, `patternType`, and
 `architecturalDecisions`.
 
+## Lifecycle Policy
+
+The `lifecycleStatus` on a Reference Architecture describes the company's
+position on using that deployment pattern:
+
+- `invest` for cloud-forward or target-state patterns that should be preferred
+  for new architecture
+- `maintain` for legacy patterns that remain supported for existing systems
+- `disinvest` for patterns that should be migrated away from
+- `exit` for patterns being actively retired
+
+A Reference Architecture that includes a Technology Component whose
+`vendorLifecycle.extendedSupportEnd` date has passed must be marked
+`disinvest`. The validator follows the pattern's `serviceGroups` through the
+referenced Standards to the underlying Technology Components and enforces this
+rule.
+
+A Reference Architecture that includes a Technology Component whose
+`vendorLifecycle.mainstreamSupportEnd` date has passed but whose
+`extendedSupportEnd` date has not passed is in extended support. The default
+position for these patterns is `disinvest`. A company may mark the pattern
+`maintain` while extended support is active, but it must document that exception
+in `architecturalDecisions.lifecycleRationale`. Extended-support Technology
+Components must not appear in an `invest` Reference Architecture.
+
 ## What `serviceGroups` Means
 
 The core field in a Reference Architecture is `serviceGroups`. Each group clusters the required

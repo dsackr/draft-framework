@@ -3,8 +3,10 @@ from __future__ import annotations
 
 import argparse
 import copy
+import os
 import sys
 import re
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -505,6 +507,98 @@ def referenced_technology_components(obj: dict[str, Any], catalog_by_id: dict[st
     return resolved
 
 
+def parse_lifecycle_date(value: Any) -> date | None:
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        return date.fromisoformat(value.strip()[:10])
+    except ValueError:
+        return None
+
+
+def validation_date() -> date:
+    configured = os.environ.get("DRAFT_VALIDATION_DATE")
+    if configured:
+        parsed = parse_lifecycle_date(configured)
+        if parsed:
+            return parsed
+    return date.today()
+
+
+def collect_technology_component_refs(
+    ref: str,
+    catalog_by_id: dict[str, dict[str, Any]],
+    seen: set[str] | None = None,
+) -> set[str]:
+    if seen is None:
+        seen = set()
+    if ref in seen:
+        return set()
+    seen.add(ref)
+
+    target = catalog_by_id.get(ref)
+    if not isinstance(target, dict):
+        return set()
+    if target.get("type") == "technology_component":
+        return {ref}
+
+    refs: list[str] = []
+    for field in ("operatingSystemComponent", "computePlatformComponent", "primaryTechnologyComponent", "hostStandard", "runsOn"):
+        value = target.get(field)
+        if is_non_empty(value):
+            refs.append(str(value))
+    for component in target.get("internalComponents", []) or []:
+        if isinstance(component, dict) and is_non_empty(component.get("ref")):
+            refs.append(str(component["ref"]))
+
+    technology_refs: set[str] = set()
+    for nested_ref in refs:
+        technology_refs.update(collect_technology_component_refs(nested_ref, catalog_by_id, seen))
+    return technology_refs
+
+
+def reference_architecture_technology_refs(
+    obj: dict[str, Any],
+    catalog_by_id: dict[str, dict[str, Any]],
+) -> set[str]:
+    technology_refs: set[str] = set()
+    for group in obj.get("serviceGroups", []) or []:
+        if not isinstance(group, dict):
+            continue
+        for collection_name in ("standards", "applianceComponents"):
+            for entry in group.get(collection_name, []) or []:
+                if isinstance(entry, dict) and is_non_empty(entry.get("ref")):
+                    technology_refs.update(collect_technology_component_refs(str(entry["ref"]), catalog_by_id))
+    return technology_refs
+
+
+def vendor_lifecycle_risk_technologies(
+    obj: dict[str, Any],
+    catalog_by_id: dict[str, dict[str, Any]],
+) -> tuple[list[tuple[str, date]], list[tuple[str, date, date | None]]]:
+    today = validation_date()
+    expired: list[tuple[str, date]] = []
+    extended_support: list[tuple[str, date, date | None]] = []
+    for ref in sorted(reference_architecture_technology_refs(obj, catalog_by_id)):
+        target = catalog_by_id.get(ref)
+        if not isinstance(target, dict):
+            continue
+        vendor_lifecycle = target.get("vendorLifecycle") or {}
+        if not isinstance(vendor_lifecycle, dict):
+            continue
+        mainstream_end = parse_lifecycle_date(vendor_lifecycle.get("mainstreamSupportEnd"))
+        support_end = parse_lifecycle_date(vendor_lifecycle.get("extendedSupportEnd"))
+        if support_end and support_end <= today:
+            expired.append((ref, support_end))
+        elif mainstream_end and mainstream_end <= today:
+            extended_support.append((ref, mainstream_end, support_end))
+    return expired, extended_support
+
+
 def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]]) -> bool:
     mechanism_type = mechanism.get("mechanism")
     if mechanism_type == "field":
@@ -936,6 +1030,29 @@ def validate_ra(
     )
 
     object_id = obj.get("id", "unknown")
+    expired_technologies, extended_support_technologies = vendor_lifecycle_risk_technologies(obj, catalog_by_id)
+    if expired_technologies and obj.get("lifecycleStatus") != "disinvest":
+        details = ", ".join(f"{ref} extendedSupportEnd {support_end.isoformat()}" for ref, support_end in expired_technologies)
+        failures.append(
+            f"{path}: Set lifecycleStatus: disinvest on Reference Architecture '{object_id}' because it includes end-of-support Technology Components: {details}"
+        )
+    if extended_support_technologies and obj.get("lifecycleStatus") == "invest":
+        details = ", ".join(
+            f"{ref} mainstreamSupportEnd {mainstream_end.isoformat()}"
+            + (f", extendedSupportEnd {support_end.isoformat()}" if support_end else ", extendedSupportEnd not declared")
+            for ref, mainstream_end, support_end in extended_support_technologies
+        )
+        failures.append(
+            f"{path}: Set lifecycleStatus: disinvest by default, or maintain with architecturalDecisions.lifecycleRationale, on Reference Architecture '{object_id}' because it includes Technology Components in extended support: {details}"
+        )
+    if extended_support_technologies and obj.get("lifecycleStatus") == "maintain":
+        decisions = obj.get("architecturalDecisions") or {}
+        if not isinstance(decisions, dict) or not is_non_empty(decisions.get("lifecycleRationale")):
+            details = ", ".join(f"{ref} mainstreamSupportEnd {mainstream_end.isoformat()}" for ref, mainstream_end, _ in extended_support_technologies)
+            failures.append(
+                f"{path}: Add architecturalDecisions.lifecycleRationale to explain why Reference Architecture '{object_id}' remains maintain while these Technology Components are in extended support: {details}"
+            )
+
     if not is_non_empty(obj.get("patternType")):
         record_requirement_gap(
             obj,

@@ -24,6 +24,11 @@ browser view.
 
 - Renamed the generated browser list navigation to Drafting Table so the
   executive landing page can hand users into the existing object browser.
+- Documented Reference Architecture lifecycle policy: cloud-forward patterns are
+  `invest`, legacy supported patterns are `maintain`, and patterns containing
+  end-of-support Technology Components are `disinvest`. Patterns containing
+  extended-support Technology Components default to `disinvest`, may be
+  `maintain` with explicit rationale, and must not be `invest`.
 - Increased Executive View metric and tile heading sizes so each collage tile
   carries equal visual weight.
 - Fixed Executive View tile CSS so the shared large metric size is not
@@ -50,6 +55,12 @@ browser view.
 - Fixed requirement satisfaction for external interactions declared inside
   `serviceGroups`, so nested service group interactions count toward the same
   mechanisms as top-level interactions.
+- Fixed Reference Architecture validation so patterns that include Technology
+  Components past `vendorLifecycle.extendedSupportEnd` must be marked
+  `disinvest`.
+- Fixed Reference Architecture validation so patterns that include Technology
+  Components past `vendorLifecycle.mainstreamSupportEnd` cannot be marked
+  `invest`; `maintain` requires an explicit lifecycle rationale.
 
 ### Migration Notes
 
