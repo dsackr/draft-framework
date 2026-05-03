@@ -38,6 +38,10 @@ GOVERNED_PATHS = (
     "CLAUDE.md",
     "GEMINI.md",
     "README.md",
+    "RELEASE.md",
+    "VERSIONING.md",
+    "draft-logo.png",
+    "draftlogo.png",
     "llms.txt",
     "security.md",
     "install-draft-table.sh",
@@ -52,9 +56,9 @@ GOVERNED_PATHS = (
 )
 
 CONTRACT_PATHS = (
-    "framework/configurations/compliance-controls/",
-    "framework/configurations/control-enforcement-profiles/",
-    "framework/configurations/definition-checklists/",
+    "framework/configurations/capabilities/",
+    "framework/configurations/domains/",
+    "framework/configurations/requirement-groups/",
     "framework/schemas/",
     "framework/tools/validate.py",
 )
@@ -62,9 +66,6 @@ CONTRACT_PATHS = (
 RELEASE_GOVERNANCE_PATHS = {
     ".github/pull_request_template.md",
     "CHANGELOG.md",
-    "RELEASE.md",
-    "VERSIONING.md",
-    "docs/index.html",
     "AI_INDEX.md",
 }
 
@@ -246,6 +247,58 @@ def is_contract_change(path: str) -> bool:
     return path.startswith(CONTRACT_PATHS) or path in CONTRACT_PATHS
 
 
+def validate_version_bump(old_version: Version, current_version: Version, has_contract_change: bool) -> list[str]:
+    if old_version == current_version:
+        return ["draft-framework.yaml version must be advanced for release-impacting framework changes."]
+
+    if current_version.major < old_version.major or (
+        current_version.major == old_version.major
+        and (
+            current_version.minor < old_version.minor
+            or (current_version.minor == old_version.minor and current_version.patch <= old_version.patch)
+        )
+    ):
+        return [f"draft-framework.yaml version must increase from {old_version}; found {current_version}."]
+
+    if old_version.major == 0 and current_version.major == 0:
+        if has_contract_change:
+            if current_version.minor != old_version.minor + 1 or current_version.patch != 0:
+                return [
+                    "Pre-1.0 contract changes must use the next 0.MINOR.0 release "
+                    f"from {old_version}; expected 0.{old_version.minor + 1}.0."
+                ]
+        elif current_version.minor != old_version.minor or current_version.patch != old_version.patch + 1:
+            return [
+                "Pre-1.0 non-contract framework changes must use the next 0.MINOR.PATCH release "
+                f"from {old_version}; expected 0.{old_version.minor}.{old_version.patch + 1}."
+            ]
+        return []
+
+    if has_contract_change:
+        major_bump = current_version.major == old_version.major + 1 and current_version.minor == 0 and current_version.patch == 0
+        minor_bump = (
+            current_version.major == old_version.major
+            and current_version.minor == old_version.minor + 1
+            and current_version.patch == 0
+        )
+        if not (major_bump or minor_bump):
+            return [
+                "Stable contract changes must use a new MAJOR release for breaking changes "
+                "or a new MINOR release for backward-compatible additions."
+            ]
+    elif (
+        current_version.major != old_version.major
+        or current_version.minor != old_version.minor
+        or current_version.patch != old_version.patch + 1
+    ):
+        return [
+            "Stable non-contract framework changes must use the next PATCH release "
+            f"from {old_version}; expected {old_version.major}.{old_version.minor}.{old_version.patch + 1}."
+        ]
+
+    return []
+
+
 def validate_changed_files(
     files: list[str],
     current_version: Version,
@@ -260,6 +313,9 @@ def validate_changed_files(
 
     if governed and "CHANGELOG.md" not in files:
         errors.append("Framework-governed files changed, but CHANGELOG.md was not updated.")
+
+    if governed and old_version is not None:
+        errors.extend(validate_version_bump(old_version, current_version, bool(contract)))
 
     if governed and "CHANGELOG.md" in files:
         errors.extend(validate_change_notes(change_entry_key, entries, bool(contract)))

@@ -11,6 +11,15 @@ release.
 - Compatibility impact: no migration, optional migration, or required migration
 - Object/schema/validation contract changed: yes or no
 
+Use the versioning decision procedure in `VERSIONING.md`:
+
+- Pre-1.0 contract change: next `0.MINOR.0`.
+- Pre-1.0 non-contract framework change: next `0.MINOR.PATCH`.
+- Generated browser asset, generated UI, docs, templates, release governance,
+  packaging, install, or AI guidance change: patch release.
+- Derived-file-only regeneration follows the version selected for the source
+  change.
+
 ## Update Release Files
 
 - Update `draft-framework.yaml`.
@@ -19,7 +28,8 @@ release.
   `Migration Notes`.
 - Move any applicable notes out of `Unreleased`.
 - If a change is not ready for a version bump, document it under `Unreleased`
-  using the same section names.
+  using the same section names only on an exploratory branch. Before committing
+  or merging to `main`, assign a numbered version.
 - For pre-1.0 breaking changes, use `0.MINOR.0` and document migration steps.
 - For stable breaking changes after `1.0.0`, use a new major version.
 

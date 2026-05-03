@@ -3,6 +3,42 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.8.1 - 2026-05-03
+
+### Compatibility Impact
+
+No schema, validation, or catalog object compatibility impact. Existing
+workspaces can continue using 0.8.0 content and only need to refresh generated
+browser assets to receive the updated welcome-page branding.
+
+### Added
+
+- Added the transparent 512x512 `draft-logo.png` asset to the framework so
+  generated browser pages can use the official DRAFT logo.
+- Added automated version-bump enforcement to the release-note checker so
+  release-impacting framework changes must advance `draft-framework.yaml`.
+
+### Changed
+
+- Changed the Executive View welcome hero to place the larger DRAFT logo beside
+  the full title, descriptive text, and action area, and retitled the page
+  `Welcome to the DRAFTing Table`.
+- Documented the AI release decision procedure for choosing pre-1.0 minor
+  versus patch releases consistently.
+
+### Fixed
+
+- Fixed framework release metadata so the generated browser branding change is
+  recorded as patch release 0.8.1.
+- Fixed the validation workflow label to make version-bump enforcement explicit
+  in GitHub Actions.
+
+### Migration Notes
+
+No YAML or workspace data migration is required. Regenerate `docs/index.html`
+or pull the updated vendored framework files to display the new welcome logo
+layout in an existing workspace.
+
 ## 0.8.0 - 2026-05-03
 
 ### Compatibility Impact
