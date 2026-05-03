@@ -64,6 +64,11 @@ AI agents should treat DRAFT as a deterministic authoring system:
 
 - Load the effective model from the vendored framework base configuration,
   workspace configuration overlays, and workspace catalog content.
+- Treat first-class object `uid` values as generated machine identity. Do not
+  ask humans to invent or remember UIDs. Resolve human requests by name,
+  aliases, file path, close match, and only then UID.
+- Keep `uid` stable across ordinary edits and renames. When a user renames an
+  object, add the previous display name to `aliases`.
 - Use schemas and Requirement Groups to determine required facts.
 - Edit YAML directly when asked to make changes.
 - Never place AI provider credentials or unrelated secrets in tracked
@@ -74,6 +79,9 @@ AI agents should treat DRAFT as a deterministic authoring system:
   not only in a shared Drafting Session. For repository discovery, Software
   Deployment Patterns should aggregate contributing repositories in
   `architecturalDecisions.sourceRepositories`.
+- For Software Deployment Patterns, resolve workspace business taxonomy from
+  `.draft/workspace.yaml` before setting `businessContext.pillar`; do not
+  invent company pillar values in tags or architecture domains.
 - Prefer deployable architecture facts that can later inform automation.
 
 ## Compliance Claims
@@ -116,6 +124,9 @@ Components only, never Standards or running services.
   when framework docs, schemas, Requirement Groups, templates, or catalog YAML changes.
 - Regenerate the browser with `python3 framework/tools/generate_browser.py` when YAML
   catalog content changes.
+- If validation reports missing, malformed, duplicate, or legacy object
+  identity, use the explicit `framework/tools/repair_uids.py` command that the
+  validator prints.
 - Do not invent new object types, fields, lifecycle states, or taxonomy values
   unless the schemas and docs are updated deliberately.
 - Prefer framework templates in [templates/](templates/) when creating new

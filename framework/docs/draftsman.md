@@ -38,6 +38,43 @@ for Technology Component lifecycle disposition.
 6. Framework docs
 7. Generated browser output
 
+## Object Identity
+
+First-class DRAFT objects use `uid` for stable machine identity and `name` for
+human conversation. The Draftsman should not ask a human to invent or remember a
+UID. Use `framework/tools/repair_uids.py` when a missing, malformed, duplicate,
+or legacy object identity must be corrected.
+
+The `uid` must stay unchanged through ordinary content edits and object renames.
+When a user renames an object, append the previous display name to `aliases` so
+future conversations can still resolve historical names.
+
+Nested local IDs still exist for values such as requirement IDs, Technology
+Component configuration IDs, Drafting Session question IDs, provider IDs, and
+business pillar IDs. These are scoped local labels, not catalog object identity.
+
+## Business Taxonomy Lookup
+
+Business pillars, portfolios, and product groupings are company taxonomy, not
+framework taxonomy. When authoring a Software Deployment Pattern, read
+`.draft/workspace.yaml` and resolve `businessTaxonomy.pillars` before assigning
+`businessContext.pillar`.
+
+Use this procedure:
+
+1. Read the workspace `businessTaxonomy.pillars` list.
+2. Match the product or product family to one primary pillar.
+3. Record the primary value as `businessContext.pillar`.
+4. Record `businessContext.productFamily` when the product family is clearer
+   than the Software Deployment Pattern name.
+5. Use `businessContext.additionalPillars` only when the pattern materially
+   spans another pillar.
+6. If the right pillar is unclear and the workspace requires one, ask one
+   focused clarification question instead of inventing a new taxonomy value.
+
+Do not use Strategy Domains, Capabilities, Requirement Groups, or tags as a
+substitute for company business taxonomy.
+
 ## Requirement And Capability Lookup
 
 Requirement Groups are the unified authoring and validation contract. They
@@ -113,7 +150,7 @@ Workspace-mode Requirement Groups are active only when listed in
 ```yaml
 requirements:
   activeRequirementGroups:
-    - requirement-group.draft-soc2
+    - <soc2-requirement-group-uid>
   requireActiveRequirementGroupDisposition: false
 ```
 
@@ -180,15 +217,18 @@ For repository discovery:
 
 Resolve update targets in this order:
 
-1. exact catalog ID
-2. file path
-3. exact artifact name
+1. exact artifact name
+2. alias
+3. file path
 4. close name or tag match from `AI_INDEX.md` and source YAML
+5. UID, only when the user or tool already has one
 
 After resolving the object, read the source YAML, matching schema, applicable
 Requirement Groups, related capabilities, and directly related objects. Make the
-smallest coherent change, preserve IDs and references unless the user requests a
-rename, and validate before presenting completed changes.
+smallest coherent change, preserve `uid` and references unless validation is
+repairing malformed identity, and validate before presenting completed changes.
+If a user renames an object, keep the `uid` unchanged and append the old display
+name to `aliases`.
 
 ## Appliance Components
 
@@ -202,8 +242,9 @@ domain, and compliance posture.
 ## Catalog Questions
 
 When the user asks what exists, what an object means, or where something is
-used, answer from the repository. Cite object IDs and paths when useful. Do not
-edit files unless the user asks for a change.
+used, answer from the repository. Cite names and paths first; cite UIDs only
+when useful for an exact machine reference. Do not edit files unless the user
+asks for a change.
 
 ## Output Contract
 

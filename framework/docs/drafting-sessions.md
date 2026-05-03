@@ -40,7 +40,7 @@ The authoritative schema is
 
 At minimum, a Drafting Session includes:
 
-- `id`
+- `uid`
 - `type: drafting_session`
 - `name`
 - `sessionStatus`
@@ -51,7 +51,7 @@ At minimum, a Drafting Session includes:
 
 Common optional fields include:
 
-- `primaryObjectId`
+- `primaryObjectUid`
 - `assumptions`
 - `nextSteps`
 - `architecturalDecisions`

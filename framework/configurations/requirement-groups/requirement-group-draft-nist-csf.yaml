@@ -1,10 +1,10 @@
 schemaVersion: '1.0'
-id: requirement-group.draft-nist-csf
+uid: 01KQQ4Q027-69VY
 type: requirement_group
 name: NIST Cybersecurity Framework Requirement Group
-description: >
-  Initial NIST Cybersecurity Framework (CSF) 2.0 requirement group scoped to the
-  outcomes that can be meaningfully answered by DRAFT objects.
+description: 'Initial NIST Cybersecurity Framework (CSF) 2.0 requirement group scoped to the outcomes that can be meaningfully answered by DRAFT objects.
+
+  '
 version: 2.0.0
 catalogStatus: stub
 owner:
@@ -37,10 +37,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.authentication
+      capability: 01KQQ4Q026-MHJM
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.authentication
+      capability: 01KQQ4Q026-MHJM
   - mechanism: architecturalDecision
     key: authentication
   minimumSatisfactions: 1
@@ -48,7 +48,7 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.authentication
+  relatedCapability: 01KQQ4Q026-MHJM
   externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
 - id: DE.CM
   externalControlId: DE.CM
@@ -62,13 +62,13 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.log-management
+      capability: 01KQQ4Q026-D04B
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.log-management
+      capability: 01KQQ4Q026-D04B
   - mechanism: externalInteraction
     criteria:
-      capability: capability.log-management
+      capability: 01KQQ4Q026-D04B
   - mechanism: architecturalDecision
     key: log_management
   minimumSatisfactions: 1
@@ -77,7 +77,7 @@ requirements:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.log-management
+  relatedCapability: 01KQQ4Q026-D04B
   externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
 - id: DE.CM.health-welfare-monitoring
   externalControlId: DE.CM
@@ -91,13 +91,13 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.health-welfare-monitoring
+      capability: 01KQQ4Q026-98VD
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.health-welfare-monitoring
+      capability: 01KQQ4Q026-98VD
   - mechanism: externalInteraction
     criteria:
-      capability: capability.health-welfare-monitoring
+      capability: 01KQQ4Q026-98VD
   - mechanism: architecturalDecision
     key: health_welfare_monitoring
   minimumSatisfactions: 1
@@ -106,7 +106,7 @@ requirements:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.health-welfare-monitoring
+  relatedCapability: 01KQQ4Q026-98VD
   externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
 - id: DE.CM.security-monitoring
   externalControlId: DE.CM
@@ -120,13 +120,13 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.security-monitoring
+      capability: 01KQQ4Q026-JW52
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.security-monitoring
+      capability: 01KQQ4Q026-JW52
   - mechanism: externalInteraction
     criteria:
-      capability: capability.security-monitoring
+      capability: 01KQQ4Q026-JW52
   - mechanism: architecturalDecision
     key: security_monitoring
   minimumSatisfactions: 1
@@ -135,7 +135,7 @@ requirements:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.security-monitoring
+  relatedCapability: 01KQQ4Q026-JW52
   externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
 - id: PR.PS
   externalControlId: PR.PS
@@ -149,10 +149,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.patch-management
+      capability: 01KQQ4Q026-BH6E
   - mechanism: externalInteraction
     criteria:
-      capability: capability.patch-management
+      capability: 01KQQ4Q026-BH6E
   - mechanism: architecturalDecision
     key: patch_management
   minimumSatisfactions: 1
@@ -160,7 +160,7 @@ requirements:
   - technologyComponent
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.patch-management
+  relatedCapability: 01KQQ4Q026-BH6E
   externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
 - id: PR.AA.access-control-model
   externalControlId: PR.AA
@@ -174,10 +174,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.access-control-model
+      capability: 01KQQ4Q026-4JR6
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.access-control-model
+      capability: 01KQQ4Q026-4JR6
   - mechanism: architecturalDecision
     key: access_control_model
   minimumSatisfactions: 1
@@ -185,7 +185,7 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.access-control-model
+  relatedCapability: 01KQQ4Q026-4JR6
   externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
 - id: PR.DS
   externalControlId: PR.DS
@@ -201,7 +201,7 @@ requirements:
     key: architecturalDecisions.encryption_at_rest
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.encryption-at-rest
+      capability: 01KQQ4Q026-H3B5
   - mechanism: architecturalDecision
     key: encryption_at_rest
   minimumSatisfactions: 1
@@ -209,7 +209,7 @@ requirements:
   - field
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.encryption-at-rest
+  relatedCapability: 01KQQ4Q026-H3B5
   externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
 - id: RC.RP
   externalControlId: RC.RP
@@ -229,7 +229,7 @@ requirements:
   validAnswerTypes:
   - field
   - architecturalDecision
-  relatedCapability: capability.backup-strategy
+  relatedCapability: 01KQQ4Q026-7T2H
   externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
 - id: PR.AA.secrets-management
   externalControlId: PR.AA
@@ -243,10 +243,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.secrets-management
+      capability: 01KQQ4Q026-DTJJ
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.secrets-management
+      capability: 01KQQ4Q026-DTJJ
   - mechanism: architecturalDecision
     key: secrets_management
   minimumSatisfactions: 1
@@ -254,7 +254,7 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.secrets-management
+  relatedCapability: 01KQQ4Q026-DTJJ
   externalReference: https://www.nist.gov/publications/nist-cybersecurity-framework-csf-20
 - id: PR.AA.product_service
   externalControlId: PR.AA
@@ -320,8 +320,6 @@ tags:
 - nist
 - starter-pack
 - requirement-group
-notes: 'These entries are DRAFT applicability mappings for public NIST CSF 2.0 outcomes. They
-  intentionally cover only the subset of CSF outcomes that can be answered by Standards, Software
-  Deployment Patterns, and related architecture objects.
+notes: 'These entries are DRAFT applicability mappings for public NIST CSF 2.0 outcomes. They intentionally cover only the subset of CSF outcomes that can be answered by Standards, Software Deployment Patterns, and related architecture objects.
 
   '

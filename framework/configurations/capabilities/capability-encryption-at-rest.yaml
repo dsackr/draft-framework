@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: capability.encryption-at-rest
+uid: 01KQQ4Q026-H3B5
 type: capability
 name: Encryption At Rest
 description: Protection of persisted data through encryption or equivalent storage safeguards.
@@ -9,5 +9,5 @@ definitionOwner:
   provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
-domain: domain.compute
+domain: 01KQQ4Q027-ZTHF
 implementations: []

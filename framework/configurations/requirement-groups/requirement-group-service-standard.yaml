@@ -1,9 +1,8 @@
 schemaVersion: '1.0'
-id: requirement-group.service-standard
+uid: 01KQQ4Q027-K5DR
 type: requirement_group
 name: General Service Requirement Group
-description: Structured checklist of required questions and answers used to define a complete
-  and correct general Service Standard.
+description: Structured checklist of required questions and answers used to define a complete and correct general Service Standard.
 version: 3.0.0
 catalogStatus: approved
 owner:
@@ -14,28 +13,24 @@ appliesTo:
 - service_standard
 requirements:
 - id: service-authentication
-  description: The service must address how service identities or administrators authenticate
-    to the service.
+  description: The service must address how service identities or administrators authenticate to the service.
   rationale: A service is incomplete until its service-level authentication model is explicit.
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.authentication
+      capability: 01KQQ4Q026-MHJM
     example: Centralized identity or authentication service used by the workload.
   - mechanism: internalComponent
     criteria:
-      capability: capability.authentication
-    example: A function Technology Component or installed component that provides the service
-      authentication capability.
+      capability: 01KQQ4Q026-MHJM
+    example: A function Technology Component or installed component that provides the service authentication capability.
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.authentication
-    example: A named configuration on the function Technology Component that defines the service
-      authentication model.
+      capability: 01KQQ4Q026-MHJM
+    example: A named configuration on the function Technology Component that defines the service authentication model.
   - mechanism: architecturalDecision
     key: serviceAuthentication
-    example: A documented service authentication pattern when the implementation is not expressed
-      directly.
+    example: A documented service authentication pattern when the implementation is not expressed directly.
   minimumSatisfactions: 1
   requirementMode: mandatory
   naAllowed: false
@@ -45,28 +40,26 @@ requirements:
   - internalComponent
   - technologyComponentConfiguration
 - id: secrets-management
-  description: The service must address how service-level secrets, keys, tokens, or certificates
-    are stored and accessed.
+  description: The service must address how service-level secrets, keys, tokens, or certificates are stored and accessed.
   rationale: Secret handling is a baseline service capability and cannot be left implicit.
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.secrets-management
+      capability: 01KQQ4Q026-DTJJ
     example: A secrets platform or certificate-management service used by the workload.
   - mechanism: internalComponent
     criteria:
-      capability: capability.secrets-management
+      capability: 01KQQ4Q026-DTJJ
     example: A component that locally provides the service secrets-management behavior.
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.secrets-management
-    example: A function Technology Component configuration that defines how service secrets
-      are sourced.
+      capability: 01KQQ4Q026-DTJJ
+    example: A function Technology Component configuration that defines how service secrets are sourced.
   - mechanism: architecturalDecision
     key: secretsManagement
     example: A documented statement of the service-level secrets pattern.
   minimumSatisfactions: 1
-  relatedCapability: capability.secrets-management
+  relatedCapability: 01KQQ4Q026-DTJJ
   requirementMode: mandatory
   naAllowed: false
   validAnswerTypes:
@@ -75,24 +68,21 @@ requirements:
   - internalComponent
   - technologyComponentConfiguration
 - id: service-logging
-  description: The service must address how service-generated logs are produced and delivered
-    beyond host-level logging.
-  rationale: Service logs are distinct from host logs and are required for supportability
-    and evidentiary review.
+  description: The service must address how service-generated logs are produced and delivered beyond host-level logging.
+  rationale: Service logs are distinct from host logs and are required for supportability and evidentiary review.
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.log-management
+      capability: 01KQQ4Q026-D04B
     example: A modeled central logging Service Standard, PaaS Service Standard, or SIEM platform referenced by externalInteractions.ref.
   - mechanism: internalComponent
     criteria:
-      capability: capability.log-management
+      capability: 01KQQ4Q026-D04B
     example: A local logging component that handles service log forwarding or collection.
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.log-management
-    example: A function Technology Component configuration that defines service log collection
-      and export.
+      capability: 01KQQ4Q026-D04B
+    example: A function Technology Component configuration that defines service log collection and export.
   - mechanism: architecturalDecision
     key: serviceLogging
     example: A documented service logging pattern when modeled indirectly.
@@ -105,29 +95,26 @@ requirements:
   - internalComponent
   - technologyComponentConfiguration
 - id: health-welfare-monitoring
-  description: The service must address how operators observe service health, welfare, and
-    operational telemetry.
-  rationale: A service is incomplete until the monitoring pattern for service-level health
-    is explicit.
+  description: The service must address how operators observe service health, welfare, and operational telemetry.
+  rationale: A service is incomplete until the monitoring pattern for service-level health is explicit.
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.health-welfare-monitoring
+      capability: 01KQQ4Q026-98VD
     example: Centralized monitoring platform used for service telemetry and health evaluation.
   - mechanism: internalComponent
     criteria:
-      capability: capability.health-welfare-monitoring
+      capability: 01KQQ4Q026-98VD
     example: A component that exports service health and operational telemetry.
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.health-welfare-monitoring
-    example: A function Technology Component configuration that enables service-level health
-      telemetry.
+      capability: 01KQQ4Q026-98VD
+    example: A function Technology Component configuration that enables service-level health telemetry.
   - mechanism: architecturalDecision
     key: healthWelfareMonitoring
     example: A documented monitoring and telemetry approach for the service.
   minimumSatisfactions: 1
-  relatedCapability: capability.health-welfare-monitoring
+  relatedCapability: 01KQQ4Q026-98VD
   requirementMode: mandatory
   naAllowed: false
   validAnswerTypes:
@@ -137,8 +124,7 @@ requirements:
   - technologyComponentConfiguration
 - id: availability
   description: The service must state its availability model.
-  rationale: Availability cannot be inferred from a service name or topology and must be explicitly
-    declared.
+  rationale: Availability cannot be inferred from a service name or topology and must be explicitly declared.
   canBeSatisfiedBy:
   - mechanism: deploymentConfiguration
     criteria:
@@ -172,8 +158,7 @@ requirements:
   - deploymentConfiguration
 - id: recoverability
   description: The service must state its recoverability model.
-  rationale: Service recovery behavior must be explicit so operators know how the service
-    returns to function after failure.
+  rationale: Service recovery behavior must be explicit so operators know how the service returns to function after failure.
   canBeSatisfiedBy:
   - mechanism: deploymentConfiguration
     criteria:
@@ -194,8 +179,7 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: architecturalDecision
     key: failureDomain
-    example: A documented description of the service failure domain, such as per host, per
-      shard, or shared across products.
+    example: A documented description of the service failure domain, such as per host, per shard, or shared across products.
   minimumSatisfactions: 1
   requirementMode: mandatory
   naAllowed: false

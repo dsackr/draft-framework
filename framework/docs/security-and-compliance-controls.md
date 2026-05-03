@@ -12,8 +12,8 @@ activates the groups it architects against in `.draft/workspace.yaml`:
 ```yaml
 requirements:
   activeRequirementGroups:
-    - requirement-group.draft-soc2
-    - requirement-group.company-roper
+    - <soc2-requirement-group-uid>
+    - <company-roper-requirement-group-uid>
   requireActiveRequirementGroupDisposition: false
 ```
 
@@ -28,12 +28,9 @@ A workspace-mode Requirement Group may be authored by the framework, a company,
 or a third-party provider. Use `provider` to identify who authored the DRAFT
 mapping and `authority` to identify the external source or program.
 
-Examples:
-
-- `requirement-group.draft-soc2` is a DRAFT Framework-provided mapping for SOC 2.
-- `requirement-group.company-roper` would be a company-owned internal control group.
-- A provider pack can publish `requirement-group.vendor-soc2` without replacing
-  the framework-provided SOC 2 interpretation.
+Use `name`, `provider`, and `authority` to explain what the group represents.
+The generated `uid` is only the stable machine reference used by
+`activeRequirementGroups`, `requirementGroups`, and `requirementImplementations`.
 
 The framework maintains its included DRAFT-provided mappings as starter
 architecture aids. It does not claim that using them makes a company compliant

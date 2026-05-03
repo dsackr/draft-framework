@@ -3,6 +3,71 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.9.0 - 2026-05-03
+
+### Compatibility Impact
+
+Breaking pre-1.0 object identity migration required. First-class catalog and
+configuration objects now use generated `uid` values instead of semantic
+top-level `id` values. Existing workspaces must run UID repair and regenerate
+derived browser/index output. Workspaces remain free to opt into
+`businessTaxonomy.requireSoftwareDeploymentPatternPillar` separately.
+
+### Added
+
+- Added optional `businessContext` support to Software Deployment Patterns so
+  company workspaces can identify the primary business pillar, additional
+  pillars, and product family for a deployment pattern.
+- Added workspace `businessTaxonomy.pillars` validation through
+  `.draft/workspace.yaml`.
+- Added generated browser grouping and badges for Software Deployment Patterns
+  by workspace-defined business pillar.
+- Added generated UID validation for first-class objects. Validation now
+  reports missing, malformed, duplicate, and legacy top-level object identity
+  with a suggested UID and an explicit repair command.
+- Added `framework/tools/repair_uids.py` and `framework/tools/uid_utils.py` to
+  generate object UIDs, remove legacy top-level `id`, rewrite exact object
+  references, and migrate legacy Drafting Session UID field names.
+- Added optional `aliases` to first-class object schemas so prior or alternate
+  human-readable names can resolve to the same stable object.
+
+### Changed
+
+- Updated Draftsman and workspace documentation so company business taxonomy is
+  resolved from `.draft/workspace.yaml`, not tags, capabilities, or Strategy
+  Domains.
+- Changed first-class object identity from semantic `id` to generated opaque
+  `uid`. Human-facing object resolution should use name, aliases, path, close
+  match, and only then UID.
+- Changed object reference validation, object patching, browser generation, and
+  AI index generation to use generated UIDs as the machine reference key.
+- Changed Drafting Session object-reference fields from `primaryObjectId` and
+  `proposedId` to `primaryObjectUid` and `proposedUid`.
+
+### Fixed
+
+- Fixed the Software Deployment Pattern browsing experience so product
+  deployment patterns can be scanned by company portfolio ownership instead of
+  only by object type.
+- Fixed generated browser reference discovery so generated UID references are
+  indexed without depending on semantic object prefixes.
+
+### Migration Notes
+
+- Run `python3 framework/tools/repair_uids.py --workspace examples` in the
+  framework repo, or `python3 .draft/framework/tools/repair_uids.py --workspace
+  .` from a company repo, to add generated `uid` values, remove legacy
+  top-level `id`, and rewrite exact object references.
+- Regenerate `AI_INDEX.md` and `docs/index.html` after UID repair.
+- If validation reports a missing, malformed, duplicate, or legacy identity,
+  run the exact repair command it prints; the command includes the suggested
+  UID when repairing a single file.
+- To use the business taxonomy feature, declare `businessTaxonomy.pillars` in
+  `.draft/workspace.yaml`, then add `businessContext.pillar` to each Software
+  Deployment Pattern. Set
+  `businessTaxonomy.requireSoftwareDeploymentPatternPillar: true` only after the
+  workspace is ready to enforce the field.
+
 ## 0.8.2 - 2026-05-03
 
 ### Compatibility Impact

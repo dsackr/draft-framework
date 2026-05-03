@@ -1,7 +1,8 @@
 schemaVersion: '1.0'
-id: host.<os>.<platform>.<variant>
+uid: <generated-uid>
 type: host_standard
 name: <Host Name>
+aliases: []
 description: <Standardized host platform description.>
 version: 1.0.0
 catalogStatus: stub
@@ -12,35 +13,35 @@ owner:
 tags:
 - host
 category: host
-operatingSystemComponent: technology.os.<vendor-product-version>
-computePlatformComponent: technology.compute.<vendor-product>
+operatingSystemComponent: <operating-system-technology-component-uid>
+computePlatformComponent: <compute-platform-technology-component-uid>
 internalComponents:
-- ref: technology.os.<vendor-product-version>
+- ref: <operating-system-technology-component-uid>
   role: os
-- ref: technology.compute.<vendor-product>
+- ref: <compute-platform-technology-component-uid>
   role: hardware
 externalInteractions:
 - name: <Authentication Platform>
   notes: <How administrators and service identities authenticate.>
   capabilities:
-  - capability.authentication
+  - <authentication-capability-uid>
 - name: <Logging Platform Standard>
-  ref: <modeled-logging-standard-id>
+  ref: <modeled-logging-standard-uid>
   notes: <How host logs are collected.>
   capabilities:
-  - capability.log-management
+  - <log-management-capability-uid>
 - name: <Monitoring Platform>
   notes: <How host health and welfare are monitored.>
   capabilities:
-  - capability.health-welfare-monitoring
+  - <health-welfare-monitoring-capability-uid>
 - name: <Security Monitoring Platform>
   notes: <How security telemetry is collected.>
   capabilities:
-  - capability.security-monitoring
+  - <security-monitoring-capability-uid>
 - name: <Patch Management Platform>
   notes: <How operating system and host patching is governed.>
   capabilities:
-  - capability.patch-management
+  - <patch-management-capability-uid>
 requirementGroups:
-- requirement-group.host-standard
+- <host-requirement-group-uid>
 requirementImplementations: []

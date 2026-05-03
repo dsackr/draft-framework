@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: capability.health-welfare-monitoring
+uid: 01KQQ4Q026-98VD
 type: capability
 name: Health and Welfare Monitoring
 description: Runtime health, uptime, metrics, and operational welfare visibility.
@@ -9,5 +9,5 @@ definitionOwner:
   provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
-domain: domain.observability
+domain: 01KQQ4Q027-C213
 implementations: []

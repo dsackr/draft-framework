@@ -1,10 +1,10 @@
 schemaVersion: '1.0'
-id: technology.software.nginx-1-26
+uid: 01KQQ4Q025-Z042
 type: technology_component
 name: nginx 1.26
-description: >
-  nginx web server software installed locally on a managed host and used
-  without a required vendor platform interaction.
+description: 'nginx web server software installed locally on a managed host and used without a required vendor platform interaction.
+
+  '
 version: 1.0.0
 catalogStatus: draft
 owner:

@@ -1,9 +1,8 @@
 schemaVersion: '1.0'
-id: requirement-group.software-deployment-pattern
+uid: 01KQQ4Q027-VK45
 type: requirement_group
 name: Software Deployment Pattern Requirement Group
-description: Structured checklist of required questions and answers used to define a complete
-  and correct software deployment pattern.
+description: Structured checklist of required questions and answers used to define a complete and correct software deployment pattern.
 version: 1.0.0
 catalogStatus: approved
 owner:
@@ -14,10 +13,8 @@ appliesTo:
 - software_deployment_pattern
 requirements:
 - id: reference-architecture-conformance
-  description: The Software Deployment Pattern must reference a valid Reference Architecture
-    ID or explicitly document that no applicable Reference Architecture exists yet.
-  rationale: Connecting deployments to patterns enables governance discoverability and impact
-    analysis.
+  description: The Software Deployment Pattern must reference a valid Reference Architecture ID or explicitly document that no applicable Reference Architecture exists yet.
+  rationale: Connecting deployments to patterns enables governance discoverability and impact analysis.
   canBeSatisfiedBy:
   - mechanism: field
     key: followsReferenceArchitecture
@@ -32,10 +29,8 @@ requirements:
   - architecturalDecision
   - field
 - id: service-groups
-  description: The Software Deployment Pattern must declare the service groups that make up
-    the deployed product.
-  rationale: A deployment manifest is incomplete until the real deployed service group structure
-    is explicit.
+  description: The Software Deployment Pattern must declare the service groups that make up the deployed product.
+  rationale: A deployment manifest is incomplete until the real deployed service group structure is explicit.
   canBeSatisfiedBy:
   - mechanism: field
     key: serviceGroups
@@ -52,8 +47,7 @@ requirements:
   - internalComponent
 - id: deployment-targets
   description: Every service group must declare where it runs.
-  rationale: Deployment reality is not complete until the execution boundary or target is
-    explicit for each service group.
+  rationale: Deployment reality is not complete until the execution boundary or target is explicit for each service group.
   canBeSatisfiedBy:
   - mechanism: architecturalDecision
     key: deploymentTargets
@@ -65,8 +59,7 @@ requirements:
   - architecturalDecision
 - id: availability-requirement
   description: The product availability tier must be documented.
-  rationale: Availability requirements justify deployment posture and inform operational support
-    models.
+  rationale: Availability requirements justify deployment posture and inform operational support models.
   canBeSatisfiedBy:
   - mechanism: architecturalDecision
     key: availabilityRequirement
@@ -77,10 +70,8 @@ requirements:
   validAnswerTypes:
   - architecturalDecision
 - id: additional-interactions
-  description: "Any external systems this product interacts with beyond what its component\
-    \ Standards declare must be documented \u2014 or explicitly stated as none."
-  rationale: Product-specific integrations are invisible to the architecture without explicit
-    declaration.
+  description: Any external systems this product interacts with beyond what its component Standards declare must be documented — or explicitly stated as none.
+  rationale: Product-specific integrations are invisible to the architecture without explicit declaration.
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
@@ -108,26 +99,20 @@ requirements:
   validAnswerTypes:
   - architecturalDecision
 - id: failure-domain
-  description: The Software Deployment Pattern must document the deployment-level failure
-    domain of the product.
-  rationale: Product-level impact boundaries cannot be inferred from component selections
-    alone.
+  description: The Software Deployment Pattern must document the deployment-level failure domain of the product.
+  rationale: Product-level impact boundaries cannot be inferred from component selections alone.
   canBeSatisfiedBy:
   - mechanism: architecturalDecision
     key: failureDomain
-    example: Shared services are cross-sub-environment dependencies; sub-environment failures
-      are tenant-bounded
+    example: Shared services are cross-sub-environment dependencies; sub-environment failures are tenant-bounded
   minimumSatisfactions: 1
   requirementMode: mandatory
   naAllowed: false
   validAnswerTypes:
   - architecturalDecision
 - id: pattern-deviations
-  description: Any intentional deviation from the selected Reference Architecture must be
-    documented, or the Software Deployment Pattern must explicitly state that no deviations
-    exist.
-  rationale: The Software Deployment Pattern is where pattern intent becomes product deployment
-    reality, so departures from the Reference Architecture must be visible.
+  description: Any intentional deviation from the selected Reference Architecture must be documented, or the Software Deployment Pattern must explicitly state that no deviations exist.
+  rationale: The Software Deployment Pattern is where pattern intent becomes product deployment reality, so departures from the Reference Architecture must be visible.
   canBeSatisfiedBy:
   - mechanism: architecturalDecision
     key: patternDeviations

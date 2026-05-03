@@ -33,7 +33,7 @@ If the managed dependency is outside the adopter's cloud boundary, use
 
 PaaS Service Standards follow the authoritative
 [paas-service-standard.schema.yaml](../schemas/paas-service-standard.schema.yaml) schema and
-are governed by `requirement-group.paas-service-standard`.
+are governed by the PaaS Service Requirement Group.
 
 They are modeled as Standards with:
 
@@ -43,7 +43,7 @@ They are modeled as Standards with:
 
 At minimum, a PaaS Service Standard should include:
 
-- `id`
+- `uid`
 - `name`
 - `vendor`
 - `capability`

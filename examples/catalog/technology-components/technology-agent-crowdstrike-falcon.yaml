@@ -1,10 +1,10 @@
 schemaVersion: '1.0'
-id: technology.agent.crowdstrike-falcon
+uid: 01KQQ4Q025-MQ3F
 type: technology_component
 name: CrowdStrike Falcon Agent
-description: >
-  Endpoint security agent installed locally on a host that requires
-  communication with the CrowdStrike Falcon platform.
+description: 'Endpoint security agent installed locally on a host that requires communication with the CrowdStrike Falcon platform.
+
+  '
 version: 1.0.0
 catalogStatus: draft
 owner:
@@ -19,4 +19,4 @@ productVersion: current
 classification: agent
 platformDependency: CrowdStrike Falcon Platform
 capabilities:
-- capability.security-monitoring
+- 01KQQ4Q026-JW52

@@ -2,16 +2,18 @@ schemaVersion: '1.0'
 type: software_deployment_pattern
 requiredFields:
 - schemaVersion
-- id
+- uid
 - type
 - name
 - catalogStatus
 - lifecycleStatus
 optionalFields:
+- aliases
 - description
 - version
 - owner
 - tags
+- businessContext
 - followsReferenceArchitecture
 - architecturalDecisions
 - scalingUnits
@@ -20,7 +22,6 @@ optionalFields:
 - decisionRecords
 - requirementGroups
 - requirementImplementations
-idPattern: ^software-deployment\.[a-z0-9-]+$
 enumFields:
   catalogStatus:
   - stub
@@ -33,8 +34,10 @@ enumFields:
   - deprecated
   - retired
 fieldTypes:
+  aliases: list
   owner: dict
   tags: list
+  businessContext: dict
   architecturalDecisions: dict
   scalingUnits: list
   serviceGroups: list
@@ -148,15 +151,14 @@ requirementImplementation:
     - field
   fieldTypes:
     criteria: dict
-aiHint: A Software Deployment Pattern describes intended product deployment architecture in
-  terms of standards, topology, decisions, and risks.
+aiHint: A Software Deployment Pattern describes intended product deployment architecture in terms of standards, topology, decisions, and risks.
 fieldDescriptions:
-  schemaVersion: Use the schema version string supported by this framework release, normally
-    "1.0".
-  id: Use a stable, namespaced object ID that matches this schema idPattern when one is declared.
+  schemaVersion: Use the schema version string supported by this framework release, normally "1.0".
   type: Use the exact object type declared by the matching schema.
   name: Use a clear human-readable name for the object.
-  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption
-    disposition.
-  lifecycleStatus: Use candidate, preferred, existing-only, deprecated, or retired where this object
-    still carries a lifecycle signal.
+  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption disposition.
+  lifecycleStatus: Use candidate, preferred, existing-only, deprecated, or retired where this object still carries a lifecycle signal.
+  businessContext: Use workspace-defined business taxonomy values, especially businessContext.pillar, to identify which company portfolio or pillar owns this deployment pattern.
+  uid: Use the generated opaque UID for object identity. Do not edit it for display-name, product-name, or taxonomy changes.
+  aliases: List prior or alternate human-readable names that should resolve to this object.
+uidPattern: ^[0-9A-HJKMNP-TV-Z]{10}-[0-9A-HJKMNP-TV-Z]{4}$

@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: capability.apm
+uid: 01KQQ4Q026-NB1W
 type: capability
 name: Application Performance Monitoring
 description: Tracing and performance analysis of application runtimes.
@@ -9,5 +9,5 @@ definitionOwner:
   provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
-domain: domain.observability
+domain: 01KQQ4Q027-C213
 implementations: []

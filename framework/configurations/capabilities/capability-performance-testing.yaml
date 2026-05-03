@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: capability.performance-testing
+uid: 01KQQ4Q026-S5J6
 type: capability
 name: Performance and Load Testing
 description: Capabilities to simulate load and measure system behavior under stress.
@@ -9,5 +9,5 @@ definitionOwner:
   provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
-domain: domain.testing
+domain: 01KQQ4Q027-SGHR
 implementations: []

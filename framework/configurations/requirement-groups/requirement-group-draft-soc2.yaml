@@ -1,11 +1,10 @@
 schemaVersion: '1.0'
-id: requirement-group.draft-soc2
+uid: 01KQQ4Q027-7JN2
 type: requirement_group
 name: SOC 2 Requirement Group
-description: >
-  Initial SOC 2 requirement group based on the AICPA Trust Services Criteria.
-  These requirements use DRAFT applicability metadata so they can extend the
-  relevant object types without changing always-on Requirement Groups.
+description: 'Initial SOC 2 requirement group based on the AICPA Trust Services Criteria. These requirements use DRAFT applicability metadata so they can extend the relevant object types without changing always-on Requirement Groups.
+
+  '
 version: 2017.0.0
 catalogStatus: stub
 owner:
@@ -38,10 +37,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.authentication
+      capability: 01KQQ4Q026-MHJM
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.authentication
+      capability: 01KQQ4Q026-MHJM
   - mechanism: architecturalDecision
     key: authentication
   minimumSatisfactions: 1
@@ -49,7 +48,7 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.authentication
+  relatedCapability: 01KQQ4Q026-MHJM
   externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
 - id: CC7
   externalControlId: CC7
@@ -63,13 +62,13 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.log-management
+      capability: 01KQQ4Q026-D04B
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.log-management
+      capability: 01KQQ4Q026-D04B
   - mechanism: externalInteraction
     criteria:
-      capability: capability.log-management
+      capability: 01KQQ4Q026-D04B
   - mechanism: architecturalDecision
     key: log_management
   minimumSatisfactions: 1
@@ -78,7 +77,7 @@ requirements:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.log-management
+  relatedCapability: 01KQQ4Q026-D04B
   externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
 - id: CC7.health-welfare-monitoring
   externalControlId: CC7
@@ -92,13 +91,13 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.health-welfare-monitoring
+      capability: 01KQQ4Q026-98VD
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.health-welfare-monitoring
+      capability: 01KQQ4Q026-98VD
   - mechanism: externalInteraction
     criteria:
-      capability: capability.health-welfare-monitoring
+      capability: 01KQQ4Q026-98VD
   - mechanism: architecturalDecision
     key: health_welfare_monitoring
   minimumSatisfactions: 1
@@ -107,7 +106,7 @@ requirements:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.health-welfare-monitoring
+  relatedCapability: 01KQQ4Q026-98VD
   externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
 - id: CC7.security-monitoring
   externalControlId: CC7
@@ -121,13 +120,13 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.security-monitoring
+      capability: 01KQQ4Q026-JW52
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.security-monitoring
+      capability: 01KQQ4Q026-JW52
   - mechanism: externalInteraction
     criteria:
-      capability: capability.security-monitoring
+      capability: 01KQQ4Q026-JW52
   - mechanism: architecturalDecision
     key: security_monitoring
   minimumSatisfactions: 1
@@ -136,7 +135,7 @@ requirements:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.security-monitoring
+  relatedCapability: 01KQQ4Q026-JW52
   externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
 - id: CC8
   externalControlId: CC8
@@ -150,10 +149,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.patch-management
+      capability: 01KQQ4Q026-BH6E
   - mechanism: externalInteraction
     criteria:
-      capability: capability.patch-management
+      capability: 01KQQ4Q026-BH6E
   - mechanism: architecturalDecision
     key: patch_management
   minimumSatisfactions: 1
@@ -161,7 +160,7 @@ requirements:
   - technologyComponent
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.patch-management
+  relatedCapability: 01KQQ4Q026-BH6E
   externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
 - id: CC6.access-control-model
   externalControlId: CC6
@@ -175,10 +174,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.access-control-model
+      capability: 01KQQ4Q026-4JR6
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.access-control-model
+      capability: 01KQQ4Q026-4JR6
   - mechanism: architecturalDecision
     key: access_control_model
   minimumSatisfactions: 1
@@ -186,7 +185,7 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.access-control-model
+  relatedCapability: 01KQQ4Q026-4JR6
   externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
 - id: CC7.backup-strategy
   externalControlId: CC7
@@ -206,7 +205,7 @@ requirements:
   validAnswerTypes:
   - field
   - architecturalDecision
-  relatedCapability: capability.backup-strategy
+  relatedCapability: 01KQQ4Q026-7T2H
   externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
 - id: C1
   externalControlId: C1
@@ -222,7 +221,7 @@ requirements:
     key: architecturalDecisions.encryption_at_rest
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.encryption-at-rest
+      capability: 01KQQ4Q026-H3B5
   - mechanism: architecturalDecision
     key: encryption_at_rest
   minimumSatisfactions: 1
@@ -230,7 +229,7 @@ requirements:
   - field
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.encryption-at-rest
+  relatedCapability: 01KQQ4Q026-H3B5
   externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
 - id: CC6.secrets-management
   externalControlId: CC6
@@ -244,10 +243,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.secrets-management
+      capability: 01KQQ4Q026-DTJJ
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.secrets-management
+      capability: 01KQQ4Q026-DTJJ
   - mechanism: architecturalDecision
     key: secrets_management
   minimumSatisfactions: 1
@@ -255,7 +254,7 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.secrets-management
+  relatedCapability: 01KQQ4Q026-DTJJ
   externalReference: https://www.aicpa-cima.com/resources/download/2017-trust-services-criteria-with-revised-points-of-focus-2022
 - id: CC6.product_service
   externalControlId: CC6
@@ -340,7 +339,6 @@ tags:
 - soc2
 - starter-pack
 - requirement-group
-notes: 'These entries are DRAFT applicability mappings for the public AICPA Trust Services
-  Criteria. The authoritative criteria remain in the linked AICPA source material.
+notes: 'These entries are DRAFT applicability mappings for the public AICPA Trust Services Criteria. The authoritative criteria remain in the linked AICPA source material.
 
   '

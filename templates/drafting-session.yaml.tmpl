@@ -1,7 +1,8 @@
 schemaVersion: '1.0'
-id: session.<topic-slug>
+uid: <generated-uid>
 type: drafting_session
 name: <Topic> Drafting Session
+aliases: []
 description: <Short description of the drafting work and its source material.>
 version: 1.0.0
 catalogStatus: draft
@@ -13,7 +14,7 @@ owner:
 tags:
 - drafting-session
 primaryObjectType: <host_standard|service_standard|database_standard|reference_architecture|software_deployment_pattern|technology_component|appliance_component|capability|requirement_group>
-primaryObjectId: <optional-existing-or-created-object-id>
+primaryObjectUid: <optional-existing-or-created-object-uid>
 sourceArtifacts:
 - name: <Source name>
   type: <interview|diagram|document|spreadsheet|repository|other>
@@ -23,8 +24,8 @@ generatedObjects:
 - name: <Object name>
   type: <object-type>
   status: <created|proposed|stubbed|deferred>
-  ref: <object-id-if-created>
-  proposedId: <object-id-if-not-created>
+  ref: <object-uid-if-created>
+  proposedUid: <object-uid-if-not-created>
   notes: <Why this object exists or remains pending.>
 unresolvedQuestions:
 - id: <question-slug>

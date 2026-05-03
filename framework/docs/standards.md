@@ -177,7 +177,7 @@ service-side Standard classifications with additional metadata fields.
 Appliance Components are the deliberate exception to the Standard composition path. They
 are Technology Components because they map directly to vendor products, but they provide a
 deployed service-like capability without exposing a host Standard or service Standard
-wrapper. Because they do not inherit `requirement-group.host-standard` or `requirement-group.service-standard`, the appliance
+wrapper. Because they do not inherit the Host Requirement Group or Service Requirement Group, the appliance
 Requirement Group asks the required operating and governance capability questions directly on
 the appliance Technology Component.
 
@@ -202,8 +202,8 @@ the central logging standard that receives those logs.
 ## How To Add A New Standard
 
 1. Decide which Standard classification you are modeling.
-2. Choose the correct ID convention and folder.
-3. Add the shared base fields.
+2. Choose the correct folder and a clear human name.
+3. Add or repair the generated `uid`, then add the shared base fields.
 4. If the Standard is a host, specify the internal components that live on the host.
 5. If it is a service, specify the host or managed substrate it runs on and the
    function-defining component that gives the service its purpose.

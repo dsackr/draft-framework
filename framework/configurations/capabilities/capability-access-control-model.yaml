@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: capability.access-control-model
+uid: 01KQQ4Q026-4JR6
 type: capability
 name: Access Control Model
 description: Authorization model that controls access to a service or data platform.
@@ -9,5 +9,5 @@ definitionOwner:
   provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
-domain: domain.compute
+domain: 01KQQ4Q027-ZTHF
 implementations: []

@@ -4,8 +4,8 @@ Decision Records are first-class records for known risks,
 accepted decisions, mitigations, and follow-up paths tied to deployed
 architecture.
 
-The machine-readable object type is `decision_record`, and IDs match
-`decision.<scope>.<number>`.
+The machine-readable object type is `decision_record`. The generated `uid` is
+the stable machine reference; use `name` and `aliases` for human resolution.
 
 ## When To Use One
 
@@ -27,7 +27,7 @@ The authoritative schema is [decision-record.schema.yaml](../schemas/decision-re
 
 At minimum, a Decision Record includes:
 
-- `id`
+- `uid`
 - `type: decision_record`
 - `name`
 - `category`

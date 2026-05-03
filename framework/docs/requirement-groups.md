@@ -27,7 +27,7 @@ Workspace activation uses:
 ```yaml
 requirements:
   activeRequirementGroups:
-    - requirement-group.draft-soc2
+    - <soc2-requirement-group-uid>
   requireActiveRequirementGroupDisposition: false
 ```
 

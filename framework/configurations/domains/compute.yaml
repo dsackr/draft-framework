@@ -1,13 +1,13 @@
 schemaVersion: '1.0'
-id: domain.compute
+uid: 01KQQ4Q027-ZTHF
 type: domain
 name: Compute & Runtime
-description: >
-  Strategic domain covering application runtimes, serverless functions, and
-  physical or virtual compute resources.
+description: 'Strategic domain covering application runtimes, serverless functions, and physical or virtual compute resources.
+
+  '
 capabilities:
-- capability.compute
-- capability.operating-system
-- capability.compute-platform
-- capability.serverless-runtime
-- capability.container-orchestration
+- 01KQQ4Q026-9K8G
+- 01KQQ4Q026-QM2X
+- 01KQQ4Q026-1HZP
+- 01KQQ4Q026-3ZWJ
+- 01KQQ4Q026-GW5D

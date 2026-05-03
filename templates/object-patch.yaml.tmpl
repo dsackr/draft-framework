@@ -1,7 +1,8 @@
 schemaVersion: '1.0'
-id: patch.<target-id>.<purpose>
+uid: <generated-uid>
 type: object_patch
 name: <Patch Name>
+aliases: []
 description: <Patch-specific override or extension description.>
 version: 1.0.0
 catalogStatus: stub
@@ -11,6 +12,6 @@ owner:
   contact: <team-or-person@example.com>
 tags:
 - configuration
-target: <existing-object-id>
+target: <existing-object-uid>
 patch:
   <field>: <replacement-or-merged-value>

@@ -1,14 +1,13 @@
 schemaVersion: '1.0'
-id: capability.authentication
+uid: 01KQQ4Q026-MHJM
 type: capability
 name: Authentication
-description: Identity and access authentication capability for users, services, administrators,
-  or workloads.
+description: Identity and access authentication capability for users, services, administrators, or workloads.
 version: 1.0.0
 catalogStatus: approved
 definitionOwner:
   provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
-domain: domain.compute
+domain: 01KQQ4Q027-ZTHF
 implementations: []

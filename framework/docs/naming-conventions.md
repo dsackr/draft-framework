@@ -1,62 +1,59 @@
 # Naming Conventions
 
-## Why IDs Matter
+## UID, Name, And Aliases
 
-The catalog relies on stable, predictable IDs because the IDs are the connective tissue between YAML objects, validation logic, browser navigation, and engineer conversation.
+DRAFT first-class objects use an opaque generated `uid` for machine identity and
+a human-readable `name` for conversation. Humans should not be asked to type or
+remember UIDs.
 
-A good ID is not just readable. It is durable. Once an ID is in use, other objects will reference it and external tooling may depend on it.
+The `uid` exists only so references remain stable when a team renames an object.
+It uses this format:
 
-## Convention Table
+```text
+^[0-9A-HJKMNP-TV-Z]{10}-[0-9A-HJKMNP-TV-Z]{4}$
+```
 
-| Object type | Pattern | Example |
-| --- | --- | --- |
-| Technology Component OS | `technology.os.<vendor>-<os>-<major>` | `technology.os.amazon-linux-2` |
-| Technology Component compute platform | `technology.compute.<vendor>-<product>` | `technology.compute.amazon-ec2-standard` |
-| Technology Component software | `technology.software.<vendor>-<product>-<ver>` | `technology.software.microsoft-sqlserver-2019` |
-| Technology Component agent | `technology.agent.<vendor>-<product>` | `technology.agent.crowdstrike-falcon` |
-| Capability | `capability.<capability-slug>` | `capability.log-management` |
-| Host Standard | `host.<os>.<platform>.<variant>` | `host.windows.2022.ec2.standard` |
-| Service Standard | `service.<category>.<product>` | `service.web.nginx-126` |
-| Database Standard | `database.<engine-version>` | `database.sqlserver-2022` |
-| Requirement Group | `requirement-group.<name>` | `requirement-group.host-standard`, `requirement-group.database-standard` |
-| Reference architecture | `reference-architecture.<pattern-slug>` | `reference-architecture.dotnet.three-tier.ha` |
-| Software Deployment Pattern | `software-deployment.<product-slug>` | `software-deployment.student-health` |
+When an object is renamed, keep the `uid` unchanged and append the prior display
+name to `aliases`. The Draftsman should resolve user references by exact name,
+alias, file path, close name match, and only then UID.
 
-## Core Rules
+## What Still Uses Local IDs
 
-- IDs are lowercase.
-- Dot-separated segments define the hierarchy.
-- Hyphens are used inside a segment, not instead of dots.
-- Do not use spaces or ad hoc punctuation.
+Some nested values still use local `id` fields because they are not first-class
+objects. Examples include Requirement Group requirement IDs, Technology
+Component configuration IDs, Drafting Session question IDs, provider IDs, and
+company business pillar IDs.
 
-The point is to make IDs easy to type, easy to compare in diffs, and easy for tooling to parse.
+These local IDs are scoped to the object or workspace section that contains
+them. They are not global object identity.
 
-## How To Handle Version Numbers
+## File Naming
 
-Version numbers belong in IDs when the version is part of the architectural identity.
+File names should remain descriptive and stable enough for review:
 
-Examples:
+- `catalog/technology-components/technology-os-microsoft-windows-server-2022.yaml`
+- `catalog/host-standards/host-windows-server-2022-ec2.yaml`
+- `catalog/software-deployment-patterns/software-deployment-student-health.yaml`
 
-- `technology.software.microsoft-sqlserver-2019`
-- `technology.software.microsoft-sqlserver-2022`
-- `host.windows.2022.ec2.standard`
+Changing a file name does not change object identity. The `uid` is the stable
+reference.
 
-The rule of thumb is simple: if changing the version would create a different support, governance, or engineering choice, the version should be explicit in the ID.
+## Repairing UID Problems
 
-## Common Mistakes
+Validation reports missing, malformed, duplicate, or legacy object identity and
+prints both a suggested UID and an explicit repair command.
 
-### Over-abbreviating
+To repair one file:
 
-`technology.software.ms-sql-2019` is shorter, but weaker than `technology.software.microsoft-sqlserver-2019` because it introduces an abbreviation future engineers may not interpret consistently.
+```bash
+python3 framework/tools/repair_uids.py --workspace examples --file catalog/example.yaml --uid 01KQQ4Q027-ABCD
+```
 
-### Mixing dots and hyphens unpredictably
+To repair a company workspace from inside the company repo:
 
-`host.windows-2022.ec2-standard` breaks the segment model and makes IDs harder to reason about.
+```bash
+python3 .draft/framework/tools/repair_uids.py --workspace .
+```
 
-### Omitting a version when the version matters
-
-`technology.software.microsoft-sqlserver` is ambiguous in a catalog that actively tracks 2019 and 2022 as separate standards.
-
-### Putting deployment-specific detail into reusable IDs
-
-Environment names, data-center names, and hostnames do not belong in reusable object IDs. Product-specific instance names belong in Software Deployment Patterns, not in Technology Component or Standard IDs.
+The repair tool rewrites exact object references across the workspace. It does
+not rewrite narrative prose.

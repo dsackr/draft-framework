@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: capability.test-execution
+uid: 01KQQ4Q026-58Q3
 type: capability
 name: Test Execution and Automation
 description: Runtimes and orchestration services used to execute automated tests.
@@ -9,5 +9,5 @@ definitionOwner:
   provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
-domain: domain.testing
+domain: 01KQQ4Q027-SGHR
 implementations: []

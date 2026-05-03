@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: capability.compute
+uid: 01KQQ4Q026-9K8G
 type: capability
 name: General Purpose Compute
 description: Provisioning and execution of arbitrary code on reusable compute substrates.
@@ -9,5 +9,5 @@ definitionOwner:
   provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
-domain: domain.compute
+domain: 01KQQ4Q027-ZTHF
 implementations: []

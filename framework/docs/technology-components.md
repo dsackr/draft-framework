@@ -6,10 +6,10 @@ A Technology Component is a discrete third-party product object. It records one
 vendor product at one product version so that Standards can
 compose real products instead of generic categories.
 
-That definition matters. A Technology Component is not “Windows Server” in the abstract. It is
-`technology.os.microsoft-windowsserver-2022`. It is not “SQL Server” as a general
-category. It is `technology.software.microsoft-sqlserver-2019` or
-`technology.software.microsoft-sqlserver-2022`.
+That definition matters. A Technology Component is not “Windows Server” in the
+abstract. It is a named object such as “Microsoft Windows Server 2022”. It is
+not “SQL Server” as a general category. It is a named object such as “Microsoft
+SQL Server 2019” or “Microsoft SQL Server 2022”.
 
 The framework uses that level of specificity because architecture standards
 become misleading very quickly if version and vendor lifecycle are left
@@ -24,7 +24,7 @@ additionally follow
 
 At minimum, a Technology Component YAML should include:
 
-- `id`
+- `uid`
 - `type: technology_component`
 - `name`
 - `vendor`
@@ -72,7 +72,7 @@ Technology Components may also carry reusable capability metadata:
 A good example is the CrowdStrike Falcon agent. The Technology Component captures the fact that
 the agent is installed locally on a host, but it also acknowledges that the
 agent exists to connect the host to the CrowdStrike platform by providing
-the `capability.security-monitoring` capability.
+the Security Monitoring capability.
 
 Company adoption of a Technology Component is not recorded as top-level
 `lifecycleStatus` on the Technology Component. It is recorded on the relevant
@@ -91,22 +91,10 @@ A Technology Component is not a running system. If an organization has a product
 
 ## Naming Convention
 
-The naming convention is intentionally rigid.
-
-- Operating System Technology Components typically follow `technology.os.<vendor>-<os>-<major>`
-- Compute Platform Technology Components typically follow `technology.hardware.<vendor>-<product>`
-- Software Technology Components typically follow `technology.software.<vendor>-<product>-<ver>`
-- Agent Technology Components typically follow `technology.agent.<vendor>-<product>`
-
-Examples:
-
-- `technology.os.amazon-linux-2`
-- `technology.os.microsoft-windowsserver-2022`
-- `technology.hardware.amazon-ec2-standard`
-- `technology.software.microsoft-sqlserver-2019`
-- `technology.agent.crowdstrike-falcon`
-
-The rule is to stay lowercase, keep the segments dot-separated, and use hyphens inside segments.
+Use clear human names that include vendor, product, and version when the version
+changes support or adoption decisions. The generated `uid` is the stable object
+reference; the name is for humans and can change. If the name changes, keep the
+same `uid` and add the previous name to `aliases`.
 
 ## How Technology Components Are Used
 
@@ -118,9 +106,9 @@ Technology Components become useful when they are referenced as internal compone
 - A service Standard references one function Technology Component that provides the service capability, such as IIS or SQL Server.
 
 This separation makes the architecture easier to reason about. For example,
-`database.sqlserver-2022` does not need to redefine what SQL Server
-2022 is. It can simply reference
-`technology.software.microsoft-sqlserver-2022` as its function Technology Component and focus on the
+“SQL Server 2022 Database Standard” does not need to redefine what SQL Server
+2022 is. It can simply reference the SQL Server 2022 Technology Component by
+UID as its function Technology Component and focus on the
 architectural decisions that matter at the service level.
 
 When an Agent Technology Component is used inside a Standard, the Standard must also declare the
@@ -150,8 +138,8 @@ boundary.
 
 That blackbox boundary is why the appliance Requirement Group carries service-like operating
 questions directly on the Technology Component. A normal host Standard inherits the host baseline
-through `requirement-group.host-standard`, and a normal service Standard inherits service requirements
-through `requirement-group.service-standard`. An Appliance Component does neither. It must therefore answer
+through the Host Requirement Group, and a normal service Standard inherits service requirements
+through the Service Requirement Group. An Appliance Component does neither. It must therefore answer
 consumer-facing capabilities such as authentication/access, log or audit
 visibility, health/status visibility, patch/update model, resilience, network
 placement, configurable surface, failure domain, and compliance posture on the
@@ -180,9 +168,9 @@ control.
 ## How To Add A New Technology Component
 
 1. Decide whether the object is an Operating System, Compute Platform, Software, or Agent Technology Component.
-2. Choose the correct ID pattern and make sure the ID is lowercase.
-3. Create the YAML file in the correct folder.
-4. Fill in the shared base fields: schema version, ID, type, name, description, version, catalog status, owner, and tags.
+2. Create the YAML file in the correct folder.
+3. Add or repair the generated `uid`.
+4. Fill in the shared base fields: schema version, `uid`, type, name, aliases, description, version, catalog status, owner, and tags.
 5. Fill in the Technology Component-specific fields: `classification`, `vendor`, `productName`, `productVersion`, optional `platformDependency`, and vendor lifecycle.
 6. Add `capabilities` if the Technology Component itself satisfies reusable host capabilities.
 7. Add `configurations` if a named Technology Component configuration satisfies reusable host capabilities.

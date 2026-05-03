@@ -16,6 +16,7 @@ organized around:
 
 - `scalingUnits`
 - `serviceGroups`
+- `businessContext`
 - `architecturalDecisions`
 - `decisionRecords`
 
@@ -50,7 +51,7 @@ The canonical schema notes for Software Deployment Patterns live in [software-de
 
 At minimum, a Software Deployment Pattern includes:
 
-- `id`
+- `uid`
 - `type: software_deployment_pattern`
 - `name`
 - `catalogStatus`
@@ -59,6 +60,7 @@ At minimum, a Software Deployment Pattern includes:
 The main Software Deployment Pattern structure is:
 
 - optional `followsReferenceArchitecture`
+- optional `businessContext`
 - optional `architecturalDecisions`
 - optional `scalingUnits`
 - optional `serviceGroups`
@@ -87,6 +89,32 @@ Each deployed Standard entry should declare:
 - optional `intent`
 - optional `riskRef`
 - optional `notes`
+
+## Business Context
+
+Software Deployment Patterns may include `businessContext` so a company can
+quickly see which business pillar, portfolio, or product family a pattern
+belongs to. This is intentionally workspace-owned. The framework defines the
+field and validation behavior, but the company declares the actual taxonomy in
+`.draft/workspace.yaml`.
+
+Example:
+
+```yaml
+businessContext:
+  pillar: business-pillar.human-capital-management
+  additionalPillars:
+    - business-pillar.student-management
+  productFamily: Absence & Time
+  notes: Primary ownership follows the HCM portfolio; student-management impact
+    exists through district-facing attendance workflows.
+```
+
+If `.draft/workspace.yaml` defines `businessTaxonomy.pillars`, validation checks
+that `businessContext.pillar` and any `additionalPillars` use declared pillar
+IDs. A workspace can also set
+`businessTaxonomy.requireSoftwareDeploymentPatternPillar: true` to require every
+Software Deployment Pattern to declare a primary pillar.
 
 ## What `followsReferenceArchitecture` Means
 

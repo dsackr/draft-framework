@@ -15,11 +15,12 @@ answer belongs in a Software Deployment Pattern.
 ## YAML Shape
 
 Reference Architectures are validated by
-[`framework/tools/validate.py`](../tools/validate.py) and `requirement-group.reference-architecture`.
+[`framework/tools/validate.py`](../tools/validate.py) and the Reference
+Architecture Requirement Group.
 
 At minimum, a Reference Architecture YAML should include:
 
-- `id`
+- `uid`
 - `type: reference_architecture`
 - `name`
 - `catalogStatus`
@@ -84,10 +85,11 @@ pattern assumes, such as web-tier autoscaling and AlwaysOn on the data tier.
 
 A Reference Architecture is not a deployed thing. It is a deployment-pattern declaration.
 
-A Software Deployment Pattern may say `followsReferenceArchitecture: reference-architecture.dotnet.three-tier.ha`, but that field is
-metadata about conformance, not a deployed runtime element. The visual
-question for a Software Deployment Pattern is "what Standards are deployed here?" The guidance question
-is "which Reference Architecture does this solution claim to follow?"
+A Software Deployment Pattern may reference a Reference Architecture UID in
+`followsReferenceArchitecture`, but that field is metadata about conformance,
+not a deployed runtime element. The visual question for a Software Deployment
+Pattern is "what Standards are deployed here?" The guidance question is "which
+Reference Architecture does this solution claim to follow?"
 
 ## Why Reference Architectures Matter
 

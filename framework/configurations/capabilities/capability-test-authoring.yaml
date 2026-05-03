@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: capability.test-authoring
+uid: 01KQQ4Q026-QC9S
 type: capability
 name: Test Authoring
 description: Tools and frameworks used to author automated tests.
@@ -9,5 +9,5 @@ definitionOwner:
   provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
-domain: domain.testing
+domain: 01KQQ4Q027-SGHR
 implementations: []

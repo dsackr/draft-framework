@@ -30,12 +30,21 @@ In a company workspace, generated architecture content belongs under
 `.draft/framework/`. Edit company YAML directly, keep changes small and
 reviewable, and run validation before treating the work as complete.
 
+First-class objects use generated `uid` values for machine identity. Do not ask
+humans to create semantic object IDs. Use names, aliases, and paths for human
+conversation, and use the repair tool when validation reports a missing,
+malformed, duplicate, or legacy identity:
+
+```bash
+python3 .draft/framework/tools/repair_uids.py --workspace .
+```
+
 ## Add A Technology Component
 
 1. Decide whether the object is an Operating System, Compute Platform, Software, or Agent Technology Component.
-2. Choose the correct ID pattern.
-3. Create the YAML file in `catalog/technology-components/`.
-4. Fill in the shared base fields.
+2. Create the YAML file in `catalog/technology-components/`.
+3. Add or repair the generated `uid`.
+4. Fill in the shared base fields: `uid`, `type`, `name`, `description`, `version`, `catalogStatus`, `owner`, and `tags`.
 5. Fill in the required Technology Component fields: `vendor`, `productName`, `productVersion`, and `classification`.
 6. Add `capabilities` if the Technology Component itself satisfies reusable host capabilities.
 7. Add `configurations` if a named Technology Component configuration satisfies reusable host capabilities.
@@ -55,7 +64,7 @@ Technology Components should be specific. If you cannot name the product version
 6. Add `requirementGroups` only for Requirement Groups the host explicitly claims to
    satisfy, then add valid `requirementImplementations` for every applicable
    control in each declared profile.
-7. Add `requirementGroups: [requirement-group.host-standard]`.
+7. Use generated UIDs when adding explicit `requirementGroups`.
 8. Run validation.
 
 ## Add A Service Standard
@@ -90,31 +99,32 @@ Keep the requirements focused on architecture outcomes rather than implementatio
 ## Add A Reference Architecture
 
 1. Create the file in `catalog/reference-architectures/`.
-2. Choose a stable `reference-architecture.<pattern-slug>` ID.
+2. Add or repair the generated `uid`; choose a clear human `name`.
 3. Populate `serviceGroups` with the reusable building blocks that define the deployment pattern.
 4. Set `diagramTier` on every Standard entry and cluster related functionality into the right service group.
 5. Add `architecturalDecisions` that explain what non-functional qualities the pattern is meant to deliver and how.
-6. Make sure the file satisfies `requirement-group.reference-architecture` by documenting `patternType`, tiered service groups, and deployment-quality decisions.
+6. Make sure the file satisfies the Reference Architecture Requirement Group by documenting `patternType`, tiered service groups, and deployment-quality decisions.
 
 A Reference Architecture should be generic enough to guide many products, not just one.
 
 ## Add A Software Deployment Pattern
 
 1. Create the file in `catalog/software-deployment-patterns/`.
-2. Choose a product-focused `software-deployment.<product-slug>` ID.
-3. Set `followsReferenceArchitecture` if the product aligns with an existing Reference Architecture.
-4. Define any `scalingUnits` needed to express replicable or shared deployment boundaries.
-5. Build the manifest out through `serviceGroups`, then place Product Services, Standards, Appliance Components, and SaaS Services into the appropriate groups.
+2. Add or repair the generated `uid`; choose a product-focused human `name`.
+3. Add `businessContext.pillar` when the workspace declares business pillars in `.draft/workspace.yaml`.
+4. Set `followsReferenceArchitecture` if the product aligns with an existing Reference Architecture.
+5. Define any `scalingUnits` needed to express replicable or shared deployment boundaries.
+6. Build the manifest out through `serviceGroups`, then place Product Services, Standards, Appliance Components, and SaaS Services into the appropriate groups.
    Product Service is not a starting-point Requirement Group object; use it here only when the Software Deployment Pattern needs to express a distinct first-party runtime-behavior component deployed on a substrate.
-6. Set `diagramTier` on every Product Service and Standard entry using one of `presentation`, `application`, `data`, or `utility`.
-7. Use `intent` only when the architect is explicitly deviating from the Reference Architecture or when no Reference Architecture exists.
-8. Add product-level `architecturalDecisions`, including availability requirement and data classification, so the Software Deployment Pattern satisfies `requirement-group.software-deployment-pattern`.
+7. Set `diagramTier` on every Product Service and Standard entry using one of `presentation`, `application`, `data`, or `utility`.
+8. Use `intent` only when the architect is explicitly deviating from the Reference Architecture or when no Reference Architecture exists.
+9. Add product-level `architecturalDecisions`, including availability requirement and data classification, so the Software Deployment Pattern satisfies the Software Deployment Pattern Requirement Group.
 
 ## Add A Drafting Session
 
 1. Create the file in `catalog/sessions/`.
-2. Choose a stable `session.<topic>` ID.
-3. Record the target object type in `primaryObjectType` and, if it already exists, `primaryObjectId`.
+2. Add or repair the generated `uid`; choose a name that describes the drafting work.
+3. Record the target object type in `primaryObjectType` and, if it already exists, `primaryObjectUid`.
 4. Add the source material that informed the current work under `sourceArtifacts`.
 5. Record the YAML objects that were created, proposed, or stubbed under `generatedObjects`.
 6. Record every unresolved question explicitly, including the current best guess and impact when useful.

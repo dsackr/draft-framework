@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: capability.patch-management
+uid: 01KQQ4Q026-BH6E
 type: capability
 name: Patch Management
 description: Patch orchestration and update application capability for managed runtime components.
@@ -9,5 +9,5 @@ definitionOwner:
   provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
-domain: domain.compute
+domain: 01KQQ4Q027-ZTHF
 implementations: []

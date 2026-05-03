@@ -3,6 +3,8 @@ from __future__ import annotations
 import tempfile
 import textwrap
 import unittest
+import subprocess
+import sys
 from pathlib import Path
 
 from draft_table.paths import REPO_ROOT
@@ -23,6 +25,67 @@ class ValidationTests(unittest.TestCase):
 
         self.assertTrue(result.ok, result.stdout + result.stderr)
         self.assertIn("Validated", result.stdout)
+
+    def test_missing_uid_reports_suggested_value_and_repair_command(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            component_dir = workspace / "catalog" / "technology-components"
+            component_dir.mkdir(parents=True, exist_ok=True)
+            (component_dir / "technology-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    type: technology_component
+                    name: Test Technology
+                    vendor: Test Vendor
+                    productName: Test Product
+                    productVersion: "1"
+                    classification: software
+                    catalogStatus: draft
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("Add required field 'uid' with generated value", result.stdout)
+        self.assertIn("repair_uids.py", result.stdout)
+        self.assertIn("--file catalog/technology-components/technology-test.yaml --uid", result.stdout)
+
+    def test_malformed_uid_reports_suggested_value_and_repair_command(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            component_dir = workspace / "catalog" / "technology-components"
+            component_dir.mkdir(parents=True, exist_ok=True)
+            (component_dir / "technology-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: test-technology
+                    type: technology_component
+                    name: Test Technology
+                    vendor: Test Vendor
+                    productName: Test Product
+                    productVersion: "1"
+                    classification: software
+                    catalogStatus: draft
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("Replace malformed uid 'test-technology' with generated value", result.stdout)
+        self.assertIn("repair_uids.py", result.stdout)
+        self.assertIn("--file catalog/technology-components/technology-test.yaml --uid", result.stdout)
 
     def test_build_validate_command_prefers_vendored_framework(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -79,6 +142,7 @@ class ValidationTests(unittest.TestCase):
             workspace = Path(directory)
             ensure_workspace_layout(workspace)
             self._write_workspace_requirement_fixture(workspace, require_disposition=False)
+            self._repair_workspace_uids(workspace)
 
             result = validate_workspace(workspace)
 
@@ -89,6 +153,7 @@ class ValidationTests(unittest.TestCase):
             workspace = Path(directory)
             ensure_workspace_layout(workspace)
             self._write_workspace_requirement_fixture(workspace, require_disposition=True)
+            self._repair_workspace_uids(workspace)
 
             result = validate_workspace(workspace)
 
@@ -157,6 +222,7 @@ class ValidationTests(unittest.TestCase):
                 + "\n",
                 encoding="utf-8",
             )
+            self._repair_workspace_uids(workspace)
 
             result = validate_workspace(workspace)
 
@@ -253,6 +319,20 @@ class ValidationTests(unittest.TestCase):
             encoding="utf-8",
         )
 
+    def _repair_workspace_uids(self, workspace: Path) -> None:
+        subprocess.run(
+            [
+                sys.executable,
+                str(REPO_ROOT / "framework" / "tools" / "repair_uids.py"),
+                "--workspace",
+                str(workspace),
+            ],
+            cwd=REPO_ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
     def test_appliance_component_satisfies_service_like_checklist_capabilities_directly(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)
@@ -301,6 +381,7 @@ class ValidationTests(unittest.TestCase):
                 + "\n",
                 encoding="utf-8",
             )
+            self._repair_workspace_uids(workspace)
 
             result = validate_workspace(workspace)
 
@@ -331,6 +412,7 @@ class ValidationTests(unittest.TestCase):
                 + "\n",
                 encoding="utf-8",
             )
+            self._repair_workspace_uids(workspace)
 
             result = validate_workspace(workspace)
 
@@ -380,6 +462,7 @@ class ValidationTests(unittest.TestCase):
                 + "\n",
                 encoding="utf-8",
             )
+            self._repair_workspace_uids(workspace)
 
             result = validate_workspace(workspace)
 
@@ -428,6 +511,7 @@ class ValidationTests(unittest.TestCase):
                 + "\n",
                 encoding="utf-8",
             )
+            self._repair_workspace_uids(workspace)
 
             result = validate_workspace(workspace)
 

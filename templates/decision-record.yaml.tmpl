@@ -1,7 +1,8 @@
 schemaVersion: '1.0'
-id: decision.<scope-slug>.001
+uid: <generated-uid>
 type: decision_record
 name: <Risk Or Decision Name>
+aliases: []
 description: <Risk or decision statement.>
 version: 1.0.0
 catalogStatus: stub
@@ -13,12 +14,12 @@ tags:
 - decision-record
 category: <risk|decision>
 status: <open|accepted|mitigated|resolved>
-affectedComponent: <object-id-or-component-name>
+affectedComponent: <object-uid-or-component-name>
 impact: <Operational, security, compliance, or availability impact.>
 mitigationPath: <Mitigation path if this is a risk.>
 decisionRationale: <Required when category is decision.>
-linkedSoftwareDeployment: software-deployment.<product-slug>
+linkedSoftwareDeployment: <software-deployment-pattern-uid>
 relatedDecisionRecords:
-- decision.<scope-slug>.002
+- <decision-record-uid>
 controlReferences:
 - <controls-or-control-reference>

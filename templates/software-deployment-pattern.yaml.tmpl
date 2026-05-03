@@ -1,7 +1,8 @@
 schemaVersion: '1.0'
-id: software-deployment.<product-slug>
+uid: <generated-uid>
 type: software_deployment_pattern
 name: <Product or System Name>
+aliases: []
 description: <Product-specific deployment reality description.>
 version: 1.0.0
 catalogStatus: stub
@@ -11,7 +12,10 @@ owner:
   contact: <team-or-person@example.com>
 tags:
 - <product-slug>
-followsReferenceArchitecture: reference-architecture.<pattern-slug>
+businessContext:
+  pillar: business-pillar.<company-pillar-slug>
+  productFamily: <Product family or portfolio name>
+followsReferenceArchitecture: <reference-architecture-uid>
 architecturalDecisions:
   availabilityRequirement: <Business availability requirement.>
   dataClassification: <Data classification.>
@@ -22,7 +26,7 @@ serviceGroups:
 - name: <Service Group Name>
   deploymentTarget: <Actual deployment target.>
   standards:
-  - ref: <existing-standard-id>
+  - ref: <existing-standard-uid>
     diagramTier: <presentation|application|data|utility>
     intent: <ha|sa>
     notes: <How this block is used by the product.>
@@ -30,9 +34,9 @@ serviceGroups:
   - name: <External System>
     type: external
     capabilities:
-    - capability.<capability-slug>
+    - <capability-uid>
     notes: <Runtime dependency or interaction.>
 decisionRecords:
-- ref: decision.<product-slug>.001
+- ref: <decision-record-uid>
 requirementGroups: []
 requirementImplementations: []

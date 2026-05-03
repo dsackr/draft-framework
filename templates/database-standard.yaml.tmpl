@@ -1,7 +1,8 @@
 schemaVersion: '1.0'
-id: database.<engine-version>
+uid: <generated-uid>
 type: database_standard
 name: <Database Engine Version> DBMS Service
+aliases: []
 description: <Reusable database service description.>
 version: 1.0.0
 catalogStatus: stub
@@ -14,8 +15,8 @@ tags:
 - dbms
 category: service
 serviceCategory: database
-hostStandard: host.<os>.<platform>.<variant>
-primaryTechnologyComponent: technology.software.<database-engine-version>
+hostStandard: <host-standard-uid>
+primaryTechnologyComponent: <database-technology-component-uid>
 architecturalDecisions:
   serviceAuthentication: <How administrators and service identities authenticate.>
   secretsManagement: <How database credentials and connection secrets are stored.>
@@ -36,20 +37,20 @@ architecturalDecisions:
   accessControl:
     model: <Administrative and application access control model.>
 internalComponents:
-- ref: host.<os>.<platform>.<variant>
+- ref: <host-standard-uid>
   role: host
-- ref: technology.software.<database-engine-version>
+- ref: <database-technology-component-uid>
   role: function
 externalInteractions:
 - name: <Backup Platform>
   notes: <Off-host backup target and retention management.>
   capabilities:
-  - capability.backup-strategy
+  - <backup-strategy-capability-uid>
 - name: <Database Monitoring>
   notes: <Database telemetry and alerting.>
   capabilities:
-  - capability.health-welfare-monitoring
+  - <health-welfare-monitoring-capability-uid>
 requirementGroups:
-- requirement-group.service-standard
-- requirement-group.database-standard
+- <service-requirement-group-uid>
+- <database-requirement-group-uid>
 requirementImplementations: []

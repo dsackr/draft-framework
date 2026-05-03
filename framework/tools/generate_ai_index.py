@@ -29,6 +29,7 @@ FRAMEWORK_ENTRYPOINTS = [
     ("framework/docs/capabilities.md", "Capability object model and implementation lookup behavior."),
     ("framework/docs/drafting-sessions.md", "How to persist incomplete authoring work."),
     ("framework/tools/validate.py", "Executable validation for schemas, Requirement Groups, capabilities, and references."),
+    ("framework/tools/repair_uids.py", "Explicit repair utility that adds or replaces generated object UIDs and rewrites object references."),
     ("framework/tools/generate_browser.py", "Static GitHub Pages browser generator."),
     ("install-draft-table.sh", "Local DRAFT Table installer and onboarding launcher."),
 ]
@@ -82,7 +83,7 @@ def yaml_row(path: Path) -> tuple[str, str, str, str, str, str]:
     tags = data.get("tags", [])
     tag_text = ", ".join(str(tag) for tag in tags) if isinstance(tags, list) else ""
     return (
-        oneline(data.get("id"), path.stem),
+        oneline(data.get("uid"), path.stem),
         oneline(data.get("name"), path.stem),
         oneline(data.get("type"), "yaml"),
         tag_text,
@@ -178,7 +179,7 @@ def main() -> None:
     for folder_name in CONFIGURATION_FOLDERS:
         for path in yaml_files(folder_name):
             config_rows.append(yaml_row(path))
-    append_table(lines, ["ID", "Name", "Type", "Tags", "Description", "Path"], config_rows)
+    append_table(lines, ["UID", "Name", "Type", "Tags", "Description", "Path"], config_rows)
 
     lines.extend(["", "## Example Catalog Inventory", ""])
     lines.append(
@@ -191,7 +192,7 @@ def main() -> None:
         for path in yaml_files(folder_name):
             inventory_rows.append(yaml_row(path))
     if inventory_rows:
-        append_table(lines, ["ID", "Name", "Type", "Tags", "Description", "Path"], inventory_rows)
+        append_table(lines, ["UID", "Name", "Type", "Tags", "Description", "Path"], inventory_rows)
     else:
         lines.append("No YAML catalog objects are present in this checkout yet.")
 

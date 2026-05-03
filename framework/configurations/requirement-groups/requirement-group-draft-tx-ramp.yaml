@@ -1,10 +1,10 @@
 schemaVersion: '1.0'
-id: requirement-group.draft-tx-ramp
+uid: 01KQQ4Q027-1GHC
 type: requirement_group
 name: TX-RAMP Requirement Group
-description: >
-  Starter TX-RAMP requirement group for DRAFT. This file is intended to map
-  TX-RAMP control expectations onto the unified DRAFT requirement model.
+description: 'Starter TX-RAMP requirement group for DRAFT. This file is intended to map TX-RAMP control expectations onto the unified DRAFT requirement model.
+
+  '
 version: 0.1.0
 catalogStatus: draft
 owner:
@@ -37,10 +37,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.authentication
+      capability: 01KQQ4Q026-MHJM
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.authentication
+      capability: 01KQQ4Q026-MHJM
   - mechanism: architecturalDecision
     key: authentication
   minimumSatisfactions: 1
@@ -48,7 +48,7 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.authentication
+  relatedCapability: 01KQQ4Q026-MHJM
   applicability:
     anyOf:
     - field: complianceContext.txRampInScope
@@ -68,10 +68,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.log-management
+      capability: 01KQQ4Q026-D04B
   - mechanism: externalInteraction
     criteria:
-      capability: capability.log-management
+      capability: 01KQQ4Q026-D04B
   - mechanism: architecturalDecision
     key: log_management
   minimumSatisfactions: 1
@@ -79,7 +79,7 @@ requirements:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.log-management
+  relatedCapability: 01KQQ4Q026-D04B
   applicability:
     anyOf:
     - field: complianceContext.txRampInScope
@@ -99,13 +99,13 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.security-monitoring
+      capability: 01KQQ4Q026-JW52
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.security-monitoring
+      capability: 01KQQ4Q026-JW52
   - mechanism: externalInteraction
     criteria:
-      capability: capability.security-monitoring
+      capability: 01KQQ4Q026-JW52
   - mechanism: architecturalDecision
     key: security_monitoring
   minimumSatisfactions: 1
@@ -114,7 +114,7 @@ requirements:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.security-monitoring
+  relatedCapability: 01KQQ4Q026-JW52
   applicability:
     anyOf:
     - field: complianceContext.txRampInScope
@@ -134,10 +134,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.patch-management
+      capability: 01KQQ4Q026-BH6E
   - mechanism: externalInteraction
     criteria:
-      capability: capability.patch-management
+      capability: 01KQQ4Q026-BH6E
   - mechanism: architecturalDecision
     key: patch_management
   minimumSatisfactions: 1
@@ -145,7 +145,7 @@ requirements:
   - technologyComponent
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.patch-management
+  relatedCapability: 01KQQ4Q026-BH6E
   applicability:
     anyOf:
     - field: complianceContext.txRampInScope
@@ -167,7 +167,7 @@ requirements:
     key: architecturalDecisions.encryption_at_rest
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.encryption-at-rest
+      capability: 01KQQ4Q026-H3B5
   - mechanism: architecturalDecision
     key: encryption_at_rest
   minimumSatisfactions: 1
@@ -175,7 +175,7 @@ requirements:
   - field
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.encryption-at-rest
+  relatedCapability: 01KQQ4Q026-H3B5
   applicability:
     anyOf:
     - field: complianceContext.txRampInScope
@@ -195,10 +195,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.access-control-model
+      capability: 01KQQ4Q026-4JR6
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.access-control-model
+      capability: 01KQQ4Q026-4JR6
   - mechanism: architecturalDecision
     key: access_control_model
   minimumSatisfactions: 1
@@ -206,7 +206,7 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.access-control-model
+  relatedCapability: 01KQQ4Q026-4JR6
   applicability:
     anyOf:
     - field: complianceContext.txRampInScope
@@ -232,7 +232,7 @@ requirements:
   validAnswerTypes:
   - field
   - architecturalDecision
-  relatedCapability: capability.backup-strategy
+  relatedCapability: 01KQQ4Q026-7T2H
   applicability:
     anyOf:
     - field: complianceContext.txRampInScope
@@ -252,10 +252,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.secrets-management
+      capability: 01KQQ4Q026-DTJJ
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.secrets-management
+      capability: 01KQQ4Q026-DTJJ
   - mechanism: architecturalDecision
     key: secrets_management
   minimumSatisfactions: 1
@@ -263,7 +263,7 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.secrets-management
+  relatedCapability: 01KQQ4Q026-DTJJ
   applicability:
     anyOf:
     - field: complianceContext.txRampInScope
@@ -378,8 +378,6 @@ tags:
 - tx-ramp
 - starter-pack
 - requirement-group
-notes: 'Starter mapping aligned to the public TX-RAMP program information. Replace the shared
-  program link with deeper authoritative links later if stable per-control references become
-  available.
+notes: 'Starter mapping aligned to the public TX-RAMP program information. Replace the shared program link with deeper authoritative links later if stable per-control references become available.
 
   '

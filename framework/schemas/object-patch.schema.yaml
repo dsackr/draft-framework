@@ -2,7 +2,7 @@ schemaVersion: '1.0'
 type: object_patch
 requiredFields:
 - schemaVersion
-- id
+- uid
 - type
 - name
 - target
@@ -10,12 +10,12 @@ requiredFields:
 - catalogStatus
 - lifecycleStatus
 optionalFields:
+- aliases
 - description
 - version
 - owner
 - tags
 - notes
-idPattern: ^patch\.[a-z0-9.-]+$
 enumFields:
   catalogStatus:
   - stub
@@ -28,20 +28,19 @@ enumFields:
   - deprecated
   - retired
 fieldTypes:
+  aliases: list
   owner: dict
   tags: list
   patch: dict
-aiHint: An Object Patch is a workspace overlay that deep-merges company or provider changes
-  into a base framework object without editing the base copy.
+aiHint: An Object Patch is a workspace overlay that deep-merges company or provider changes into a base framework object without editing the base copy.
 fieldDescriptions:
-  schemaVersion: Use the schema version string supported by this framework release, normally
-    "1.0".
-  id: Use a stable, namespaced object ID that matches this schema idPattern when one is declared.
+  schemaVersion: Use the schema version string supported by this framework release, normally "1.0".
   type: Use the exact object type declared by the matching schema.
   name: Use a clear human-readable name for the object.
   target: Provide a valid target value for this object_patch object.
   patch: Provide a valid patch value for this object_patch object.
-  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption
-    disposition.
-  lifecycleStatus: Use candidate, preferred, existing-only, deprecated, or retired where this object
-    still carries a lifecycle signal.
+  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption disposition.
+  lifecycleStatus: Use candidate, preferred, existing-only, deprecated, or retired where this object still carries a lifecycle signal.
+  uid: Use the generated opaque UID for object identity. Do not edit it for display-name, product-name, or taxonomy changes.
+  aliases: List prior or alternate human-readable names that should resolve to this object.
+uidPattern: ^[0-9A-HJKMNP-TV-Z]{10}-[0-9A-HJKMNP-TV-Z]{4}$

@@ -2,7 +2,7 @@ schemaVersion: '1.0'
 type: service_standard
 requiredFields:
 - schemaVersion
-- id
+- uid
 - type
 - name
 - hostStandard
@@ -11,6 +11,7 @@ requiredFields:
 - catalogStatus
 - lifecycleStatus
 optionalFields:
+- aliases
 - description
 - version
 - owner
@@ -20,7 +21,6 @@ optionalFields:
 - externalInteractions
 - deploymentConfigurations
 - requirementImplementations
-idPattern: ^service\.[a-z0-9.-]+$
 enumFields:
   catalogStatus:
   - stub
@@ -33,6 +33,7 @@ enumFields:
   - deprecated
   - retired
 fieldTypes:
+  aliases: list
   owner: dict
   tags: list
   architecturalDecisions: dict
@@ -114,19 +115,16 @@ requirementImplementation:
     - field
   fieldTypes:
     criteria: dict
-aiHint: A Service Standard defines a reusable service pattern built from a host and a primary
-  Technology Component.
+aiHint: A Service Standard defines a reusable service pattern built from a host and a primary Technology Component.
 fieldDescriptions:
-  schemaVersion: Use the schema version string supported by this framework release, normally
-    "1.0".
-  id: Use a stable, namespaced object ID that matches this schema idPattern when one is declared.
+  schemaVersion: Use the schema version string supported by this framework release, normally "1.0".
   type: Use the exact object type declared by the matching schema.
   name: Use a clear human-readable name for the object.
   hostStandard: Provide a valid hostStandard value for this service_standard object.
-  primaryTechnologyComponent: Provide a valid primaryTechnologyComponent value for this service_standard
-    object.
+  primaryTechnologyComponent: Provide a valid primaryTechnologyComponent value for this service_standard object.
   internalComponents: Provide a valid internalComponents value for this service_standard object.
-  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption
-    disposition.
-  lifecycleStatus: Use candidate, preferred, existing-only, deprecated, or retired where this object
-    still carries a lifecycle signal.
+  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption disposition.
+  lifecycleStatus: Use candidate, preferred, existing-only, deprecated, or retired where this object still carries a lifecycle signal.
+  uid: Use the generated opaque UID for object identity. Do not edit it for display-name, product-name, or taxonomy changes.
+  aliases: List prior or alternate human-readable names that should resolve to this object.
+uidPattern: ^[0-9A-HJKMNP-TV-Z]{10}-[0-9A-HJKMNP-TV-Z]{4}$

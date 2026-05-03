@@ -1,17 +1,17 @@
 schemaVersion: '1.0'
-id: patch.examples.operating-system-implementations
+uid: 01KQQ4Q026-4AYD
 type: object_patch
 name: Example capability.operating-system implementations
 description: Example workspace-owned capability implementation mapping.
 version: 1.0.0
 catalogStatus: draft
 lifecycleStatus: existing-only
-target: capability.operating-system
+target: 01KQQ4Q026-QM2X
 patch:
   owner:
     team: example-architecture
     contact: architecture@example.com
   implementations:
-  - ref: technology.os.canonical-ubuntu-2204
+  - ref: 01KQQ4Q025-3HXA
     lifecycleStatus: existing-only
     notes: Example operating system implementation.

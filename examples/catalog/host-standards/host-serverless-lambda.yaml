@@ -1,14 +1,12 @@
 schemaVersion: '1.0'
-id: host.serverless.lambda
+uid: 01KQQ4Q025-1XDE
 type: host_standard
 category: host
 subtype: host
 name: AWS Lambda Serverless Host
-description: >
-  Serverless execution environment provided by AWS Lambda. The host is entirely
-  AWS-managed and blackbox to the organization. Function code is deployed as a
-  Product Service. No OS management, no agent installation, and no patching
-  responsibility exist at this layer.
+description: 'Serverless execution environment provided by AWS Lambda. The host is entirely AWS-managed and blackbox to the organization. Function code is deployed as a Product Service. No OS management, no agent installation, and no patching responsibility exist at this layer.
+
+  '
 version: 1.0.0
 catalogStatus: draft
 lifecycleStatus: preferred
@@ -21,15 +19,14 @@ tags:
 architecturalDecisions:
   authenticationApproach: IAM-based invocation and execution roles managed by AWS
   loggingApproach: Function and platform logs emitted to CloudWatch Logs
-  securityMonitoringApproach: AWS-native monitoring and audit integration for the managed
-    runtime
+  securityMonitoringApproach: AWS-native monitoring and audit integration for the managed runtime
   patchManagementApproach: Runtime patching is handled by AWS as part of the managed platform
 internalComponents:
-- ref: appliance.aws-lambda-runtime
+- ref: 01KQQ4Q025-T7B7
   role: appliance
   notes: AWS-managed serverless execution environment. Blackbox host.
 externalInteractions:
 - name: AWS Lambda Service
   notes: The Lambda service itself provides the execution environment.
   capabilities:
-  - capability.compute
+  - 01KQQ4Q026-9K8G

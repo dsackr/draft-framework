@@ -1,7 +1,8 @@
 schemaVersion: '1.0'
-id: service.<service-slug>
+uid: <generated-uid>
 type: service_standard
 name: <Service Name>
+aliases: []
 description: <Reusable service description.>
 version: 1.0.0
 catalogStatus: stub
@@ -13,8 +14,8 @@ tags:
 - service
 category: service
 serviceCategory: general
-hostStandard: host.<os>.<platform>.<variant>
-primaryTechnologyComponent: technology.software.<vendor-product-version>
+hostStandard: <host-standard-uid>
+primaryTechnologyComponent: <software-technology-component-uid>
 architecturalDecisions:
   serviceAuthentication: <How administrators or service identities authenticate.>
   secretsManagement: <How secrets, keys, tokens, or certificates are stored and accessed.>
@@ -25,15 +26,15 @@ architecturalDecisions:
   recoverabilityModel: <Recovery model.>
   failureDomain: <Scope of impact from service failure.>
 internalComponents:
-- ref: host.<os>.<platform>.<variant>
+- ref: <host-standard-uid>
   role: host
-- ref: technology.software.<vendor-product-version>
+- ref: <software-technology-component-uid>
   role: function
 externalInteractions:
 - name: <Service Monitoring>
   notes: <Service-level monitoring beyond the host baseline.>
   capabilities:
-  - capability.health-welfare-monitoring
+  - <health-welfare-monitoring-capability-uid>
 requirementGroups:
-- requirement-group.service-standard
+- <service-requirement-group-uid>
 requirementImplementations: []

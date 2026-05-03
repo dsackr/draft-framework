@@ -50,8 +50,8 @@ groups it architects against:
 ```yaml
 requirements:
   activeRequirementGroups:
-    - requirement-group.draft-soc2
-    - requirement-group.frontline-roper
+    - <soc2-requirement-group-uid>
+    - <company-roper-requirement-group-uid>
   requireActiveRequirementGroupDisposition: false
 ```
 
@@ -73,6 +73,35 @@ The distinction matters:
   products that satisfy the capability.
 - `implementations` list only Technology Components, because lifecycle
   disposition applies to a discrete vendor product and version.
+
+## Business Taxonomy
+
+Companies can declare their own business pillars, portfolios, or product
+groupings in `.draft/workspace.yaml`. The framework does not ship company
+business taxonomy values; it only validates and renders the workspace values
+when Software Deployment Patterns reference them.
+
+Example:
+
+```yaml
+businessTaxonomy:
+  requireSoftwareDeploymentPatternPillar: true
+  pillars:
+    - id: business-pillar.human-capital-management
+      name: Human Capital Management
+      owner:
+        team: hcm-product
+        contact: hcm-product@example.com
+    - id: business-pillar.student-management
+      name: Student Management
+    - id: business-pillar.business-operations
+      name: Business Operations
+```
+
+Software Deployment Patterns reference those values through
+`businessContext.pillar`. Use `businessContext.additionalPillars` only when a
+pattern materially spans more than one business pillar; the primary `pillar`
+drives browser grouping.
 
 ## Authoring Workflow
 

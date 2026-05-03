@@ -1,5 +1,5 @@
 schemaVersion: '1.0'
-id: capability.compute-platform
+uid: 01KQQ4Q026-1HZP
 type: capability
 name: Compute Platform
 description: Compute substrate or virtualized platform used to run host standards.
@@ -9,5 +9,5 @@ definitionOwner:
   provider: draft-framework
   team: cloud-architecture
   contact: cloud-architecture@example.com
-domain: domain.compute
+domain: 01KQQ4Q027-ZTHF
 implementations: []

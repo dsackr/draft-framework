@@ -173,6 +173,7 @@ def extract_upload_text(name: str, content_type: str, content: bytes) -> str:
 def catalog_object_payload(object_id: str, obj: dict[str, Any], referenced_by: list[dict[str, str]]) -> dict[str, Any]:
     return {
         "id": object_id,
+        "uid": object_id,
         "name": str(obj.get("name") or object_id),
         "type": str(obj.get("type") or ""),
         "typeLabel": type_label(str(obj.get("type") or "")),
@@ -208,6 +209,7 @@ def summary_fields(obj: dict[str, Any]) -> list[dict[str, str]]:
     skip = {
         "_source",
         "schemaVersion",
+        "uid",
         "id",
         "type",
         "name",

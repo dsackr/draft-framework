@@ -1,11 +1,9 @@
 schemaVersion: '1.0'
 type: capability
-aiHint: A Capability is a first-class architecture capability that an AI resolves to the
-  company owner and approved Technology Component implementations before recommending
-  a standard answer.
+aiHint: A Capability is a first-class architecture capability that an AI resolves to the company owner and approved Technology Component implementations before recommending a standard answer.
 requiredFields:
 - schemaVersion
-- id
+- uid
 - type
 - name
 - description
@@ -14,16 +12,17 @@ requiredFields:
 - domain
 - implementations
 optionalFields:
+- aliases
 - version
 - tags
 - owner
-idPattern: ^capability\.[a-z0-9.-]+$
 enumFields:
   catalogStatus:
   - stub
   - draft
   - approved
 fieldTypes:
+  aliases: list
   definitionOwner: dict
   owner: dict
   tags: list
@@ -31,20 +30,17 @@ fieldTypes:
 collectionSchemas:
   implementations: implementation
 fieldDescriptions:
-  schemaVersion: Use the schema version string supported by this framework release, normally
-    "1.0".
-  id: Use a namespaced capability ID such as capability.log-management.
+  schemaVersion: Use the schema version string supported by this framework release, normally "1.0".
   type: Use capability.
   name: Use the plain-language capability name.
   description: Explain what architecture outcome this capability represents.
   catalogStatus: Use catalog maturity for the capability definition itself.
-  definitionOwner: Identify the framework, provider, or company team accountable for
-    maintaining the capability definition and vocabulary.
-  owner: Identify the company team accountable for lifecycle decisions on this capability;
-    required in the effective workspace when implementations are assigned.
-  domain: Reference the owning domain object ID.
-  implementations: List company-approved Technology Component implementations; framework base
-    files must leave this empty because the framework does not make company adoption decisions.
+  definitionOwner: Identify the framework, provider, or company team accountable for maintaining the capability definition and vocabulary.
+  owner: Identify the company team accountable for lifecycle decisions on this capability; required in the effective workspace when implementations are assigned.
+  domain: Reference the owning domain object UID.
+  implementations: List company-approved Technology Component implementations; framework base files must leave this empty because the framework does not make company adoption decisions.
+  uid: Use the generated opaque UID for object identity. Do not edit it for display-name, product-name, or taxonomy changes.
+  aliases: List prior or alternate human-readable names that should resolve to this object.
 implementation:
   requiredFields:
   - ref
@@ -54,8 +50,7 @@ implementation:
   - notes
   fieldDescriptions:
     ref: Reference a Technology Component approved to satisfy this capability.
-    lifecycleStatus: 'Record the company disposition for this implementation: candidate,
-      preferred, existing-only, deprecated, or retired.'
+    lifecycleStatus: 'Record the company disposition for this implementation: candidate, preferred, existing-only, deprecated, or retired.'
   enumFields:
     lifecycleStatus:
     - candidate
@@ -63,3 +58,4 @@ implementation:
     - existing-only
     - deprecated
     - retired
+uidPattern: ^[0-9A-HJKMNP-TV-Z]{10}-[0-9A-HJKMNP-TV-Z]{4}$

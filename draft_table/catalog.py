@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -38,7 +39,7 @@ REFERENCE_KEYS = {
     "inherits",
     "platformDependency",
     "linkedSoftwareDeployment",
-    "primaryObjectId",
+    "primaryObjectUid",
     "riskRef",
     "domain",
     "relatedCapability",
@@ -46,23 +47,7 @@ REFERENCE_KEYS = {
     "target",
 }
 
-ID_PREFIXES = (
-    "capability.",
-    "technology.",
-    "appliance.",
-    "host.",
-    "service.",
-    "database.",
-    "product-service.",
-    "reference-architecture.",
-    "software-deployment.",
-    "decision.",
-    "requirement-group.",
-    "patch.",
-    "paas-service.",
-    "saas-service.",
-    "session.",
-)
+UID_PATTERN = re.compile(r"^[0-9A-HJKMNP-TV-Z]{10}-[0-9A-HJKMNP-TV-Z]{4}$")
 
 
 def load_effective_catalog(workspace: Path | None, framework_repo: Path = REPO_ROOT) -> dict[str, dict[str, Any]]:
@@ -94,7 +79,7 @@ def load_effective_catalog(workspace: Path | None, framework_repo: Path = REPO_R
     for root in roots:
         for path in discover_yaml_files(root):
             data = read_yaml(path)
-            object_id = data.get("id")
+            object_id = data.get("uid") or data.get("id")
             if object_id:
                 data["_source"] = display_path(path, framework_root)
                 objects[str(object_id)] = data
@@ -156,7 +141,7 @@ def deep_merge(base: Any, patch: Any) -> Any:
     if isinstance(base, dict) and isinstance(patch, dict):
         merged = dict(base)
         for key, value in patch.items():
-            if key in {"id", "type"}:
+            if key in {"uid", "id", "type"}:
                 continue
             merged[key] = deep_merge(merged.get(key), value)
         return merged
@@ -165,33 +150,48 @@ def deep_merge(base: Any, patch: Any) -> Any:
 
 def build_reference_index(objects: dict[str, dict[str, Any]]) -> dict[str, list[dict[str, str]]]:
     referenced_by: dict[str, list[dict[str, str]]] = {}
+    known_uids = set(objects)
     for object_id, obj in objects.items():
-        for target, ref_path in extract_refs(obj):
+        for target, ref_path in extract_refs(obj, known_uids):
             referenced_by.setdefault(target, []).append({"source": object_id, "path": ref_path})
     return referenced_by
 
 
-def extract_refs(node: Any, path: str = "") -> list[tuple[str, str]]:
+def is_probable_reference_key(path: str) -> bool:
+    key = path.rsplit(".", 1)[-1]
+    return key in REFERENCE_KEYS or key.endswith("Refs")
+
+
+def is_object_ref(value: Any, path: str, known_uids: set[str] | None) -> bool:
+    if not isinstance(value, str) or not value.strip():
+        return False
+    if known_uids and value in known_uids:
+        return True
+    return is_probable_reference_key(path) and bool(UID_PATTERN.match(value))
+
+
+def extract_refs(node: Any, known_uids: set[str] | None = None, path: str = "") -> list[tuple[str, str]]:
     refs: list[tuple[str, str]] = []
     if isinstance(node, dict):
         for key, value in node.items():
             child_path = f"{path}.{key}" if path else key
-            if key in REFERENCE_KEYS and isinstance(value, str) and value.startswith(ID_PREFIXES):
+            if key in REFERENCE_KEYS and is_object_ref(value, child_path, known_uids):
                 refs.append((value, child_path))
             elif key.endswith("Refs") and isinstance(value, list):
                 for index, item in enumerate(value):
-                    if isinstance(item, str) and item.startswith(ID_PREFIXES):
+                    if is_object_ref(item, f"{child_path}[{index}]", known_uids):
                         refs.append((item, f"{child_path}[{index}]"))
             else:
-                refs.extend(extract_refs(value, child_path))
+                refs.extend(extract_refs(value, known_uids, child_path))
     elif isinstance(node, list):
         if path.endswith(".appliesTo"):
             return refs
         for index, item in enumerate(node):
-            if isinstance(item, str) and item.startswith(ID_PREFIXES):
+            item_path = f"{path}[{index}]"
+            if is_object_ref(item, item_path, known_uids):
                 refs.append((item, f"{path}[{index}]"))
             else:
-                refs.extend(extract_refs(item, f"{path}[{index}]"))
+                refs.extend(extract_refs(item, known_uids, item_path))
     return refs
 
 
@@ -203,7 +203,9 @@ def search_objects(objects: dict[str, dict[str, Any]], query: str, limit: int = 
             str(value)
             for value in (
                 obj.get("id", ""),
+                obj.get("uid", ""),
                 obj.get("name", ""),
+                " ".join(str(alias) for alias in obj.get("aliases", []) if isinstance(obj.get("aliases"), list)),
                 obj.get("type", ""),
                 obj.get("description", ""),
                 " ".join(str(tag) for tag in obj.get("tags", []) if isinstance(obj.get("tags"), list)),
@@ -212,7 +214,7 @@ def search_objects(objects: dict[str, dict[str, Any]], query: str, limit: int = 
         score = sum(1 for token in tokens if token in haystack)
         if score:
             scored.append((score, obj))
-    return [obj for _score, obj in sorted(scored, key=lambda item: (-item[0], item[1].get("id", "")))[:limit]]
+    return [obj for _score, obj in sorted(scored, key=lambda item: (-item[0], item[1].get("name", "")))[:limit]]
 
 
 def tokenize(text: str) -> list[str]:
@@ -221,8 +223,9 @@ def tokenize(text: str) -> list[str]:
 
 def object_summary(obj: dict[str, Any]) -> dict[str, str]:
     return {
-        "id": str(obj.get("id", "")),
-        "name": str(obj.get("name", obj.get("id", ""))),
+        "id": str(obj.get("uid") or obj.get("id") or ""),
+        "uid": str(obj.get("uid") or obj.get("id") or ""),
+        "name": str(obj.get("name") or obj.get("uid") or obj.get("id") or ""),
         "type": str(obj.get("type", "")),
         "status": str(obj.get("catalogStatus", "")),
         "source": str(obj.get("_source", "")),

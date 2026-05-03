@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # ARCHITECTURE CONTRACT
 # This generator is data-driven. The following must remain true:
-# 1. No catalog object IDs are hardcoded in this file.
+# 1. No catalog object UIDs are hardcoded in this file.
 # 2. No product names (accelify, hrlinks, etc.) appear in rendering logic.
 # 3. All relationships are derived from the cross-reference index built at load time.
 # 4. All object types are rendered via type dispatch — unknown types get a generic fallback.
@@ -14,6 +14,7 @@ import argparse
 import base64
 import copy
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -70,7 +71,7 @@ REF_CONTAINER_KEYS = {
     "inherits",
     "platformDependency",
     "linkedSoftwareDeployment",
-    "primaryObjectId",
+    "primaryObjectUid",
     "riskRef",
     "controls",
     "domain",
@@ -78,23 +79,7 @@ REF_CONTAINER_KEYS = {
     "requirementGroup",
     "target",
 }
-CATALOG_ID_PREFIXES = (
-    "capability.",
-    "technology.",
-    "appliance.",
-    "host.",
-    "service.",
-    "database.",
-    "product-service.",
-    "reference-architecture.",
-    "software-deployment.",
-    "decision.",
-    "requirement-group.",
-    "patch.",
-    "saas-service.",
-    "paas-service.",
-    "session.",
-)
+UID_PATTERN = re.compile(r"^[0-9A-HJKMNP-TV-Z]{10}-[0-9A-HJKMNP-TV-Z]{4}$")
 
 
 def is_product_service_classification(obj: dict[str, Any]) -> bool:
@@ -177,6 +162,28 @@ def load_workspace_requirements(workspace_root: Path) -> dict[str, Any]:
     }
 
 
+def load_workspace_business_taxonomy(workspace_root: Path) -> dict[str, Any]:
+    config_path = workspace_root / ".draft" / "workspace.yaml"
+    if not config_path.exists():
+        return {"pillars": [], "requireSoftwareDeploymentPatternPillar": False}
+    try:
+        data = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    except Exception:
+        return {"pillars": [], "requireSoftwareDeploymentPatternPillar": False}
+    if not isinstance(data, dict):
+        return {"pillars": [], "requireSoftwareDeploymentPatternPillar": False}
+    taxonomy = data.get("businessTaxonomy") or {}
+    if not isinstance(taxonomy, dict):
+        return {"pillars": [], "requireSoftwareDeploymentPatternPillar": False}
+    pillars = taxonomy.get("pillars") or []
+    if not isinstance(pillars, list):
+        pillars = []
+    return {
+        "pillars": [pillar for pillar in pillars if isinstance(pillar, dict) and str(pillar.get("id") or "").strip()],
+        "requireSoftwareDeploymentPatternPillar": taxonomy.get("requireSoftwareDeploymentPatternPillar") is True,
+    }
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate the static DRAFT browser for a workspace.")
     parser.add_argument(
@@ -200,9 +207,9 @@ def load_objects(workspace_root: Path) -> dict[str, dict[str, Any]]:
         for path in discover_yaml_files(root):
             with path.open("r", encoding="utf-8") as handle:
                 data = yaml.safe_load(handle) or {}
-            if isinstance(data, dict) and data.get("id"):
+            if isinstance(data, dict) and data.get("uid"):
                 data["_source"] = display_path(path)
-                objects[str(data["id"])] = data
+                objects[str(data["uid"])] = data
     return apply_object_patches(objects)
 
 
@@ -210,7 +217,7 @@ def deep_merge(base: Any, patch: Any) -> Any:
     if isinstance(base, dict) and isinstance(patch, dict):
         merged = copy.deepcopy(base)
         for key, value in patch.items():
-            if key in {"id", "type"}:
+            if key in {"uid", "id", "type"}:
                 continue
             merged[key] = deep_merge(merged.get(key), value)
         return merged
@@ -325,27 +332,41 @@ def logo_data_uri() -> str:
     return f"data:image/png;base64,{encoded}"
 
 
-def extract_refs(node: Any, path: str = "") -> list[tuple[str, str]]:
+def is_probable_reference_key(path: str) -> bool:
+    key = path.rsplit(".", 1)[-1]
+    return key in REF_CONTAINER_KEYS or key.endswith("Refs")
+
+
+def is_object_ref(value: Any, path: str, known_uids: set[str]) -> bool:
+    if not isinstance(value, str) or not value.strip():
+        return False
+    if value in known_uids:
+        return True
+    return is_probable_reference_key(path) and bool(UID_PATTERN.match(value))
+
+
+def extract_refs(node: Any, known_uids: set[str], path: str = "") -> list[tuple[str, str]]:
     refs: list[tuple[str, str]] = []
     if isinstance(node, dict):
         for key, value in node.items():
             child_path = f"{path}.{key}" if path else key
-            if key in REF_CONTAINER_KEYS and isinstance(value, str) and value.startswith(CATALOG_ID_PREFIXES):
+            if key in REF_CONTAINER_KEYS and is_object_ref(value, child_path, known_uids):
                 refs.append((value, child_path))
             elif key.endswith("Refs") and isinstance(value, list):
                 for index, item in enumerate(value):
-                    if isinstance(item, str) and item.startswith(CATALOG_ID_PREFIXES):
+                    if is_object_ref(item, f"{child_path}[{index}]", known_uids):
                         refs.append((item, f"{child_path}[{index}]"))
             else:
-                refs.extend(extract_refs(value, child_path))
+                refs.extend(extract_refs(value, known_uids, child_path))
     elif isinstance(node, list):
         if path.endswith(".appliesTo"):
             return refs
         for index, item in enumerate(node):
-            if isinstance(item, str) and item.startswith(CATALOG_ID_PREFIXES):
+            item_path = f"{path}[{index}]"
+            if is_object_ref(item, item_path, known_uids):
                 refs.append((item, f"{path}[{index}]"))
             else:
-                refs.extend(extract_refs(item, f"{path}[{index}]"))
+                refs.extend(extract_refs(item, known_uids, item_path))
     return refs
 
 
@@ -353,13 +374,14 @@ def build_reference_index(registry: dict[str, dict[str, Any]]) -> tuple[dict[str
     outbound: dict[str, list[dict[str, str]]] = {}
     referenced_by: dict[str, list[dict[str, str]]] = {}
     warnings: list[str] = []
-    for object_id, obj in registry.items():
-        refs = extract_refs(obj)
-        outbound[object_id] = [{"target": target, "path": ref_path} for target, ref_path in refs]
+    known_uids = set(registry)
+    for object_uid, obj in registry.items():
+        refs = extract_refs(obj, known_uids)
+        outbound[object_uid] = [{"target": target, "path": ref_path} for target, ref_path in refs]
         for target, ref_path in refs:
-            referenced_by.setdefault(target, []).append({"source": object_id, "path": ref_path})
+            referenced_by.setdefault(target, []).append({"source": object_uid, "path": ref_path})
             if target not in registry:
-                warnings.append(f"Warning: {object_id} references missing object '{target}' via {ref_path}")
+                warnings.append(f"Warning: {object_uid} references missing object '{target}' via {ref_path}")
     return outbound, referenced_by, warnings
 
 
@@ -467,13 +489,14 @@ def build_requirement_payload(registry: dict[str, dict[str, Any]], workspace_roo
     return {
         "groups": [
             {
-                "id": group["id"],
-                "name": group.get("name", group["id"]),
+                "id": group["uid"],
+                "uid": group["uid"],
+                "name": group.get("name", group["uid"]),
                 "activation": group.get("activation", ""),
                 "catalogStatus": group.get("catalogStatus", ""),
                 "provider": group.get("provider", {}),
                 "authority": group.get("authority", {}),
-                "active": group["id"] in active_ids,
+                "active": group["uid"] in active_ids,
                 "description": group.get("description", ""),
                 "requirementCount": len(group.get("requirements", [])) if isinstance(group.get("requirements"), list) else 0,
             }
@@ -500,7 +523,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
     browser_objects: list[dict[str, Any]] = []
 
     for obj in objects:
-        object_id = obj["id"]
+        object_id = obj["uid"]
         schema = select_schema(obj, schemas) or {}
         schema_meta = {
             "requiredFields": schema.get("requiredFields", []),
@@ -514,6 +537,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
         browser_objects.append(
             {
                 "id": object_id,
+                "uid": object_id,
                 "name": obj["name"],
                 "type": obj["type"],
                 "typeLabel": type_label_for(obj),
@@ -526,6 +550,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
                 "catalogStatus": obj.get("catalogStatus", ""),
                 "lifecycleStatus": obj.get("lifecycleStatus", "unknown"),
                 "status": obj.get("status", ""),
+                "businessContext": obj.get("businessContext", {}),
                 "product": obj.get("product", ""),
                 "runsOn": obj.get("runsOn", ""),
                 "subtype": obj.get("subtype", ""),
@@ -573,9 +598,15 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
                 "decisionRationale": obj.get("decisionRationale", ""),
                 "relatedDecisionRecords": obj.get("relatedDecisionRecords", []),
                 "linkedSoftwareDeployment": obj.get("linkedSoftwareDeployment", ""),
+                "primaryObjectType": obj.get("primaryObjectType", ""),
+                "primaryObjectUid": obj.get("primaryObjectUid", ""),
+                "generatedObjects": obj.get("generatedObjects", []),
+                "unresolvedQuestions": obj.get("unresolvedQuestions", []),
+                "assumptions": obj.get("assumptions", []),
+                "nextSteps": obj.get("nextSteps", []),
                 "defaultSelection": obj.get("defaultSelection", False),
                 "requirementCount": len(obj.get("requirements", [])) if obj.get("type") == "requirement_group" and isinstance(obj.get("requirements"), list) else 0,
-                "hasRiskRef": obj.get("id") in risk_marked_rbb_ids,
+                "hasRiskRef": object_id in risk_marked_rbb_ids,
                 "outboundRefs": outbound_refs.get(object_id, []),
                 "referencedBy": referenced_by.get(object_id, []),
                 "editorSchema": schema_meta,
@@ -584,7 +615,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
             }
         )
 
-    browser_lookup = {obj["id"]: obj for obj in browser_objects}
+    browser_lookup = {obj["uid"]: obj for obj in browser_objects}
     filter_values = sorted({obj["type"] for obj in objects})
     lifecycle_values = sorted(
         {obj.get("lifecycleStatus", "unknown") for obj in objects},
@@ -601,6 +632,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
         "referencedBy": referenced_by,
         "warnings": warnings,
         "requirements": build_requirement_payload(registry, workspace_root),
+        "businessTaxonomy": load_workspace_business_taxonomy(workspace_root),
         "repoUrl": repository_web_url(workspace_root) or repository_web_url(REPO_ROOT),
         "catalogName": workspace_repository_name(workspace_root),
         "logoDataUri": logo_data_uri(),
@@ -1006,6 +1038,34 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 18px;
+    }
+    .business-pillar-groups {
+      display: grid;
+      gap: 18px;
+    }
+    .business-pillar-group {
+      display: grid;
+      gap: 12px;
+    }
+    .business-pillar-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 12px;
+      border: 1px solid rgba(148,163,184,0.16);
+      border-radius: 8px;
+      background: rgba(15,23,42,0.42);
+    }
+    .business-pillar-title {
+      margin: 0;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .business-pillar-meta {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
     }
     .object-card,
     .interaction-card,
@@ -2409,6 +2469,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     const objectLookup = browserData.lookup;
     const referencedByIndex = browserData.referencedBy || {};
     const repoUrl = browserData.repoUrl || '';
+    const businessTaxonomy = browserData.businessTaxonomy || { pillars: [] };
+    const businessPillarLookup = Object.fromEntries((businessTaxonomy.pillars || []).map(pillar => [pillar.id, pillar]));
     const pageRoot = document.getElementById('page-root');
     const sidebarContent = document.getElementById('sidebar-content');
     const legend = document.getElementById('legend');
@@ -2840,9 +2902,66 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return filterObjectsByTypes(activeFilterConfig().types);
     }
 
+    function businessPillarForObject(object) {
+      const pillarId = object.businessContext?.pillar || '';
+      const pillar = pillarId ? businessPillarLookup[pillarId] : null;
+      return {
+        id: pillarId || 'unassigned',
+        name: pillar?.name || (pillarId ? formatTitleCase(pillarId.replace(/^business-pillar\\./, '').replace(/-/g, ' ')) : 'Unassigned Business Pillar'),
+        owner: pillar?.owner || null
+      };
+    }
+
+    function businessPillarBadge(object) {
+      if (object.type !== 'software_deployment_pattern') {
+        return '';
+      }
+      const pillar = businessPillarForObject(object);
+      return `<div class="badge">${escapeHtml(pillar.name)}</div>`;
+    }
+
+    function businessPillarSidebarMarkup(objects) {
+      if (activeFilter !== 'software_deployment_pattern') {
+        return '';
+      }
+      const groups = groupSoftwareDeploymentPatternsByPillar(objects);
+      return `
+        <div class="sidebar-block">
+          <div class="legend-title">Business Pillars</div>
+          ${groups.map(group => `
+            <div class="current-filter">
+              <span class="dot" style="background:#f59e0b"></span>
+              <span>${escapeHtml(group.pillar.name)}: ${group.objects.length}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function groupSoftwareDeploymentPatternsByPillar(objects) {
+      const groupsById = new Map();
+      objects.forEach(object => {
+        const pillar = businessPillarForObject(object);
+        if (!groupsById.has(pillar.id)) {
+          groupsById.set(pillar.id, { pillar, objects: [] });
+        }
+        groupsById.get(pillar.id).objects.push(object);
+      });
+      const order = new Map((businessTaxonomy.pillars || []).map((pillar, index) => [pillar.id, index]));
+      return Array.from(groupsById.values()).sort((a, b) => {
+        const aRank = order.has(a.pillar.id) ? order.get(a.pillar.id) : 999;
+        const bRank = order.has(b.pillar.id) ? order.get(b.pillar.id) : 999;
+        if (aRank !== bRank) return aRank - bRank;
+        return a.pillar.name.localeCompare(b.pillar.name);
+      });
+    }
+
     function listRowMarkup(row, objects) {
       if (!objects.length) {
         return '';
+      }
+      if (row.id === 'software_deployment_pattern') {
+        return softwareDeploymentPatternRowMarkup(row, objects);
       }
       return `
         <section class="content-row">
@@ -2852,6 +2971,31 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           </div>
           <div class="cards-grid">
             ${objects.map(object => objectCardMarkup(object)).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    function softwareDeploymentPatternRowMarkup(row, objects) {
+      const groups = groupSoftwareDeploymentPatternsByPillar(objects);
+      return `
+        <section class="content-row">
+          <div class="content-row-header">
+            <h2 class="content-row-title">${escapeHtml(row.label)}</h2>
+            <span class="content-row-count">${objects.length} objects</span>
+          </div>
+          <div class="business-pillar-groups">
+            ${groups.map(group => `
+              <div class="business-pillar-group">
+                <div class="business-pillar-header">
+                  <h3 class="business-pillar-title">${escapeHtml(group.pillar.name)}</h3>
+                  <span class="business-pillar-meta">${group.objects.length} ${group.objects.length === 1 ? 'pattern' : 'patterns'}</span>
+                </div>
+                <div class="cards-grid">
+                  ${group.objects.map(object => objectCardMarkup(object)).join('')}
+                </div>
+              </div>
+            `).join('')}
           </div>
         </section>
       `;
@@ -2882,6 +3026,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${object.type === 'decision_record' ? ardStatusBadge(object.status) : ''}
             ${object.type === 'product_service' ? productBadge(object.product) : ''}
             ${object.type === 'saas_service_standard' ? saasBadge() : ''}
+            ${businessPillarBadge(object)}
           </div>
           <div class="badges">
             <div class="badge">${escapeHtml(object.typeLabel)}</div>
@@ -3527,7 +3672,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             return [{ row, objects: filtered }];
           })();
       syncHashForListView();
-      renderSidebarContent(sidebarMarkup());
+      renderSidebarContent(sidebarMarkup(businessPillarSidebarMarkup(filtered)));
       pageRoot.innerHTML = `
         <div class="view-shell">
           ${topNavMarkup()}
@@ -3611,6 +3756,32 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </dl>
           </section>
         </div>
+      `;
+    }
+
+    function businessContextMarkup(object) {
+      if (object.type !== 'software_deployment_pattern') {
+        return '';
+      }
+      const context = object.businessContext || {};
+      if (!context.pillar && !context.productFamily && !context.notes) {
+        return '';
+      }
+      const pillar = businessPillarForObject(object);
+      const additional = Array.isArray(context.additionalPillars)
+        ? context.additionalPillars.map(id => businessPillarLookup[id]?.name || formatTitleCase(String(id).replace(/^business-pillar\\./, '').replace(/-/g, ' ')))
+        : [];
+      return `
+        <section class="section-card">
+          <h3>Business Context</h3>
+          <dl class="definition-list">
+            <dt>Primary Pillar</dt>
+            <dd>${escapeHtml(pillar.name)}</dd>
+            ${additional.length ? `<dt>Additional Pillars</dt><dd>${escapeHtml(additional.join(', '))}</dd>` : ''}
+            ${context.productFamily ? `<dt>Product Family</dt><dd>${escapeHtml(context.productFamily)}</dd>` : ''}
+            ${context.notes ? `<dt>Notes</dt><dd>${escapeHtml(context.notes)}</dd>` : ''}
+          </dl>
+        </section>
       `;
     }
 
@@ -3733,6 +3904,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
+    function requirementGroupByName(name) {
+      return allObjects.find(object => object.type === 'requirement_group' && object.name === name) || null;
+    }
+
     function rbbOdcMarkup(object) {
       const groupIds = object.requirementGroups || [];
       if (!groupIds.length) {
@@ -3841,7 +4016,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               ${catalogBadge(object.catalogStatus)}
             </div>
             <dl class="definition-list">
-              <dt>ID</dt><dd><span class="object-id">${escapeHtml(object.id)}</span></dd>
+              <dt>UID</dt><dd><span class="object-id">${escapeHtml(object.id)}</span></dd>
               <dt>Product</dt><dd>${escapeHtml(object.product || '')}</dd>
               <dt>Runs On</dt><dd>${runsOnObject ? `<span class="ard-link" data-object-link="${object.runsOn}">${escapeHtml(runsOnObject.name)}</span>` : escapeHtml(object.runsOn || '')}</dd>
               <dt>Underlying Standard</dt><dd>${escapeHtml(object.runsOn || 'Not documented')}</dd>
@@ -3904,7 +4079,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ` : ''}
           </div>
         </section>
-        ${object.subtype === 'appliance' && objectLookup['requirement-group.appliance-component'] ? odcRequirementsMarkup(objectLookup['requirement-group.appliance-component']) : ''}
+        ${object.subtype === 'appliance' && requirementGroupByName('Appliance Component Requirement Group') ? odcRequirementsMarkup(requirementGroupByName('Appliance Component Requirement Group')) : ''}
       `;
     }
 
@@ -3952,7 +4127,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${object.incidentNotificationProcess ? `<div class="interaction-notes"><strong>Incident Notification:</strong> ${escapeHtml(object.incidentNotificationProcess)}</div>` : ''}
           </div>
         </section>
-        ${objectLookup['requirement-group.saas-service-standard'] ? odcRequirementsMarkup(objectLookup['requirement-group.saas-service-standard']) : ''}
+        ${requirementGroupByName('SaaS Service Requirement Group') ? odcRequirementsMarkup(requirementGroupByName('SaaS Service Requirement Group')) : ''}
       `;
     }
 
@@ -3975,7 +4150,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </dl>
           </div>
         </section>
-        ${objectLookup['requirement-group.paas-service-standard'] ? odcRequirementsMarkup(objectLookup['requirement-group.paas-service-standard']) : ''}
+        ${requirementGroupByName('PaaS Service Requirement Group') ? odcRequirementsMarkup(requirementGroupByName('PaaS Service Requirement Group')) : ''}
       `;
     }
 
@@ -4359,7 +4534,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const assumptions = object.assumptions || [];
       const nextSteps = object.nextSteps || [];
       const sourceArtifacts = object.sourceArtifacts || [];
-      const primaryObject = object.primaryObjectId && objectLookup[object.primaryObjectId] ? objectLookup[object.primaryObjectId] : null;
+      const primaryObject = object.primaryObjectUid && objectLookup[object.primaryObjectUid] ? objectLookup[object.primaryObjectUid] : null;
 
       return `
         <section class="section-card">
@@ -4370,7 +4545,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <dt>Primary Object Type</dt>
             <dd>${escapeHtml(object.primaryObjectType || 'unknown')}</dd>
             <dt>Primary Object</dt>
-            <dd>${primaryObject ? `<span class="ard-link" data-object-link="${primaryObject.id}">${escapeHtml(primaryObject.id)}</span>` : escapeHtml(object.primaryObjectId || 'Not created yet')}</dd>
+            <dd>${primaryObject ? `<span class="ard-link" data-object-link="${primaryObject.id}">${escapeHtml(primaryObject.name)}</span>` : escapeHtml(object.primaryObjectUid || 'Not created yet')}</dd>
           </dl>
         </section>
         <section class="section-card">
@@ -4393,7 +4568,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <article class="odc-card">
                 <div class="odc-name">${escapeHtml(entry.name || 'Generated object')}</div>
                 <div class="interaction-notes">${escapeHtml(entry.type || 'unknown')} / ${escapeHtml(entry.status || 'unknown')}</div>
-                ${entry.ref && objectLookup[entry.ref] ? `<div class="object-id"><span class="ard-link" data-object-link="${entry.ref}">${escapeHtml(entry.ref)}</span></div>` : entry.ref ? `<div class="object-id">${escapeHtml(entry.ref)}</div>` : entry.proposedId ? `<div class="object-id">${escapeHtml(entry.proposedId)}</div>` : ''}
+                ${entry.ref && objectLookup[entry.ref] ? `<div class="object-id"><span class="ard-link" data-object-link="${entry.ref}">${escapeHtml(objectLookup[entry.ref].name)}</span></div>` : entry.ref ? `<div class="object-id">${escapeHtml(entry.ref)}</div>` : entry.proposedUid ? `<div class="object-id">${escapeHtml(entry.proposedUid)}</div>` : ''}
                 ${entry.notes ? `<div class="interaction-notes">${escapeHtml(entry.notes)}</div>` : ''}
               </article>
             `).join('') : '<div class="empty-card">No generated objects are recorded for this session.</div>'}
@@ -4526,7 +4701,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const schema = object.editorSchema || {};
       const required = schema.requiredFields || [];
       const optional = schema.optionalFields || [];
-      const priority = ['schemaVersion', 'id', 'type', 'name', 'description', 'version', 'catalogStatus', 'lifecycleStatus', 'definitionOwner', 'owner', 'tags'];
+      const priority = ['schemaVersion', 'uid', 'type', 'name', 'aliases', 'description', 'version', 'catalogStatus', 'lifecycleStatus', 'definitionOwner', 'owner', 'tags'];
       const ordered = [];
       const seen = new Set();
       [...priority, ...required, ...optional, ...Object.keys(sanitizeDetailObject(object))].forEach(field => {
@@ -4821,6 +4996,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                   : `<span class="interaction-notes">${escapeHtml(object.followsReferenceArchitecture || 'No applied reference architecture documented.')}</span>`}
               </div>
             </section>
+            ${businessContextMarkup(object)}
             ${sdmServiceGroupsMarkup(object)}
             ${sdmRisksMarkup(object)}
             ${sourceRepositoryMarkup(object)}
@@ -5213,7 +5389,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <aside class="impact-sidebar">
           <div>
             <h3 style="margin:0 0 10px">Impact Analysis</h3>
-            <input id="impact-search" class="impact-search" type="text" placeholder="Search by name or ID" value="${escapeHtml(impactSearchTerm)}">
+            <input id="impact-search" class="impact-search" type="text" placeholder="Search by name or UID" value="${escapeHtml(impactSearchTerm)}">
           </div>
           ${searchMatches.length ? `
             <div class="search-results">

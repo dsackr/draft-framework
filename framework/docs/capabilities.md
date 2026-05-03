@@ -7,8 +7,8 @@ outcome the Draftsman can reason about. Requirements can point to a capability,
 and the Draftsman can then look up the company-approved Technology Components
 that implement it.
 
-Capability IDs are namespaced, for example `capability.log-management` and
-`capability.operating-system`.
+Capabilities use generated `uid` values like other first-class objects. Humans
+should resolve them by name, alias, domain, or file path.
 
 ## Where Capabilities Live
 
@@ -58,7 +58,7 @@ This keeps interviews grounded in the company's current technology standards.
 
 Each implementation entry contains:
 
-- `ref`: Technology Component ID
+- `ref`: Technology Component UID
 - `lifecycleStatus`: company disposition for using that Technology Component
 - optional `configuration`: named Technology Component configuration
 - optional `notes`

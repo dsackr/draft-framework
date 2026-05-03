@@ -179,19 +179,20 @@ def answer_usage_question(message: str, workspace: Path | None, framework_root: 
     if not matches:
         return LocalAnswer("I could not find a matching catalog object in the loaded DRAFT model.", [], [])
     target = matches[0]
-    referenced_by = build_reference_index(objects).get(str(target.get("id")), [])
+    target_uid = str(target.get("uid") or target.get("id") or "")
+    referenced_by = build_reference_index(objects).get(target_uid, [])
     grounding = [object_summary(target)]
     if not referenced_by:
         answer = (
-            f"I found {target.get('name')} ({target.get('id')}), but it is not referenced by any "
+            f"I found {target.get('name')}, but it is not referenced by any "
             "other object in the currently loaded DRAFT model."
         )
         return LocalAnswer(answer, [], grounding)
-    lines = [f"{target.get('name')} ({target.get('id')}) is referenced by:"]
+    lines = [f"{target.get('name')} is referenced by:"]
     for ref in referenced_by:
         source = objects.get(ref["source"], {})
         grounding.append(object_summary(source))
-        lines.append(f"- {source.get('name', ref['source'])} ({ref['source']}) via {ref['path']}")
+        lines.append(f"- {source.get('name', ref['source'])} via {ref['path']}")
     return LocalAnswer("\n".join(lines), [], grounding)
 
 
@@ -245,21 +246,23 @@ Rules:
   available workspace-mode group just because its YAML exists.
 - Preserve provider identity on workspace-activated Requirement Groups so DRAFT-provided,
   third-party-provided, and company-provided control interpretations remain distinct.
+- First-class objects use generated uid values for machine identity. Do not ask
+  humans to invent semantic object ids. Use names and aliases in conversation,
+  and keep uid stable through renames.
 - For Requirement Group entries with relatedCapability, resolve the capability object first,
-  check workspace capability implementations, prefer implementations with lifecycleStatus invest,
+  check workspace capability implementations, prefer implementations with lifecycleStatus preferred,
   and present those as recommended options before asking an open question.
 - For capability requirements, ask what mechanism satisfies the capability:
   field, internal component, Technology Component configuration, external interaction, deployment
   configuration, or architectural decision.
 - Do not turn capability requirements into team ownership questions unless the
   applicable Requirement Group explicitly asks for ownership.
-- For requirement-group.host-standard patch management, ask what patch platform, installed component,
+- For Host Requirement Group patch management, ask what patch platform, installed component,
   Technology Component configuration, or architectural decision applies updates; do not ask which
   team owns patching as the capability answer.
 - For Appliance Components, remember that the object maps directly to a vendor-product
   identity but carries service-like operating capability answers because there
-  is no Host Standard or Service Standard wrapper to inherit requirement-group.host-standard
-  or requirement-group.service-standard.
+  is no Host Standard or Service Standard wrapper to inherit the host or service requirements.
 - If you propose artifacts, return them as JSON proposals with YAML content for the backend only.
 - The visible answer must summarize artifacts in plain language.
 
@@ -389,7 +392,8 @@ def normalize_proposals(proposals: Any) -> list[dict[str, Any]]:
                 "name": str(proposal.get("name") or proposal_id),
                 "summary": str(proposal.get("summary") or ""),
                 "path": str(proposal.get("path") or ""),
-                "artifactId": identity.get("id", ""),
+                "artifactId": identity.get("uid", ""),
+                "artifactUid": identity.get("uid", ""),
                 "content": str(proposal.get("content") or ""),
                 "applied": bool(proposal.get("applied", False)),
             }
@@ -405,7 +409,7 @@ def proposal_identity(content: str) -> dict[str, str]:
     if not isinstance(data, dict):
         return {}
     return {
-        "id": str(data.get("id") or ""),
+        "uid": str(data.get("uid") or data.get("id") or ""),
         "type": str(data.get("type") or ""),
         "name": str(data.get("name") or ""),
     }
@@ -415,6 +419,7 @@ def public_proposal(proposal: dict[str, Any]) -> dict[str, Any]:
     return {
         "id": proposal.get("id", ""),
         "artifactId": proposal.get("artifactId", ""),
+        "artifactUid": proposal.get("artifactUid", ""),
         "action": proposal.get("action", ""),
         "artifactType": proposal.get("artifactType", ""),
         "name": proposal.get("name", ""),

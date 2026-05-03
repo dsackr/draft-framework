@@ -1,18 +1,18 @@
 schemaVersion: '1.0'
-id: patch.examples.log-management-implementations
+uid: 01KQQ4Q025-5VTH
 type: object_patch
 name: Example capability.log-management implementations
 description: Example workspace-owned capability implementation mapping.
 version: 1.0.0
 catalogStatus: draft
 lifecycleStatus: existing-only
-target: capability.log-management
+target: 01KQQ4Q026-D04B
 patch:
   owner:
     team: example-architecture
     contact: architecture@example.com
   implementations:
-  - ref: technology.os.canonical-ubuntu-2204
+  - ref: 01KQQ4Q025-3HXA
     configuration: centralized-log-forwarding
     lifecycleStatus: existing-only
     notes: Example OS configuration for centralized log forwarding.

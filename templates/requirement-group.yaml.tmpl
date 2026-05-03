@@ -1,7 +1,8 @@
 schemaVersion: "1.0"
-id: requirement-group.<provider-or-domain>-<group-slug>
+uid: <generated-uid>
 type: requirement_group
 name: <Requirement Group Name>
+aliases: []
 description: <What this group requires and when it applies.>
 version: 1.0.0
 catalogStatus: draft
@@ -15,7 +16,7 @@ requirements:
   - id: <requirement-id>
     description: <Question or required answer in actionable language.>
     rationale: <Why this answer is required.>
-    relatedCapability: capability.<capability-slug>
+    relatedCapability: <capability-uid>
     requirementMode: mandatory
     naAllowed: false
     canBeSatisfiedBy:

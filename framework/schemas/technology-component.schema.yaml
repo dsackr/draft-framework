@@ -2,7 +2,7 @@ schemaVersion: '1.0'
 type: technology_component
 requiredFields:
 - schemaVersion
-- id
+- uid
 - type
 - name
 - vendor
@@ -11,6 +11,7 @@ requiredFields:
 - classification
 - catalogStatus
 optionalFields:
+- aliases
 - description
 - version
 - owner
@@ -25,7 +26,6 @@ optionalFields:
 - complianceCerts
 - controlReferences
 - notes
-idPattern: ^technology\.[a-z0-9-]+(?:\.[a-z0-9-]+)+$
 enumFields:
   catalogStatus:
   - stub
@@ -37,6 +37,7 @@ enumFields:
   - software
   - agent
 fieldTypes:
+  aliases: list
   owner: dict
   tags: list
   vendorLifecycle: dict
@@ -54,17 +55,16 @@ configuration:
   - capabilities
   fieldTypes:
     capabilities: list
-aiHint: A Technology Component is a discrete vendor product that an AI may recommend through
-  capability implementations and use inside Standards.
+aiHint: A Technology Component is a discrete vendor product that an AI may recommend through capability implementations and use inside Standards.
 fieldDescriptions:
-  schemaVersion: Use the schema version string supported by this framework release, normally
-    "1.0".
-  id: Use a stable, namespaced object ID that matches this schema idPattern when one is declared.
+  schemaVersion: Use the schema version string supported by this framework release, normally "1.0".
   type: Use the exact object type declared by the matching schema.
   name: Use a clear human-readable name for the object.
   vendor: Name the external vendor or provider for this technology or service.
   productName: Name the vendor product independently from the DRAFT object name.
   productVersion: Record the product version, release train, or managed/current marker.
   classification: Choose the one classification that describes the technology role.
-  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption
-    disposition.
+  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption disposition.
+  uid: Use the generated opaque UID for object identity. Do not edit it for display-name, product-name, or taxonomy changes.
+  aliases: List prior or alternate human-readable names that should resolve to this object.
+uidPattern: ^[0-9A-HJKMNP-TV-Z]{10}-[0-9A-HJKMNP-TV-Z]{4}$

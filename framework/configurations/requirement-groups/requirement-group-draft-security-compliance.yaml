@@ -1,10 +1,10 @@
 schemaVersion: '1.0'
-id: requirement-group.draft-security-compliance
+uid: 01KQQ4Q027-T3CA
 type: requirement_group
 name: Security and Security Compliance Requirement Group
-description: >
-  Baseline security and compliance requirement group bundled with DRAFT.
-  Requirements are applied to matching object types based on their target scope.
+description: 'Baseline security and compliance requirement group bundled with DRAFT. Requirements are applied to matching object types based on their target scope.
+
+  '
 version: 1.0.0
 catalogStatus: approved
 owner:
@@ -29,8 +29,7 @@ requirements:
   externalControlId: CC.SecurityCompliance.04.2.2
   name: Centralized Administrative Authentication
   description: Centralized Administrative Authentication
-  rationale: Record how this object satisfies CC.SecurityCompliance.04.2.2 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.04.2.2 for Security and Security Compliance Requirements.
   appliesTo:
   - host_standard
   requirementMode: mandatory
@@ -38,10 +37,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.authentication
+      capability: 01KQQ4Q026-MHJM
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.authentication
+      capability: 01KQQ4Q026-MHJM
   - mechanism: architecturalDecision
     key: authentication
   minimumSatisfactions: 1
@@ -49,14 +48,13 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.authentication
+  relatedCapability: 01KQQ4Q026-MHJM
   externalReference: https://controls.example.com/security-compliance/04.2.2
 - id: CC.SecurityCompliance.04.4.1
   externalControlId: CC.SecurityCompliance.04.4.1
   name: Password Policy
   description: Password Policy
-  rationale: Record how this object satisfies CC.SecurityCompliance.04.4.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.04.4.1 for Security and Security Compliance Requirements.
   appliesTo:
   - host_standard
   requirementMode: mandatory
@@ -64,10 +62,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.authentication
+      capability: 01KQQ4Q026-MHJM
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.authentication
+      capability: 01KQQ4Q026-MHJM
   - mechanism: architecturalDecision
     key: authentication
   minimumSatisfactions: 1
@@ -75,14 +73,13 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.authentication
+  relatedCapability: 01KQQ4Q026-MHJM
   externalReference: https://controls.example.com/security-compliance/04.4.1
 - id: CC.SecurityCompliance.04.4.1.access-control-model
   externalControlId: CC.SecurityCompliance.04.4.1
   name: Database Password Policy
   description: Database Password Policy
-  rationale: Record how this object satisfies CC.SecurityCompliance.04.4.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.04.4.1 for Security and Security Compliance Requirements.
   appliesTo:
   - database_standard
   requirementMode: mandatory
@@ -90,10 +87,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.access-control-model
+      capability: 01KQQ4Q026-4JR6
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.access-control-model
+      capability: 01KQQ4Q026-4JR6
   - mechanism: architecturalDecision
     key: access_control_model
   minimumSatisfactions: 1
@@ -101,14 +98,13 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.access-control-model
+  relatedCapability: 01KQQ4Q026-4JR6
   externalReference: https://controls.example.com/security-compliance/04.4.1
 - id: CC.SecurityCompliance.06.1.1
   externalControlId: CC.SecurityCompliance.06.1.1
   name: Centralized Log Management
   description: Centralized Log Management
-  rationale: Record how this object satisfies CC.SecurityCompliance.06.1.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.06.1.1 for Security and Security Compliance Requirements.
   appliesTo:
   - host_standard
   requirementMode: mandatory
@@ -116,10 +112,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.log-management
+      capability: 01KQQ4Q026-D04B
   - mechanism: externalInteraction
     criteria:
-      capability: capability.log-management
+      capability: 01KQQ4Q026-D04B
   - mechanism: architecturalDecision
     key: log_management
   minimumSatisfactions: 1
@@ -127,14 +123,13 @@ requirements:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.log-management
+  relatedCapability: 01KQQ4Q026-D04B
   externalReference: https://controls.example.com/security-compliance/06.1.1
 - id: CC.SecurityCompliance.06.2.1
   externalControlId: CC.SecurityCompliance.06.2.1
   name: Host Health and Welfare Monitoring
   description: Host Health and Welfare Monitoring
-  rationale: Record how this object satisfies CC.SecurityCompliance.06.2.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.06.2.1 for Security and Security Compliance Requirements.
   appliesTo:
   - host_standard
   requirementMode: mandatory
@@ -142,13 +137,13 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.health-welfare-monitoring
+      capability: 01KQQ4Q026-98VD
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.health-welfare-monitoring
+      capability: 01KQQ4Q026-98VD
   - mechanism: externalInteraction
     criteria:
-      capability: capability.health-welfare-monitoring
+      capability: 01KQQ4Q026-98VD
   - mechanism: architecturalDecision
     key: health_welfare_monitoring
   minimumSatisfactions: 1
@@ -157,14 +152,13 @@ requirements:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.health-welfare-monitoring
+  relatedCapability: 01KQQ4Q026-98VD
   externalReference: https://controls.example.com/security-compliance/06.2.1
 - id: CC.SecurityCompliance.06.3.1
   externalControlId: CC.SecurityCompliance.06.3.1
   name: Security Event Monitoring
   description: Security Event Monitoring
-  rationale: Record how this object satisfies CC.SecurityCompliance.06.3.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.06.3.1 for Security and Security Compliance Requirements.
   appliesTo:
   - host_standard
   requirementMode: mandatory
@@ -172,13 +166,13 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.security-monitoring
+      capability: 01KQQ4Q026-JW52
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.security-monitoring
+      capability: 01KQQ4Q026-JW52
   - mechanism: externalInteraction
     criteria:
-      capability: capability.security-monitoring
+      capability: 01KQQ4Q026-JW52
   - mechanism: architecturalDecision
     key: security_monitoring
   minimumSatisfactions: 1
@@ -187,14 +181,13 @@ requirements:
   - technologyComponentConfiguration
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.security-monitoring
+  relatedCapability: 01KQQ4Q026-JW52
   externalReference: https://controls.example.com/security-compliance/06.3.1
 - id: CC.SecurityCompliance.03.1.1
   externalControlId: CC.SecurityCompliance.03.1.1
   name: Patch Governance
   description: Patch Governance
-  rationale: Record how this object satisfies CC.SecurityCompliance.03.1.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.03.1.1 for Security and Security Compliance Requirements.
   appliesTo:
   - host_standard
   requirementMode: mandatory
@@ -202,10 +195,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.patch-management
+      capability: 01KQQ4Q026-BH6E
   - mechanism: externalInteraction
     criteria:
-      capability: capability.patch-management
+      capability: 01KQQ4Q026-BH6E
   - mechanism: architecturalDecision
     key: patch_management
   minimumSatisfactions: 1
@@ -213,14 +206,13 @@ requirements:
   - technologyComponent
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.patch-management
+  relatedCapability: 01KQQ4Q026-BH6E
   externalReference: https://controls.example.com/security-compliance/03.1.1
 - id: CC.SecurityCompliance.03.2.1
   externalControlId: CC.SecurityCompliance.03.2.1
   name: Patch Execution Workflow
   description: Patch Execution Workflow
-  rationale: Record how this object satisfies CC.SecurityCompliance.03.2.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.03.2.1 for Security and Security Compliance Requirements.
   appliesTo:
   - host_standard
   requirementMode: mandatory
@@ -228,10 +220,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: technologyComponent
     criteria:
-      capability: capability.patch-management
+      capability: 01KQQ4Q026-BH6E
   - mechanism: externalInteraction
     criteria:
-      capability: capability.patch-management
+      capability: 01KQQ4Q026-BH6E
   - mechanism: architecturalDecision
     key: patch_management
   minimumSatisfactions: 1
@@ -239,14 +231,13 @@ requirements:
   - technologyComponent
   - externalInteraction
   - architecturalDecision
-  relatedCapability: capability.patch-management
+  relatedCapability: 01KQQ4Q026-BH6E
   externalReference: https://controls.example.com/security-compliance/03.2.1
 - id: CC.SecurityCompliance.10.1.1
   externalControlId: CC.SecurityCompliance.10.1.1
   name: Reference Architecture Conformance
   description: Reference Architecture Conformance
-  rationale: Record how this object satisfies CC.SecurityCompliance.10.1.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.10.1.1 for Security and Security Compliance Requirements.
   appliesTo:
   - software_deployment_pattern
   requirementMode: mandatory
@@ -265,8 +256,7 @@ requirements:
   externalControlId: CC.SecurityCompliance.10.1.2
   name: Availability Requirement
   description: Availability Requirement
-  rationale: Record how this object satisfies CC.SecurityCompliance.10.1.2 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.10.1.2 for Security and Security Compliance Requirements.
   appliesTo:
   - software_deployment_pattern
   requirementMode: mandatory
@@ -285,8 +275,7 @@ requirements:
   externalControlId: CC.SecurityCompliance.00.2.1
   name: Data Classification
   description: Data Classification
-  rationale: Record how this object satisfies CC.SecurityCompliance.00.2.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.00.2.1 for Security and Security Compliance Requirements.
   appliesTo:
   - software_deployment_pattern
   requirementMode: mandatory
@@ -305,8 +294,7 @@ requirements:
   externalControlId: CC.SecurityCompliance.00.2.1
   name: Database Data Classification Context
   description: Database Data Classification Context
-  rationale: Record how this object satisfies CC.SecurityCompliance.00.2.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.00.2.1 for Security and Security Compliance Requirements.
   appliesTo:
   - database_standard
   requirementMode: mandatory
@@ -320,14 +308,13 @@ requirements:
   validAnswerTypes:
   - field
   - architecturalDecision
-  relatedCapability: capability.access-control-model
+  relatedCapability: 01KQQ4Q026-4JR6
   externalReference: https://controls.example.com/security-compliance/00.2.1
 - id: CC.SecurityCompliance.10.2.1
   externalControlId: CC.SecurityCompliance.10.2.1
   name: Database Backup Strategy
   description: Database Backup Strategy
-  rationale: Record how this object satisfies CC.SecurityCompliance.10.2.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.10.2.1 for Security and Security Compliance Requirements.
   appliesTo:
   - database_standard
   requirementMode: mandatory
@@ -341,14 +328,13 @@ requirements:
   validAnswerTypes:
   - field
   - architecturalDecision
-  relatedCapability: capability.backup-strategy
+  relatedCapability: 01KQQ4Q026-7T2H
   externalReference: https://controls.example.com/security-compliance/10.2.1
 - id: CC.SecurityCompliance.04.1.1
   externalControlId: CC.SecurityCompliance.04.1.1
   name: Database Access Control Model
   description: Database Access Control Model
-  rationale: Record how this object satisfies CC.SecurityCompliance.04.1.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.04.1.1 for Security and Security Compliance Requirements.
   appliesTo:
   - database_standard
   requirementMode: mandatory
@@ -356,10 +342,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.access-control-model
+      capability: 01KQQ4Q026-4JR6
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.access-control-model
+      capability: 01KQQ4Q026-4JR6
   - mechanism: architecturalDecision
     key: access_control_model
   minimumSatisfactions: 1
@@ -367,14 +353,13 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.access-control-model
+  relatedCapability: 01KQQ4Q026-4JR6
   externalReference: https://controls.example.com/security-compliance/04.1.1
 - id: CC.SecurityCompliance.04.3.1
   externalControlId: CC.SecurityCompliance.04.3.1
   name: Secrets Management
   description: Secrets Management
-  rationale: Record how this object satisfies CC.SecurityCompliance.04.3.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.04.3.1 for Security and Security Compliance Requirements.
   appliesTo:
   - service_standard
   requirementMode: mandatory
@@ -382,10 +367,10 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
-      capability: capability.secrets-management
+      capability: 01KQQ4Q026-DTJJ
   - mechanism: technologyComponentConfiguration
     criteria:
-      capability: capability.secrets-management
+      capability: 01KQQ4Q026-DTJJ
   - mechanism: architecturalDecision
     key: secrets_management
   minimumSatisfactions: 1
@@ -393,14 +378,13 @@ requirements:
   - externalInteraction
   - technologyComponentConfiguration
   - architecturalDecision
-  relatedCapability: capability.secrets-management
+  relatedCapability: 01KQQ4Q026-DTJJ
   externalReference: https://controls.example.com/security-compliance/04.3.1
 - id: CC.SecurityCompliance.04.3.1.product_service
   externalControlId: CC.SecurityCompliance.04.3.1
   name: Product Service Secrets Management
   description: Product Service Secrets Management
-  rationale: Record how this object satisfies CC.SecurityCompliance.04.3.1 for Security and
-    Security Compliance Requirements.
+  rationale: Record how this object satisfies CC.SecurityCompliance.04.3.1 for Security and Security Compliance Requirements.
   appliesTo:
   - product_service
   requirementMode: mandatory

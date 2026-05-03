@@ -12,6 +12,8 @@ from typing import Any
 
 import yaml
 
+from uid_utils import UID_PATTERN_TEXT, generate_uid
+
 
 FRAMEWORK_ROOT = Path(__file__).resolve().parent.parent
 REPO_ROOT = FRAMEWORK_ROOT.parent
@@ -67,6 +69,8 @@ STANDARD_TYPES = {
     "paas_service_standard",
     "saas_service_standard",
 }
+BUSINESS_PILLAR_ID_PATTERN = re.compile(r"^business-pillar\.[a-z0-9-]+$")
+UID_PATTERN = re.compile(UID_PATTERN_TEXT)
 
 
 def discover_yaml_files(root: Path) -> list[Path]:
@@ -151,12 +155,64 @@ def load_workspace_requirements(workspace_root: Path, failures: list[str]) -> di
 
     active = requirements.get("activeRequirementGroups") or []
     if not isinstance(active, list):
-        failures.append(f"{config_path}: Set requirements.activeRequirementGroups to a list of requirement_group IDs")
+        failures.append(f"{config_path}: Set requirements.activeRequirementGroups to a list of requirement_group UIDs")
         active = []
     active_groups = {str(group_id) for group_id in active if is_non_empty(group_id)}
     return {
         "active_groups": active_groups,
         "require_active_group_disposition": requirements.get("requireActiveRequirementGroupDisposition") is True,
+    }
+
+
+def load_workspace_business_taxonomy(workspace_root: Path, failures: list[str]) -> dict[str, Any]:
+    config_path = workspace_root / ".draft" / "workspace.yaml"
+    if not config_path.exists():
+        return {"pillars": {}, "require_sdp_pillar": False}
+    try:
+        data = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    except Exception as exc:  # noqa: BLE001
+        failures.append(f"{config_path}: Fix workspace configuration YAML; parser reported {exc}")
+        return {"pillars": {}, "require_sdp_pillar": False}
+    if not isinstance(data, dict):
+        failures.append(f"{config_path}: Make workspace configuration a mapping at the top level")
+        return {"pillars": {}, "require_sdp_pillar": False}
+
+    taxonomy = data.get("businessTaxonomy") or {}
+    if not taxonomy:
+        return {"pillars": {}, "require_sdp_pillar": False}
+    if not isinstance(taxonomy, dict):
+        failures.append(f"{config_path}: Make businessTaxonomy a mapping with pillars")
+        return {"pillars": {}, "require_sdp_pillar": False}
+
+    pillars = taxonomy.get("pillars") or []
+    if not isinstance(pillars, list):
+        failures.append(f"{config_path}: Set businessTaxonomy.pillars to a list of company pillar mappings")
+        pillars = []
+
+    pillar_by_id: dict[str, dict[str, Any]] = {}
+    for index, pillar in enumerate(pillars):
+        context = f"{config_path}: businessTaxonomy.pillars[{index}]"
+        if not isinstance(pillar, dict):
+            failures.append(f"{context}: Change pillar entry to a mapping with id and name")
+            continue
+        pillar_id = str(pillar.get("id") or "").strip()
+        if not pillar_id:
+            failures.append(f"{context}: Add id using business-pillar.<slug>")
+            continue
+        if not BUSINESS_PILLAR_ID_PATTERN.match(pillar_id):
+            failures.append(f"{context}: Rename id '{pillar_id}' so it matches business-pillar.<slug>")
+        if pillar_id in pillar_by_id:
+            failures.append(f"{context}: Remove duplicate business pillar id '{pillar_id}'")
+        if not is_non_empty(pillar.get("name")):
+            failures.append(f"{context}: Add name so the browser can show the business pillar clearly")
+        owner = pillar.get("owner")
+        if owner is not None and not isinstance(owner, dict):
+            failures.append(f"{context}: Change owner to a mapping with team and optional contact")
+        pillar_by_id[pillar_id] = pillar
+
+    return {
+        "pillars": pillar_by_id,
+        "require_sdp_pillar": taxonomy.get("requireSoftwareDeploymentPatternPillar") is True,
     }
 
 
@@ -179,11 +235,53 @@ def validate_workspace_requirements(
             )
 
 
+def validate_software_deployment_business_context(
+    obj: dict[str, Any],
+    path: Path,
+    business_taxonomy: dict[str, Any],
+    failures: list[str],
+) -> None:
+    pillars = business_taxonomy.get("pillars", {})
+    require_pillar = business_taxonomy.get("require_sdp_pillar") is True
+    context = obj.get("businessContext")
+    if context is None:
+        if require_pillar:
+            failures.append(
+                f"{path}: Add businessContext.pillar because .draft/workspace.yaml requires Software Deployment Patterns to declare a business pillar"
+            )
+        return
+    if not isinstance(context, dict):
+        failures.append(f"{path}: Change businessContext to a mapping with pillar, optional additionalPillars, productFamily, and notes")
+        return
+
+    pillar = str(context.get("pillar") or "").strip()
+    if not pillar:
+        failures.append(f"{path}: Add businessContext.pillar using a businessTaxonomy.pillars id from .draft/workspace.yaml")
+    elif pillars and pillar not in pillars:
+        failures.append(f"{path}: Replace businessContext.pillar '{pillar}' with a declared businessTaxonomy.pillars id")
+    elif not pillars:
+        failures.append(f"{path}: Declare businessTaxonomy.pillars in .draft/workspace.yaml before using businessContext.pillar '{pillar}'")
+
+    additional = context.get("additionalPillars") or []
+    if additional and not isinstance(additional, list):
+        failures.append(f"{path}: Change businessContext.additionalPillars to a list of business pillar IDs")
+        return
+    if isinstance(additional, list):
+        for index, additional_pillar in enumerate(additional):
+            additional_id = str(additional_pillar or "").strip()
+            if not additional_id:
+                failures.append(f"{path}: Remove empty businessContext.additionalPillars[{index}]")
+            elif pillars and additional_id not in pillars:
+                failures.append(
+                    f"{path}: Replace businessContext.additionalPillars[{index}] '{additional_id}' with a declared businessTaxonomy.pillars id"
+                )
+
+
 def deep_merge(base: Any, patch: Any) -> Any:
     if isinstance(base, dict) and isinstance(patch, dict):
         merged = copy.deepcopy(base)
         for key, value in patch.items():
-            if key in {"id", "type"}:
+            if key in {"uid", "id", "type"}:
                 continue
             merged[key] = deep_merge(merged.get(key), value)
         return merged
@@ -191,37 +289,37 @@ def deep_merge(base: Any, patch: Any) -> Any:
 
 
 def apply_object_patches(objects: dict[Path, dict[str, Any]], failures: list[str]) -> dict[Path, dict[str, Any]]:
-    objects_by_id = {
-        str(obj["id"]): obj
+    objects_by_uid = {
+        str(obj["uid"]): obj
         for obj in objects.values()
-        if isinstance(obj, dict) and is_non_empty(obj.get("id"))
+        if isinstance(obj, dict) and is_non_empty(obj.get("uid"))
     }
-    patched_by_id: dict[str, dict[str, Any]] = {}
+    patched_by_uid: dict[str, dict[str, Any]] = {}
     for path, obj in objects.items():
         if obj.get("type") != "object_patch":
             continue
-        target_id = obj.get("target")
+        target_uid = obj.get("target")
         patch = obj.get("patch")
-        if not is_non_empty(target_id):
-            failures.append(f"{path}: object_patch must declare target")
+        if not is_non_empty(target_uid):
+            failures.append(f"{path}: object_patch must declare target uid")
             continue
         if not isinstance(patch, dict):
             failures.append(f"{path}: object_patch patch must be a mapping")
             continue
-        target = patched_by_id.get(str(target_id)) or objects_by_id.get(str(target_id))
+        target = patched_by_uid.get(str(target_uid)) or objects_by_uid.get(str(target_uid))
         if not target:
-            failures.append(f"{path}: object_patch target '{target_id}' does not exist")
+            failures.append(f"{path}: object_patch target uid '{target_uid}' does not exist")
             continue
-        patched_by_id[str(target_id)] = deep_merge(target, patch)
+        patched_by_uid[str(target_uid)] = deep_merge(target, patch)
 
-    if not patched_by_id:
+    if not patched_by_uid:
         return objects
 
     patched_objects = dict(objects)
     for path, obj in objects.items():
-        object_id = obj.get("id")
-        if object_id in patched_by_id:
-            patched_objects[path] = patched_by_id[str(object_id)]
+        uid = obj.get("uid")
+        if uid in patched_by_uid:
+            patched_objects[path] = patched_by_uid[str(uid)]
     return patched_objects
 
 
@@ -259,6 +357,84 @@ def has_required_value(node: dict[str, Any], field: str) -> bool:
     if isinstance(value, str):
         return bool(value.strip())
     return True
+
+
+def object_uid(obj: dict[str, Any]) -> str:
+    return str(obj.get("uid") or "")
+
+
+def object_label(obj: dict[str, Any]) -> str:
+    return str(obj.get("name") or obj.get("uid") or obj.get("id") or "unknown")
+
+
+def uid_repair_command(workspace_root: Path, path: Path, suggested_uid: str) -> str:
+    try:
+        file_arg = path.resolve().relative_to(workspace_root).as_posix()
+    except ValueError:
+        file_arg = display_path(path)
+    repair_script = display_path(Path(__file__).with_name("repair_uids.py"))
+    return f"python3 {repair_script} --workspace {workspace_root.as_posix()} --file {file_arg} --uid {suggested_uid}"
+
+
+def repair_file_command(workspace_root: Path, path: Path) -> str:
+    try:
+        file_arg = path.resolve().relative_to(workspace_root).as_posix()
+    except ValueError:
+        file_arg = display_path(path)
+    repair_script = display_path(Path(__file__).with_name("repair_uids.py"))
+    return f"python3 {repair_script} --workspace {workspace_root.as_posix()} --file {file_arg}"
+
+
+def validate_object_uids(
+    objects: dict[Path, dict[str, Any]],
+    workspace_root: Path,
+    failures: list[str],
+) -> None:
+    seen: dict[str, Path] = {}
+    existing = {
+        str(obj.get("uid"))
+        for obj in objects.values()
+        if isinstance(obj, dict) and is_non_empty(obj.get("uid"))
+    }
+    for path, obj in objects.items():
+        if not isinstance(obj, dict) or not is_non_empty(obj.get("type")):
+            continue
+        if "id" in obj:
+            suggested = generate_uid(existing)
+            existing.add(suggested)
+            command = uid_repair_command(workspace_root, path, suggested)
+            failures.append(
+                f"{path}: Remove legacy field 'id' and use generated uid '{suggested}' for object identity. "
+                f"Repair command: {command}"
+            )
+        uid = object_uid(obj)
+        if not uid:
+            suggested = generate_uid(existing)
+            existing.add(suggested)
+            command = uid_repair_command(workspace_root, path, suggested)
+            failures.append(
+                f"{path}: Add required field 'uid' with generated value '{suggested}'. "
+                f"Repair command: {command}"
+            )
+            continue
+        if not UID_PATTERN.match(uid):
+            suggested = generate_uid(existing)
+            existing.add(suggested)
+            command = uid_repair_command(workspace_root, path, suggested)
+            failures.append(
+                f"{path}: Replace malformed uid '{uid}' with generated value '{suggested}'. "
+                f"Repair command: {command}"
+            )
+        if uid in seen:
+            suggested = generate_uid(existing)
+            existing.add(suggested)
+            command = uid_repair_command(workspace_root, path, suggested)
+            failures.append(
+                f"{path}: Replace duplicate uid '{uid}' with generated value '{suggested}' because it already appears in {seen[uid]}. "
+                f"Repair command: {command}"
+            )
+        else:
+            seen[uid] = path
 
 
 def get_nested_value(node: Any, dotted_key: str) -> Any:
@@ -310,9 +486,9 @@ def validate_schema_section(
             hint = field_descriptions.get(field, "Populate this field with a valid value for the selected schema.")
             failures.append(f"{context}: Add required field '{field}' — {hint}")
 
-    id_pattern = schema.get("idPattern")
-    if id_pattern and is_non_empty(node.get("id")) and not re.match(str(id_pattern), str(node.get("id"))):
-        failures.append(f"{context}: Rename id '{node.get('id')}' so it matches pattern {id_pattern}")
+    uid_pattern = schema.get("uidPattern")
+    if uid_pattern and is_non_empty(node.get("uid")) and not re.match(str(uid_pattern), str(node.get("uid"))):
+        failures.append(f"{context}: Replace uid '{node.get('uid')}' so it matches pattern {uid_pattern}")
 
     for field, allowed_values in (schema.get("enumFields") or {}).items():
         value = node.get(field)
@@ -396,9 +572,9 @@ def requirement_group_applies_to_object(group: dict[str, Any], obj: dict[str, An
         for key, expected in qualifiers.items():
             if obj.get(key) != expected:
                 return False
-    if object_type == "host_standard" and group.get("id") == "requirement-group.host-standard":
-        object_id = str(obj.get("id", ""))
-        if object_id.startswith("host.serverless.") or object_id.startswith("host.container."):
+    if object_type == "host_standard" and group.get("name") == "Host Requirement Group":
+        tags = obj.get("tags") or []
+        if isinstance(tags, list) and any(tag in {"serverless", "container"} for tag in tags):
             return False
     return True
 
@@ -494,9 +670,9 @@ def referenced_technology_components(obj: dict[str, Any], catalog_by_id: dict[st
 
     resolved: list[dict[str, Any]] = []
     seen: set[str] = set()
-    if obj.get("type") in {"technology_component", "appliance_component"} and is_non_empty(obj.get("id")):
+    if obj.get("type") in {"technology_component", "appliance_component"} and is_non_empty(obj.get("uid")):
         resolved.append(obj)
-        seen.add(str(obj["id"]))
+        seen.add(str(obj["uid"]))
     for ref in refs:
         if ref in seen:
             continue
@@ -633,7 +809,7 @@ def mechanism_satisfied(obj: dict[str, Any], mechanism: dict[str, Any], catalog_
         classification = criteria.get("classification")
         ref = mechanism.get("ref")
         for component in referenced_technology_components(obj, catalog_by_id):
-            if ref and component.get("id") != ref:
+            if ref and component.get("uid") != ref:
                 continue
             if classification and component.get("classification") != classification:
                 continue
@@ -734,7 +910,7 @@ def validate_requirement(
     related_text = f" — see capability {related} for approved implementations" if related else ""
     return (
         False,
-        f"[{obj.get('id', 'unknown')}] Satisfy requirement '{requirement_id}' from {group_id} using {mechanism_text}{related_text}",
+        f"[{object_label(obj)}] Satisfy requirement '{requirement_id}' from {group_id} using {mechanism_text}{related_text}",
     )
 
 
@@ -771,13 +947,13 @@ def validate_architectural_decisions(obj: dict[str, Any], path: Path, failures: 
             if key in decisions and decisions[key] not in allowed_values:
                 allowed_text = ", ".join(sorted(allowed_values))
                 failures.append(
-                    f'{path}: [{obj.get("id", "unknown")}] architecturalDecisions.{key} must be one of: '
+                    f'{path}: [{object_label(obj)}] architecturalDecisions.{key} must be one of: '
                     f'{allowed_text} — got "{decisions[key]}"'
                 )
 
         if "minNodes" in decisions and not isinstance(decisions["minNodes"], int):
             failures.append(
-                f'{path}: [{obj.get("id", "unknown")}] architecturalDecisions.minNodes must be an integer — '
+                f'{path}: [{object_label(obj)}] architecturalDecisions.minNodes must be an integer — '
                 f'got "{decisions["minNodes"]}"'
             )
 
@@ -827,7 +1003,7 @@ def validate_component(
             invalid = [cap for cap in capabilities if cap not in capability_ids]
             if invalid:
                 failures.append(
-                    f"{path}: Replace invalid capability references {invalid} with capability object IDs from configurations/capabilities"
+                    f"{path}: Replace invalid capability references {invalid} with capability object UIDs from configurations/capabilities"
                 )
     configurations = obj.get("configurations", [])
     if configurations is not None:
@@ -845,7 +1021,7 @@ def validate_component(
                 invalid = [cap for cap in config_caps if cap not in capability_ids]
                 if invalid:
                     failures.append(
-                        f"{path}: Replace invalid configuration capability references {invalid} with capability object IDs from configurations/capabilities"
+                        f"{path}: Replace invalid configuration capability references {invalid} with capability object UIDs from configurations/capabilities"
                     )
 
     validate_applicable_requirements(
@@ -961,8 +1137,9 @@ def validate_standard(
 
     object_type = obj.get("type")
     if object_type == "host_standard":
-        host_id = str(obj.get("id", ""))
-        required_host_fields = () if host_id.startswith(("host.serverless.", "host.container.")) else ("operatingSystemComponent", "computePlatformComponent")
+        tags = obj.get("tags") or []
+        is_managed_host = isinstance(tags, list) and any(tag in {"serverless", "container"} for tag in tags)
+        required_host_fields = () if is_managed_host else ("operatingSystemComponent", "computePlatformComponent")
         for field in required_host_fields:
             ref = obj.get(field)
             if ref and ref not in catalog_ids:
@@ -1029,7 +1206,7 @@ def validate_ra(
         require_active_group_disposition,
     )
 
-    object_id = obj.get("id", "unknown")
+    object_id = object_label(obj)
     expired_technologies, extended_support_technologies = vendor_lifecycle_risk_technologies(obj, catalog_by_id)
     if expired_technologies and obj.get("lifecycleStatus") != "deprecated":
         details = ", ".join(f"{ref} extendedSupportEnd {support_end.isoformat()}" for ref, support_end in expired_technologies)
@@ -1102,6 +1279,7 @@ def validate_software_deployment_pattern(
     requirement_groups: dict[str, dict[str, Any]],
     catalog_by_id: dict[str, dict[str, Any]],
     capability_ids: set[str],
+    business_taxonomy: dict[str, Any],
     failures: list[str],
     warnings: list[str],
     active_group_ids: set[str] | None = None,
@@ -1118,8 +1296,9 @@ def validate_software_deployment_pattern(
         active_group_ids,
         require_active_group_disposition,
     )
+    validate_software_deployment_business_context(obj, path, business_taxonomy, failures)
 
-    object_id = obj.get("id", "unknown")
+    object_id = object_label(obj)
     if not is_non_empty(obj.get("followsReferenceArchitecture")) and not is_non_empty(obj.get("architecturalDecisions", {}).get("noApplicablePattern") if isinstance(obj.get("architecturalDecisions"), dict) else None):
         record_requirement_gap(
             obj,
@@ -1215,6 +1394,7 @@ def validate_decision_record(obj: dict[str, Any], path: Path, failures: list[str
 def validate_drafting_session(
     obj: dict[str, Any],
     path: Path,
+    workspace_root: Path,
     requirement_groups: dict[str, dict[str, Any]],
     catalog_by_id: dict[str, dict[str, Any]],
     capability_ids: set[str],
@@ -1223,6 +1403,10 @@ def validate_drafting_session(
     active_group_ids: set[str] | None = None,
     require_active_group_disposition: bool = False,
 ) -> None:
+    if "primaryObjectId" in obj:
+        failures.append(
+            f"{path}: Rename legacy field primaryObjectId to primaryObjectUid. Repair command: {repair_file_command(workspace_root, path)}"
+        )
     validate_applicable_requirements(
         obj,
         path,
@@ -1235,19 +1419,23 @@ def validate_drafting_session(
         require_active_group_disposition,
     )
 
-    primary_object_id = obj.get("primaryObjectId")
-    if primary_object_id and primary_object_id not in catalog_by_id:
-        failures.append(f"{path}: primaryObjectId references unknown object '{primary_object_id}'")
+    primary_object_uid = obj.get("primaryObjectUid")
+    if primary_object_uid and primary_object_uid not in catalog_by_id:
+        failures.append(f"{path}: primaryObjectUid references unknown object '{primary_object_uid}'")
 
     generated_objects = obj.get("generatedObjects", [])
     if isinstance(generated_objects, list):
         for index, entry in enumerate(generated_objects):
             if not isinstance(entry, dict):
                 continue
+            if "proposedId" in entry:
+                failures.append(
+                    f"{path}: Rename generatedObjects[{index}].proposedId to proposedUid. Repair command: {repair_file_command(workspace_root, path)}"
+                )
             ref = entry.get("ref")
-            proposed_id = entry.get("proposedId")
-            if not is_non_empty(ref) and not is_non_empty(proposed_id):
-                failures.append(f"{path}: generatedObjects[{index}] must declare either ref or proposedId")
+            proposed_uid = entry.get("proposedUid")
+            if not is_non_empty(ref) and not is_non_empty(proposed_uid):
+                failures.append(f"{path}: generatedObjects[{index}] must declare either ref or proposedUid")
             if ref and ref not in catalog_by_id:
                 failures.append(f"{path}: generatedObjects[{index}] references unknown object '{ref}'")
 
@@ -1336,7 +1524,7 @@ def find_technology_component_configuration(obj: dict[str, Any], implementation:
     criteria = implementation.get("criteria", {}) if isinstance(implementation.get("criteria"), dict) else {}
     capability = criteria.get("capability") or criteria.get("concern")
     for abb in referenced_technology_components(obj, catalog_by_id):
-        if ref and abb.get("id") != ref:
+        if ref and abb.get("uid") != ref:
             continue
         configurations = abb.get("configurations", [])
         if not isinstance(configurations, list):
@@ -1386,7 +1574,7 @@ def validate_capability(
 ) -> None:
     domain_id = obj.get("domain")
     if domain_id not in domain_ids:
-        failures.append(f"{path}: Set domain to an existing domain object ID; '{domain_id}' was not found")
+        failures.append(f"{path}: Set domain to an existing domain object UID; '{domain_id}' was not found")
     implementations = obj.get("implementations", [])
     if not isinstance(implementations, list):
         failures.append(f"{path}: Change implementations to a list of Technology Component mappings")
@@ -1405,7 +1593,7 @@ def validate_capability(
         ref = implementation.get("ref")
         target = catalog_by_id.get(str(ref)) if is_non_empty(ref) else None
         if not target or target.get("type") != "technology_component":
-            failures.append(f"{context}: Set ref to an existing Technology Component ID; capability lifecycle applies only to discrete vendor product versions")
+            failures.append(f"{context}: Set ref to an existing Technology Component UID; capability lifecycle applies only to discrete vendor product versions")
         lifecycle_status = implementation.get("lifecycleStatus")
         if lifecycle_status not in VALID_IMPLEMENTATION_STATUSES:
             failures.append(
@@ -1459,7 +1647,7 @@ def validate_requirement_group(
         related_capability = requirement.get("relatedCapability")
         if is_non_empty(related_capability) and related_capability not in capability_ids:
             failures.append(
-                f"{context}: Set relatedCapability to an existing capability object ID; '{related_capability}' was not found"
+                f"{context}: Set relatedCapability to an existing capability object UID; '{related_capability}' was not found"
             )
         requirement_scopes = requirement.get("appliesTo")
         if requirement_scopes is not None:
@@ -1556,13 +1744,13 @@ def validate_applicable_requirements(
     if declared is None:
         declared = []
     if not isinstance(declared, list):
-        failures.append(f"{path}: Change requirementGroups to a list of requirement_group IDs")
+        failures.append(f"{path}: Change requirementGroups to a list of requirement_group UIDs")
         declared = []
     declared_group_ids = {str(group_id) for group_id in declared if is_non_empty(group_id)}
     for group_id in sorted(declared_group_ids):
         group = requirement_groups.get(group_id)
         if not group:
-            failures.append(f"{path}: Replace unknown requirement group '{group_id}' with an existing requirement_group ID")
+            failures.append(f"{path}: Replace unknown requirement group '{group_id}' with an existing requirement_group UID")
         elif group.get("activation") == "workspace" and group_id not in active_group_ids:
             failures.append(
                 f"{path}: Activate requirement group '{group_id}' in .draft/workspace.yaml or remove the object claim"
@@ -1627,7 +1815,7 @@ def validate_requirement_implementations(
             record_requirement_gap(
                 obj,
                 path,
-                f"[{obj.get('id', 'unknown')}] Add requirementGroups entries for active requirement groups {missing_active} or record not-applicable dispositions",
+                f"[{object_label(obj)}] Add requirementGroups entries for active requirement groups {missing_active} or record not-applicable dispositions",
                 failures,
                 warnings,
             )
@@ -1652,7 +1840,7 @@ def validate_requirement_implementations(
             continue
         group = requirement_groups.get(str(group_id))
         if not group:
-            failures.append(f"{context}: Set requirementGroup to an existing requirement_group ID")
+            failures.append(f"{context}: Set requirementGroup to an existing requirement_group UID")
             continue
         if group.get("activation") == "workspace" and str(group_id) not in declared_group_ids:
             failures.append(f"{context}: Add '{group_id}' to requirementGroups before recording evidence")
@@ -1666,7 +1854,7 @@ def validate_requirement_implementations(
             record_requirement_gap(
                 obj,
                 path,
-                f"[{obj.get('id', 'unknown')}] Resolve not-compliant requirement '{requirement_id}' from {group_id} before approving this object",
+                f"[{object_label(obj)}] Resolve not-compliant requirement '{requirement_id}' from {group_id} before approving this object",
                 failures,
                 warnings,
             )
@@ -1690,7 +1878,7 @@ def validate_requirement_implementations(
             record_requirement_gap(
                 obj,
                 path,
-                f"[{obj.get('id', 'unknown')}] Update requirementImplementation for '{requirement_id}' because mechanism '{mechanism}' does not resolve against the object",
+                f"[{object_label(obj)}] Update requirementImplementation for '{requirement_id}' because mechanism '{mechanism}' does not resolve against the object",
                 failures,
                 warnings,
             )
@@ -1708,7 +1896,7 @@ def validate_requirement_implementations(
                 record_requirement_gap(
                     obj,
                     path,
-                    f"[{obj.get('id', 'unknown')}] Add requirementImplementation for active requirement '{requirement.get('id')}' from {group_id}",
+                    f"[{object_label(obj)}] Add requirementImplementation for active requirement '{requirement.get('id')}' from {group_id}",
                     failures,
                     warnings,
                 )
@@ -1719,7 +1907,7 @@ def find_requirement(
     requirement_id: str,
     requirement_groups: dict[str, dict[str, Any]],
 ) -> dict[str, Any] | None:
-    group_id = str(group.get("id") or "")
+    group_id = str(group.get("uid") or "")
     for requirement in resolve_requirement_group_requirements(group_id, requirement_groups):
         if isinstance(requirement, dict) and requirement.get("id") == requirement_id:
             return requirement
@@ -1855,6 +2043,7 @@ def main(argv: list[str] | None = None) -> int:
     failures: list[str] = []
     warnings: list[str] = []
     workspace_requirements = load_workspace_requirements(workspace_root, failures)
+    business_taxonomy = load_workspace_business_taxonomy(workspace_root, failures)
 
     for path in files:
         try:
@@ -1862,12 +2051,13 @@ def main(argv: list[str] | None = None) -> int:
         except Exception as exc:  # noqa: BLE001
             failures.append(f"{path}: failed to parse YAML ({exc})")
 
+    validate_object_uids(objects, workspace_root, failures)
     objects = apply_object_patches(objects, failures)
 
     catalog_by_id = {
-        obj["id"]: obj
+        obj["uid"]: obj
         for obj in objects.values()
-        if isinstance(obj, dict) and is_non_empty(obj.get("id"))
+        if isinstance(obj, dict) and is_non_empty(obj.get("uid"))
     }
     requirement_groups = {
         object_id: obj for object_id, obj in catalog_by_id.items() if obj.get("type") == "requirement_group"
@@ -1908,6 +2098,7 @@ def main(argv: list[str] | None = None) -> int:
             validate_drafting_session(
                 obj,
                 path,
+                workspace_root,
                 requirement_groups,
                 catalog_by_id,
                 capability_ids,
@@ -1957,6 +2148,7 @@ def main(argv: list[str] | None = None) -> int:
                 requirement_groups,
                 catalog_by_id,
                 capability_ids,
+                business_taxonomy,
                 failures,
                 warnings,
                 active_group_ids,

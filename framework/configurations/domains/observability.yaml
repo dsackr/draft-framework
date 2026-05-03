@@ -1,12 +1,12 @@
 schemaVersion: '1.0'
-id: domain.observability
+uid: 01KQQ4Q027-C213
 type: domain
 name: Observability & Monitoring
-description: >
-  Strategic domain covering logging, metrics, tracing, and health monitoring
-  across infrastructure and application stacks.
+description: 'Strategic domain covering logging, metrics, tracing, and health monitoring across infrastructure and application stacks.
+
+  '
 capabilities:
-- capability.health-welfare-monitoring
-- capability.log-management
-- capability.security-monitoring
-- capability.apm
+- 01KQQ4Q026-98VD
+- 01KQQ4Q026-D04B
+- 01KQQ4Q026-JW52
+- 01KQQ4Q026-NB1W
