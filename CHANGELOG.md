@@ -3,6 +3,33 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.9.1 - 2026-05-03
+
+### Compatibility Impact
+
+No schema, validation, or catalog object compatibility impact. Existing
+workspaces remain valid.
+
+### Added
+
+- Added subtle accent-tinted backgrounds to DRAFT Overview metric tiles so the
+  generated browser overview has more visual hierarchy without changing object
+  data.
+
+### Changed
+
+- Renamed the generated browser's visible "Executive View" label to "DRAFT
+  Overview" while preserving the existing internal route state.
+
+### Fixed
+
+- No defect fixes in this patch release.
+
+### Migration Notes
+
+- Regenerate `docs/index.html` after refreshing the framework to pick up the
+  updated generated browser labels and metric tile styling.
+
 ## 0.9.0 - 2026-05-03
 
 ### Compatibility Impact
