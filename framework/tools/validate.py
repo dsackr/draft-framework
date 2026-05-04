@@ -1368,7 +1368,7 @@ def validate_software_deployment_pattern(
         record_requirement_gap(
             obj,
             path,
-            f"[{object_id}] Add architecturalDecisions.deploymentTargets to satisfy requirement-group.software-deployment-pattern requirement 'deployment-targets'",
+            f"[{object_id}] Describe deployment boundary or execution context in architecturalDecisions.deploymentTargets to satisfy DRAFT Software Deployment Pattern / deployment-targets",
             failures,
             warnings,
         )

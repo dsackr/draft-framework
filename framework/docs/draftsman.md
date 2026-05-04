@@ -204,6 +204,15 @@ For Software Deployment Pattern work, create or update the Software Deployment
 Pattern first. Create Product Services only for distinct first-party runtime
 behavior needed by that pattern.
 
+For the `DRAFT Software Deployment Pattern / deployment-targets` requirement,
+ask for the deployment boundary or execution context that matters to ownership,
+isolation, and operations. Do not ask for a cloud region unless the source
+material already names a region or an active Requirement Group explicitly
+requires region-level placement. Valid answers may be account boundaries,
+clusters, data centers, customer sites, tenant/environment boundaries, SaaS
+contexts, or another architecture-relevant execution context. Do not invent a
+default such as `us-west` when the source material does not provide one.
+
 ## Source Provenance
 
 When source material produces or materially changes an artifact, record

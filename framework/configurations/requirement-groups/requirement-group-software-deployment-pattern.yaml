@@ -50,12 +50,12 @@ requirements:
   - field
   - internalComponent
 - id: deployment-targets
-  description: Every service group must declare where it runs.
-  rationale: Deployment reality is not complete until the execution boundary or target is explicit for each service group.
+  description: Every service group must describe its deployment boundary or execution context at the level needed to understand ownership, isolation, and operational responsibility.
+  rationale: Deployment reality is not complete until the architect can explain the boundary that matters for operating and governing each service group; that boundary may be an account, cluster, data center, customer site, tenant/environment boundary, SaaS context, or another architecture-relevant execution context.
   canBeSatisfiedBy:
   - mechanism: architecturalDecision
     key: deploymentTargets
-    example: Service groups are placed in AWS Account - Team_Accelify_Prod
+    example: Production services run in the Team_Accelify_Prod AWS account; shared services run in the Shared Services platform boundary.
   minimumSatisfactions: 1
   requirementMode: mandatory
   naAllowed: false

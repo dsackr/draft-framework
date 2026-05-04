@@ -129,7 +129,7 @@ document:
 
 - the selected Reference Architecture, or why no applicable Reference Architecture exists
 - the deployed service-group structure
-- the deployment targets used by those service groups
+- the deployment boundary or execution context used by those service groups
 - the product availability requirement
 - any product-specific interactions beyond the component deployable object baseline
 - the governing data classification
@@ -152,8 +152,18 @@ Current state capabilities belong in Decision Records and notes.
 `serviceGroup` is the primary structural and visual container. It answers what
 role a cluster of deployed components plays in the product.
 
-`deploymentTarget` is metadata on the service group. It answers where that
-group runs.
+`deploymentTarget` is metadata on the service group. It answers what deployment
+boundary or execution context matters for understanding ownership, isolation,
+and operational responsibility.
+
+A deployment target is not inherently a cloud region and it is not necessarily
+a fixed approved-list value. The right answer depends on the architecture. It
+may be an AWS account, Kubernetes cluster, namespace, data center, customer
+site, SaaS tenant context, environment boundary, per-customer deployment model,
+or another execution context that explains how the service group is operated.
+Only ask for a specific geographic region when the source material names one
+or an active company/control requirement makes region part of the architecture
+answer.
 
 `diagramTier` places deployed objects into one of four columns:
 
@@ -169,6 +179,10 @@ If two services share a deployment target but play different roles, they should
 still live in different service groups. Do not use deployment targets as group
 names. Good group names describe function, such as `Web Edge Services`,
 `Application Services`, or `Data Services`.
+
+When the deployment boundary is not known, do not substitute a guessed cloud
+region or generic placeholder. Preserve the uncertainty through the normal
+drafting workflow and revisit it with the accountable owner.
 
 Internal and external interactions remain attached to the owning service group:
 

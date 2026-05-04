@@ -3,6 +3,38 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.12.2 - 2026-05-04
+
+### Compatibility Impact
+
+No workspace migration is required. This patch clarifies Software Deployment
+Pattern deployment-target wording and Draftsman interview behavior without
+changing schemas or stored object references.
+
+### Added
+
+- No new framework features in this patch release.
+
+### Changed
+
+- Changed the `deployment-targets` requirement to ask for a deployment boundary
+  or execution context rather than a generic "where it runs" answer.
+- Updated Software Deployment Pattern and Draftsman documentation to clarify
+  that deployment targets are not inherently cloud regions or controlled-list
+  answers unless an active company/control requirement makes them so.
+- Updated Software Deployment Pattern and Reference Architecture templates to
+  use deployment boundary/execution context language.
+
+### Fixed
+
+- Fixed the missing `deploymentTargets` validation message so it no longer
+  implies a raw target field without the architectural boundary semantics.
+
+### Migration Notes
+
+- Refresh the framework and regenerate `docs/index.html` to pick up the
+  clarified requirement wording and Draftsman guidance.
+
 ## 0.12.1 - 2026-05-04
 
 ### Compatibility Impact
