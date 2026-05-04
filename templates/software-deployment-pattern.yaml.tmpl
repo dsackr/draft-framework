@@ -25,8 +25,8 @@ architecturalDecisions:
 serviceGroups:
 - name: <Service Group Name>
   deploymentTarget: <Actual deployment target.>
-  standards:
-  - ref: <existing-standard-uid>
+  deployableObjects:
+  - ref: <existing-deployable-object-uid>
     diagramTier: <presentation|application|data|utility>
     intent: <ha|sa>
     notes: <How this block is used by the product.>

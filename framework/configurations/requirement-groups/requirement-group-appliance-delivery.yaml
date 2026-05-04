@@ -1,10 +1,8 @@
 schemaVersion: '1.0'
 uid: 01KQQ4Q027-DSDD
 type: requirement_group
-name: Appliance Component Requirement Group
-description: 'Structured requirements used to define a complete and correct Appliance Component. An Appliance Component is a vendor product deployed within the organization''s infrastructure boundary where the underlying host is blackbox. The organization configures the appliance but has no visibility into or responsibility for the underlying infrastructure. Because there is no Host Standard or Service Standard wrapper to inherit baseline Requirement Group requirements, this group collects the appliance''s consumer-facing service capabilities directly on the Appliance Component.
-
-  '
+name: Appliance Delivery Requirement Group
+description: Structured requirements used when a Runtime, Data-at-Rest, or Edge/Gateway Service uses appliance delivery and the underlying host is blackbox to the adopter.
 version: 1.1.0
 catalogStatus: approved
 owner:
@@ -12,7 +10,9 @@ owner:
   contact: cloud-architecture@example.com
 activation: always
 appliesTo:
-- appliance_component
+- runtime_service
+- data_at_rest_service
+- edge_gateway_service
 requirements:
 - id: function
   description: What capabilities does this appliance provide?
@@ -55,7 +55,7 @@ requirements:
   - mechanism: externalInteraction
     criteria:
       capability: 01KQQ4Q026-D04B
-    example: The appliance forwards audit events to a modeled central logging Standard or SIEM platform referenced by externalInteractions.ref.
+    example: The appliance forwards audit events to a modeled central logging service or SIEM platform referenced by externalInteractions.ref.
   - mechanism: technologyComponentConfiguration
     criteria:
       capability: 01KQQ4Q026-D04B
@@ -119,9 +119,7 @@ requirements:
   - technologyComponentConfiguration
   minimumSatisfactions: 1
 - id: resilience-model
-  description: 'What is the resilience model of this appliance — is it inherently highly available, single instance, or clustered?
-
-    '
+  description: "What is the resilience model of this appliance \u2014 is it inherently highly available, single instance, or clustered?\n"
   rationale: A blackbox appliance still needs an explicit answer for the resilience posture the adopter is depending on.
   canBeSatisfiedBy:
   - mechanism: architecturalDecision
@@ -201,4 +199,4 @@ tags:
 - requirement-group
 - definition
 appliesToQualifiers:
-  subtype: appliance
+  deliveryModel: appliance

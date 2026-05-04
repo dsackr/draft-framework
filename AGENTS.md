@@ -116,7 +116,7 @@ If no implementation exists, ask what mechanism satisfies the capability rather
 than asking who performs the work. If the answer would create a lifecycle
 implementation, record that the company capability owner must approve it.
 Capability implementation lifecycle entries must reference Technology
-Components only, never Standards or running services.
+Components only, never deployable service objects or running systems.
 
 ## Editing Rules
 

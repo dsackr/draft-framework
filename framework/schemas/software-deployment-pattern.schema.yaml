@@ -69,18 +69,15 @@ serviceGroup:
   optionalFields:
   - deploymentTarget
   - scalingUnit
-  - standards
-  - applianceComponents
+  - deployableObjects
   - externalInteractions
   fieldTypes:
-    standards: list
-    applianceComponents: list
+    deployableObjects: list
     externalInteractions: list
   collectionSchemas:
-    standards: standardEntry
-    applianceComponents: applianceComponentEntry
+    deployableObjects: deployableObjectEntry
     externalInteractions: externalInteraction
-standardEntry:
+deployableObjectEntry:
   requiredFields:
   - ref
   optionalFields:
@@ -95,14 +92,9 @@ standardEntry:
     - application
     - data
     - utility
-    intent:
+  intent:
     - ha
     - sa
-applianceComponentEntry:
-  requiredFields:
-  - ref
-  optionalFields:
-  - notes
 externalInteraction:
   requiredFields:
   - name
@@ -151,7 +143,7 @@ requirementImplementation:
     - field
   fieldTypes:
     criteria: dict
-aiHint: A Software Deployment Pattern describes intended product deployment architecture in terms of standards, topology, decisions, and risks.
+aiHint: A Software Deployment Pattern describes intended product deployment architecture in terms of deployable objects, topology, decisions, and risks.
 fieldDescriptions:
   schemaVersion: Use the schema version string supported by this framework release, normally "1.0".
   type: Use the exact object type declared by the matching schema.

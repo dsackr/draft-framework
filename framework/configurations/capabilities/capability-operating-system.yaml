@@ -2,7 +2,7 @@ schemaVersion: '1.0'
 uid: 01KQQ4Q026-QM2X
 type: capability
 name: Operating System
-description: Supported operating system product used to define managed host standards.
+description: Supported operating system product used to define managed Hosts.
 version: 1.0.0
 catalogStatus: approved
 definitionOwner:

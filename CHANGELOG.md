@@ -3,6 +3,61 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.10.0 - 2026-05-04
+
+### Compatibility Impact
+
+Breaking pre-1.0 object taxonomy migration required. Workspaces using legacy
+Host Standard, Service Standard, Database Standard, PaaS Service Standard, SaaS
+Service Standard, or Appliance Component object types must migrate to the new
+deployable object taxonomy and regenerate derived browser/index output.
+
+### Added
+
+- Added first-class deployable object taxonomy documentation in
+  `framework/docs/object-types.md`.
+- Added `runtime_service`, `data_at_rest_service`, `edge_gateway_service`, and
+  `host` schemas to replace legacy Standard-classification schemas.
+- Added `deliveryModel` support for self-managed, PaaS, SaaS, and appliance
+  delivery on service objects.
+- Added a generated browser Object Types information page that explains
+  deployable versus non-deployable architecture content.
+- Added one-time `framework/tools/migrations/0.10.0/migrate_object_taxonomy.py`
+  migration support for the pre-1.0 adopting workspace.
+
+### Changed
+
+- Replaced legacy Standard-classification object types with explicit deployable
+  object types: Host, Runtime Service, Data-at-Rest Service, Edge/Gateway
+  Service, Product Service, Technology Component, and Software Deployment
+  Pattern.
+- Changed Software Deployment Pattern and Reference Architecture service groups
+  from `standards` plus `applianceComponents` to `deployableObjects`.
+- Changed PaaS, SaaS, and appliance from separate object types into delivery
+  models on Runtime Service, Data-at-Rest Service, and Edge/Gateway Service.
+- Updated Draftsman guidance, templates, validation, DRAFT Table catalog
+  discovery, generated browser rendering, and AI index generation for the new
+  object taxonomy.
+
+### Fixed
+
+- Removed stale Standard-classification language from framework documentation
+  and generated UI copy.
+- Fixed service-group validation messages so they refer to deployable objects
+  instead of standards.
+
+### Migration Notes
+
+- Run the 0.10.0 migration script against existing workspaces, then validate:
+  `python3 .draft/framework/tools/migrations/0.10.0/migrate_object_taxonomy.py .`
+- Regenerate `AI_INDEX.md` and `docs/index.html` after migration.
+- Review service group entries after migration to confirm each
+  `deployableObjects[].ref` points to the intended Host, Runtime Service,
+  Data-at-Rest Service, Edge/Gateway Service, or Product Service.
+- Review PaaS, SaaS, and appliance migrated services to confirm the selected
+  object type matches the behavior first and `deliveryModel` matches how it is
+  operated.
+
 ## 0.9.1 - 2026-05-03
 
 ### Compatibility Impact

@@ -32,7 +32,7 @@ them. They are not global object identity.
 File names should remain descriptive and stable enough for review:
 
 - `catalog/technology-components/technology-os-microsoft-windows-server-2022.yaml`
-- `catalog/host-standards/host-windows-server-2022-ec2.yaml`
+- `catalog/hosts/host-windows-server-2022-ec2.yaml`
 - `catalog/software-deployment-patterns/software-deployment-student-health.yaml`
 
 Changing a file name does not change object identity. The `uid` is the stable

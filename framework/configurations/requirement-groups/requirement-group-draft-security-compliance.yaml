@@ -12,10 +12,11 @@ owner:
   contact: cloud-architecture@example.com
 activation: workspace
 appliesTo:
-- database_standard
-- host_standard
+- data_at_rest_service
+- host
 - product_service
-- service_standard
+- runtime_service
+- edge_gateway_service
 - software_deployment_pattern
 provider:
   id: provider.draft-framework
@@ -31,7 +32,7 @@ requirements:
   description: Centralized Administrative Authentication
   rationale: Record how this object satisfies CC.SecurityCompliance.04.2.2 for Security and Security Compliance Requirements.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -56,7 +57,7 @@ requirements:
   description: Password Policy
   rationale: Record how this object satisfies CC.SecurityCompliance.04.4.1 for Security and Security Compliance Requirements.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -81,7 +82,7 @@ requirements:
   description: Database Password Policy
   rationale: Record how this object satisfies CC.SecurityCompliance.04.4.1 for Security and Security Compliance Requirements.
   appliesTo:
-  - database_standard
+  - data_at_rest_service
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -106,7 +107,7 @@ requirements:
   description: Centralized Log Management
   rationale: Record how this object satisfies CC.SecurityCompliance.06.1.1 for Security and Security Compliance Requirements.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -131,7 +132,7 @@ requirements:
   description: Host Health and Welfare Monitoring
   rationale: Record how this object satisfies CC.SecurityCompliance.06.2.1 for Security and Security Compliance Requirements.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -160,7 +161,7 @@ requirements:
   description: Security Event Monitoring
   rationale: Record how this object satisfies CC.SecurityCompliance.06.3.1 for Security and Security Compliance Requirements.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -189,7 +190,7 @@ requirements:
   description: Patch Governance
   rationale: Record how this object satisfies CC.SecurityCompliance.03.1.1 for Security and Security Compliance Requirements.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -214,7 +215,7 @@ requirements:
   description: Patch Execution Workflow
   rationale: Record how this object satisfies CC.SecurityCompliance.03.2.1 for Security and Security Compliance Requirements.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -296,7 +297,7 @@ requirements:
   description: Database Data Classification Context
   rationale: Record how this object satisfies CC.SecurityCompliance.00.2.1 for Security and Security Compliance Requirements.
   appliesTo:
-  - database_standard
+  - data_at_rest_service
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -316,7 +317,7 @@ requirements:
   description: Database Backup Strategy
   rationale: Record how this object satisfies CC.SecurityCompliance.10.2.1 for Security and Security Compliance Requirements.
   appliesTo:
-  - database_standard
+  - data_at_rest_service
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -336,7 +337,7 @@ requirements:
   description: Database Access Control Model
   rationale: Record how this object satisfies CC.SecurityCompliance.04.1.1 for Security and Security Compliance Requirements.
   appliesTo:
-  - database_standard
+  - data_at_rest_service
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -361,7 +362,8 @@ requirements:
   description: Secrets Management
   rationale: Record how this object satisfies CC.SecurityCompliance.04.3.1 for Security and Security Compliance Requirements.
   appliesTo:
-  - service_standard
+  - runtime_service
+  - edge_gateway_service
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:

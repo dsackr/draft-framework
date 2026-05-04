@@ -51,17 +51,17 @@ class DraftsmanTests(unittest.TestCase):
             {
                 "id": "p1",
                 "action": "create",
-                "artifactType": "Host Standard",
-                "name": "Standard Host",
-                "summary": "Creates a standard host.",
-                "path": "catalog/host-standards/host-standard.yaml",
+                "artifactType": "Host",
+                "name": "Managed Host",
+                "summary": "Creates a reusable host.",
+                "path": "catalog/hosts/host-managed.yaml",
                 "content": "schemaVersion: '1.0'",
             }
         )
 
         self.assertNotIn("content", public)
-        self.assertEqual(public["path"], "catalog/host-standards/host-standard.yaml")
-        self.assertEqual(public["name"], "Standard Host")
+        self.assertEqual(public["path"], "catalog/hosts/host-managed.yaml")
+        self.assertEqual(public["name"], "Managed Host")
 
     def test_parse_provider_response_extracts_json(self) -> None:
         raw = "Here is the result:\n" + json.dumps({"answer": "Done", "questions": [], "proposals": []})
@@ -90,19 +90,19 @@ class DraftsmanTests(unittest.TestCase):
         self.assertEqual(provider_timeout_seconds({"timeout_seconds": "invalid"}), 180)
 
     def test_prompt_guides_host_patch_management_as_mechanism_not_team_owner(self) -> None:
-        prompt = build_draftsman_prompt(REPO_ROOT, None, "Build a Windows Server Host Standard.", {"uploads": []})
+        prompt = build_draftsman_prompt(REPO_ROOT, None, "Build a Windows Server Host.", {"uploads": []})
 
         self.assertIn("For Host Requirement Group patch management", prompt)
         self.assertIn("patch platform, installed component", prompt)
         self.assertIn("do not ask which", prompt)
         self.assertIn("team owns patching", prompt)
 
-    def test_prompt_explains_appliance_component_service_like_capability_answers(self) -> None:
-        prompt = build_draftsman_prompt(REPO_ROOT, None, "Build an Appliance Component.", {"uploads": []})
+    def test_prompt_explains_appliance_delivery_service_like_capability_answers(self) -> None:
+        prompt = build_draftsman_prompt(REPO_ROOT, None, "Build an appliance-delivered Edge/Gateway Service.", {"uploads": []})
 
-        self.assertIn("For Appliance Components", prompt)
+        self.assertIn("deliveryModel appliance", prompt)
         self.assertIn("vendor-product", prompt)
-        self.assertIn("no Host Standard or Service Standard wrapper", prompt)
+        self.assertIn("no Host wrapper", prompt)
 
     def test_safe_workspace_path_rejects_escape(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -116,8 +116,8 @@ class DraftsmanTests(unittest.TestCase):
                 "#!/usr/bin/env python3\n"
                 "import json, sys\n"
                 "print(json.dumps({'answer':'I proposed one artifact.', 'questions': [], "
-                "'proposals':[{'id':'p1','action':'create','artifactType':'Host Standard','name':'Standard Host',"
-                "'summary':'A reusable host pattern.','path':'catalog/host-standards/host-standard.yaml',"
+                "'proposals':[{'id':'p1','action':'create','artifactType':'Host','name':'Managed Host',"
+                "'summary':'A reusable host pattern.','path':'catalog/hosts/host-managed.yaml',"
                 "'content':'schemaVersion: 1.0'}]}))\n",
                 encoding="utf-8",
             )
@@ -132,11 +132,11 @@ class DraftsmanTests(unittest.TestCase):
             )
             engine = DraftsmanEngine(config_path, DraftsmanSessionStore(Path(directory) / "sessions"))
 
-            response = engine.chat("Draft a standard host pattern.")
+            response = engine.chat("Draft a managed host.")
 
         public = response.public_dict()
         self.assertTrue(response.provider_used)
-        self.assertEqual(public["proposals"][0]["name"], "Standard Host")
+        self.assertEqual(public["proposals"][0]["name"], "Managed Host")
         self.assertNotIn("content", public["proposals"][0])
 
 

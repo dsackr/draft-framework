@@ -20,15 +20,13 @@ organized around:
 - `architecturalDecisions`
 - `decisionRecords`
 
-Each service group can contain deployed Standard entries, Appliance Components, and
-group-local external interactions. Product Services and SaaS Services are both
-Standard classifications, so they appear inside the same `standards` collection. This is
-a better fit for real
+Each service group can contain deployable object references and group-local
+external interactions. This is a better fit for real
 architecture interview data because it preserves operational grouping and
 deployment intent.
 
 Within those service groups, the primary visual objects in the topology are the
-deployed Standard entries themselves.
+deployed object entries themselves.
 
 Each of those entries must declare `diagramTier` as one of:
 
@@ -78,11 +76,10 @@ Each service group includes:
 - `name`
 - `deploymentTarget`
 - optional `scalingUnit`
-- optional `standards`
-- optional `applianceComponents`
+- optional `deployableObjects`
 - optional `externalInteractions`
 
-Each deployed Standard entry should declare:
+Each deployable object entry should declare:
 
 - `ref`
 - optional `diagramTier`
@@ -134,7 +131,7 @@ document:
 - the deployed service-group structure
 - the deployment targets used by those service groups
 - the product availability requirement
-- any product-specific interactions beyond the component Standard baseline
+- any product-specific interactions beyond the component deployable object baseline
 - the governing data classification
 - the deployment-level failure domain
 - any intentional deviations from the selected Reference Architecture, or an explicit statement
@@ -142,7 +139,7 @@ document:
 
 ## Intent Versus Current State
 
-The `intent` field on deployed Standard entries exists only for explicit
+The `intent` field on deployed object entries exists only for explicit
 architecture choice. It should be populated when the architect is intentionally
 deviating from the Reference Architecture, or when no Reference Architecture
 exists.
@@ -158,7 +155,7 @@ role a cluster of deployed components plays in the product.
 `deploymentTarget` is metadata on the service group. It answers where that
 group runs.
 
-`diagramTier` places deployed Standards into one of four columns:
+`diagramTier` places deployed objects into one of four columns:
 
 - `presentation`
 - `application`
@@ -189,7 +186,7 @@ The Software Deployment Pattern topology is a service-first placement view.
 - `serviceGroup` is the primary container because it answers what a set of
   deployed components does.
 - `deploymentTarget` stays visible as metadata on that group.
-- `diagramTier` places deployed Standards into the
+- `diagramTier` places deployed objects into the
   `presentation`, `application`, `data`, or `utility` column.
 - `scalingUnit` is secondary and optional. It should be treated as an overlay
   or highlight concept that answers which services scale together, not as the
@@ -204,7 +201,11 @@ layout.
 
 The v1 catalog contains example Software Deployment Patterns in this central repository because the framework needs real examples.
 
-Long term, that is not the target operating model. Product-specific software deployment patterns belong closest to the product that owns them, which usually means the product repository. The central catalog should define reusable building blocks and reference patterns. Product repos should eventually own the declarations that map those standards to live product estates.
+Long term, that is not the target operating model. Product-specific Software
+Deployment Patterns belong closest to the product that owns them, which usually
+means the product repository. The central catalog should define reusable
+building blocks and reference patterns. Product repos should eventually own the
+declarations that map those deployable objects to live product estates.
 
 ## Partial Software Deployment Pattern Drafting
 

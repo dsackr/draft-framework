@@ -12,10 +12,11 @@ owner:
   contact: cloud-architecture@example.com
 activation: workspace
 appliesTo:
-- database_standard
-- host_standard
+- data_at_rest_service
+- host
 - product_service
-- service_standard
+- runtime_service
+- edge_gateway_service
 - software_deployment_pattern
 provider:
   id: provider.draft-framework
@@ -31,7 +32,7 @@ requirements:
   description: Account Management and Centralized Authentication
   rationale: Record how this object satisfies AC-2 for TX-RAMP.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: conditional
   naAllowed: true
   canBeSatisfiedBy:
@@ -62,7 +63,7 @@ requirements:
   description: Auditable Event Logging
   rationale: Record how this object satisfies AU-2 for TX-RAMP.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: conditional
   naAllowed: true
   canBeSatisfiedBy:
@@ -93,7 +94,7 @@ requirements:
   description: Security Monitoring
   rationale: Record how this object satisfies SI-4 for TX-RAMP.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: conditional
   naAllowed: true
   canBeSatisfiedBy:
@@ -128,7 +129,7 @@ requirements:
   description: Configuration Change Control and Patching
   rationale: Record how this object satisfies CM-3 for TX-RAMP.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: conditional
   naAllowed: true
   canBeSatisfiedBy:
@@ -159,7 +160,7 @@ requirements:
   description: Data Protection for Database Services
   rationale: Record how this object satisfies SC-28 for TX-RAMP.
   appliesTo:
-  - database_standard
+  - data_at_rest_service
   requirementMode: conditional
   naAllowed: true
   canBeSatisfiedBy:
@@ -189,7 +190,7 @@ requirements:
   description: Least Privilege for Database Services
   rationale: Record how this object satisfies AC-6 for TX-RAMP.
   appliesTo:
-  - database_standard
+  - data_at_rest_service
   requirementMode: conditional
   naAllowed: true
   canBeSatisfiedBy:
@@ -220,7 +221,7 @@ requirements:
   description: Backup and Recovery
   rationale: Record how this object satisfies CP-9 for TX-RAMP.
   appliesTo:
-  - database_standard
+  - data_at_rest_service
   requirementMode: conditional
   naAllowed: true
   canBeSatisfiedBy:
@@ -246,7 +247,8 @@ requirements:
   description: Secrets and Authenticator Management
   rationale: Record how this object satisfies IA-5 for TX-RAMP.
   appliesTo:
-  - service_standard
+  - runtime_service
+  - edge_gateway_service
   requirementMode: conditional
   naAllowed: true
   canBeSatisfiedBy:

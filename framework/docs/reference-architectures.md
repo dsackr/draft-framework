@@ -45,8 +45,8 @@ position on using that deployment pattern:
 A Reference Architecture that includes a Technology Component whose
 `vendorLifecycle.extendedSupportEnd` date has passed must be marked
 `deprecated`. The validator follows the pattern's `serviceGroups` through the
-referenced Standards to the underlying Technology Components and enforces this
-rule.
+referenced deployable objects to the underlying Technology Components and
+enforces this rule.
 
 A Reference Architecture that includes a Technology Component whose
 `vendorLifecycle.mainstreamSupportEnd` date has passed but whose
@@ -62,8 +62,8 @@ The core field in a Reference Architecture is `serviceGroups`. Each group cluste
 services that work together in the deployment pattern. Inside each group, the
 pattern declares:
 
-- the Standards that must exist
-- the `diagramTier` each Standard belongs to
+- the deployable objects that must exist
+- the `diagramTier` each deployable object belongs to
 - any group-local interactions or notes that matter to the pattern
 
 This does more than list ingredients. It shows how the pattern is meant to be
@@ -76,7 +76,7 @@ high-availability pattern includes service groups such as:
 
 - `Frontend UI` with presentation-tier web services
 - `Application Runtime Services` with application-tier runtime services
-- `Data Services` with data-tier DBMS services
+- `Data Services` with data-tier Data-at-Rest Services
 
 The Reference Architecture also carries architectural decision entries that explain what the deployment
 pattern assumes, such as web-tier autoscaling and AlwaysOn on the data tier.
@@ -88,7 +88,7 @@ A Reference Architecture is not a deployed thing. It is a deployment-pattern dec
 A Software Deployment Pattern may reference a Reference Architecture UID in
 `followsReferenceArchitecture`, but that field is metadata about conformance,
 not a deployed runtime element. The visual question for a Software Deployment
-Pattern is "what Standards are deployed here?" The guidance question is "which
+Pattern is "what deployable objects are deployed here?" The guidance question is "which
 Reference Architecture does this solution claim to follow?"
 
 ## Why Reference Architectures Matter
@@ -117,4 +117,7 @@ Yes, but that should be treated as an explicit exception rather than invisible d
 
 ### Who owns Reference Architectures?
 
-Reference Architectures are architecture-owned artifacts, usually written in collaboration with infrastructure, product, database, security, and platform teams so that they reflect both desired standards and actual supportable patterns.
+Reference Architectures are architecture-owned artifacts, usually written in
+collaboration with infrastructure, product, database, security, and platform
+teams so that they reflect both desired deployable objects and actual
+supportable patterns.

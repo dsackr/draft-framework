@@ -177,23 +177,20 @@ See [security.md](security.md) for the threat model and credential boundary.
 - [AI framework index](AI_INDEX.md)
 - [Draftsman instructions for AI](framework/docs/draftsman.md)
 - [Draftsman AI guidance](framework/docs/draftsman-ai-configuration.md)
+- [DRAFT object types](framework/docs/object-types.md)
 - [YAML schema reference](framework/docs/yaml-schema-reference.md)
 - [Naming conventions](framework/docs/naming-conventions.md)
 - [How to add objects](framework/docs/how-to-add-objects.md)
 - [Workspace model](framework/docs/workspaces.md)
 - [Authoring templates](templates/)
 
-### Architecture Content
+### Deployable Architecture Content
 
-- [Standards](framework/docs/standards.md)
+- [Deployable objects](framework/docs/standards.md)
+- [Delivery models](framework/docs/delivery-models.md)
+- [Product Service](framework/docs/product-service.md)
 - [Reference Architectures](framework/docs/reference-architectures.md)
 - [Software Deployment Patterns](framework/docs/software-deployment-patterns.md)
-
-### Standard Classifications
-
-- [Product Service](framework/docs/product-service.md)
-- [PaaS Service](framework/docs/paas-service-standards.md)
-- [SaaS Service](framework/docs/saas-service-standards.md)
 
 ### Supporting Model Objects
 

@@ -36,13 +36,11 @@ CATALOG_FOLDERS = [
     "requirement-groups",
     "object-patches",
     "technology-components",
-    "appliance-components",
-    "host-standards",
-    "service-standards",
-    "database-standards",
+    "edge-gateway-services",
+    "hosts",
+    "runtime-services",
+    "data-at-rest-services",
     "product-services",
-    "paas-services",
-    "saas-services",
     "decision-records",
     "objects",
     "object-types",
@@ -64,7 +62,7 @@ REF_CONTAINER_KEYS = {
     "ref",
     "runsOn",
     "followsReferenceArchitecture",
-    "hostStandard",
+    "host",
     "primaryTechnologyComponent",
     "operatingSystemComponent",
     "computePlatformComponent",
@@ -87,19 +85,19 @@ def is_product_service_classification(obj: dict[str, Any]) -> bool:
 
 
 def is_saas_service_classification(obj: dict[str, Any]) -> bool:
-    return obj.get("type") == "saas_service_standard"
+    return obj.get("type") in {"runtime_service", "data_at_rest_service", "edge_gateway_service"} and obj.get("deliveryModel") == "saas"
 
 
 def is_paas_service_classification(obj: dict[str, Any]) -> bool:
-    return obj.get("type") == "paas_service_standard"
+    return obj.get("type") in {"runtime_service", "data_at_rest_service", "edge_gateway_service"} and obj.get("deliveryModel") == "paas"
 
 
 def is_database_service(obj: dict[str, Any]) -> bool:
-    return obj.get("type") == "database_standard"
+    return obj.get("type") == "data_at_rest_service"
 
 
 def is_general_service(obj: dict[str, Any]) -> bool:
-    return obj.get("type") == "service_standard"
+    return obj.get("type") == "runtime_service"
 
 
 def discover_yaml_files(root: Path) -> list[Path]:
@@ -259,7 +257,7 @@ def is_non_empty(value: Any) -> bool:
 
 
 def schema_specificity(schema: dict[str, Any]) -> int:
-    return sum(1 for key in ("subtype", "category", "serviceCategory") if is_non_empty(schema.get(key)))
+    return sum(1 for key in ("subtype", "category", "deliveryModel") if is_non_empty(schema.get(key)))
 
 
 def select_schema(obj: dict[str, Any], schemas: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -271,7 +269,7 @@ def select_schema(obj: dict[str, Any], schemas: list[dict[str, Any]]) -> dict[st
             continue
         if is_non_empty(schema.get("category")) and schema.get("category") != obj.get("category"):
             continue
-        if is_non_empty(schema.get("serviceCategory")) and schema.get("serviceCategory") != obj.get("serviceCategory"):
+        if is_non_empty(schema.get("deliveryModel")) and schema.get("deliveryModel") != obj.get("deliveryModel"):
             continue
         candidates.append(schema)
     if not candidates:
@@ -400,10 +398,10 @@ def shape_for(obj: dict[str, Any]) -> str:
         return "round-rectangle"
     if obj["type"] == "technology_component":
         return "ellipse"
-    if obj["type"] == "appliance_component":
-        return "ellipse"
-    if obj["type"] in {"host_standard", "service_standard", "database_standard", "product_service", "paas_service_standard", "saas_service_standard"}:
-        return "round-rectangle" if obj["type"] == "host_standard" else "diamond"
+    if obj["type"] == "edge_gateway_service":
+        return "diamond"
+    if obj["type"] in {"host", "runtime_service", "data_at_rest_service", "product_service"}:
+        return "round-rectangle" if obj["type"] == "host" else "diamond"
     return "round-rectangle"
 
 
@@ -423,9 +421,9 @@ def type_label_for(obj: dict[str, Any]) -> str:
     if obj["type"] == "technology_component":
         classification = humanize_slug(str(obj.get("classification", "unknown")))
         return f"Technology Component / {classification}"
-    if obj["type"] == "appliance_component":
-        classification = humanize_slug(str(obj.get("classification", "unknown")))
-        return f"Appliance Component / {classification}"
+    if obj["type"] == "edge_gateway_service":
+        delivery_model = str(obj.get("deliveryModel", "self-managed")).replace("-", " ").title()
+        return f"Edge/Gateway Service / {delivery_model}"
     if obj["type"] == "capability":
         return "Capability"
     if obj["type"] == "requirement_group":
@@ -438,18 +436,16 @@ def type_label_for(obj: dict[str, Any]) -> str:
         return "Software Deployment Pattern"
     if obj["type"] == "drafting_session":
         return "Drafting Session"
-    if obj["type"] == "host_standard":
-        return "Host Standard"
-    if obj["type"] == "service_standard":
-        return "Service Standard"
-    if obj["type"] == "database_standard":
-        return "Database Standard"
+    if obj["type"] == "host":
+        return "Host"
+    if obj["type"] == "runtime_service":
+        delivery_model = str(obj.get("deliveryModel", "")).replace("-", " ").title()
+        return f"Runtime Service / {delivery_model}" if delivery_model else "Runtime Service"
+    if obj["type"] == "data_at_rest_service":
+        delivery_model = str(obj.get("deliveryModel", "")).replace("-", " ").title()
+        return f"Data-at-Rest Service / {delivery_model}" if delivery_model else "Data-at-Rest Service"
     if is_product_service_classification(obj):
         return "Product Service"
-    if is_paas_service_classification(obj):
-        return "PaaS Service Standard"
-    if is_saas_service_classification(obj):
-        return "SaaS Service Standard"
     if obj["type"] == "domain":
         return "Strategy Domain"
     return str(obj.get("type", "unknown")).replace("_", " ").title()
@@ -468,7 +464,7 @@ def internal_component_refs(obj: dict[str, Any]) -> list[dict[str, str]]:
     for field_name, role in (
         ("operatingSystemComponent", "os"),
         ("computePlatformComponent", "hardware"),
-        ("hostStandard", "host"),
+        ("host", "host"),
         ("primaryTechnologyComponent", "function"),
     ):
         ref = obj.get(field_name)
@@ -517,7 +513,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
         if obj.get("type") == "software_deployment_pattern"
         for group in obj.get("serviceGroups", [])
         if isinstance(group, dict)
-        for deployed in group.get("standards", [])
+        for deployed in group.get("deployableObjects", [])
         if isinstance(deployed, dict) and deployed.get("riskRef")
     }
     browser_objects: list[dict[str, Any]] = []
@@ -543,7 +539,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
                 "typeLabel": type_label_for(obj),
                 "filterType": filter_type_for(obj),
                 "category": obj.get("category", ""),
-                "serviceCategory": obj.get("serviceCategory", ""),
+                "deliveryModel": obj.get("deliveryModel", ""),
                 "domain": obj.get("domain", ""),
                 "description": obj.get("description", ""),
                 "version": obj.get("version", ""),
@@ -2466,7 +2462,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <div class="mode-badge" id="browser-mode"></div>
         </div>
       </div>
-      <p>Review architecture inventory, standards, requirements, relationships, and decisions.</p>
+      <p>Review architecture inventory, deployable objects, requirements, relationships, and decisions.</p>
       <div class="sidebar-stack">
         <div id="sidebar-content"></div>
         <div class="legend-block">
@@ -2498,36 +2494,47 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     document.getElementById('browser-mode').textContent = 'GitHub Pages';
     let editorState = null;
     let requirementImportState = null;
+    const DEPLOYABLE_OBJECT_TYPES = [
+      'technology_component',
+      'host',
+      'runtime_service',
+      'data_at_rest_service',
+      'edge_gateway_service',
+      'product_service',
+      'software_deployment_pattern'
+    ];
+    const SERVICE_OBJECT_TYPES = ['runtime_service', 'data_at_rest_service', 'edge_gateway_service'];
+    const DEPLOYABLE_STANDARD_TYPES = ['host', 'runtime_service', 'data_at_rest_service', 'edge_gateway_service', 'product_service'];
     const CATEGORY_CONFIG = [
       {
         id: 'architecture',
         label: 'Architecture Content',
         filters: [
-          { id: 'all', label: 'All', types: ['software_deployment_pattern', 'reference_architecture', 'host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'] },
+          { id: 'all', label: 'All', types: ['software_deployment_pattern', 'reference_architecture', 'host', 'runtime_service', 'data_at_rest_service', 'edge_gateway_service', 'product_service'] },
           { id: 'software_deployment_pattern', label: 'Software Deployment Patterns', types: ['software_deployment_pattern'] },
           { id: 'reference_architecture', label: 'Reference Architectures', types: ['reference_architecture'] },
-          { id: 'standards', label: 'Standards', types: ['host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'] }
+          { id: 'deployable_objects', label: 'Deployable Objects', types: DEPLOYABLE_STANDARD_TYPES }
         ],
         rows: [
           { id: 'software_deployment_pattern', label: 'Software Deployment Patterns', types: ['software_deployment_pattern'] },
           { id: 'reference_architecture', label: 'Reference Architectures', types: ['reference_architecture'] },
-          { id: 'host_standard', label: 'Host Standards', types: ['host_standard'] },
-          { id: 'service_standard', label: 'Service Standards', types: ['service_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'] },
-          { id: 'database_standard', label: 'Database Standards', types: ['database_standard'] }
+          { id: 'host', label: 'Hosts', types: ['host'] },
+          { id: 'runtime_service', label: 'Runtime Services', types: ['runtime_service'] },
+          { id: 'data_at_rest_service', label: 'Data-at-Rest Services', types: ['data_at_rest_service'] },
+          { id: 'edge_gateway_service', label: 'Edge/Gateway Services', types: ['edge_gateway_service'] },
+          { id: 'product_service', label: 'Product Services', types: ['product_service'] }
         ]
       },
       {
         id: 'supporting',
         label: 'Supporting Content',
         filters: [
-          { id: 'all', label: 'All', types: ['technology_component', 'appliance_component', 'decision_record'] },
+          { id: 'all', label: 'All', types: ['technology_component', 'decision_record'] },
           { id: 'technology_component', label: 'Technology Components', types: ['technology_component'] },
-          { id: 'appliance_component', label: 'Appliance Components', types: ['appliance_component'] },
           { id: 'decision_record', label: 'Decision Records', types: ['decision_record'] }
         ],
         rows: [
           { id: 'technology_component', label: 'Technology Components', types: ['technology_component'] },
-          { id: 'appliance_component', label: 'Appliance Components', types: ['appliance_component'] },
           { id: 'decision_record', label: 'Decision Records', types: ['decision_record'] }
         ]
       },
@@ -2556,11 +2563,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     const impactOrder = [
       'software_deployment_pattern',
       'reference_architecture',
-      'host_standard',
-      'service_standard',
-      'database_standard',
+      'host',
+      'runtime_service',
+      'data_at_rest_service',
       'technology_component',
-      'appliance_component'
+      'edge_gateway_service'
     ];
     const impactLifecycleOrder = lifecycleValues;
     let activeCategory = 'architecture';
@@ -2632,10 +2639,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     function formatTypeLabel(typeValue) {
       const normalized = String(typeValue || '');
       if (normalized === 'technology_component') return 'Technology Component';
-      if (normalized === 'appliance_component') return 'Appliance Component';
-      if (normalized === 'host_standard') return 'Host Standard';
-      if (normalized === 'service_standard') return 'Service Standard';
-      if (normalized === 'database_standard') return 'Database Standard';
+      if (normalized === 'edge_gateway_service') return 'Edge/Gateway Service';
+      if (normalized === 'host') return 'Host';
+      if (normalized === 'runtime_service') return 'Runtime Service';
+      if (normalized === 'data_at_rest_service') return 'Data-at-Rest Service';
       if (normalized === 'capability') return 'Capability';
       if (normalized === 'requirement_group') return 'Requirement Group';
       if (normalized === 'decision_record') return 'Decision Record';
@@ -2694,6 +2701,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function applianceBadge() {
       return '<span class="badge appliance-badge">appliance</span>';
+    }
+
+    function deliveryModelBadge(object) {
+      if (!SERVICE_OBJECT_TYPES.includes(object?.type)) return '';
+      const deliveryModel = object.deliveryModel || 'self-managed';
+      if (deliveryModel === 'saas') return saasBadge();
+      if (deliveryModel === 'paas') return paasBadge();
+      if (deliveryModel === 'appliance') return applianceBadge();
+      return '<span class="badge">self-managed</span>';
     }
 
     function intentBadge(intent) {
@@ -2774,6 +2790,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       setHashState({ view: 'acceptable-use' });
     }
 
+    function syncHashForObjectTypesView() {
+      setHashState({ view: 'object-types' });
+    }
+
     function applyRouteFromHash() {
       if (suppressHashSync) return;
       const params = currentHashState();
@@ -2804,6 +2824,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         renderAcceptableUseView();
         return;
       }
+      if (view === 'object-types') {
+        renderObjectTypesView();
+        return;
+      }
       executiveDrilldown = null;
       const category = params.get('category');
       activeCategory = CATEGORY_CONFIG.some(item => item.id === category) ? category : 'architecture';
@@ -2822,6 +2846,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return `
         <div class="top-nav">
           <button class="nav-button ${currentMode === 'executive' ? 'active' : ''}" data-nav="executive">DRAFT Overview</button>
+          <button class="nav-button ${currentMode === 'object-types' ? 'active' : ''}" data-nav="object-types">Object Types</button>
           <button class="nav-button ${currentMode === 'list' ? 'active' : ''}" data-nav="list">Drafting Table</button>
           <button class="nav-button ${currentMode === 'detail' ? 'active' : ''}" data-nav="detail" ${currentDetailId ? '' : 'disabled'}>Detail View</button>
           <button class="nav-button ${currentMode === 'acceptable-use' ? 'active' : ''}" data-nav="acceptable-use">Acceptable Use</button>
@@ -2860,6 +2885,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         renderAcceptableUseView();
         return;
       }
+      if (currentMode === 'object-types') {
+        renderObjectTypesView();
+        return;
+      }
       if (currentMode === 'impact') {
         renderImpactView();
         return;
@@ -2882,6 +2911,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           if (nav === 'list') {
             destroyImpactCy();
             renderListView();
+            return;
+          }
+          if (nav === 'object-types') {
+            destroyImpactCy();
+            renderObjectTypesView();
             return;
           }
           if (nav === 'detail' && currentDetailId) {
@@ -3024,7 +3058,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         return object.name;
       }
       const trimmed = String(object.name || '').replace(/\s+Requirement Group$/i, '');
-      if (trimmed === 'Appliance Component') {
+      if (trimmed === 'Edge/Gateway Service') {
         return 'Appliance';
       }
       return trimmed;
@@ -3043,13 +3077,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${object.type === 'decision_record' ? ardCategoryBadge(object.ardCategory) : ''}
             ${object.type === 'decision_record' ? ardStatusBadge(object.status) : ''}
             ${object.type === 'product_service' ? productBadge(object.product) : ''}
-            ${object.type === 'saas_service_standard' ? saasBadge() : ''}
+            ${deliveryModelBadge(object)}
             ${businessPillarBadge(object)}
           </div>
           <div class="badges">
             <div class="badge">${escapeHtml(object.typeLabel)}</div>
             ${object.type === 'product_service' ? `<div class="object-id">${escapeHtml(object.product)}</div>` : ''}
-            ${object.type === 'appliance_component' ? applianceBadge() : ''}
           </div>
         </article>
       `;
@@ -3173,10 +3206,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const objectTypes = {
         softwareDeploymentPatterns: allObjects.filter(object => object.type === 'software_deployment_pattern').length,
         referenceArchitectures: allObjects.filter(object => object.type === 'reference_architecture').length,
-        hostStandards: allObjects.filter(object => object.type === 'host_standard').length,
-        serviceStandards: allObjects.filter(object => ['service_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type)).length,
-        databaseStandards: allObjects.filter(object => object.type === 'database_standard').length,
-        applianceComponents: allObjects.filter(object => object.type === 'appliance_component').length
+        hosts: allObjects.filter(object => object.type === 'host').length,
+        runtimeServices: allObjects.filter(object => object.type === 'runtime_service').length,
+        dataAtRestServices: allObjects.filter(object => object.type === 'data_at_rest_service').length,
+        edgeGatewayServices: allObjects.filter(object => object.type === 'edge_gateway_service').length,
+        productServices: allObjects.filter(object => object.type === 'product_service').length
       };
       return {
         objectCount: allObjects.length,
@@ -3269,10 +3303,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const rows = [
         ['Software Deployment Patterns', stats.objectTypes.softwareDeploymentPatterns],
         ['Reference Architectures', stats.objectTypes.referenceArchitectures],
-        ['Host Standards', stats.objectTypes.hostStandards],
-        ['Service Standards', stats.objectTypes.serviceStandards],
-        ['Database Standards', stats.objectTypes.databaseStandards],
-        ['Appliance Components', stats.objectTypes.applianceComponents]
+        ['Hosts', stats.objectTypes.hosts],
+        ['Runtime Services', stats.objectTypes.runtimeServices],
+        ['Data-at-Rest Services', stats.objectTypes.dataAtRestServices],
+        ['Edge/Gateway Services', stats.objectTypes.edgeGatewayServices],
+        ['Product Services', stats.objectTypes.productServices]
       ];
       const maxCount = Math.max(...rows.map(row => row[1]), 1);
       return `
@@ -3379,7 +3414,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <img class="executive-hero-logo" src="${escapeHtml(browserData.logoDataUri || 'draft-logo.png')}" alt="DRAFT">
               <div>
                 <h2>Welcome to the DRAFTing Table</h2>
-                <p>${escapeHtml(browserData.catalogName || 'This catalog')} connects architecture standards, technology lifecycle decisions, requirements, and deployment patterns so teams can draft systems from governed building blocks.</p>
+                <p>${escapeHtml(browserData.catalogName || 'This catalog')} connects deployable architecture, technology lifecycle decisions, requirements, and deployment patterns so teams can draft systems from governed building blocks.</p>
                 <div class="executive-hero-actions">
                   <button class="action-button" data-executive-target="drafting-table">Open Drafting Table</button>
                   <button class="action-button secondary" data-executive-target="acceptable-use">Acceptable Use Technology</button>
@@ -3406,7 +3441,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               target: 'technologies',
               value: stats.technologyCount,
               label: 'Technology Components',
-              description: 'Discrete vendor products and versions available to compose standards.',
+              description: 'Discrete vendor products and versions available to compose deployable objects.',
               size: 'medium',
               accent: 'cyan'
             })}
@@ -3452,6 +3487,135 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       attachTopNavHandlers();
       attachExecutiveHandlers();
       attachObjectLinkHandlers(pageRoot);
+    }
+
+    const OBJECT_TYPE_GUIDE = {
+      deployable: [
+        {
+          type: 'technology_component',
+          label: 'Technology Component',
+          purpose: 'A discrete vendor product, agent, operating system, platform, or software package with a specific product/version lifecycle.',
+          deployableRole: 'Deployed as an ingredient inside Hosts and service objects.'
+        },
+        {
+          type: 'host',
+          label: 'Host',
+          purpose: 'An operational platform that combines an operating system, compute platform, and required host capabilities.',
+          deployableRole: 'Deploys the runtime substrate for self-managed services.'
+        },
+        {
+          type: 'runtime_service',
+          label: 'Runtime Service',
+          purpose: 'A reusable behavioral service such as web, app, cache, worker, messaging, or serverless runtime.',
+          deployableRole: 'Deploys runtime behavior on a host or through PaaS, SaaS, or appliance delivery.'
+        },
+        {
+          type: 'data_at_rest_service',
+          label: 'Data-at-Rest Service',
+          purpose: 'A reusable service for durable data such as database, file, object, search, analytics, or storage.',
+          deployableRole: 'Deploys persistence behavior on a host or through PaaS, SaaS, or appliance delivery.'
+        },
+        {
+          type: 'edge_gateway_service',
+          label: 'Edge/Gateway Service',
+          purpose: 'A reusable boundary service such as WAF, firewall, API gateway, load balancer, ingress, or proxy.',
+          deployableRole: 'Deploys traffic control behavior at a product or network boundary.'
+        },
+        {
+          type: 'product_service',
+          label: 'Product Service',
+          purpose: 'A first-party custom binary or black-box service that runs on a selected deployable object.',
+          deployableRole: 'Deploys company-authored application behavior.'
+        },
+        {
+          type: 'software_deployment_pattern',
+          label: 'Software Deployment Pattern',
+          purpose: 'The intended assembly of deployable objects for a product or product capability.',
+          deployableRole: 'Defines the deployable package shape that automation can target.'
+        }
+      ],
+      nonDeployable: [
+        { type: 'capability', label: 'Capability', purpose: 'Names an ability required by architecture and records company-approved Technology Components for it.' },
+        { type: 'requirement_group', label: 'Requirement Group', purpose: 'Groups requirements used by the Draftsman during interviews and by validation after authoring.' },
+        { type: 'domain', label: 'Domain', purpose: 'Groups capabilities into a planning area such as compute, observability, identity, or data.' },
+        { type: 'reference_architecture', label: 'Reference Architecture', purpose: 'Documents a reusable deployment approach that Software Deployment Patterns may follow.' },
+        { type: 'decision_record', label: 'Decision Record', purpose: 'Records an architecture decision, risk, exception, or rationale.' },
+        { type: 'drafting_session', label: 'Drafting Session', purpose: 'Stores interview memory, assumptions, unresolved questions, and generated work while drafting.' },
+        { type: 'object_patch', label: 'Object Patch', purpose: 'A workspace overlay that changes selected fields on a framework-owned object without copying the full object.' }
+      ]
+    };
+
+    function objectTypeCount(type) {
+      return allObjects.filter(object => object.type === type).length;
+    }
+
+    function objectTypeRowsMarkup(rows, deployable = false) {
+      return rows.map(row => `
+        <tr>
+          <td><strong>${escapeHtml(row.label)}</strong><div class="object-id">${escapeHtml(row.type)}</div></td>
+          <td>${escapeHtml(row.purpose)}</td>
+          ${deployable ? `<td>${escapeHtml(row.deployableRole)}</td>` : ''}
+          <td>${formatNumber(objectTypeCount(row.type))}</td>
+        </tr>
+      `).join('');
+    }
+
+    function objectTypesSidebarMarkup() {
+      const deployableCount = OBJECT_TYPE_GUIDE.deployable.reduce((count, row) => count + objectTypeCount(row.type), 0);
+      const nonDeployableCount = OBJECT_TYPE_GUIDE.nonDeployable.reduce((count, row) => count + objectTypeCount(row.type), 0);
+      return `
+        <div class="sidebar-block">
+          <div class="legend-title">Object Types</div>
+          <div class="current-filter"><span class="dot" style="background:#22c55e"></span><span>${pluralize(deployableCount, 'deployable object')}</span></div>
+          <div class="current-filter"><span class="dot" style="background:#64748b"></span><span>${pluralize(nonDeployableCount, 'non-deployable object')}</span></div>
+        </div>
+      `;
+    }
+
+    function renderObjectTypesView() {
+      currentMode = 'object-types';
+      currentDetailId = null;
+      destroyDetailCy();
+      destroyImpactCy();
+      syncHashForObjectTypesView();
+      renderSidebarContent(objectTypesSidebarMarkup());
+      pageRoot.innerHTML = `
+        <div class="view-shell">
+          ${topNavMarkup()}
+          <section class="header-card">
+            <div class="header-top">
+              <div class="header-title">
+                <h2>DRAFT Object Types</h2>
+                <div class="object-id">Deployable architecture versus framework content</div>
+              </div>
+            </div>
+            <div class="header-description">Deployable objects describe architecture that can eventually become automation inputs. Non-deployable objects guide, govern, remember, or explain how deployable architecture is drafted.</div>
+          </section>
+          <section class="section-card">
+            <h3>Deployable Architecture</h3>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>Object Type</th><th>Purpose</th><th>Deployable Role</th><th>Catalog Count</th></tr></thead>
+                <tbody>${objectTypeRowsMarkup(OBJECT_TYPE_GUIDE.deployable, true)}</tbody>
+              </table>
+            </div>
+          </section>
+          <section class="section-card">
+            <h3>Non-Deployable Architecture</h3>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>Object Type</th><th>Purpose</th><th>Catalog Count</th></tr></thead>
+                <tbody>${objectTypeRowsMarkup(OBJECT_TYPE_GUIDE.nonDeployable, false)}</tbody>
+              </table>
+            </div>
+          </section>
+          <section class="section-card">
+            <h3>Delivery Models</h3>
+            <div class="header-description">PaaS, SaaS, appliance, and self-managed are delivery models on Runtime Service, Data-at-Rest Service, and Edge/Gateway Service objects. They are not separate object types.</div>
+          </section>
+        </div>
+      `;
+      attachTopNavHandlers();
     }
 
     function navigateExecutiveTarget(target) {
@@ -3991,14 +4155,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               const scalingUnit = group.scalingUnit ? scalingUnits.get(group.scalingUnit) : null;
               const externalInteractions = (group.externalInteractions || []).filter(item => (item.type || 'external') !== 'internal');
               const internalInteractions = (group.externalInteractions || []).filter(item => (item.type || 'external') === 'internal');
-              const rbbEntries = group.standards || [];
-              const productCount = rbbEntries.filter(entry => objectLookup[entry.ref]?.serviceCategory === 'product').length;
-              const paasCount = rbbEntries.filter(entry => objectLookup[entry.ref]?.serviceCategory === 'paas').length;
-              const saasCount = rbbEntries.filter(entry => objectLookup[entry.ref]?.serviceCategory === 'saas').length;
-              const reusableCount = rbbEntries.filter(entry => {
-                const serviceCategory = objectLookup[entry.ref]?.serviceCategory;
-                return !['product', 'paas', 'saas'].includes(serviceCategory || '');
-              }).length;
+              const deployableEntries = group.deployableObjects || [];
+              const productCount = deployableEntries.filter(entry => objectLookup[entry.ref]?.type === 'product_service').length;
+              const paasCount = deployableEntries.filter(entry => objectLookup[entry.ref]?.deliveryModel === 'paas').length;
+              const saasCount = deployableEntries.filter(entry => objectLookup[entry.ref]?.deliveryModel === 'saas').length;
+              const applianceCount = deployableEntries.filter(entry => objectLookup[entry.ref]?.deliveryModel === 'appliance').length;
+              const reusableCount = deployableEntries.filter(entry => objectLookup[entry.ref] && objectLookup[entry.ref]?.type !== 'product_service').length;
               return `
                 <article class="odc-card">
                   <div class="odc-name">${escapeHtml(group.name || 'Unnamed Service Group')}</div>
@@ -4008,8 +4170,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     ${scalingUnit?.type ? `<span class="badge">${escapeHtml(scalingUnit.type)}</span>` : ''}
                     ${productCount ? `<span class="badge ps-badge">${productCount} PS</span>` : ''}
                     ${paasCount ? `<span class="badge paas-badge">${paasCount} PaaS</span>` : ''}
-                    ${reusableCount ? `<span class="badge">${reusableCount} Standard</span>` : ''}
-                    ${(group.applianceComponents || []).length ? applianceBadge() : ''}
+                    ${reusableCount ? `<span class="badge">${reusableCount} deployable</span>` : ''}
+                    ${applianceCount ? applianceBadge() : ''}
                     ${saasCount ? saasBadge() : ''}
                   </div>
                   ${externalInteractions.length ? `<div class="interaction-notes"><strong>External:</strong> ${escapeHtml(externalInteractions.map(item => item.name).join(', '))}</div>` : ''}
@@ -4037,7 +4199,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <dt>UID</dt><dd><span class="object-id">${escapeHtml(object.id)}</span></dd>
               <dt>Product</dt><dd>${escapeHtml(object.product || '')}</dd>
               <dt>Runs On</dt><dd>${runsOnObject ? `<span class="ard-link" data-object-link="${object.runsOn}">${escapeHtml(runsOnObject.name)}</span>` : escapeHtml(object.runsOn || '')}</dd>
-              <dt>Underlying Standard</dt><dd>${escapeHtml(object.runsOn || 'Not documented')}</dd>
+              <dt>Underlying Deployable Object</dt><dd>${escapeHtml(object.runsOn || 'Not documented')}</dd>
             </dl>
             <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
           </div>
@@ -4062,13 +4224,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function abbDetailMarkup(object) {
-      const title = object.subtype === 'appliance' ? 'Appliance Component' : 'Technology Component';
       return `
         <section class="section-card">
-          <h3>${escapeHtml(title)}</h3>
+          <h3>Technology Component</h3>
           <div class="section-stack">
             <div class="badges">
-              ${object.subtype === 'appliance' ? applianceBadge() : ''}
               ${object.lifecycleStatus ? lifecycleBadge(object.lifecycleStatus) : ''}
               ${catalogBadge(object.catalogStatus)}
             </div>
@@ -4086,7 +4246,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${object.configurations?.length ? `
               <div class="interaction-notes"><strong>Configurations:</strong></div>
               <div class="section-stack">
-                ${object.configurations.map(configuration => `
+              ${object.configurations.map(configuration => `
                   <article class="odc-card">
                     <div class="odc-name">${escapeHtml(configuration.name || configuration.id || 'Configuration')}</div>
                     <div class="interaction-notes">${escapeHtml(configuration.description || '')}</div>
@@ -4097,7 +4257,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ` : ''}
           </div>
         </section>
-        ${object.subtype === 'appliance' && requirementGroupByName('Appliance Component Requirement Group') ? odcRequirementsMarkup(requirementGroupByName('Appliance Component Requirement Group')) : ''}
       `;
     }
 
@@ -4122,10 +4281,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
-    function saasServiceDetailMarkup(object) {
+    function deliveryModelDetailMarkup(object) {
+      if (!SERVICE_OBJECT_TYPES.includes(object.type)) {
+        return '';
+      }
+      if (object.deliveryModel === 'saas') {
       return `
         <section class="section-card">
-          <h3>SaaS Service Classification</h3>
+          <h3>SaaS Delivery</h3>
           <div class="section-stack">
             <div class="badges">
               ${saasBadge()}
@@ -4145,14 +4308,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${object.incidentNotificationProcess ? `<div class="interaction-notes"><strong>Incident Notification:</strong> ${escapeHtml(object.incidentNotificationProcess)}</div>` : ''}
           </div>
         </section>
-        ${requirementGroupByName('SaaS Service Requirement Group') ? odcRequirementsMarkup(requirementGroupByName('SaaS Service Requirement Group')) : ''}
+        ${requirementGroupByName('SaaS Delivery Requirement Group') ? odcRequirementsMarkup(requirementGroupByName('SaaS Delivery Requirement Group')) : ''}
       `;
     }
-
-    function paasServiceDetailMarkup(object) {
+      if (object.deliveryModel === 'paas') {
       return `
         <section class="section-card">
-          <h3>PaaS Service Classification</h3>
+          <h3>PaaS Delivery</h3>
           <div class="section-stack">
             <div class="badges">
               ${paasBadge()}
@@ -4168,8 +4330,32 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </dl>
           </div>
         </section>
-        ${requirementGroupByName('PaaS Service Requirement Group') ? odcRequirementsMarkup(requirementGroupByName('PaaS Service Requirement Group')) : ''}
+        ${requirementGroupByName('PaaS Delivery Requirement Group') ? odcRequirementsMarkup(requirementGroupByName('PaaS Delivery Requirement Group')) : ''}
       `;
+      }
+      if (object.deliveryModel === 'appliance') {
+        return `
+          <section class="section-card">
+            <h3>Appliance Delivery</h3>
+            <div class="section-stack">
+              <div class="badges">
+                ${applianceBadge()}
+                ${lifecycleBadge(object.lifecycleStatus)}
+                ${catalogBadge(object.catalogStatus)}
+              </div>
+              <dl class="definition-list">
+                <dt>Vendor</dt><dd>${escapeHtml(object.vendor || '')}</dd>
+                ${object.capabilities?.length ? `<dt>Capabilities</dt><dd>${escapeHtml(object.capabilities.join(', '))}</dd>` : ''}
+                <dt>Network Placement</dt><dd>${escapeHtml(object.networkPlacement || 'Not documented')}</dd>
+                <dt>Patching Owner</dt><dd>${escapeHtml(object.patchingOwner || 'Not documented')}</dd>
+                <dt>Compliance Certs</dt><dd>${escapeHtml((object.complianceCerts || []).join(', ') || 'None documented')}</dd>
+              </dl>
+            </div>
+          </section>
+          ${requirementGroupByName('Appliance Delivery Requirement Group') ? odcRequirementsMarkup(requirementGroupByName('Appliance Delivery Requirement Group')) : ''}
+        `;
+      }
+      return '';
     }
 
     function domainDetailMarkup(object) {
@@ -4191,7 +4377,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                       const implObject = objectLookup[implementation.ref] || {};
                       return `
                       <a href="#${escapeHtml(implementation.ref)}" class="related-link">
-                        <span class="related-icon">${topologyNodeIcon({ref: implementation.ref}, 'host_standard').icon}</span>
+                        <span class="related-icon">${topologyNodeIcon({ref: implementation.ref}, 'host').icon}</span>
                         ${escapeHtml(implObject.name || implementation.ref)}
                         <span class="badge">${escapeHtml(implementation.lifecycleStatus || '')}</span>
                       </a>
@@ -4221,7 +4407,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 const implObject = objectLookup[implementation.ref] || {};
                 return `
                   <a href="#${escapeHtml(implementation.ref)}" class="related-link">
-                    <span class="related-icon">${topologyNodeIcon({ref: implementation.ref}, 'host_standard').icon}</span>
+                    <span class="related-icon">${topologyNodeIcon({ref: implementation.ref}, 'host').icon}</span>
                     ${escapeHtml(implObject.name || implementation.ref)}
                     <span class="badge">${escapeHtml(implementation.lifecycleStatus || '')}</span>
                   </a>
@@ -4256,27 +4442,26 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     };
 
     function isContainerHostObject(object) {
-      return !!object && object.type === 'host_standard' && String(object.id || '').startsWith('host.container.');
+      return !!object && object.type === 'host' && String(object.id || '').startsWith('host.container.');
     }
 
-    function topologyNodeIcon(entry, objectType = 'host_standard') {
+    function topologyNodeIcon(entry, objectType = 'host') {
       const ref = entry.ref || '';
       const object = objectLookup[ref];
-      const serviceObject = object?.serviceCategory === 'product' && object?.runsOn ? objectLookup[object.runsOn] : object;
+      const serviceObject = object?.type === 'product_service' && object?.runsOn ? objectLookup[object.runsOn] : object;
       if (objectType === 'appliance') {
         const caps = object?.capabilities || [];
         if (caps.some(c => ['file-storage', 'data-persistence', 'storage'].includes(c))) return { icon: '💾', cls: '' };
         return { icon: '🔧', cls: '' };
       }
-      if (object?.serviceCategory === 'saas') return { icon: '☁', cls: 'cloud' };
-      if (object?.serviceCategory === 'paas') return { icon: '☁', cls: 'cloud' };
-      if (object?.serviceCategory === 'product' && isContainerHostObject(objectLookup[object?.runsOn])) {
+      if (object?.deliveryModel === 'saas') return { icon: '☁', cls: 'cloud' };
+      if (object?.deliveryModel === 'paas') return { icon: '☁', cls: 'cloud' };
+      if (object?.type === 'product_service' && isContainerHostObject(objectLookup[object?.runsOn])) {
         return { icon: '⬢', cls: 'pod' };
       }
-      if (ref.startsWith('service.web.')) return { icon: '🖥', cls: '' };
-      if (ref.startsWith('database.')) return { icon: '🗄', cls: '' };
-      if (ref.startsWith('service.messaging.')) return { icon: '📬', cls: '' };
-      if (serviceObject?.serviceCategory === 'database') return { icon: '🗄', cls: '' };
+      if (object?.type === 'edge_gateway_service') return { icon: '⇄', cls: '' };
+      if (serviceObject?.type === 'data_at_rest_service') return { icon: '🗄', cls: '' };
+      if (serviceObject?.type === 'runtime_service') return { icon: '⚙', cls: '' };
       return { icon: '⚙', cls: '' };
     }
 
@@ -4314,6 +4499,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         if (['file-storage', 'data-persistence'].includes(capability)) return 'data';
         return 'utility';
       }
+      if (object?.type === 'data_at_rest_service') return 'data';
+      if (object?.type === 'edge_gateway_service') return 'presentation';
       return 'utility';
     }
 
@@ -4343,7 +4530,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function topologyNodeMarkup(entry, options = {}) {
       const {
-        objectType = 'host_standard',
+        objectType = 'host',
         overrideLabel = null,
         meta = '',
         intent = entry.intent || '',
@@ -4354,7 +4541,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const targetId = entry.ref || '';
       const classes = ['topology-node'];
       if (objectType === 'product') classes.push('ps-node');
-      if (objectType === 'host_standard') classes.push('rbb-node');
+      if (objectType === 'host') classes.push('rbb-node');
       if (objectType === 'appliance') classes.push('appliance-node');
       if (objectType === 'paas') classes.push('cloud');
       if (objectType === 'saas') classes.push('saas-node');
@@ -4382,31 +4569,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       ].join(' • ');
       const topologyNodes = [];
 
-      (group.standards || [])
+      (group.deployableObjects || [])
         .filter(entry => entryDiagramTier(entry) === tier)
         .forEach(entry => {
           const target = objectLookup[entry.ref] || {};
-          const serviceCategory = target.serviceCategory || '';
-          const objectType = serviceCategory === 'product'
+          const deliveryModel = target.deliveryModel || '';
+          const objectType = target.type === 'product_service'
             ? 'product'
-            : (serviceCategory === 'paas' ? 'paas' : (serviceCategory === 'saas' ? 'saas' : 'host_standard'));
-          const badgeLabel = serviceCategory === 'product'
+            : (deliveryModel === 'paas' ? 'paas' : (deliveryModel === 'saas' ? 'saas' : (deliveryModel === 'appliance' ? 'appliance' : 'host')));
+          const badgeLabel = target.type === 'product_service'
             ? 'PS'
-            : (serviceCategory === 'paas' ? 'PaaS' : (serviceCategory === 'saas' ? 'SaaS' : 'Standard'));
+            : (deliveryModel === 'paas' ? 'PaaS' : (deliveryModel === 'saas' ? 'SaaS' : (deliveryModel === 'appliance' ? 'APPL' : '')));
           topologyNodes.push(topologyNodeMarkup(entry, {
             objectType,
             badgeLabel,
-            scalingUnit,
-            meta: `${group.name} • ${groupMeta}`
-          }));
-        });
-
-      (group.applianceComponents || [])
-        .filter(entry => supportEntryTier(entry, 'appliance') === tier)
-        .forEach(entry => {
-          topologyNodes.push(topologyNodeMarkup(entry, {
-            objectType: 'appliance',
-            badgeLabel: 'APPL',
             scalingUnit,
             meta: `${group.name} • ${groupMeta}`
           }));
@@ -4903,7 +5079,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       syncHashForDetailView(object.id);
       renderSidebarContent(sidebarMarkup());
       const softwareServiceRunsOn = object.type === 'product_service' && object.runsOn ? objectLookup[object.runsOn] : null;
-      const detailDiagramSource = softwareServiceRunsOn && ['host_standard', 'service_standard', 'database_standard', 'paas_service_standard', 'saas_service_standard'].includes(softwareServiceRunsOn.type) ? softwareServiceRunsOn : object;
+      const detailDiagramSource = softwareServiceRunsOn && DEPLOYABLE_STANDARD_TYPES.includes(softwareServiceRunsOn.type) ? softwareServiceRunsOn : object;
       const headerMarkup = `
         <section class="header-card">
           <div class="header-top">
@@ -4976,25 +5152,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </div>
             <div class="section-card">
               <h3>External Interactions</h3>
-              ${interactionSource ? interactionMarkup(interactionSource) : '<div class="empty-card">The underlying Standard is not available for this software service.</div>'}
+              ${interactionSource ? interactionMarkup(interactionSource) : '<div class="empty-card">The underlying deployable object is not available for this Product Service.</div>'}
             </div>
           </section>
           <section class="decisions-card">
             <h3>Architectural Decision Entries</h3>
-            ${decisionSource ? decisionMarkup(decisionSource) : '<div class="empty-card">No architectural decisions are available because the underlying Standard is not documented.</div>'}
+            ${decisionSource ? decisionMarkup(decisionSource) : '<div class="empty-card">No architectural decisions are available because the underlying deployable object is not documented.</div>'}
           </section>
-          ${usedByMarkup(object)}
-        `;
-      } else if (object.type === 'saas_service_standard') {
-        detailBody = `
-          ${headerMarkup}
-          ${saasServiceDetailMarkup(object)}
-          ${usedByMarkup(object)}
-        `;
-      } else if (object.type === 'paas_service_standard') {
-        detailBody = `
-          ${headerMarkup}
-          ${paasServiceDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
       } else if (object.type === 'software_deployment_pattern') {
@@ -5053,15 +5217,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           </div>
           ${usedByMarkup(object)}
         `;
-      } else if (object.type === 'technology_component' || object.type === 'appliance_component') {
+      } else if (object.type === 'technology_component') {
         detailBody = `
           ${headerMarkup}
           ${abbDetailMarkup(object)}
           ${usedByMarkup(object)}
         `;
-      } else if (['host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type)) {
+      } else if (DEPLOYABLE_STANDARD_TYPES.includes(object.type)) {
         detailBody = `
           ${headerMarkup}
+          ${deliveryModelDetailMarkup(object)}
           <section class="middle-grid">
             <div class="section-card">
               <h3>Internal Components</h3>
@@ -5072,8 +5237,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               ${interactionMarkup(object)}
             </div>
           </section>
-          ${['host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type) ? rbbOdcMarkup(object) : ''}
-          ${['host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type) ? deploymentConfigurationsMarkup(object) : ''}
+          ${rbbOdcMarkup(object)}
+          ${deploymentConfigurationsMarkup(object)}
           <section class="decisions-card">
             <h3>Architectural Decision Entries</h3>
             ${decisionMarkup(object)}
@@ -5167,7 +5332,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         renderTopologyIntoCanvas();
       }
-      if (!['requirement_group', 'capability', 'domain', 'decision_record', 'software_deployment_pattern'].includes(object.type) && !(object.type === 'appliance_component') && !(['host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type) && ['saas', 'paas'].includes(object.serviceCategory || ''))) {
+      if (DEPLOYABLE_STANDARD_TYPES.includes(object.type) && !['saas', 'paas', 'appliance'].includes(object.deliveryModel || '')) {
         renderInternalDiagram(detailDiagramSource);
       }
     }
@@ -5188,9 +5353,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             shape: object.shape,
             color: object.color,
             lifecycleStatus: object.lifecycleStatus,
-            nodeWidth: object.type === 'technology_component' || object.type === 'appliance_component' || ['host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type) ? 150 : 140,
-            nodeHeight: object.type === 'technology_component' || object.type === 'appliance_component' || ['host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type) ? 90 : 80,
-            textMaxWidth: object.type === 'technology_component' || object.type === 'appliance_component' || ['host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type) ? 150 : 140
+            nodeWidth: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 150 : 140,
+            nodeHeight: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 90 : 80,
+            textMaxWidth: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 150 : 140
           },
           classes: object.name.length > 20 ? 'long-label' : ''
         }
@@ -5211,9 +5376,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             shape: refObject.shape,
             color: refObject.color,
             lifecycleStatus: refObject.lifecycleStatus,
-            nodeWidth: ['technology_component', 'appliance_component', 'host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(refObject.type) ? 140 : 130,
-            nodeHeight: ['technology_component', 'appliance_component', 'host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(refObject.type) ? 84 : 78,
-            textMaxWidth: ['technology_component', 'appliance_component', 'host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(refObject.type) ? 140 : 130
+            nodeWidth: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 140 : 130,
+            nodeHeight: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 84 : 78,
+            textMaxWidth: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 140 : 130
           },
           classes: refObject.name.length > 20 ? 'long-label' : ''
         });
@@ -5334,7 +5499,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         return { selected, impacted, siblings, supported: false };
       }
 
-      if (selected.type === 'technology_component' || selected.type === 'appliance_component') {
+      if (selected.type === 'technology_component' || selected.type === 'edge_gateway_service') {
         const parentObjects = inboundCatalogRefs(selected).filter(parent => deployableTypes.has(parent.type));
         parentObjects.forEach(parent => {
           impacted.add(parent.id);
@@ -5467,14 +5632,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             label: object.hasRiskRef ? `⚠ ${object.name}` : object.name,
             type: object.type,
             category: object.category || '',
-            serviceCategory: object.serviceCategory || '',
+            deliveryModel: object.deliveryModel || '',
             lifecycleStatus: object.lifecycleStatus,
             shape: object.type === 'reference_architecture' || object.type === 'software_deployment_pattern' ? 'round-rectangle' : object.shape,
             color: object.color,
             borderStyle: object.type === 'reference_architecture' ? 'dashed' : 'solid',
-            nodeWidth: object.type === 'technology_component' || object.type === 'appliance_component' || ['host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type) ? 145 : 150,
-            nodeHeight: object.type === 'technology_component' || object.type === 'appliance_component' || ['host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type) ? 86 : 92,
-            textMaxWidth: object.type === 'technology_component' || object.type === 'appliance_component' || ['host_standard', 'service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(object.type) ? 145 : 150
+            nodeWidth: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 145 : 150,
+            nodeHeight: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 86 : 92,
+            textMaxWidth: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 145 : 150
           },
           classes: object.name.length > 20 ? 'long-label' : ''
         }));
@@ -5501,12 +5666,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function serviceRbbNodesSorted(nodes) {
-      const order = ['product', 'general', 'paas', 'saas', 'database'];
+      const order = ['runtime_service', 'data_at_rest_service', 'edge_gateway_service', 'product_service'];
       return nodes
-        .filter(node => ['service_standard', 'database_standard', 'product_service', 'paas_service_standard', 'saas_service_standard'].includes(node.data('type')))
+        .filter(node => ['runtime_service', 'data_at_rest_service', 'edge_gateway_service', 'product_service'].includes(node.data('type')))
         .sort((a, b) => {
-          const aCategory = a.data('serviceCategory') || 'other';
-          const bCategory = b.data('serviceCategory') || 'other';
+          const aCategory = a.data('type') || 'other';
+          const bCategory = b.data('type') || 'other';
           const aIndex = order.includes(aCategory) ? order.indexOf(aCategory) : order.length;
           const bIndex = order.includes(bCategory) ? order.indexOf(bCategory) : order.length;
           if (aIndex !== bIndex) return aIndex - bIndex;
@@ -5529,9 +5694,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         addTier(nodeList.filter(node => node.data('type') === 'software_deployment_pattern')),
         addTier(nodeList.filter(node => node.data('type') === 'reference_architecture')),
         addTier(serviceRbbNodesSorted(nodes)),
-        addTier(nodeList.filter(node => node.data('type') === 'host_standard')
+        addTier(nodeList.filter(node => node.data('type') === 'host')
           .sort((a, b) => String(a.data('label') || '').localeCompare(String(b.data('label') || '')))),
-        addTier(nodeList.filter(node => ['technology_component', 'appliance_component'].includes(node.data('type')))
+        addTier(nodeList.filter(node => ['technology_component', 'edge_gateway_service'].includes(node.data('type')))
           .sort((a, b) => String(a.data('label') || '').localeCompare(String(b.data('label') || '')))),
         addTier(nodeList.filter(node => !knownIds.has(node.id()))
           .sort((a, b) => String(a.data('label') || '').localeCompare(String(b.data('label') || ''))))

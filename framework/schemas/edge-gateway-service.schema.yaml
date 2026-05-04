@@ -1,14 +1,11 @@
 schemaVersion: '1.0'
-type: appliance_component
+type: edge_gateway_service
 requiredFields:
 - schemaVersion
 - uid
 - type
 - name
-- vendor
-- productName
-- productVersion
-- classification
+- deliveryModel
 - catalogStatus
 - lifecycleStatus
 optionalFields:
@@ -17,12 +14,25 @@ optionalFields:
 - version
 - owner
 - tags
+- host
+- primaryTechnologyComponent
+- internalComponents
+- externalInteractions
+- deploymentConfigurations
+- vendor
+- productName
+- productVersion
 - capabilities
 - configurations
-- externalInteractions
 - networkPlacement
 - patchingOwner
+- dataLeavesInfrastructure
+- dataResidencyCommitment
+- dpaNotes
+- vendorSLA
+- authenticationModel
 - complianceCerts
+- incidentNotificationProcess
 - architecturalDecisions
 - notes
 - requirementGroups
@@ -38,42 +48,53 @@ enumFields:
   - existing-only
   - deprecated
   - retired
+  deliveryModel:
+  - self-managed
+  - paas
+  - saas
+  - appliance
   networkPlacement:
   - public-facing
   - internal
   - vpc-private
   patchingOwner:
-  - aws-managed
+  - provider-managed
   - organization-scheduled
   - vendor-managed
-  classification:
-  - operating-system
-  - compute-platform
-  - software
-  - agent
+  - aws-managed
+  authenticationModel:
+  - iam
+  - api-key
+  - oauth
+  - saml
+  - other
+  - TBD
 fieldTypes:
   aliases: list
   owner: dict
   tags: list
+  internalComponents: list
+  externalInteractions: list
+  deploymentConfigurations: list
   capabilities: list
   configurations: list
-  externalInteractions: list
   complianceCerts: list
+  dataLeavesInfrastructure: bool
   architecturalDecisions: dict
   requirementGroups: list
   requirementImplementations: list
 collectionSchemas:
-  configurations: configuration
+  internalComponents: internalComponent
   externalInteractions: externalInteraction
+  deploymentConfigurations: deploymentConfiguration
+  configurations: configuration
   requirementImplementations: requirementImplementation
-configuration:
+internalComponent:
   requiredFields:
-  - id
-  - name
-  - description
-  - capabilities
-  fieldTypes:
-    capabilities: list
+  - ref
+  optionalFields:
+  - role
+  - notes
 externalInteraction:
   requiredFields:
   - capabilities
@@ -82,6 +103,35 @@ externalInteraction:
   - ref
   - notes
   - enabledBy
+  fieldTypes:
+    capabilities: list
+deploymentConfiguration:
+  requiredFields:
+  - id
+  - name
+  - description
+  optionalFields:
+  - addressesQualities
+  - addsInternalComponents
+  - addsExternalInteractions
+  - addsArchitecturalDecisions
+  - notes
+  enumListFields:
+    addressesQualities:
+    - availability
+    - scalability
+    - recoverability
+  fieldTypes:
+    addressesQualities: list
+    addsInternalComponents: list
+    addsExternalInteractions: list
+    addsArchitecturalDecisions: dict
+configuration:
+  requiredFields:
+  - id
+  - name
+  - description
+  - capabilities
   fieldTypes:
     capabilities: list
 requirementImplementation:
@@ -115,17 +165,17 @@ requirementImplementation:
     - field
   fieldTypes:
     criteria: dict
-aiHint: An Appliance Component is a vendor product that behaves like a service but has no modeled host, so an AI must answer service-like requirements directly on it.
+aiHint: An Edge/Gateway Service defines deployable boundary, traffic-routing, gateway, firewall, WAF, ingress, or API gateway behavior.
 fieldDescriptions:
   schemaVersion: Use the schema version string supported by this framework release, normally "1.0".
-  type: Use the exact object type declared by the matching schema.
-  name: Use a clear human-readable name for the object.
-  vendor: Name the external vendor or provider for this technology or service.
-  productName: Name the vendor product independently from the DRAFT object name.
-  productVersion: Record the product version, release train, or managed/current marker.
-  classification: Choose the one classification that describes the technology role.
-  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption disposition.
-  lifecycleStatus: Use candidate, preferred, existing-only, deprecated, or retired where this object still carries a lifecycle signal.
   uid: Use the generated opaque UID for object identity. Do not edit it for display-name, product-name, or taxonomy changes.
+  type: Use edge_gateway_service exactly.
+  name: Use a clear human-readable name for the boundary or gateway capability.
+  deliveryModel: Use self-managed, paas, saas, or appliance to state who operates the underlying platform.
+  host: For self-managed edge services, reference the Host this service runs on.
+  primaryTechnologyComponent: For self-managed edge services, reference the main Technology Component that provides gateway behavior.
+  internalComponents: List additional Technology Components that run inside the service.
+  catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption disposition.
+  lifecycleStatus: Use candidate, preferred, existing-only, deprecated, or retired for this deployable service pattern.
   aliases: List prior or alternate human-readable names that should resolve to this object.
 uidPattern: ^[0-9A-HJKMNP-TV-Z]{10}-[0-9A-HJKMNP-TV-Z]{4}$

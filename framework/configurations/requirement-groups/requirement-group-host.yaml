@@ -2,7 +2,7 @@ schemaVersion: '1.0'
 uid: 01KQQ4Q027-THYN
 type: requirement_group
 name: Host Requirement Group
-description: Structured checklist of required questions and answers used to define a complete and correct Host Standard.
+description: Structured checklist of required questions and answers used to define a complete and correct Host.
 version: 3.0.0
 catalogStatus: approved
 owner:
@@ -10,7 +10,7 @@ owner:
   contact: cloud-architecture@example.com
 activation: always
 appliesTo:
-- host_standard
+- host
 requirements:
 - id: operating-system
   description: The host must declare the Operating System Technology Component that defines the operating system baseline.
@@ -73,7 +73,7 @@ requirements:
   - mechanism: externalInteraction
     criteria:
       capability: 01KQQ4Q026-D04B
-    example: A modeled central logging Service Standard, PaaS Service Standard, or SIEM platform referenced by externalInteractions.ref.
+    example: A modeled central logging Runtime Service, Edge/Gateway Service, PaaS-delivered service, or SIEM platform referenced by externalInteractions.ref.
   - mechanism: internalComponent
     criteria:
       capability: 01KQQ4Q026-D04B

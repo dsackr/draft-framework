@@ -15,21 +15,23 @@ The framework uses two sources of truth for YAML validation:
 | Object type | Folder | Schema source | Notes |
 |---|---|---|---|
 | Technology Component | `catalog/technology-components/` | [technology-component.schema.yaml](../schemas/technology-component.schema.yaml) | Discrete vendor product with vendor facts and capability references. Company adoption lives on capability implementation mappings, not top-level lifecycle status. |
-| Appliance Component | `catalog/appliance-components/` | [appliance-component.schema.yaml](../schemas/appliance-component.schema.yaml) | Vendor product that behaves like a service but has no modeled host, so it answers service-like requirements directly. |
-| Host Standard | `catalog/host-standards/` | [host-standard.schema.yaml](../schemas/host-standard.schema.yaml) | Runtime substrate built from an operating system and compute platform. |
-| Service Standard | `catalog/service-standards/` | [service-standard.schema.yaml](../schemas/service-standard.schema.yaml) | Reusable service pattern built from a host and primary Technology Component. |
-| Database Standard | `catalog/database-standards/` | [database-standard.schema.yaml](../schemas/database-standard.schema.yaml) | Data-platform service pattern with durability, recovery, and access-control requirements. |
+| Host | `catalog/hosts/` | [host.schema.yaml](../schemas/host.schema.yaml) | Operational platform built from an operating system, compute platform, and required host capabilities. |
+| Runtime Service | `catalog/runtime-services/` | [runtime-service.schema.yaml](../schemas/runtime-service.schema.yaml) | Reusable runtime behavior such as web, app, cache, worker, messaging, or serverless runtime. |
+| Data-at-Rest Service | `catalog/data-at-rest-services/` | [data-at-rest-service.schema.yaml](../schemas/data-at-rest-service.schema.yaml) | Durable data behavior such as database, file, object, search, analytics, or storage. |
+| Edge/Gateway Service | `catalog/edge-gateway-services/` | [edge-gateway-service.schema.yaml](../schemas/edge-gateway-service.schema.yaml) | Boundary behavior such as WAF, firewall, API gateway, load balancer, ingress, proxy, or traffic inspection. |
 | Reference Architecture | `catalog/reference-architectures/` | [reference-architecture.schema.yaml](../schemas/reference-architecture.schema.yaml) | Reusable deployment pattern that Software Deployment Patterns can follow. |
-| Software Deployment Pattern | `catalog/software-deployment-patterns/` | [software-deployment-pattern.schema.yaml](../schemas/software-deployment-pattern.schema.yaml) | Intended product deployment architecture with service groups, business context, and topology metadata. |
+| Software Deployment Pattern | `catalog/software-deployment-patterns/` | [software-deployment-pattern.schema.yaml](../schemas/software-deployment-pattern.schema.yaml) | Intended product deployment architecture with service groups, deployable object references, business context, and topology metadata. |
 | Product Service | `catalog/product-services/` | [product-service.schema.yaml](../schemas/product-service.schema.yaml) | Product-specific runtime behavior used inside a Software Deployment Pattern. |
-| PaaS Service Standard | `catalog/paas-services/` | [paas-service-standard.schema.yaml](../schemas/paas-service-standard.schema.yaml) | Vendor-managed platform service inside the cloud boundary. |
-| SaaS Service Standard | `catalog/saas-services/` | [saas-service-standard.schema.yaml](../schemas/saas-service-standard.schema.yaml) | Vendor-managed external service where data or traffic may leave the infrastructure boundary. |
 | Decision Record | `catalog/decision-records/` | [decision-record.schema.yaml](../schemas/decision-record.schema.yaml) | Risk, decision, mitigation, or follow-up record. |
 | Drafting Session | `catalog/sessions/` | [drafting-session.schema.yaml](../schemas/drafting-session.schema.yaml) | Incomplete authoring state, generated objects, assumptions, and unresolved questions. |
 | Capability | `configurations/capabilities/` | [capability.schema.yaml](../schemas/capability.schema.yaml) | First-class capability with a definition owner, optional company owner, and company-approved Technology Component implementations. |
 | Requirement Group | `configurations/requirement-groups/` | [requirement-group.schema.yaml](../schemas/requirement-group.schema.yaml) | Unified authoring and validation requirements, including always-on definition requirements and workspace-activated compliance requirements. |
 | Domain | `configurations/domains/` | [domain.schema.yaml](../schemas/domain.schema.yaml) | Groups capability UIDs for strategy navigation. |
 | Object Patch | `configurations/object-patches/` | [object-patch.schema.yaml](../schemas/object-patch.schema.yaml) | Workspace overlay that deep-merges selected fields into a base framework object. |
+
+PaaS, SaaS, appliance, and self-managed are `deliveryModel` values on Runtime
+Service, Data-at-Rest Service, and Edge/Gateway Service objects. They are not
+separate object types.
 
 ## Requirement And Capability Flow
 

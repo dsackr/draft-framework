@@ -142,20 +142,16 @@ def legacy_ids_for_path(path: Path, data: dict[str, Any]) -> list[str]:
         parts = stem.removeprefix("technology-").split("-", 1)
         if len(parts) == 2:
             return [f"technology.{parts[0]}.{parts[1]}"]
-    if object_type == "appliance_component" and stem.startswith("appliance-"):
-        return ["appliance." + stem.removeprefix("appliance-")]
-    if object_type == "host_standard" and stem.startswith("host-"):
+    if object_type == "edge_gateway_service" and stem.startswith("edge-gateway-service-"):
+        return ["edge-gateway-service." + stem.removeprefix("edge-gateway-service-")]
+    if object_type == "host" and stem.startswith("host-"):
         return ["host." + stem.removeprefix("host-")]
-    if object_type == "service_standard" and stem.startswith("service-"):
-        return ["service." + stem.removeprefix("service-")]
-    if object_type == "database_standard" and stem.startswith("database-"):
-        return ["database." + stem.removeprefix("database-")]
+    if object_type == "runtime_service" and stem.startswith("runtime-service-"):
+        return ["runtime-service." + stem.removeprefix("runtime-service-")]
+    if object_type == "data_at_rest_service" and stem.startswith("data-at-rest-service-"):
+        return ["data-at-rest-service." + stem.removeprefix("data-at-rest-service-")]
     if object_type == "product_service" and stem.startswith("product-service-"):
         return ["product-service." + stem.removeprefix("product-service-")]
-    if object_type == "paas_service_standard" and stem.startswith("paas-service-"):
-        return ["paas-service." + stem.removeprefix("paas-service-")]
-    if object_type == "saas_service_standard" and stem.startswith("saas-service-"):
-        return ["saas-service." + stem.removeprefix("saas-service-")]
     if object_type == "reference_architecture" and stem.startswith("reference-architecture-"):
         return ["reference-architecture." + stem.removeprefix("reference-architecture-")]
     if object_type == "software_deployment_pattern" and stem.startswith("software-deployment-"):

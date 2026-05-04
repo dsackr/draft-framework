@@ -58,7 +58,7 @@ class ReleaseNotesTests(unittest.TestCase):
         )
 
         errors = check_release_notes.validate_changed_files(
-            ["framework/schemas/host-standard.schema.yaml", "CHANGELOG.md"],
+            ["framework/schemas/host.schema.yaml", "CHANGELOG.md"],
             check_release_notes.Version(0, 4, 1),
             entries,
             check_release_notes.Version(0, 4, 0),
@@ -154,7 +154,7 @@ class ReleaseNotesTests(unittest.TestCase):
         )
 
         errors = check_release_notes.validate_changed_files(
-            ["framework/schemas/host-standard.schema.yaml", "CHANGELOG.md", "draft-framework.yaml"],
+            ["framework/schemas/host.schema.yaml", "CHANGELOG.md", "draft-framework.yaml"],
             check_release_notes.Version(0, 4, 1),
             entries,
             check_release_notes.Version(0, 4, 0),

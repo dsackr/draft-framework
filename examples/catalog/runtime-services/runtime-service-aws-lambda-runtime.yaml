@@ -1,7 +1,6 @@
 schemaVersion: '1.0'
 uid: 01KQQ4Q025-T7B7
-type: appliance_component
-subtype: appliance
+type: runtime_service
 name: AWS Lambda Runtime
 description: 'AWS Lambda serverless execution environment. Runs organization-authored function code without requiring host management. Scales automatically. Host infrastructure is entirely blackbox.
 
@@ -13,14 +12,15 @@ owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
 tags:
-- appliance
+- serverless
 - lambda
+deliveryModel: paas
 vendor: Amazon Web Services
 productName: AWS Lambda Runtime
 productVersion: managed
-classification: compute-platform
 networkPlacement: vpc-private
-patchingOwner: aws-managed
+patchingOwner: provider-managed
+authenticationModel: iam
 complianceCerts: []
 externalInteractions:
 - name: AWS IAM

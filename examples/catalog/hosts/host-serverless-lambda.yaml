@@ -1,6 +1,6 @@
 schemaVersion: '1.0'
 uid: 01KQQ4Q025-1XDE
-type: host_standard
+type: host
 category: host
 subtype: host
 name: AWS Lambda Serverless Host
@@ -23,7 +23,7 @@ architecturalDecisions:
   patchManagementApproach: Runtime patching is handled by AWS as part of the managed platform
 internalComponents:
 - ref: 01KQQ4Q025-T7B7
-  role: appliance
+  role: managed-runtime
   notes: AWS-managed serverless execution environment. Blackbox host.
 externalInteractions:
 - name: AWS Lambda Service

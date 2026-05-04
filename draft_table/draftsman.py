@@ -152,8 +152,19 @@ def answer_locally(message: str, workspace: Path | None, framework_root: Path) -
     lowered = message.lower()
     if is_framework_definition_question(lowered, "technology component"):
         return LocalAnswer(read_doc_section(framework_root / "docs" / "technology-components.md", "What A Technology Component Is"), [], [])
-    if is_framework_definition_question(lowered, "host standard") or is_framework_definition_question(lowered, "service standard"):
-        return LocalAnswer(read_doc_intro(framework_root / "docs" / "standards.md"), [], [])
+    if any(
+        is_framework_definition_question(lowered, term)
+        for term in (
+            "host",
+            "runtime service",
+            "data-at-rest service",
+            "edge/gateway service",
+            "object type",
+            "host standard",
+            "service standard",
+        )
+    ):
+        return LocalAnswer(read_doc_intro(framework_root / "docs" / "object-types.md"), [], [])
     if is_framework_definition_question(lowered, "requirement group") or is_framework_definition_question(lowered, "definition checklist"):
         return LocalAnswer(read_doc_intro(framework_root / "docs" / "requirement-groups.md"), [], [])
     if is_framework_definition_question(lowered, "software deployment pattern"):
@@ -223,6 +234,7 @@ def build_draftsman_prompt(framework_root: Path, workspace: Path | None, message
         ("Draftsman Instructions", framework_root / "docs" / "draftsman.md"),
         ("Workspace Model", framework_root / "docs" / "workspaces.md"),
         ("Schema Reference", framework_root / "docs" / "yaml-schema-reference.md"),
+        ("Object Types", framework_root / "docs" / "object-types.md"),
         ("Requirement Groups", framework_root / "docs" / "requirement-groups.md"),
         ("Capabilities", framework_root / "docs" / "capabilities.md"),
     ]
@@ -260,9 +272,10 @@ Rules:
 - For Host Requirement Group patch management, ask what patch platform, installed component,
   Technology Component configuration, or architectural decision applies updates; do not ask which
   team owns patching as the capability answer.
-- For Appliance Components, remember that the object maps directly to a vendor-product
+- For Runtime Service, Data-at-Rest Service, or Edge/Gateway Service objects with
+  deliveryModel appliance, remember that the service maps directly to a vendor-product
   identity but carries service-like operating capability answers because there
-  is no Host Standard or Service Standard wrapper to inherit the host or service requirements.
+  is no Host wrapper to inherit host requirements.
 - If you propose artifacts, return them as JSON proposals with YAML content for the backend only.
 - The visible answer must summarize artifacts in plain language.
 
@@ -286,7 +299,7 @@ Return JSON only with this shape:
     {{
       "id": "short proposal id",
       "action": "create|update",
-      "artifactType": "Technology Component|Appliance Component|Host Standard|Service Standard|Database Standard|Reference Architecture|Software Deployment Pattern|Capability|Requirement Group|Decision Record|Drafting Session",
+      "artifactType": "Technology Component|Host|Runtime Service|Data-at-Rest Service|Edge/Gateway Service|Product Service|Reference Architecture|Software Deployment Pattern|Capability|Requirement Group|Decision Record|Drafting Session",
       "name": "artifact name",
       "summary": "plain-language summary",
       "path": "relative file path under the company DRAFT repo",

@@ -97,19 +97,19 @@ Always use this named lookup procedure when a requirement has
    entry.
 
 Capability implementations must reference Technology Components only. Do not
-put a Host Standard, Service Standard, Database Standard, PaaS Service Standard,
-SaaS Service Standard, or running service in a capability lifecycle list. If a
-SaaS or managed platform is governed by lifecycle, model the vendor product and
-version as a Technology Component, then compose the architecture-facing Standard
-from it.
+put a Host, Runtime Service, Data-at-Rest Service, Edge/Gateway Service,
+Product Service, Software Deployment Pattern, or running service in a capability
+lifecycle list. If a SaaS or managed platform is governed by lifecycle, model
+the vendor product and version as a Technology Component, then compose the
+architecture-facing deployable object from it.
 
 When the answer is an `externalInteraction` for a shared enterprise platform
 such as central logging, identity, monitoring, security monitoring, patching, or
-secrets management, search for a modeled Standard first. If it exists, set
+secrets management, search for a modeled deployable object first. If it exists, set
 `externalInteractions[].ref` to that object. If it does not exist and the user
-can identify the platform, create the appropriate Service Standard, PaaS Service
-Standard, SaaS Service Standard, or Appliance Component instead of leaving a
-permanent bare name.
+can identify the platform, create the appropriate Runtime Service,
+Data-at-Rest Service, or Edge/Gateway Service with the correct `deliveryModel`
+instead of leaving a permanent bare name.
 
 Do not convert a capability question into team ownership unless the requirement
 explicitly asks for ownership. For example, host patch management asks what
@@ -120,7 +120,7 @@ team owns patching.
 ## Requirement Overlap
 
 Always-on base requirements and workspace-activated control requirements can
-overlap. For example, a Host Standard may have a base log-management
+overlap. For example, a Host may have a base log-management
 requirement while an active control group also requires log evidence,
 retention, review, or alerting.
 
@@ -176,11 +176,11 @@ source material:
 4. Choose the right artifact family:
    - actual product deployment: Software Deployment Pattern
    - reusable deployment pattern: Reference Architecture
-   - reusable runtime substrate: Host Standard, Service Standard, or Database Standard
+   - reusable runtime substrate: Host, Runtime Service, Data-at-Rest Service, or Edge/Gateway Service
    - third-party product, OS, platform, software, or agent: Technology Component
-   - vendor product that behaves like a service with no modeled host: Appliance Component
-   - vendor-managed platform dependency: PaaS Service Standard
-   - vendor-managed external dependency: SaaS Service Standard
+   - vendor product that behaves like a service with no modeled host: service object with `deliveryModel: appliance`
+   - vendor-managed platform dependency: service object with `deliveryModel: paas`
+   - vendor-managed external dependency: service object with `deliveryModel: saas`
    - deployment risk or decision: Decision Record
    - incomplete authoring work: Drafting Session
 5. Use applicable Requirement Groups and capability lookups to drive focused
@@ -230,12 +230,12 @@ repairing malformed identity, and validate before presenting completed changes.
 If a user renames an object, keep the `uid` unchanged and append the old display
 name to `aliases`.
 
-## Appliance Components
+## Edge/Gateway Services
 
-An Appliance Component maps directly to a vendor product, but it behaves like a
-service without a modeled Host Standard. Because it does not inherit host or
+An Edge/Gateway Service maps directly to a vendor product, but it behaves like a
+service without a modeled Host. Because it does not inherit host or
 service requirements through a wrapper, it answers service-like operating
-capabilities directly on the Appliance Component: authentication, logging,
+capabilities directly on the Edge/Gateway Service: authentication, logging,
 monitoring, patch/update model, resilience, configurable surface, failure
 domain, and compliance posture.
 

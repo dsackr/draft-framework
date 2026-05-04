@@ -1,9 +1,9 @@
 schemaVersion: '1.0'
 uid: <generated-uid>
-type: host_standard
+type: host
 name: <Host Name>
 aliases: []
-description: <Standardized host platform description.>
+description: <Deployable host platform description.>
 version: 1.0.0
 catalogStatus: stub
 lifecycleStatus: candidate
@@ -12,7 +12,6 @@ owner:
   contact: <team-or-person@example.com>
 tags:
 - host
-category: host
 operatingSystemComponent: <operating-system-technology-component-uid>
 computePlatformComponent: <compute-platform-technology-component-uid>
 internalComponents:
@@ -25,16 +24,16 @@ externalInteractions:
   notes: <How administrators and service identities authenticate.>
   capabilities:
   - <authentication-capability-uid>
-- name: <Logging Platform Standard>
-  ref: <modeled-logging-standard-uid>
+- name: <Logging Service>
+  ref: <modeled-logging-service-uid>
   notes: <How host logs are collected.>
   capabilities:
   - <log-management-capability-uid>
-- name: <Monitoring Platform>
+- name: <Monitoring Service>
   notes: <How host health and welfare are monitored.>
   capabilities:
   - <health-welfare-monitoring-capability-uid>
-- name: <Security Monitoring Platform>
+- name: <Security Monitoring Service>
   notes: <How security telemetry is collected.>
   capabilities:
   - <security-monitoring-capability-uid>

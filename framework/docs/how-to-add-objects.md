@@ -49,14 +49,14 @@ python3 .draft/framework/tools/repair_uids.py --workspace .
 6. Add `capabilities` if the Technology Component itself satisfies reusable host capabilities.
 7. Add `configurations` if a named Technology Component configuration satisfies reusable host capabilities.
 8. Fill in any remaining Technology Component-specific metadata such as vendor lifecycle and optional platform dependency.
-9. If the Technology Component is classified as `agent`, make sure any Standard that uses it also documents the corresponding external interaction or an architectural decision exception under `architecturalDecisions.agentInteractionExceptions`.
+9. If the Technology Component is classified as `agent`, make sure any deployable object that uses it also documents the corresponding external interaction or an architectural decision exception under `architecturalDecisions.agentInteractionExceptions`.
 10. Run validation.
 
 Technology Components should be specific. If you cannot name the product version clearly, you probably are not ready to create the object yet.
 
-## Add A Host Standard
+## Add A Host
 
-1. Create the file in `catalog/host-standards/`, `catalog/service-standards/`, or `catalog/database-standards/`.
+1. Create the file in `catalog/hosts/`, `catalog/runtime-services/`, or `catalog/data-at-rest-services/`.
 2. Reference the Operating System and Compute Platform Technology Components explicitly.
 3. Add any Agent Technology Components or other internal components that physically live on the host.
 4. Document `externalInteractions` for identity, logging, security, monitoring, patching, or other platforms.
@@ -67,12 +67,12 @@ Technology Components should be specific. If you cannot name the product version
 7. Use generated UIDs when adding explicit `requirementGroups`.
 8. Run validation.
 
-## Add A Service Standard
+## Add A Runtime Service
 
-1. Create the file in `catalog/host-standards/`, `catalog/service-standards/`, or `catalog/database-standards/`.
-2. Reference exactly one `hostStandard` and one `primaryTechnologyComponent`.
+1. Create the file in `catalog/hosts/`, `catalog/runtime-services/`, or `catalog/data-at-rest-services/`.
+2. Reference exactly one `host` and one `primaryTechnologyComponent`.
 3. Add service-level external interactions that go beyond the host baseline.
-4. Document the decisions that describe scaling, health, secrets handling, and, for DBMS services, durability and protection.
+4. Document the decisions that describe scaling, health, secrets handling, and, for Data-at-Rest Services, durability and protection.
 5. Use `architecturalDecisions` whenever the service must answer a Requirement Group or compliance question that is not expressed directly in the object.
 6. Add `requirementGroups` only for Requirement Groups the service explicitly claims
    to satisfy, then add valid `requirementImplementations` for every applicable
@@ -92,7 +92,7 @@ Technology Components should be specific. If you cannot name the product version
 Base Requirement Groups live in `.draft/framework/configurations/requirement-groups/` inside a company repo. Company-specific Requirement Group
 changes should be patch-style overlays in the company repo.
 
-A Requirement Group can target more than Standards. The current catalog includes Requirement Groups for Standards, Reference Architectures, and Software Deployment Patterns. The `appliesTo` block is what tells the validator which object type the Requirement Group governs.
+A Requirement Group can target deployable and non-deployable object types. The current catalog includes Requirement Groups for Hosts, services, Reference Architectures, and Software Deployment Patterns. The `appliesTo` block is what tells the validator which object type the Requirement Group governs.
 
 Keep the requirements focused on architecture outcomes rather than implementation trivia.
 
@@ -101,7 +101,7 @@ Keep the requirements focused on architecture outcomes rather than implementatio
 1. Create the file in `catalog/reference-architectures/`.
 2. Add or repair the generated `uid`; choose a clear human `name`.
 3. Populate `serviceGroups` with the reusable building blocks that define the deployment pattern.
-4. Set `diagramTier` on every Standard entry and cluster related functionality into the right service group.
+4. Set `diagramTier` on every deployable object entry and cluster related functionality into the right service group.
 5. Add `architecturalDecisions` that explain what non-functional qualities the pattern is meant to deliver and how.
 6. Make sure the file satisfies the Reference Architecture Requirement Group by documenting `patternType`, tiered service groups, and deployment-quality decisions.
 
@@ -114,9 +114,9 @@ A Reference Architecture should be generic enough to guide many products, not ju
 3. Add `businessContext.pillar` when the workspace declares business pillars in `.draft/workspace.yaml`.
 4. Set `followsReferenceArchitecture` if the product aligns with an existing Reference Architecture.
 5. Define any `scalingUnits` needed to express replicable or shared deployment boundaries.
-6. Build the manifest out through `serviceGroups`, then place Product Services, Standards, Appliance Components, and SaaS Services into the appropriate groups.
+6. Build the manifest out through `serviceGroups`, then place Product Services, Hosts, Runtime Services, Data-at-Rest Services, and Edge/Gateway Services into the appropriate groups.
    Product Service is not a starting-point Requirement Group object; use it here only when the Software Deployment Pattern needs to express a distinct first-party runtime-behavior component deployed on a substrate.
-7. Set `diagramTier` on every Product Service and Standard entry using one of `presentation`, `application`, `data`, or `utility`.
+7. Set `diagramTier` on every deployable object entry using one of `presentation`, `application`, `data`, or `utility`.
 8. Use `intent` only when the architect is explicitly deviating from the Reference Architecture or when no Reference Architecture exists.
 9. Add product-level `architecturalDecisions`, including availability requirement and data classification, so the Software Deployment Pattern satisfies the Software Deployment Pattern Requirement Group.
 
@@ -200,7 +200,7 @@ python3 framework/tools/generate_browser.py
 
 ## What The GitHub Actions Workflows Do
 
-- `validate-catalog.yml` runs on pushes and pull requests to make sure the YAML parses, base fields are valid, Standards satisfy their Requirement Groups, and Reference Architecture/Software Deployment Pattern objects satisfy their applicable Requirement Group checks.
+- `validate-catalog.yml` runs on pushes and pull requests to make sure the YAML parses, base fields are valid, deployable objects satisfy their Requirement Groups, and Reference Architecture/Software Deployment Pattern objects satisfy their applicable Requirement Group checks.
 - `generate-browser.yml` runs on pushes to `main` that change YAML content and regenerates `docs/index.html` so the published browser stays synchronized with the source data.
 
 ## How To Advance `catalogStatus`
@@ -211,8 +211,8 @@ python3 framework/tools/generate_browser.py
 - `draft` means the structure and major fields are present and the object is ready for review.
 - `approved` means the object is complete enough to be trusted by other engineers.
 
-For Standards, approved means the applicable Requirement Group requirements are satisfied. For every object type, it also means the description, ownership, lifecycle, and relationships are clear enough that another engineer could use the object without guessing what it means.
+For deployable objects, approved means the applicable Requirement Group requirements are satisfied. For every object type, it also means the description, ownership, lifecycle, and relationships are clear enough that another engineer could use the object without guessing what it means.
 
 The catalog uses flat folders by object family inside `catalog/`. Do not create
-nested taxonomy folders under `catalog/technology-components/` or `catalog/host-standards/`, `catalog/service-standards/`, or `catalog/database-standards/`; the YAML
+nested taxonomy folders under `catalog/technology-components/` or `catalog/hosts/`, `catalog/runtime-services/`, or `catalog/data-at-rest-services/`; the YAML
 content already carries the object classification.

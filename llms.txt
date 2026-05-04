@@ -20,10 +20,16 @@ vendor a reviewed framework copy under `.draft/framework/`.
 
 - Technology Component: a third-party product, operating system, platform,
   software, or agent object.
-- Appliance Component: a vendor product that behaves like a service but does
-  not expose an underlying host.
-- Host Standard, Service Standard, and Database Standard: reusable deployable
-  building blocks.
+- Host: an operational platform that combines an operating system, compute
+  platform, and required host capabilities.
+- Runtime Service: reusable runtime behavior such as web, app, cache, worker,
+  messaging, or serverless runtime.
+- Data-at-Rest Service: durable data behavior such as database, file, object,
+  search, analytics, or storage.
+- Edge/Gateway Service: boundary behavior such as WAF, firewall, API gateway,
+  load balancer, ingress, proxy, or traffic inspection.
+- Delivery Model: self-managed, PaaS, SaaS, and appliance are delivery models
+  for service objects, not separate object types.
 - Reference Architecture: a reusable deployment pattern.
 - Software Deployment Pattern: a product-specific intended deployment shape.
 - Requirement Group: the unified interview, completeness, and control evidence

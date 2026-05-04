@@ -1,31 +1,29 @@
 schemaVersion: '1.0'
 uid: <generated-uid>
-type: database_standard
-name: <Database Engine Version> DBMS Service
+type: data_at_rest_service
+name: <Data-at-Rest Service Name>
 aliases: []
-description: <Reusable database service description.>
+description: <Deployable data persistence, file, or object storage service description.>
 version: 1.0.0
+deliveryModel: self-managed
 catalogStatus: stub
 lifecycleStatus: candidate
 owner:
   team: <owning-team>
   contact: <team-or-person@example.com>
 tags:
-- service
-- dbms
-category: service
-serviceCategory: database
-hostStandard: <host-standard-uid>
-primaryTechnologyComponent: <database-technology-component-uid>
+- data-at-rest
+host: <host-uid>
+primaryTechnologyComponent: <database-or-storage-technology-component-uid>
 architecturalDecisions:
   serviceAuthentication: <How administrators and service identities authenticate.>
-  secretsManagement: <How database credentials and connection secrets are stored.>
-  serviceLogging: <How database audit and engine logs are delivered.>
-  healthWelfareMonitoring: <How database service health is monitored.>
+  secretsManagement: <How credentials and connection secrets are stored.>
+  serviceLogging: <How audit and engine logs are delivered.>
+  healthWelfareMonitoring: <How service health is monitored.>
   availabilityModel: <Availability model, such as clustered, replicated, or standalone.>
-  scalabilityModel: <Scale-up, scale-out, read replica, or shard model.>
+  scalabilityModel: <Scale-up, scale-out, read replica, shard, file, or object model.>
   recoverabilityModel: <How failed nodes or services are recovered.>
-  failureDomain: <Scope of impact from database service failure.>
+  failureDomain: <Scope of impact from data service failure.>
   backup:
     strategy: <Backup strategy.>
     rto: <Recovery time objective.>
@@ -37,20 +35,14 @@ architecturalDecisions:
   accessControl:
     model: <Administrative and application access control model.>
 internalComponents:
-- ref: <host-standard-uid>
-  role: host
-- ref: <database-technology-component-uid>
+- ref: <database-or-storage-technology-component-uid>
   role: function
 externalInteractions:
 - name: <Backup Platform>
   notes: <Off-host backup target and retention management.>
   capabilities:
   - <backup-strategy-capability-uid>
-- name: <Database Monitoring>
-  notes: <Database telemetry and alerting.>
-  capabilities:
-  - <health-welfare-monitoring-capability-uid>
 requirementGroups:
-- <service-requirement-group-uid>
-- <database-requirement-group-uid>
+- <service-behavior-requirement-group-uid>
+- <data-at-rest-requirement-group-uid>
 requirementImplementations: []

@@ -1,20 +1,19 @@
 schemaVersion: '1.0'
 uid: <generated-uid>
-type: service_standard
-name: <Service Name>
+type: runtime_service
+name: <Runtime Service Name>
 aliases: []
-description: <Reusable service description.>
+description: <Deployable runtime service description.>
 version: 1.0.0
+deliveryModel: self-managed
 catalogStatus: stub
 lifecycleStatus: candidate
 owner:
   team: <owning-team>
   contact: <team-or-person@example.com>
 tags:
-- service
-category: service
-serviceCategory: general
-hostStandard: <host-standard-uid>
+- runtime
+host: <host-uid>
 primaryTechnologyComponent: <software-technology-component-uid>
 architecturalDecisions:
   serviceAuthentication: <How administrators or service identities authenticate.>
@@ -26,8 +25,6 @@ architecturalDecisions:
   recoverabilityModel: <Recovery model.>
   failureDomain: <Scope of impact from service failure.>
 internalComponents:
-- ref: <host-standard-uid>
-  role: host
 - ref: <software-technology-component-uid>
   role: function
 externalInteractions:
@@ -36,5 +33,5 @@ externalInteractions:
   capabilities:
   - <health-welfare-monitoring-capability-uid>
 requirementGroups:
-- <service-requirement-group-uid>
+- <service-behavior-requirement-group-uid>
 requirementImplementations: []

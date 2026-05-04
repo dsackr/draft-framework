@@ -284,14 +284,14 @@ class ValidationTests(unittest.TestCase):
             + "\n",
             encoding="utf-8",
         )
-        host_dir = workspace / "catalog" / "host-standards"
+        host_dir = workspace / "catalog" / "hosts"
         host_dir.mkdir(parents=True, exist_ok=True)
         (host_dir / "host-test.yaml").write_text(
             textwrap.dedent(
                 """
                 schemaVersion: "1.0"
                 id: host.test
-                type: host_standard
+                type: host
                 name: Test Host
                 catalogStatus: stub
                 lifecycleStatus: existing-only
@@ -333,19 +333,20 @@ class ValidationTests(unittest.TestCase):
             text=True,
         )
 
-    def test_appliance_component_satisfies_service_like_checklist_capabilities_directly(self) -> None:
+    def test_appliance_delivery_satisfies_service_like_capabilities_directly(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)
-            catalog = workspace / "catalog" / "appliance-components"
+            catalog = workspace / "catalog" / "edge-gateway-services"
             catalog.mkdir(parents=True)
             (workspace / "configurations").mkdir()
-            (catalog / "appliance-aws-alb.yaml").write_text(
+            (catalog / "edge-gateway-service-aws-alb.yaml").write_text(
                 textwrap.dedent(
                     """
                     schemaVersion: "1.0"
-                    id: appliance.aws-alb
-                    type: appliance_component
+                    id: edge-gateway.aws-alb
+                    type: edge_gateway_service
                     name: AWS Application Load Balancer
+                    deliveryModel: appliance
                     vendor: Amazon Web Services
                     productName: Application Load Balancer
                     productVersion: managed
@@ -390,7 +391,7 @@ class ValidationTests(unittest.TestCase):
     def test_external_interaction_ref_must_resolve(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)
-            host_dir = workspace / "catalog" / "host-standards"
+            host_dir = workspace / "catalog" / "hosts"
             host_dir.mkdir(parents=True)
             (workspace / "configurations").mkdir()
             (host_dir / "host-test.yaml").write_text(
@@ -398,12 +399,12 @@ class ValidationTests(unittest.TestCase):
                     """
                     schemaVersion: "1.0"
                     id: host.test
-                    type: host_standard
+                    type: host
                     name: Test Host
                     catalogStatus: stub
                     lifecycleStatus: existing-only
                     externalInteractions:
-                      - name: Missing Logging Standard
+                      - name: Missing Logging Service
                         ref: service.missing.logging
                         capabilities:
                           - capability.log-management
@@ -473,7 +474,7 @@ class ValidationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)
             patch_dir = workspace / "configurations" / "object-patches"
-            service_dir = workspace / "catalog" / "service-standards"
+            service_dir = workspace / "catalog" / "runtime-services"
             patch_dir.mkdir(parents=True)
             service_dir.mkdir(parents=True)
             (service_dir / "service-test.yaml").write_text(
@@ -481,7 +482,8 @@ class ValidationTests(unittest.TestCase):
                     """
                     schemaVersion: "1.0"
                     id: service.test
-                    type: service_standard
+                    type: runtime_service
+                    deliveryModel: self-managed
                     name: Test Service
                     catalogStatus: stub
                     lifecycleStatus: existing-only

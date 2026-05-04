@@ -1,13 +1,10 @@
 schemaVersion: '1.0'
-type: database_standard
+type: host
 requiredFields:
 - schemaVersion
 - uid
 - type
 - name
-- hostStandard
-- primaryTechnologyComponent
-- internalComponents
 - catalogStatus
 - lifecycleStatus
 optionalFields:
@@ -18,6 +15,9 @@ optionalFields:
 - tags
 - requirementGroups
 - architecturalDecisions
+- operatingSystemComponent
+- computePlatformComponent
+- internalComponents
 - externalInteractions
 - deploymentConfigurations
 - requirementImplementations
@@ -115,16 +115,13 @@ requirementImplementation:
     - field
   fieldTypes:
     criteria: dict
-aiHint: A Database Standard defines a reusable data service pattern with durability, recovery, and access-control requirements.
+aiHint: A Host defines a deployable operational platform built from an operating system, compute platform, and required operational capabilities.
 fieldDescriptions:
   schemaVersion: Use the schema version string supported by this framework release, normally "1.0".
-  type: Use the exact object type declared by the matching schema.
+  type: Use host exactly.
   name: Use a clear human-readable name for the object.
-  hostStandard: Provide a valid hostStandard value for this database_standard object.
-  primaryTechnologyComponent: Provide a valid primaryTechnologyComponent value for this database_standard object.
-  internalComponents: Provide a valid internalComponents value for this database_standard object.
   catalogStatus: Use stub, draft, or approved to describe catalog maturity, not company adoption disposition.
-  lifecycleStatus: Use candidate, preferred, existing-only, deprecated, or retired where this object still carries a lifecycle signal.
+  lifecycleStatus: Use candidate, preferred, existing-only, deprecated, or retired for this deployable host pattern.
   uid: Use the generated opaque UID for object identity. Do not edit it for display-name, product-name, or taxonomy changes.
   aliases: List prior or alternate human-readable names that should resolve to this object.
 uidPattern: ^[0-9A-HJKMNP-TV-Z]{10}-[0-9A-HJKMNP-TV-Z]{4}$

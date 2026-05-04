@@ -1,8 +1,8 @@
 schemaVersion: '1.0'
 uid: 01KQQ4Q027-VBF0
 type: requirement_group
-name: DBMS Service Requirement Group
-description: Additional DBMS service checklist items extending the generic service Requirement Group for data durability, protection, and control.
+name: Data-at-Rest Service Requirement Group
+description: Additional data-at-rest checklist items extending the service behavior Requirement Group for durable data, recovery, and access control.
 version: 3.0.0
 catalogStatus: approved
 owner:
@@ -10,11 +10,13 @@ owner:
   contact: cloud-architecture@example.com
 activation: always
 appliesTo:
-- database_standard
+- data_at_rest_service
+appliesToQualifiers:
+  deliveryModel: self-managed
 requirements:
 - id: backup-strategy
-  description: The DBMS service must document its backup strategy.
-  rationale: A database platform is not governable unless its backup model is explicit.
+  description: The Data-at-Rest service must document its backup strategy.
+  rationale: A data-at-rest platform is not governable unless its backup model is explicit.
   canBeSatisfiedBy:
   - mechanism: architecturalDecision
     key: backup.strategy
@@ -26,7 +28,7 @@ requirements:
   validAnswerTypes:
   - architecturalDecision
 - id: recovery-time-objective
-  description: The DBMS service must document its recovery time objective.
+  description: The Data-at-Rest service must document its recovery time objective.
   rationale: Recovery time must be explicit so operators and product teams understand the recovery expectation.
   canBeSatisfiedBy:
   - mechanism: architecturalDecision
@@ -38,7 +40,7 @@ requirements:
   validAnswerTypes:
   - architecturalDecision
 - id: recovery-point-objective
-  description: The DBMS service must document its recovery point objective.
+  description: The Data-at-Rest service must document its recovery point objective.
   rationale: Recovery point must be explicit so durability expectations are clear.
   canBeSatisfiedBy:
   - mechanism: architecturalDecision
@@ -50,7 +52,7 @@ requirements:
   validAnswerTypes:
   - architecturalDecision
 - id: ha-replication-mechanism
-  description: The DBMS service must document its high-availability or replication mechanism.
+  description: The Data-at-Rest service must document its high-availability or replication mechanism.
   rationale: Database resilience depends on an explicit clustering, replication, or standalone posture.
   canBeSatisfiedBy:
   - mechanism: architecturalDecision
@@ -62,12 +64,12 @@ requirements:
   validAnswerTypes:
   - architecturalDecision
 - id: encryption-at-rest
-  description: The DBMS service must document how data is encrypted at rest.
+  description: The Data-at-Rest service must document how data is encrypted at rest.
   rationale: Storage protection is a core control for regulated and business-critical data.
   canBeSatisfiedBy:
   - mechanism: architecturalDecision
     key: encryption.atRest
-    example: Transparent Data Encryption enabled for all production databases.
+    example: Transparent Data Encryption enabled for all production data stores.
   minimumSatisfactions: 1
   relatedCapability: 01KQQ4Q026-H3B5
   requirementMode: mandatory
@@ -75,13 +77,13 @@ requirements:
   validAnswerTypes:
   - architecturalDecision
 - id: access-control-model
-  description: The DBMS service must document its administrative and application access control model.
+  description: The Data-at-Rest service must document its administrative and application access control model.
   rationale: Database access boundaries must be understandable to engineering, security, and operations teams.
   canBeSatisfiedBy:
   - mechanism: externalInteraction
     criteria:
       capability: 01KQQ4Q026-MHJM
-    example: Active Directory integration for database administrators and service identities.
+    example: Active Directory integration for data service administrators and service identities.
   - mechanism: architecturalDecision
     key: accessControl.model
     example: Active Directory integrated access with role-based SQL permissions.
@@ -99,6 +101,3 @@ tags:
 - requirement-group
 - definition
 inherits: 01KQQ4Q027-K5DR
-appliesToQualifiers:
-  category: service
-  serviceCategory: database

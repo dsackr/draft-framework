@@ -30,8 +30,9 @@ Create a Drafting Session when:
 - downstream stubs or provisional objects are created
 - unresolved questions need to be revisited later in a structured way
 
-Do not use a Drafting Session as a replacement for a Software Deployment Pattern, Reference Architecture, or Standard. It is a
-working object that wraps incomplete authoring state.
+Do not use a Drafting Session as a replacement for a Software Deployment
+Pattern, Reference Architecture, or deployable object. It is a working object
+that wraps incomplete authoring state.
 
 ## YAML Shape
 

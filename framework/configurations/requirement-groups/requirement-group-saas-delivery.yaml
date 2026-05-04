@@ -1,10 +1,8 @@
 schemaVersion: '1.0'
 uid: 01KQQ4Q027-FKRM
 type: requirement_group
-name: SaaS Service Requirement Group
-description: 'Structured requirements used to define a complete and correct SaaS Service. A SaaS Service is a vendor-managed offering that an organization subscribes to. Its underlying architecture is entirely blackbox to the adopter, so the object definition must focus on the capability consumed, the integration boundary, and the operational and compliance assurances available to the adopter.
-
-  '
+name: SaaS Delivery Requirement Group
+description: Structured requirements used when a Runtime, Data-at-Rest, or Edge/Gateway Service is consumed as a vendor-managed external service.
 version: 1.0.0
 catalogStatus: approved
 owner:
@@ -12,7 +10,9 @@ owner:
   contact: cloud-architecture@example.com
 activation: always
 appliesTo:
-- saas_service_standard
+- runtime_service
+- data_at_rest_service
+- edge_gateway_service
 requirements:
 - id: function
   description: What capability does this SaaS service provide?
@@ -144,5 +144,4 @@ tags:
 - requirement-group
 - definition
 appliesToQualifiers:
-  category: service
-  serviceCategory: saas
+  deliveryModel: saas

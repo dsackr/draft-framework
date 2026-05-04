@@ -52,7 +52,8 @@ procedure:
    the capability and flag that the capability owner must approve the lifecycle
    entry.
 
-This keeps interviews grounded in the company's current technology standards.
+This keeps interviews grounded in the company's current acceptable-use
+technology decisions.
 
 ## Implementation Entries
 
@@ -65,11 +66,12 @@ Each implementation entry contains:
 
 The framework keeps vendor support facts on Technology Components in
 `vendorLifecycle`. Company adoption lives here, on the capability mapping.
-Implementation entries must reference Technology Components, not Standards or
-running services, because lifecycle disposition is a decision about a discrete
-vendor product and version. If a SaaS platform or managed service is governed by
-the lifecycle program, model the vendor product as a Technology Component and
-compose the service-facing architecture separately as a Standard.
+Implementation entries must reference Technology Components, not deployable
+service objects or running systems, because lifecycle disposition is a decision
+about a discrete vendor product and version. If a SaaS platform or managed
+service is governed by the lifecycle program, model the vendor product as a
+Technology Component and compose the service-facing architecture separately as
+a deployable object.
 
 ## Acceptable Use Technology View
 

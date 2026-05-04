@@ -34,7 +34,7 @@ requirements:
   canBeSatisfiedBy:
   - mechanism: field
     key: serviceGroups
-    example: Non-empty serviceGroups list with named deployment groups and Standard references
+    example: Non-empty serviceGroups list with named deployment groups and deployable object references
   - mechanism: internalComponent
     criteria:
       role: service-group
@@ -70,7 +70,7 @@ requirements:
   validAnswerTypes:
   - architecturalDecision
 - id: additional-interactions
-  description: Any external systems this product interacts with beyond what its component Standards declare must be documented — or explicitly stated as none.
+  description: Any external systems this product interacts with beyond what its component deployable objects declare must be documented — or explicitly stated as none.
   rationale: Product-specific integrations are invisible to the architecture without explicit declaration.
   canBeSatisfiedBy:
   - mechanism: externalInteraction
@@ -79,7 +79,7 @@ requirements:
     example: Product-specific SaaS integration, partner API
   - mechanism: architecturalDecision
     key: noAdditionalInteractions
-    example: No additional interactions beyond component Standards
+    example: No additional interactions beyond component deployable objects
   minimumSatisfactions: 1
   requirementMode: mandatory
   naAllowed: false

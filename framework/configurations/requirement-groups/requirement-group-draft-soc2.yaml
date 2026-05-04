@@ -12,10 +12,11 @@ owner:
   contact: cloud-architecture@example.com
 activation: workspace
 appliesTo:
-- database_standard
-- host_standard
+- data_at_rest_service
+- host
 - product_service
-- service_standard
+- runtime_service
+- edge_gateway_service
 - software_deployment_pattern
 provider:
   id: provider.draft-framework
@@ -31,7 +32,7 @@ requirements:
   description: Logical and Physical Access Controls
   rationale: Record how this object satisfies CC6 for SOC 2.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -56,7 +57,7 @@ requirements:
   description: System Operations
   rationale: Record how this object satisfies CC7 for SOC 2.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -85,7 +86,7 @@ requirements:
   description: System Operations
   rationale: Record how this object satisfies CC7 for SOC 2.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -114,7 +115,7 @@ requirements:
   description: System Operations
   rationale: Record how this object satisfies CC7 for SOC 2.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -143,7 +144,7 @@ requirements:
   description: Change Management
   rationale: Record how this object satisfies CC8 for SOC 2.
   appliesTo:
-  - host_standard
+  - host
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -168,7 +169,7 @@ requirements:
   description: Logical and Physical Access Controls
   rationale: Record how this object satisfies CC6 for SOC 2.
   appliesTo:
-  - database_standard
+  - data_at_rest_service
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -193,7 +194,7 @@ requirements:
   description: System Operations
   rationale: Record how this object satisfies CC7 for SOC 2.
   appliesTo:
-  - database_standard
+  - data_at_rest_service
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -213,7 +214,7 @@ requirements:
   description: Confidentiality
   rationale: Record how this object satisfies C1 for SOC 2.
   appliesTo:
-  - database_standard
+  - data_at_rest_service
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:
@@ -237,7 +238,8 @@ requirements:
   description: Logical and Physical Access Controls
   rationale: Record how this object satisfies CC6 for SOC 2.
   appliesTo:
-  - service_standard
+  - runtime_service
+  - edge_gateway_service
   requirementMode: mandatory
   naAllowed: false
   canBeSatisfiedBy:

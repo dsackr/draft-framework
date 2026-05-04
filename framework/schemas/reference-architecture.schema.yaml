@@ -61,18 +61,15 @@ serviceGroup:
   optionalFields:
   - deploymentTarget
   - scalingUnit
-  - standards
-  - applianceComponents
+  - deployableObjects
   - externalInteractions
   fieldTypes:
-    standards: list
-    applianceComponents: list
+    deployableObjects: list
     externalInteractions: list
   collectionSchemas:
-    standards: standardEntry
-    applianceComponents: applianceComponentEntry
+    deployableObjects: deployableObjectEntry
     externalInteractions: externalInteraction
-standardEntry:
+deployableObjectEntry:
   requiredFields:
   - ref
   optionalFields:
@@ -87,14 +84,9 @@ standardEntry:
     - application
     - data
     - utility
-    intent:
+  intent:
     - ha
     - sa
-applianceComponentEntry:
-  requiredFields:
-  - ref
-  optionalFields:
-  - notes
 externalInteraction:
   requiredFields:
   - name

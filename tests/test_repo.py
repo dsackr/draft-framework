@@ -29,7 +29,10 @@ class RepoTests(unittest.TestCase):
 
             self.assertTrue((workspace / "catalog").exists())
             self.assertTrue((workspace / "catalog" / "technology-components").exists())
-            self.assertTrue((workspace / "catalog" / "host-standards").exists())
+            self.assertTrue((workspace / "catalog" / "hosts").exists())
+            self.assertTrue((workspace / "catalog" / "runtime-services").exists())
+            self.assertTrue((workspace / "catalog" / "data-at-rest-services").exists())
+            self.assertTrue((workspace / "catalog" / "edge-gateway-services").exists())
             self.assertTrue((workspace / "catalog" / "software-deployment-patterns").exists())
             self.assertTrue((workspace / "configurations" / "object-patches").exists())
             self.assertTrue((workspace / "configurations" / "capabilities").exists())

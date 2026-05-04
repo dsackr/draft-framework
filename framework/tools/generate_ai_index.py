@@ -22,6 +22,8 @@ FRAMEWORK_ENTRYPOINTS = [
     ("security.md", "DRAFT Table credential and local security boundary."),
     ("framework/docs/draftsman.md", "Draftsman role, intent routing, and authoring rules."),
     ("framework/docs/overview.md", "Framework concepts and object family overview."),
+    ("framework/docs/object-types.md", "User-facing DRAFT object type taxonomy and deployable/non-deployable distinction."),
+    ("framework/docs/delivery-models.md", "Delivery model meanings for self-managed, PaaS, SaaS, and appliance services."),
     ("framework/docs/yaml-schema-reference.md", "Quick map from object families to schemas."),
     ("framework/docs/how-to-add-objects.md", "Practical object authoring workflow."),
     ("framework/docs/workspaces.md", "Private workspace layout and source-based workflow."),
@@ -42,14 +44,13 @@ CONFIGURATION_FOLDERS = [
 
 EXAMPLE_CATALOG_FOLDERS = [
     "examples/catalog/technology-components",
-    "examples/catalog/appliance-components",
-    "examples/catalog/host-standards",
-    "examples/catalog/service-standards",
-    "examples/catalog/database-standards",
+    "examples/catalog/hosts",
+    "examples/catalog/runtime-services",
+    "examples/catalog/data-at-rest-services",
+    "examples/catalog/edge-gateway-services",
     "examples/catalog/reference-architectures",
     "examples/catalog/software-deployment-patterns",
     "examples/catalog/product-services",
-    "examples/catalog/saas-services",
     "examples/catalog/decision-records",
     "examples/catalog/sessions",
 ]

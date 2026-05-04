@@ -55,7 +55,7 @@ configuration:
   - capabilities
   fieldTypes:
     capabilities: list
-aiHint: A Technology Component is a discrete vendor product that an AI may recommend through capability implementations and use inside Standards.
+aiHint: A Technology Component is a discrete vendor product that an AI may recommend through capability implementations and use inside deployable objects.
 fieldDescriptions:
   schemaVersion: Use the schema version string supported by this framework release, normally "1.0".
   type: Use the exact object type declared by the matching schema.

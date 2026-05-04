@@ -1,8 +1,8 @@
 schemaVersion: '1.0'
 uid: 01KQQ4Q027-K5DR
 type: requirement_group
-name: General Service Requirement Group
-description: Structured checklist of required questions and answers used to define a complete and correct general Service Standard.
+name: Service Behavior Requirement Group
+description: Structured checklist of required questions and answers used to define complete and correct Runtime and Edge/Gateway Services.
 version: 3.0.0
 catalogStatus: approved
 owner:
@@ -10,7 +10,10 @@ owner:
   contact: cloud-architecture@example.com
 activation: always
 appliesTo:
-- service_standard
+- runtime_service
+- edge_gateway_service
+appliesToQualifiers:
+  deliveryModel: self-managed
 requirements:
 - id: service-authentication
   description: The service must address how service identities or administrators authenticate to the service.
@@ -74,7 +77,7 @@ requirements:
   - mechanism: externalInteraction
     criteria:
       capability: 01KQQ4Q026-D04B
-    example: A modeled central logging Service Standard, PaaS Service Standard, or SIEM platform referenced by externalInteractions.ref.
+    example: A modeled central logging Runtime Service, Edge/Gateway Service, PaaS-delivered service, or SIEM platform referenced by externalInteractions.ref.
   - mechanism: internalComponent
     criteria:
       capability: 01KQQ4Q026-D04B
@@ -129,7 +132,7 @@ requirements:
   - mechanism: deploymentConfiguration
     criteria:
       quality: availability
-    example: A high-availability deployment configuration on the Service Standard.
+    example: A high-availability deployment configuration on the Runtime or Edge/Gateway Service.
   - mechanism: architecturalDecision
     key: availabilityModel
     example: A documented statement of the service availability model.
@@ -146,7 +149,7 @@ requirements:
   - mechanism: deploymentConfiguration
     criteria:
       quality: scalability
-    example: An autoscaling deployment configuration on the Service Standard.
+    example: An autoscaling deployment configuration on the Runtime or Edge/Gateway Service.
   - mechanism: architecturalDecision
     key: scalabilityModel
     example: A documented statement of the service scalability model.
@@ -190,6 +193,3 @@ tags:
 - service
 - requirement-group
 - definition
-appliesToQualifiers:
-  category: service
-  serviceCategory: general

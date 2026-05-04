@@ -247,13 +247,12 @@ def summary_fields(obj: dict[str, Any]) -> list[dict[str, str]]:
 def type_label(object_type: str) -> str:
     labels = {
         "technology_component": "Technology Component",
-        "appliance_component": "Appliance Component",
-        "host_standard": "Host Standard",
-        "service_standard": "Service Standard",
-        "database_standard": "Database Standard",
+        "edge_gateway_service": "Edge/Gateway Service",
+        "host": "Host",
+        "runtime_service": "Runtime Service",
+        "data_at_rest_service": "Data-at-Rest Service",
         "product_service": "Product Service",
-        "paas_service_standard": "PaaS Service Standard",
-        "saas_service_standard": "SaaS Service Standard",
+        "edge_gateway_service": "Edge/Gateway Service",
         "reference_architecture": "Reference Architecture",
         "software_deployment_pattern": "Software Deployment Pattern",
         "capability": "Capability",
@@ -861,7 +860,7 @@ INDEX_HTML = """<!doctype html>
           <h3>Good First Questions</h3>
           <ul class="guide-list">
             <li>What is a Technology Component?</li>
-            <li>What standards already exist for this product?</li>
+            <li>What deployable objects already exist for this product?</li>
             <li>Where is the Falcon agent used?</li>
             <li>Start a drafting session for my new service.</li>
           </ul>
@@ -1019,7 +1018,7 @@ INDEX_HTML = """<!doctype html>
               <span class="badge">AI Assisted</span>
             </div>
           </div>
-          <div class="header-description">DRAFT helps a company describe deployable architecture as reusable artifacts. The framework provides the rules, checklists, schemas, examples, and Draftsman guidance. Your company repo contains the private catalog: the standards, product deployments, decisions, and compliance posture that describe how your systems should be built and operated.</div>
+          <div class="header-description">DRAFT helps a company describe deployable architecture as reusable artifacts. The framework provides the rules, checklists, schemas, examples, and Draftsman guidance. Your company repo contains the private catalog: the deployable objects, product deployment patterns, decisions, and compliance posture that describe how your systems should be built and operated.</div>
         </section>
         <div class="detail-grid">
           <section class="section-card">
@@ -1035,10 +1034,10 @@ INDEX_HTML = """<!doctype html>
             <h3>Core Artifacts</h3>
             <ul class="guide-list">
               <li><strong>Technology Component</strong>: a discrete product, operating system, software package, tool, runtime, or agent.</li>
-              <li><strong>Host Standard</strong>: a reusable compute standard built from an operating system, compute platform, and required operational capabilities.</li>
-              <li><strong>Service Standard</strong>: a reusable service building block that combines a host or platform with the primary internal component that makes it useful.</li>
-              <li><strong>Database Standard</strong>: a data service standard with durability, protection, operation, and compliance expectations.</li>
-              <li><strong>Appliance Component</strong>: a vendor product that behaves like a service but does not expose a host model.</li>
+              <li><strong>Host</strong>: a reusable compute standard built from an operating system, compute platform, and required operational capabilities.</li>
+              <li><strong>Runtime Service</strong>: a reusable service building block that combines a host or platform with the primary internal component that makes it useful.</li>
+              <li><strong>Data-at-Rest Service</strong>: a data service standard with durability, protection, operation, and compliance expectations.</li>
+              <li><strong>Edge/Gateway Service</strong>: a vendor product that behaves like a service but does not expose a host model.</li>
             </ul>
           </section>
           <section class="section-card">

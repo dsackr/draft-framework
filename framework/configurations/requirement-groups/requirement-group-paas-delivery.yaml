@@ -1,10 +1,8 @@
 schemaVersion: '1.0'
 uid: 01KQQ4Q027-TPWG
 type: requirement_group
-name: PaaS Service Requirement Group
-description: 'Structured requirements used to define a complete and correct PaaS Service. A PaaS Service is a vendor-managed platform component deployed within the organization''s cloud boundary.
-
-  '
+name: PaaS Delivery Requirement Group
+description: Structured requirements used when a Runtime, Data-at-Rest, or Edge/Gateway Service is vendor-managed inside the organization's cloud boundary.
 version: 1.0.0
 catalogStatus: approved
 owner:
@@ -12,7 +10,9 @@ owner:
   contact: cloud-architecture@example.com
 activation: always
 appliesTo:
-- paas_service_standard
+- runtime_service
+- data_at_rest_service
+- edge_gateway_service
 requirements:
 - id: function
   description: What capability does this PaaS service provide?
@@ -27,9 +27,7 @@ requirements:
   - field
   minimumSatisfactions: 1
 - id: resilience-model
-  description: 'What is the resilience model of this service — is it inherently highly available within the region, or does it require multi-region config?
-
-    '
+  description: "What is the resilience model of this service \u2014 is it inherently highly available within the region, or does it require multi-region config?\n"
   rationale: Adopters must know the managed availability baseline.
   canBeSatisfiedBy:
   - mechanism: architecturalDecision
@@ -82,5 +80,4 @@ tags:
 - requirement-group
 - definition
 appliesToQualifiers:
-  category: service
-  serviceCategory: paas
+  deliveryModel: paas

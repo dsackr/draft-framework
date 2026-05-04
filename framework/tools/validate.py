@@ -38,15 +38,13 @@ TYPE_CHECKERS = {
 }
 
 VALID_REQUIREMENT_SCOPES = {
-    "host_standard",
-    "service_standard",
-    "database_standard",
+    "host",
+    "runtime_service",
+    "data_at_rest_service",
+    "edge_gateway_service",
     "product_service",
-    "paas_service_standard",
-    "saas_service_standard",
     "reference_architecture",
     "software_deployment_pattern",
-    "appliance_component",
 }
 
 VALID_REQUIREMENT_ANSWER_TYPES = {
@@ -62,13 +60,13 @@ VALID_REQUIREMENT_MODES = {"mandatory", "conditional"}
 VALID_REQUIREMENT_ACTIVATIONS = {"always", "workspace"}
 VALID_IMPLEMENTATION_STATUSES = {"candidate", "preferred", "existing-only", "deprecated", "retired"}
 STANDARD_TYPES = {
-    "host_standard",
-    "service_standard",
-    "database_standard",
+    "host",
+    "runtime_service",
+    "data_at_rest_service",
+    "edge_gateway_service",
     "product_service",
-    "paas_service_standard",
-    "saas_service_standard",
 }
+SERVICE_TYPES = {"runtime_service", "data_at_rest_service", "edge_gateway_service"}
 BUSINESS_PILLAR_ID_PATTERN = re.compile(r"^business-pillar\.[a-z0-9-]+$")
 UID_PATTERN = re.compile(UID_PATTERN_TEXT)
 
@@ -572,7 +570,7 @@ def requirement_group_applies_to_object(group: dict[str, Any], obj: dict[str, An
         for key, expected in qualifiers.items():
             if obj.get(key) != expected:
                 return False
-    if object_type == "host_standard" and group.get("name") == "Host Requirement Group":
+    if object_type == "host" and group.get("name") == "Host Requirement Group":
         tags = obj.get("tags") or []
         if isinstance(tags, list) and any(tag in {"serverless", "container"} for tag in tags):
             return False
@@ -670,7 +668,7 @@ def referenced_technology_components(obj: dict[str, Any], catalog_by_id: dict[st
 
     resolved: list[dict[str, Any]] = []
     seen: set[str] = set()
-    if obj.get("type") in {"technology_component", "appliance_component"} and is_non_empty(obj.get("uid")):
+    if obj.get("type") == "technology_component" and is_non_empty(obj.get("uid")):
         resolved.append(obj)
         seen.add(str(obj["uid"]))
     for ref in refs:
@@ -678,7 +676,7 @@ def referenced_technology_components(obj: dict[str, Any], catalog_by_id: dict[st
             continue
         seen.add(ref)
         target = catalog_by_id.get(ref)
-        if target and target.get("type") in {"technology_component", "appliance_component"}:
+        if target and target.get("type") == "technology_component":
             resolved.append(target)
     return resolved
 
@@ -723,7 +721,7 @@ def collect_technology_component_refs(
         return {ref}
 
     refs: list[str] = []
-    for field in ("operatingSystemComponent", "computePlatformComponent", "primaryTechnologyComponent", "hostStandard", "runsOn"):
+    for field in ("operatingSystemComponent", "computePlatformComponent", "primaryTechnologyComponent", "host", "runsOn"):
         value = target.get(field)
         if is_non_empty(value):
             refs.append(str(value))
@@ -745,10 +743,9 @@ def reference_architecture_technology_refs(
     for group in obj.get("serviceGroups", []) or []:
         if not isinstance(group, dict):
             continue
-        for collection_name in ("standards", "applianceComponents"):
-            for entry in group.get(collection_name, []) or []:
-                if isinstance(entry, dict) and is_non_empty(entry.get("ref")):
-                    technology_refs.update(collect_technology_component_refs(str(entry["ref"]), catalog_by_id))
+        for entry in group.get("deployableObjects", []) or []:
+            if isinstance(entry, dict) and is_non_empty(entry.get("ref")):
+                technology_refs.update(collect_technology_component_refs(str(entry["ref"]), catalog_by_id))
     return technology_refs
 
 
@@ -974,7 +971,7 @@ def validate_external_interaction_refs(
         if ref and ref not in catalog_by_id:
             failures.append(
                 f"{path}: externalInteractions[{index}].ref references unknown object '{ref}' — "
-                "model the interacted platform as a Standard, PaaS Service Standard, SaaS Service Standard, or Appliance Component, "
+                "model the interacted platform as a Host, Runtime Service, Data-at-Rest Service, Edge/Gateway Service, Product Service, or Technology Component, "
                 "or remove ref until the target object exists"
             )
 
@@ -1136,7 +1133,7 @@ def validate_standard(
     )
 
     object_type = obj.get("type")
-    if object_type == "host_standard":
+    if object_type == "host":
         tags = obj.get("tags") or []
         is_managed_host = isinstance(tags, list) and any(tag in {"serverless", "container"} for tag in tags)
         required_host_fields = () if is_managed_host else ("operatingSystemComponent", "computePlatformComponent")
@@ -1144,21 +1141,29 @@ def validate_standard(
             ref = obj.get(field)
             if ref and ref not in catalog_ids:
                 failures.append(f"{path}: {field} references unknown object '{ref}'")
-    if object_type in {"service_standard", "database_standard"}:
-        for field in ("hostStandard", "primaryTechnologyComponent"):
+    if object_type in SERVICE_TYPES:
+        if obj.get("deliveryModel") == "self-managed":
+            for field in ("host", "primaryTechnologyComponent"):
+                if not is_non_empty(obj.get(field)):
+                    failures.append(f"{path}: {object_type} with deliveryModel self-managed must declare {field}")
+        for field in ("host", "primaryTechnologyComponent"):
             ref = obj.get(field)
             if ref and ref not in catalog_ids:
                 failures.append(f"{path}: {field} references unknown object '{ref}'")
+        host_ref = obj.get("host")
+        host_target = catalog_by_id.get(str(host_ref)) if is_non_empty(host_ref) else None
+        if host_ref and (not host_target or host_target.get("type") != "host"):
+            failures.append(f"{path}: host references unknown Host '{host_ref}'")
     if object_type == "product_service":
         runs_on = obj.get("runsOn")
         target = catalog_by_id.get(runs_on) if runs_on else None
-        if runs_on and (not target or target.get("type") not in {"host_standard", "service_standard", "database_standard", "paas_service_standard", "saas_service_standard"}):
-            failures.append(f"{path}: runsOn references unknown standard '{runs_on}'")
-    if object_type == "saas_service_standard":
+        if runs_on and (not target or target.get("type") not in STANDARD_TYPES):
+            failures.append(f"{path}: runsOn references unknown deployable object '{runs_on}'")
+    if object_type in SERVICE_TYPES and obj.get("deliveryModel") == "saas":
         if "dataLeavesInfrastructure" in obj and not isinstance(obj.get("dataLeavesInfrastructure"), bool):
             failures.append(f"{path}: dataLeavesInfrastructure must be true or false")
         if obj.get("dataLeavesInfrastructure") is True and not is_non_empty(obj.get("dpaNotes")):
-            warnings.append(f"{path}: SaaS Services with dataLeavesInfrastructure=true should document dpaNotes")
+            warnings.append(f"{path}: SaaS-delivered services with dataLeavesInfrastructure=true should document dpaNotes")
 
     validate_classified_component_refs(obj, path, catalog_by_id, failures)
     deployment_configurations = obj.get("deploymentConfigurations", [])
@@ -1244,21 +1249,21 @@ def validate_ra(
         record_requirement_gap(
             obj,
             path,
-            f"[{object_id}] Add serviceGroups with tiered Standard entries to satisfy requirement-group.reference-architecture requirement 'service-groups'",
+            f"[{object_id}] Add serviceGroups with tiered deployableObjects entries to satisfy requirement-group.reference-architecture requirement 'service-groups'",
             failures,
             warnings,
         )
     else:
-        groups_without_rbbs = [
+        groups_without_deployables = [
             group.get("name", "unknown")
             for group in service_groups
-            if isinstance(group, dict) and not isinstance(group.get("standards"), list)
+            if isinstance(group, dict) and not isinstance(group.get("deployableObjects"), list)
         ]
-        if groups_without_rbbs:
+        if groups_without_deployables:
             record_requirement_gap(
                 obj,
                 path,
-                f"[{object_id}] Add standards to every service group to satisfy requirement-group.reference-architecture requirement 'service-groups' (missing on: {', '.join(groups_without_rbbs)})",
+                f"[{object_id}] Add deployableObjects to every service group to satisfy requirement-group.reference-architecture requirement 'service-groups' (missing on: {', '.join(groups_without_deployables)})",
                 failures,
                 warnings,
             )
@@ -1515,7 +1520,7 @@ def find_technology_component_reference(obj: dict[str, Any], implementation: dic
         if isinstance(component, dict) and component.get("ref") == ref:
             return True
     target = catalog_by_id.get(str(ref))
-    return bool(target and target.get("type") in {"technology_component", "appliance_component"})
+    return bool(target and target.get("type") == "technology_component")
 
 
 def find_technology_component_configuration(obj: dict[str, Any], implementation: dict[str, Any], catalog_by_id: dict[str, dict[str, Any]]) -> bool:
@@ -1918,7 +1923,6 @@ def validate_service_group_structure(
     obj: dict[str, Any],
     path: Path,
     decision_record_ids: set[str],
-    appliance_component_ids: set[str],
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
     require_deployment_target: bool = True,
@@ -1969,31 +1973,24 @@ def validate_service_group_structure(
         if scaling_unit_name and scaling_unit_name not in scaling_unit_names:
             failures.append(f"{path}: serviceGroup '{group_name}' references unknown scalingUnit '{scaling_unit_name}'")
 
-        for entry in group.get("standards", []) or []:
+        for entry in group.get("deployableObjects", []) or []:
             if not isinstance(entry, dict):
                 continue
             ref = entry.get("ref")
             target = catalog_by_id.get(ref) if ref else None
             if ref and (not target or target.get("type") not in STANDARD_TYPES):
-                failures.append(f"{path}: serviceGroup '{group_name}' references unknown standard '{ref}'")
+                failures.append(f"{path}: serviceGroup '{group_name}' references unknown deployable object '{ref}'")
             diagram_tier = entry.get("diagramTier")
             if diagram_tier not in VALID_DIAGRAM_TIERS:
                 failures.append(
-                    f"{path}: serviceGroup '{group_name}' standard '{ref}' must set diagramTier to one of {sorted(VALID_DIAGRAM_TIERS)}"
+                    f"{path}: serviceGroup '{group_name}' deployable object '{ref}' must set diagramTier to one of {sorted(VALID_DIAGRAM_TIERS)}"
                 )
             risk_ref = entry.get("riskRef")
             if risk_ref and risk_ref not in decision_record_ids:
-                failures.append(f"{path}: serviceGroup '{group_name}' standard '{ref}' references unknown Decision Record '{risk_ref}'")
+                failures.append(f"{path}: serviceGroup '{group_name}' deployable object '{ref}' references unknown Decision Record '{risk_ref}'")
             intent = entry.get("intent")
             if intent and intent not in {"ha", "sa"}:
-                failures.append(f"{path}: serviceGroup '{group_name}' standard '{ref}' has invalid intent '{intent}'")
-
-        for entry in group.get("applianceComponents", []) or []:
-            if not isinstance(entry, dict):
-                continue
-            ref = entry.get("ref")
-            if ref and ref not in appliance_component_ids:
-                failures.append(f"{path}: serviceGroup '{group_name}' references unknown Appliance Component '{ref}'")
+                failures.append(f"{path}: serviceGroup '{group_name}' deployable object '{ref}' has invalid intent '{intent}'")
 
         for interaction in group.get("externalInteractions", []) or []:
             if not isinstance(interaction, dict):
@@ -2010,7 +2007,6 @@ def validate_service_group_refs(
     obj: dict[str, Any],
     path: Path,
     decision_record_ids: set[str],
-    appliance_component_ids: set[str],
     catalog_by_id: dict[str, dict[str, Any]],
     failures: list[str],
     require_deployment_target: bool = True,
@@ -2026,7 +2022,6 @@ def validate_service_group_refs(
         obj,
         path,
         decision_record_ids,
-        appliance_component_ids,
         catalog_by_id,
         failures,
         require_deployment_target=require_deployment_target,
@@ -2065,9 +2060,6 @@ def main(argv: list[str] | None = None) -> int:
     capability_ids = {object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "capability"}
     domain_ids = {object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "domain"}
     decision_record_ids = {object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "decision_record"}
-    appliance_component_ids = {
-        object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "appliance_component"
-    }
     catalog_ids = set(catalog_by_id.keys())
     active_group_ids = workspace_requirements["active_groups"]
     require_active_group_disposition = workspace_requirements["require_active_group_disposition"]
@@ -2080,7 +2072,7 @@ def main(argv: list[str] | None = None) -> int:
             validate_capability(obj, path, catalog_by_id, domain_ids, failures)
         if obj.get("type") == "requirement_group":
             validate_requirement_group(obj, path, capability_ids, failures)
-        if obj.get("type") in {"technology_component", "appliance_component"}:
+        if obj.get("type") == "technology_component":
             validate_component(
                 obj,
                 path,
@@ -2136,7 +2128,6 @@ def main(argv: list[str] | None = None) -> int:
                 obj,
                 path,
                 decision_record_ids,
-                appliance_component_ids,
                 catalog_by_id,
                 failures,
                 require_deployment_target=False,
@@ -2154,7 +2145,7 @@ def main(argv: list[str] | None = None) -> int:
                 active_group_ids,
                 require_active_group_disposition,
             )
-            validate_service_group_refs(obj, path, decision_record_ids, appliance_component_ids, catalog_by_id, failures)
+            validate_service_group_refs(obj, path, decision_record_ids, catalog_by_id, failures)
 
     failing_paths = {entry.split(":", 1)[0] for entry in failures}
     for path in files:

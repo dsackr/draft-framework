@@ -18,8 +18,9 @@ Create a Decision Record when architecture work needs to preserve one of these f
 - a product-specific exception attached to a Software Deployment Pattern or service group
 
 Do not use a Decision Record as a dumping ground for ordinary implementation notes.
-If the detail is a stable reusable behavior, it likely belongs on a Standard,
-deployment configuration, Technology Component configuration, or Software Deployment Pattern.
+If the detail is a stable reusable behavior, it likely belongs on a deployable
+object, deployment configuration, Technology Component configuration, or
+Software Deployment Pattern.
 
 ## YAML Shape
 
