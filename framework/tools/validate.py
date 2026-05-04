@@ -1569,17 +1569,50 @@ def implementation_resolves(
     return False
 
 
+def collect_requirement_capability_refs(requirement_groups: dict[str, dict[str, Any]]) -> set[str]:
+    refs: set[str] = set()
+    for group in requirement_groups.values():
+        for requirement in group.get("requirements", []) or []:
+            if not isinstance(requirement, dict):
+                continue
+            related_capability = requirement.get("relatedCapability")
+            if is_non_empty(related_capability):
+                refs.add(str(related_capability))
+            for mechanism in requirement.get("canBeSatisfiedBy", []) or []:
+                if not isinstance(mechanism, dict):
+                    continue
+                criteria = mechanism.get("criteria")
+                if not isinstance(criteria, dict):
+                    continue
+                capability = criteria.get("capability") or criteria.get("concern")
+                if capability and capability != "any":
+                    refs.add(str(capability))
+    return refs
+
+
 
 def validate_capability(
     obj: dict[str, Any],
     path: Path,
     catalog_by_id: dict[str, dict[str, Any]],
     domain_ids: set[str],
+    requirement_capability_refs: set[str],
     failures: list[str],
+    warnings: list[str],
 ) -> None:
     domain_id = obj.get("domain")
     if domain_id not in domain_ids:
         failures.append(f"{path}: Set domain to an existing domain object UID; '{domain_id}' was not found")
+    capability_id = obj.get("uid")
+    if is_non_empty(capability_id) and capability_id not in requirement_capability_refs:
+        message = (
+            f"{path}: Add this Capability to at least one Requirement Group before approving it; "
+            "approved capabilities must be traceable to a requirement demand signal"
+        )
+        if obj.get("catalogStatus") == "approved":
+            failures.append(message)
+        else:
+            warnings.append(message)
     implementations = obj.get("implementations", [])
     if not isinstance(implementations, list):
         failures.append(f"{path}: Change implementations to a list of Technology Component mappings")
@@ -2057,6 +2090,7 @@ def main(argv: list[str] | None = None) -> int:
     requirement_groups = {
         object_id: obj for object_id, obj in catalog_by_id.items() if obj.get("type") == "requirement_group"
     }
+    requirement_capability_refs = collect_requirement_capability_refs(requirement_groups)
     capability_ids = {object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "capability"}
     domain_ids = {object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "domain"}
     decision_record_ids = {object_id for object_id, obj in catalog_by_id.items() if obj.get("type") == "decision_record"}
@@ -2069,7 +2103,7 @@ def main(argv: list[str] | None = None) -> int:
         validate_against_schema(obj, path, schemas, failures)
         validate_external_interaction_refs(obj, path, catalog_by_id, failures)
         if obj.get("type") == "capability":
-            validate_capability(obj, path, catalog_by_id, domain_ids, failures)
+            validate_capability(obj, path, catalog_by_id, domain_ids, requirement_capability_refs, failures, warnings)
         if obj.get("type") == "requirement_group":
             validate_requirement_group(obj, path, capability_ids, failures)
         if obj.get("type") == "technology_component":

@@ -518,9 +518,20 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
     }
     browser_objects: list[dict[str, Any]] = []
 
+    def browser_lifecycle_status(obj: dict[str, Any]) -> str:
+        if obj.get("type") == "technology_component":
+            return ""
+        return obj.get("lifecycleStatus", "unknown")
+
+    def browser_lifecycle_color(status: str) -> str:
+        if not status:
+            return "#64748b"
+        return f"#{LIFECYCLE_COLORS.get(status, LIFECYCLE_COLORS['unknown'])}"
+
     for obj in objects:
         object_id = obj["uid"]
         schema = select_schema(obj, schemas) or {}
+        lifecycle_status = browser_lifecycle_status(obj)
         schema_meta = {
             "requiredFields": schema.get("requiredFields", []),
             "optionalFields": schema.get("optionalFields", []),
@@ -544,7 +555,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
                 "description": obj.get("description", ""),
                 "version": obj.get("version", ""),
                 "catalogStatus": obj.get("catalogStatus", ""),
-                "lifecycleStatus": obj.get("lifecycleStatus", "unknown"),
+                "lifecycleStatus": lifecycle_status,
                 "status": obj.get("status", ""),
                 "businessContext": obj.get("businessContext", {}),
                 "product": obj.get("product", ""),
@@ -573,7 +584,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
                 "provider": obj.get("provider", {}),
                 "authority": obj.get("authority", {}),
                 "shape": shape_for(obj),
-                "color": f"#{LIFECYCLE_COLORS.get(obj.get('lifecycleStatus'), LIFECYCLE_COLORS['unknown'])}",
+                "color": browser_lifecycle_color(lifecycle_status),
                 "source": obj.get("_source", ""),
                 "tags": obj.get("tags", []),
                 "ardCategory": obj.get("category", "") if obj.get("type") == "decision_record" else "",
@@ -613,8 +624,17 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
 
     browser_lookup = {obj["uid"]: obj for obj in browser_objects}
     filter_values = sorted({obj["type"] for obj in objects})
+    impact_lifecycle_types = {
+        "reference_architecture",
+        "software_deployment_pattern",
+        "host",
+        "runtime_service",
+        "data_at_rest_service",
+        "edge_gateway_service",
+        "product_service",
+    }
     lifecycle_values = sorted(
-        {obj.get("lifecycleStatus", "unknown") for obj in objects},
+        {obj.get("lifecycleStatus", "unknown") for obj in objects if obj.get("type") in impact_lifecycle_types},
         key=lambda value: ["preferred", "existing-only", "candidate", "deprecated", "retired", "unknown"].index(value)
         if value in {"preferred", "existing-only", "candidate", "deprecated", "retired", "unknown"}
         else 999,
@@ -2555,19 +2575,23 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       }
     ];
     const lifecycleValues = browserData.lifecycleValues || [];
-    const deployableTypes = new Set(
-      allObjects
-        .filter(object => !['capability', 'requirement_group', 'domain', 'decision_record'].includes(object.type))
-        .map(object => object.type)
-    );
+    const deployableTypes = new Set([
+      'software_deployment_pattern',
+      'reference_architecture',
+      'host',
+      'runtime_service',
+      'data_at_rest_service',
+      'edge_gateway_service',
+      'product_service'
+    ]);
     const impactOrder = [
       'software_deployment_pattern',
       'reference_architecture',
       'host',
       'runtime_service',
       'data_at_rest_service',
-      'technology_component',
-      'edge_gateway_service'
+      'edge_gateway_service',
+      'product_service'
     ];
     const impactLifecycleOrder = lifecycleValues;
     let activeCategory = 'architecture';
@@ -2670,6 +2694,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function lifecycleBadge(status) {
+      if (!status) return '';
       const color = '#' + (lifecycleColors[status] || lifecycleColors.unknown);
       return `<span class="badge"><span class="dot" style="background:${color}"></span>${escapeHtml(status)}</span>`;
     }
@@ -2794,6 +2819,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       setHashState({ view: 'object-types' });
     }
 
+    function syncHashForOnboardingView() {
+      setHashState({ view: 'onboarding' });
+    }
+
     function applyRouteFromHash() {
       if (suppressHashSync) return;
       const params = currentHashState();
@@ -2828,6 +2857,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         renderObjectTypesView();
         return;
       }
+      if (view === 'onboarding') {
+        renderCompanyOnboardingView();
+        return;
+      }
       executiveDrilldown = null;
       const category = params.get('category');
       activeCategory = CATEGORY_CONFIG.some(item => item.id === category) ? category : 'architecture';
@@ -2846,6 +2879,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return `
         <div class="top-nav">
           <button class="nav-button ${currentMode === 'executive' ? 'active' : ''}" data-nav="executive">DRAFT Overview</button>
+          <button class="nav-button ${currentMode === 'onboarding' ? 'active' : ''}" data-nav="onboarding">Onboarding</button>
           <button class="nav-button ${currentMode === 'object-types' ? 'active' : ''}" data-nav="object-types">Object Types</button>
           <button class="nav-button ${currentMode === 'list' ? 'active' : ''}" data-nav="list">Drafting Table</button>
           <button class="nav-button ${currentMode === 'detail' ? 'active' : ''}" data-nav="detail" ${currentDetailId ? '' : 'disabled'}>Detail View</button>
@@ -2889,6 +2923,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         renderObjectTypesView();
         return;
       }
+      if (currentMode === 'onboarding') {
+        renderCompanyOnboardingView();
+        return;
+      }
       if (currentMode === 'impact') {
         renderImpactView();
         return;
@@ -2916,6 +2954,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           if (nav === 'object-types') {
             destroyImpactCy();
             renderObjectTypesView();
+            return;
+          }
+          if (nav === 'onboarding') {
+            destroyImpactCy();
+            renderCompanyOnboardingView();
             return;
           }
           if (nav === 'detail' && currentDetailId) {
@@ -3612,6 +3655,106 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <section class="section-card">
             <h3>Delivery Models</h3>
             <div class="header-description">PaaS, SaaS, appliance, and self-managed are delivery models on Runtime Service, Data-at-Rest Service, and Edge/Gateway Service objects. They are not separate object types.</div>
+          </section>
+        </div>
+      `;
+      attachTopNavHandlers();
+    }
+
+    function companyOnboardingSidebarMarkup() {
+      return `
+        <div class="sidebar-block">
+          <div class="legend-title">Onboarding Path</div>
+          <div class="current-filter"><span class="dot" style="background:#22c55e"></span><span>Install and create workspace</span></div>
+          <div class="current-filter"><span class="dot" style="background:#38bdf8"></span><span>Activate requirements</span></div>
+          <div class="current-filter"><span class="dot" style="background:#8b5cf6"></span><span>Map acceptable-use technology</span></div>
+          <div class="current-filter"><span class="dot" style="background:#f59e0b"></span><span>Draft deployable architecture</span></div>
+        </div>
+      `;
+    }
+
+    function onboardingStepMarkup(number, title, description, items = []) {
+      return `
+        <article class="object-card">
+          <div>
+            <h3>${number}. ${escapeHtml(title)}</h3>
+            <div class="object-id">${escapeHtml(description)}</div>
+          </div>
+          ${items.length ? `<ul>${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : ''}
+        </article>
+      `;
+    }
+
+    function renderCompanyOnboardingView() {
+      currentMode = 'onboarding';
+      currentDetailId = null;
+      destroyDetailCy();
+      destroyImpactCy();
+      syncHashForOnboardingView();
+      renderSidebarContent(companyOnboardingSidebarMarkup());
+      const steps = [
+        ['Install', 'Install DRAFT Table and select or create a private company DRAFT repo.', ['Run draft-table onboard', 'Vendor the selected framework copy into .draft/framework/', 'Commit workspace bootstrap files']],
+        ['Decide Governance', 'Make build-time workspace decisions before drafting product architecture.', ['Define business taxonomy in .draft/workspace.yaml', 'Activate Requirement Groups explicitly', 'Choose whether strict active-group disposition is enabled']],
+        ['Assign Capability Owners', 'Name the company decision authority for each mapped capability.', ['Authentication, operating systems, compute, logging, monitoring, patching, and security monitoring need clear owners', 'Owners approve acceptable-use lifecycle changes']],
+        ['Map Acceptable Use', 'Connect capabilities to approved Technology Components and lifecycle states.', ['Use preferred, candidate, existing-only, deprecated, and retired deliberately', 'Technology Components carry vendor lifecycle; capability mappings carry company lifecycle']],
+        ['Draft Deployable Objects', 'Create reusable deployable architecture from behavior first, delivery model second.', ['Host', 'Runtime Service', 'Data-at-Rest Service', 'Edge/Gateway Service', 'Product Service', 'Software Deployment Pattern']],
+        ['Validate And Publish', 'Run validation, regenerate the browser, review the Git diff, and commit source plus generated output.', ['draft-table validate', 'generate_browser.py --workspace . --output docs/index.html', 'Review warnings as implementation gaps']]
+      ];
+      const gapSignals = [
+        'Requirement Groups are unclear as object definitions, delivery overlays, or workspace governance.',
+        'The Draftsman asks open-ended capability questions when approved implementations exist.',
+        'Technology Components appear to have company lifecycle outside capability mappings.',
+        'Approved capabilities have no requirement trace.',
+        'PaaS, SaaS, or appliance language sounds like object types instead of delivery models.',
+        'Validation failures do not tell the Draftsman exactly what to add or where to look next.'
+      ];
+      pageRoot.innerHTML = `
+        <div class="view-shell">
+          ${topNavMarkup()}
+          <section class="header-card">
+            <div class="header-top">
+              <div class="header-title">
+                <h2>Company Onboarding Tutorial</h2>
+                <div class="object-id">From empty private repo to governed DRAFT catalog</div>
+              </div>
+            </div>
+            <div class="header-description">A company implements DRAFT by vendoring the framework into a private repo, activating the Requirement Groups it architects against, assigning capability owners, mapping acceptable-use Technology Components, and drafting deployable architecture through validation.</div>
+          </section>
+          <section class="section-card">
+            <h3>Operating Model</h3>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>Area</th><th>Owned By</th><th>Purpose</th></tr></thead>
+                <tbody>
+                  <tr><td>Upstream Framework</td><td>DRAFT project</td><td>Schemas, base Requirement Groups, base capabilities, templates, tools, examples, and Draftsman guidance.</td></tr>
+                  <tr><td>Vendored Framework</td><td>Company repo</td><td>The reviewed framework copy under .draft/framework/ used for normal private Draftsman work.</td></tr>
+                  <tr><td>Workspace Configuration</td><td>Company repo</td><td>Business taxonomy, active Requirement Groups, capability owners, implementation mappings, and overlays.</td></tr>
+                  <tr><td>Architecture Catalog</td><td>Company repo</td><td>Technology Components, deployable objects, Reference Architectures, Software Deployment Patterns, decisions, and Drafting Sessions.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+          <section class="section-card">
+            <h3>Implementation Path</h3>
+            <div class="object-grid">
+              ${steps.map((step, index) => onboardingStepMarkup(index + 1, step[0], step[1], step[2])).join('')}
+            </div>
+          </section>
+          <section class="section-card">
+            <h3>Readiness Checklist</h3>
+            <ul>
+              <li>Private repo contains .draft/framework/ and .draft/framework.lock.</li>
+              <li>.draft/workspace.yaml declares business taxonomy and active Requirement Groups.</li>
+              <li>Capability owners are identified wherever implementations are mapped.</li>
+              <li>Approved capabilities are referenced by Requirement Group requirements.</li>
+              <li>Acceptable-use Technology Components are mapped by capability.</li>
+              <li>Baseline Hosts, Runtime Services, Data-at-Rest Services, and Edge/Gateway Services exist for common deployment patterns.</li>
+              <li>Validation passes and the generated browser reflects the catalog.</li>
+            </ul>
+          </section>
+          <section class="section-card">
+            <h3>Gap Signals Before 1.0</h3>
+            <ul>${gapSignals.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
           </section>
         </div>
       `;
@@ -5499,18 +5642,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         return { selected, impacted, siblings, supported: false };
       }
 
-      if (selected.type === 'technology_component' || selected.type === 'edge_gateway_service') {
-        const parentObjects = inboundCatalogRefs(selected).filter(parent => deployableTypes.has(parent.type));
-        parentObjects.forEach(parent => {
-          impacted.add(parent.id);
-          outboundCatalogRefs(parent).forEach(target => {
-            if (target.id !== selected.id && deployableTypes.has(target.type)) {
-              siblings.add(target.id);
-            }
-          });
-          traverseUp(parent, new Set([selected.id, parent.id]), impacted);
-        });
-      } else if (selected.type === 'software_deployment_pattern') {
+      if (selected.type === 'software_deployment_pattern') {
         traverseDown(selected, new Set([selected.id]), impacted);
       } else {
         traverseDown(selected, new Set([selected.id]), impacted);
@@ -5558,7 +5690,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function impactSidebarMarkup(selection) {
       const searchMatches = impactSearchTerm
-        ? allObjects.filter(object => {
+        ? allObjects.filter(object => deployableTypes.has(object.type)).filter(object => {
             const haystack = `${object.name} ${object.id}`.toLowerCase();
             return haystack.includes(impactSearchTerm.toLowerCase());
           }).slice(0, 8)
@@ -5695,8 +5827,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         addTier(nodeList.filter(node => node.data('type') === 'reference_architecture')),
         addTier(serviceRbbNodesSorted(nodes)),
         addTier(nodeList.filter(node => node.data('type') === 'host')
-          .sort((a, b) => String(a.data('label') || '').localeCompare(String(b.data('label') || '')))),
-        addTier(nodeList.filter(node => ['technology_component', 'edge_gateway_service'].includes(node.data('type')))
           .sort((a, b) => String(a.data('label') || '').localeCompare(String(b.data('label') || '')))),
         addTier(nodeList.filter(node => !knownIds.has(node.id()))
           .sort((a, b) => String(a.data('label') || '').localeCompare(String(b.data('label') || ''))))
@@ -5939,7 +6069,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         searchInput.addEventListener('keydown', event => {
           if (event.key === 'Enter') {
-            const firstMatch = allObjects.find(object => `${object.name} ${object.id}`.toLowerCase().includes(impactSearchTerm.toLowerCase()));
+            const firstMatch = allObjects.find(object => deployableTypes.has(object.type) && `${object.name} ${object.id}`.toLowerCase().includes(impactSearchTerm.toLowerCase()));
             if (firstMatch) {
               runImpactAnalysis(firstMatch.id);
             }

@@ -21,6 +21,7 @@ FRAMEWORK_ENTRYPOINTS = [
     ("draft_table", "Local-first DRAFT Table CLI and web shell."),
     ("security.md", "DRAFT Table credential and local security boundary."),
     ("framework/docs/draftsman.md", "Draftsman role, intent routing, and authoring rules."),
+    ("framework/docs/company-onboarding.md", "Company onboarding tutorial for implementing DRAFT in a private workspace."),
     ("framework/docs/overview.md", "Framework concepts and object family overview."),
     ("framework/docs/object-types.md", "User-facing DRAFT object type taxonomy and deployable/non-deployable distinction."),
     ("framework/docs/delivery-models.md", "Delivery model meanings for self-managed, PaaS, SaaS, and appliance services."),

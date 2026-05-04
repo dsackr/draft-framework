@@ -30,6 +30,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | draft_table | Local-first DRAFT Table CLI and web shell. |
 | security.md | DRAFT Table credential and local security boundary. |
 | framework/docs/draftsman.md | Draftsman role, intent routing, and authoring rules. |
+| framework/docs/company-onboarding.md | Company onboarding tutorial for implementing DRAFT in a private workspace. |
 | framework/docs/overview.md | Framework concepts and object family overview. |
 | framework/docs/object-types.md | User-facing DRAFT object type taxonomy and deployable/non-deployable distinction. |
 | framework/docs/delivery-models.md | Delivery model meanings for self-managed, PaaS, SaaS, and appliance services. |
@@ -49,6 +50,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | Path | Title | Summary |
 |---|---|---|
 | framework/docs/capabilities.md | Capabilities | A Capability is a first-class framework object that names an architecture |
+| framework/docs/company-onboarding.md | Company Onboarding Tutorial | This tutorial describes how a company adopts DRAFT from an empty private repo |
 | framework/docs/decision-records.md | Decision Records | Decision Records are first-class records for known risks, |
 | framework/docs/delivery-models.md | Delivery Models | Delivery models explain how a deployable service is operated. They apply to |
 | framework/docs/drafting-sessions.md | Drafting Sessions | A Drafting Session is a machine-readable record of partial architecture work. |
@@ -65,7 +67,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | framework/docs/software-deployment-patterns.md | Software Deployment Patterns | A Software Deployment Pattern is a declaration that a specific product is intended |
 | framework/docs/standards.md | Deployable Objects | DRAFT previously used the word "Standard" for reusable deployable building |
 | framework/docs/technology-components.md | Technology Components | A Technology Component is a discrete vendor product object. It records one |
-| framework/docs/workspaces.md | Workspaces | DRAFT separates the upstream framework from private company implementation |
+| framework/docs/workspaces.md | Workspaces | For the full adoption sequence from installation through first drafting |
 | framework/docs/yaml-schema-reference.md | YAML Schema Reference | This page is the quickest way to understand how to build a valid YAML object in |
 
 ## Schemas

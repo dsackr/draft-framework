@@ -3,6 +3,9 @@
 This page is the high-level object map for DRAFT. For the complete object type
 contract, see [DRAFT Object Types](object-types.md).
 
+For a step-by-step company adoption path, see
+[Company Onboarding Tutorial](company-onboarding.md).
+
 If an AI assistant is using this repo directly to author content, start with
 [Draftsman instructions](draftsman.md).
 

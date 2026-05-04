@@ -81,6 +81,13 @@ Requirement Groups are the unified authoring and validation contract. They
 cover both always-on object-definition requirements and workspace-activated
 compliance requirements.
 
+DRAFT is requirement-first. Do not add or approve a Capability merely because
+it seems useful. A Capability becomes approved only when at least one
+Requirement Group requirement references it through `relatedCapability` or a
+satisfaction mechanism criteria capability. Draft capabilities may be created
+while authoring, but the Draftsman must either connect them to a requirement
+before approval or leave them as draft.
+
 Always use this named lookup procedure when a requirement has
 `relatedCapability`:
 

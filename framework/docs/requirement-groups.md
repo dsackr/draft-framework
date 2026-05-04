@@ -52,6 +52,17 @@ For external controls, DRAFT keeps the source control ID in
 `externalControlId`. When a source control ID appears more than once, the DRAFT
 requirement `id` is made unique while preserving `externalControlId`.
 
+## Capability Demand
+
+Requirement Groups are the demand signal for capabilities. When a requirement
+expects an architecture capability such as authentication, logging, patching,
+monitoring, encryption, or testing, it should name that capability with
+`relatedCapability` or in a satisfaction mechanism criteria capability.
+
+Approved Capability objects must be referenced by at least one Requirement
+Group. Draft capabilities may exist before their requirement trace is finished,
+but validation warns until the capability is tied back to a requirement.
+
 ## Object-Level Evidence
 
 Architecture objects use:

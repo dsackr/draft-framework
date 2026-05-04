@@ -177,6 +177,7 @@ See [security.md](security.md) for the threat model and credential boundary.
 - [AI framework index](AI_INDEX.md)
 - [Draftsman instructions for AI](framework/docs/draftsman.md)
 - [Draftsman AI guidance](framework/docs/draftsman-ai-configuration.md)
+- [Company onboarding tutorial](framework/docs/company-onboarding.md)
 - [DRAFT object types](framework/docs/object-types.md)
 - [YAML schema reference](framework/docs/yaml-schema-reference.md)
 - [Naming conventions](framework/docs/naming-conventions.md)

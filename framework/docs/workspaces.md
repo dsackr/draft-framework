@@ -1,5 +1,8 @@
 # Workspaces
 
+For the full adoption sequence from installation through first drafting
+sessions, see [Company Onboarding Tutorial](company-onboarding.md).
+
 ## Operating Model
 
 DRAFT separates the upstream framework from private company implementation

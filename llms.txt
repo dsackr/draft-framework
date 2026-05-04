@@ -10,6 +10,7 @@ vendor a reviewed framework copy under `.draft/framework/`.
 - Canonical AI instructions: AGENTS.md
 - Draftsman role: framework/docs/draftsman.md
 - Draftsman AI guidance: framework/docs/draftsman-ai-configuration.md
+- Company onboarding tutorial: framework/docs/company-onboarding.md
 - Framework index: AI_INDEX.md
 - Schema reference: framework/docs/yaml-schema-reference.md
 - Requirement Groups: framework/docs/requirement-groups.md
