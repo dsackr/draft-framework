@@ -78,7 +78,7 @@ main() {
 
   local tmp_dir
   tmp_dir="$(mktemp -d)"
-  trap 'rm -rf "$tmp_dir"' EXIT
+  trap 'rm -rf "${tmp_dir:-}"' EXIT
 
   cat > "$tmp_dir/deployment-contract.md" <<'ISSUE'
 ## Problem
