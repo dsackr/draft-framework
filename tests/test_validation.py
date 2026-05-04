@@ -160,6 +160,43 @@ class ValidationTests(unittest.TestCase):
         self.assertFalse(result.ok, result.stdout + result.stderr)
         self.assertIn("Satisfy Company Control / company-required-field", result.stdout)
 
+    def test_self_managed_runtime_service_requires_host_substrate(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            service_dir = workspace / "catalog" / "runtime-services"
+            service_dir.mkdir(parents=True, exist_ok=True)
+            (service_dir / "runtime-service-missing-host.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF51-ABCD
+                    type: runtime_service
+                    name: Missing Host Runtime
+                    deliveryModel: self-managed
+                    catalogStatus: approved
+                    lifecycleStatus: candidate
+                    architecturalDecisions:
+                      serviceAuthentication: Uses centralized identity.
+                      secretsManagement: Uses managed secrets injection.
+                      serviceLogging: Emits logs to the central logging platform.
+                      healthWelfareMonitoring: Exposes health telemetry.
+                      availabilityModel: Single-instance candidate service.
+                      scalabilityModel: Horizontal scaling not yet approved.
+                      recoverabilityModel: Recreated from deployment automation.
+                      failureDomain: Single service instance.
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("DRAFT Service Behavior / runtime-substrate", result.stdout)
+        self.assertIn("field(host)", result.stdout)
+
     def test_requirement_implementation_evidence_satisfies_declared_workspace_group(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)

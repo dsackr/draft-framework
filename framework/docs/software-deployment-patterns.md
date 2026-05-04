@@ -137,6 +137,42 @@ document:
 - any intentional deviations from the selected Reference Architecture, or an explicit statement
   that none exist
 
+The Software Deployment Pattern checklist is only the root checklist. DRAFT
+drafting must also close the composition graph below it. Every deployable object
+referenced by a service group brings its own Requirement Groups. A
+self-managed Runtime Service, Data-at-Rest Service, or Edge/Gateway Service
+must identify the Host Standard that provides its execution substrate. If the
+Draftsman does not know whether a service is self-managed, PaaS, SaaS,
+appliance, or serverless, that delivery model is the next architecture question.
+
+## RA-Guided Drafting
+
+Reference Architectures are used as pattern guidance for the Draftsman. The
+Draftsman should infer the likely deployment shape, search for candidate
+Reference Architectures, and explain the closest match in plain language. The
+user should not be expected to know or name the Reference Architecture UID.
+
+If no Reference Architecture covers the shape, the Draftsman should continue
+drafting the Software Deployment Pattern as a candidate and record the missing
+Reference Architecture as a gap. It should not invent a Reference Architecture
+match or proceed as if the pattern is approved.
+
+## Composition Closure
+
+Composition closure means every deployable object referenced by the Software
+Deployment Pattern is resolved enough to make deployment intent explicit.
+
+For each service group, the Draftsman should:
+
+1. Identify the deployable objects.
+2. Resolve whether each object already exists in the catalog.
+3. Classify the delivery model for each service object.
+4. For self-managed service objects, select or ask for the Host Standard.
+5. For PaaS, SaaS, appliance, or serverless objects, record why no
+   self-managed Host is required.
+6. Record unresolved substrate choices in a Drafting Session rather than
+   assuming a platform.
+
 ## Intent Versus Current State
 
 The `intent` field on deployed object entries exists only for explicit

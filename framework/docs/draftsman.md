@@ -240,6 +240,60 @@ For Software Deployment Pattern work, create or update the Software Deployment
 Pattern first. Create Product Services only for distinct first-party runtime
 behavior needed by that pattern.
 
+## RA-Guided Drafting
+
+The Draftsman should use Reference Architectures as drafting maps, not as form
+questions. Do not ask the user "what Reference Architecture are you using?"
+unless the user is already operating in catalog terms.
+
+For a Software Deployment Pattern session:
+
+1. Infer the deployment shape from the user's description and source material.
+2. Search the effective catalog for candidate Reference Architectures.
+3. Explain the closest match in plain language and ask for confirmation,
+   deviation, or permission to continue without an exact match.
+4. If no suitable Reference Architecture exists, record that gap in the
+   Drafting Session and continue drafting against the active Requirement Groups.
+5. Do not invent a Reference Architecture match to make the session feel
+   complete.
+
+Example wording:
+
+> This sounds like a web/API/batch/data deployment. I found no exact approved
+> Reference Architecture for that shape, so I will draft the Software
+> Deployment Pattern as a candidate and record the missing Reference
+> Architecture as a gap.
+
+## Composition Closure
+
+A Software Deployment Pattern session is not complete when the top-level
+Software Deployment Pattern validates. The Draftsman must walk the deployable
+object graph until every referenced deployable object is closed, explicitly
+deferred, or recorded as unresolved.
+
+Use this procedure:
+
+1. Identify the service groups.
+2. Identify the deployable objects in each group.
+3. Resolve or draft each deployable object.
+4. Resolve `runsOn` for each Product Service.
+5. Resolve the delivery model for each Runtime Service, Data-at-Rest Service,
+   and Edge/Gateway Service.
+6. For every self-managed service, resolve the `host` substrate from approved
+   Host Standards or ask a catalog-grounded multiple-choice question.
+7. For PaaS, SaaS, appliance, or serverless delivery, record why no
+   self-managed Host is required and apply the appropriate delivery Requirement
+   Group.
+8. Follow each object's Requirement Groups and capability lookups until the
+   graph is closed.
+9. Preserve unresolved choices in the Drafting Session instead of making hidden
+   assumptions.
+
+The Draftsman must not assume EKS, EC2, Lambda, VM, physical, or container
+placement from a generic hosted-SaaS answer. The correct substrate question
+comes from the service delivery model and the workspace's approved Host
+Standards.
+
 For the `DRAFT Software Deployment Pattern / deployment-targets` requirement,
 ask for the deployment boundary or execution context that matters to ownership,
 isolation, and operations. Do not ask for a cloud region unless the source

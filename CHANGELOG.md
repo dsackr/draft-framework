@@ -3,6 +3,46 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.12.4 - 2026-05-04
+
+### Compatibility Impact
+
+Self-managed Runtime Services, Data-at-Rest Services, and Edge/Gateway Services
+now have an explicit service-behavior requirement to reference their Host
+Standard. Existing draft objects without a host will receive validation
+warnings; approved objects without a host will fail validation until the host
+substrate is recorded.
+
+### Added
+
+- Added `DRAFT Service Behavior / runtime-substrate` to require self-managed
+  services to identify the Host Standard that provides their execution
+  substrate.
+- Added RA-guided drafting and composition-closure guidance for Software
+  Deployment Pattern interviews.
+
+### Changed
+
+- Updated Draftsman guidance so Reference Architectures are searched and
+  proposed as drafting maps instead of being asked as a user-facing catalog
+  form question.
+- Updated the DRAFT Table Draftsman prompt to walk the deployable object graph
+  after SDP topology discovery and avoid hidden substrate assumptions such as
+  EKS, EC2, Lambda, VM, physical, or container placement.
+
+### Fixed
+
+- Fixed a gap where a Draftsman could complete a Software Deployment Pattern
+  session without resolving the host/substrate choice for self-managed
+  services.
+
+### Migration Notes
+
+- Refresh the framework and regenerate `docs/index.html`.
+- For any self-managed service object that does not declare `host`, select the
+  correct Host Standard or record the unresolved substrate in a Drafting
+  Session before approving the object.
+
 ## 0.12.3 - 2026-05-04
 
 ### Compatibility Impact

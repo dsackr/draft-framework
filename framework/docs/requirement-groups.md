@@ -104,3 +104,12 @@ The Draftsman may include "something else" as an exception path, but that path
 is not an approved standard. If the user chooses it, the Draftsman drafts or
 identifies the Technology Component and records that the capability owner must
 approve the lifecycle entry before it becomes acceptable use.
+
+For Software Deployment Pattern sessions, the Draftsman must also perform
+composition closure. The Software Deployment Pattern Requirement Group governs
+the root deployment pattern, but every referenced deployable object brings its
+own Requirement Groups. A self-managed Runtime Service, Data-at-Rest Service,
+or Edge/Gateway Service must satisfy `DRAFT Service Behavior /
+runtime-substrate` by referencing the Host Standard it runs on. If the Host is
+unknown, the Draftsman asks from the workspace's approved Host Standards or
+records the missing substrate as an unresolved Drafting Session question.

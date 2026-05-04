@@ -121,6 +121,24 @@ approve it.
 Capability implementation lifecycle entries must reference Technology
 Components only, never deployable service objects or running systems.
 
+## Software Deployment Pattern Walkdown
+
+When drafting a Software Deployment Pattern, use Reference Architectures as
+candidate maps. Search the catalog, explain the closest match, and ask for
+confirmation or deviation; do not ask the user to name a Reference Architecture
+UID.
+
+After identifying service groups, perform composition closure:
+
+1. resolve each deployable object in the group
+2. classify each service object's delivery model
+3. for self-managed Runtime, Data-at-Rest, and Edge/Gateway Services, resolve
+   the `host` substrate from approved Host Standards
+4. for PaaS, SaaS, appliance, or serverless delivery, record why no
+   self-managed Host is required
+5. record unresolved substrate choices in a Drafting Session instead of
+   assuming EKS, EC2, Lambda, VM, physical, or container placement
+
 ## Editing Rules
 
 - Keep generated files current by running `python3 framework/tools/generate_ai_index.py`

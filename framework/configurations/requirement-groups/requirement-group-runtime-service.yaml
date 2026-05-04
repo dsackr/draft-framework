@@ -2,7 +2,7 @@ schemaVersion: '1.0'
 uid: 01KQQ4Q027-K5DR
 type: requirement_group
 name: Service Behavior Requirement Group
-description: Structured checklist of required questions and answers used to define complete and correct Runtime and Edge/Gateway Services.
+description: Structured checklist of required questions and answers used to define complete and correct self-managed Runtime and Edge/Gateway Services; Data-at-Rest Services inherit these service behavior requirements.
 version: 3.0.0
 catalogStatus: approved
 owner:
@@ -19,6 +19,18 @@ appliesTo:
 appliesToQualifiers:
   deliveryModel: self-managed
 requirements:
+- id: runtime-substrate
+  description: A self-managed service must reference the Host Standard that provides its execution substrate.
+  rationale: A service is not deployable until the host substrate is explicit; the Draftsman must not assume EKS, EC2, Lambda, VM, physical, or container placement without source evidence or user confirmation.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: host
+    example: Reference an approved Host Standard such as Windows Server on EC2, Amazon Linux on EC2, Ubuntu on EC2, EKS container host, or another workspace-defined Host.
+  minimumSatisfactions: 1
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - field
 - id: service-authentication
   description: The service must address how service identities or administrators authenticate to the service.
   rationale: A service is incomplete until its service-level authentication model is explicit.

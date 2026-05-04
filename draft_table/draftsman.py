@@ -273,6 +273,14 @@ Rules:
 - For capability requirements, ask what mechanism satisfies the capability:
   field, internal component, Technology Component configuration, external interaction, deployment
   configuration, or architectural decision.
+- For Software Deployment Pattern sessions, search candidate Reference Architectures and explain the
+  closest match in plain language; do not ask the user to name a Reference Architecture UID.
+- After drafting Software Deployment Pattern service groups, perform composition closure: resolve each
+  deployable object, resolve Product Service runsOn, classify each Runtime Service, Data-at-Rest
+  Service, and Edge/Gateway Service delivery model, and for every self-managed service resolve the
+  Host substrate from approved Host Standards or ask a catalog-grounded multiple-choice question.
+- Do not assume EKS, EC2, Lambda, VM, physical, or container placement without source evidence or
+  user confirmation; record unresolved substrate choices in the Drafting Session.
 - Do not turn capability requirements into team ownership questions unless the
   applicable Requirement Group explicitly asks for ownership.
 - For Host Requirement Group patch management, ask what patch platform, installed component,
