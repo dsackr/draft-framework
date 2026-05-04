@@ -3,6 +3,57 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.11.0 - 2026-05-04
+
+### Compatibility Impact
+
+Pre-1.0 validation behavior changed for Capability governance. Approved
+Capabilities must now be traceable to at least one Requirement Group through a
+requirement `relatedCapability` reference. Workspaces with approved
+Capabilities that are not requirement-backed must either add requirement
+coverage or downgrade those Capabilities to draft/stub until the demand signal
+is defined.
+
+### Added
+
+- Added a company onboarding tutorial at `framework/docs/company-onboarding.md`
+  that walks a new company through repository setup, vendored framework
+  refresh, requirement activation, capability ownership, acceptable-use
+  technology, first deployable objects, validation, and update readiness.
+- Added a generated browser Onboarding page so the DRAFT Table UI can guide new
+  users without leaving the local catalog browser.
+- Added onboarding guidance to the Draftsman grounding context, `AI_INDEX.md`,
+  and `llms.txt`.
+
+### Changed
+
+- Changed Capability validation so approved Capabilities must be requirement
+  traceable while draft/stub Capabilities without requirement traceability emit
+  actionable warnings.
+- Changed eight framework base Capabilities that are not yet requirement-backed
+  from approved to draft.
+- Updated Capability, Requirement Group, Draftsman, workspace, and overview
+  documentation to describe requirement-first traceability and company-owned
+  implementation decisions.
+- Changed the generated browser impact graph so Technology Components are not
+  treated as lifecycle-filterable deployable object nodes.
+
+### Fixed
+
+- Fixed generated browser lifecycle filtering so Technology Components do not
+  appear in deployable object lifecycle impact views.
+
+### Migration Notes
+
+- Run validation after refreshing the framework and review any Capability
+  traceability warnings.
+- For each workspace-owned Capability with `catalogStatus: approved`, add at
+  least one Requirement Group requirement with `relatedCapability` pointing to
+  that Capability, or downgrade the Capability to draft/stub until it is backed
+  by a requirement.
+- Regenerate `AI_INDEX.md` and `docs/index.html` after refreshing the
+  framework.
+
 ## 0.10.0 - 2026-05-04
 
 ### Compatibility Impact
