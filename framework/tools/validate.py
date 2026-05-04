@@ -1943,15 +1943,16 @@ def validate_requirement_implementations(
             continue
         mechanism = implementation.get("mechanism")
         valid_answer_types = requirement.get("validAnswerTypes", [])
+        label = requirement_display_label(group, requirement)
         if mechanism and mechanism not in valid_answer_types:
             failures.append(
-                f"{context}: Set mechanism to one of {valid_answer_types} for requirement '{requirement_id}'"
+                f"{context}: Set mechanism to one of {valid_answer_types} for {label}"
             )
         elif mechanism and not implementation_resolves(obj, implementation, catalog_by_id):
             record_requirement_gap(
                 obj,
                 path,
-                f"[{object_label(obj)}] Update requirementImplementation for '{requirement_id}' because mechanism '{mechanism}' does not resolve against the object",
+                f"[{object_label(obj)}] Update requirementImplementation for {label} because mechanism '{mechanism}' does not resolve against the object",
                 failures,
                 warnings,
             )
@@ -1966,10 +1967,11 @@ def validate_requirement_implementations(
                 continue
             key = (group_id, str(requirement.get("id")))
             if key not in implementations_by_key:
+                label = requirement_display_label(group, requirement)
                 record_requirement_gap(
                     obj,
                     path,
-                    f"[{object_label(obj)}] Add requirementImplementation for active requirement '{requirement.get('id')}' from {group_id}",
+                    f"[{object_label(obj)}] Add requirementImplementation for active requirement {label} from {group.get('name') or group_id}",
                     failures,
                     warnings,
                 )

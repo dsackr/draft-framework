@@ -3,6 +3,33 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.12.1 - 2026-05-04
+
+### Compatibility Impact
+
+No workspace migration is required. This patch only completes the
+human-readable requirement label rollout in validation messages.
+
+### Added
+
+- No new framework features in this patch release.
+
+### Changed
+
+- Changed remaining requirement implementation validation messages to cite
+  source-aware labels such as `Roper.CC.03.2.3` and
+  `DRAFT Host / operating-system`.
+
+### Fixed
+
+- Fixed active requirement implementation gap messages that still displayed raw
+  Requirement Group UIDs instead of the resolved authority/control label.
+
+### Migration Notes
+
+- Refresh the framework and regenerate `docs/index.html` to pick up the
+  updated validation wording.
+
 ## 0.12.0 - 2026-05-04
 
 ### Compatibility Impact
