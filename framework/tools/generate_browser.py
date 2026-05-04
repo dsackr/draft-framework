@@ -3208,14 +3208,54 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       allObjects.forEach(object => {
         (object.requirementImplementations || []).forEach(implementation => {
           if (!implementation) return;
+          const requirementGroup = objectLookup[implementation.requirementGroup] || null;
+          const requirement = findRequirementInGroup(requirementGroup, implementation.requirementId);
           rows.push({
             object,
             implementation,
-            requirementGroup: objectLookup[implementation.requirementGroup] || null
+            requirementGroup,
+            requirement,
+            label: requirementDisplayLabel(requirementGroup, requirement || { id: implementation.requirementId })
           });
         });
       });
       return rows;
+    }
+
+    function requirementGroupName(group) {
+      if (!group) return 'Requirement Group';
+      return String(group.name || group.id || 'Requirement Group').replace(/\s+Requirement Group$/i, '').trim() || 'Requirement Group';
+    }
+
+    function requirementAuthorityPrefix(group) {
+      const authority = group?.authority || {};
+      const provider = group?.provider || {};
+      return authority.shortName || authority.name || provider.shortName || provider.name || provider.id || '';
+    }
+
+    function findRequirementInGroup(group, requirementId) {
+      if (!group || !Array.isArray(group.requirements)) return null;
+      return group.requirements.find(requirement => requirement && requirement.id === requirementId) || null;
+    }
+
+    function requirementDisplayLabel(group, requirement) {
+      const requirementId = requirement?.id || requirement?.externalControlId || 'unknown';
+      if (requirement?.externalControlId) {
+        const prefix = requirementAuthorityPrefix(group);
+        return prefix ? `${prefix}.${requirementId}` : requirementId;
+      }
+      const prefix = requirementAuthorityPrefix(group);
+      return prefix ? `${prefix} ${requirementGroupName(group)} / ${requirementId}` : `${requirementGroupName(group)} / ${requirementId}`;
+    }
+
+    function requirementSourceText(group) {
+      if (!group) return 'Unknown Requirement Group';
+      const source = group.authority?.source || group.name || group.id;
+      const authority = group.authority?.name;
+      if (authority && source && authority !== source) {
+        return `${authority} - ${source}`;
+      }
+      return source || authority || group.id;
     }
 
     function executiveStats() {
@@ -3382,12 +3422,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           object: row.object,
           count: 0,
           groups: new Set(),
+          requirements: new Set(),
           statuses: {}
         };
         existing.count += 1;
         if (row.implementation.requirementGroup) {
-          existing.groups.add(row.implementation.requirementGroup);
+          existing.groups.add(requirementGroupName(row.requirementGroup));
         }
+        existing.requirements.add(row.label);
         const status = row.implementation.status || 'unknown';
         existing.statuses[status] = (existing.statuses[status] || 0) + 1;
         grouped.set(row.object.id, existing);
@@ -3412,6 +3454,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     <th>Artifact</th>
                     <th>Type</th>
                     <th>Requirement Groups</th>
+                    <th>Requirements</th>
                     <th>Evidence</th>
                     <th>Status</th>
                   </tr>
@@ -3424,7 +3467,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         <div class="object-id">${escapeHtml(row.object.id)}</div>
                       </td>
                       <td>${escapeHtml(row.object.typeLabel)}</td>
-                      <td>${Array.from(row.groups).map(groupId => `<span class="badge">${escapeHtml(shortRefLabel(groupId))}</span>`).join('')}</td>
+                      <td>${Array.from(row.groups).map(groupName => `<span class="badge">${escapeHtml(groupName)}</span>`).join('')}</td>
+                      <td>${Array.from(row.requirements).slice(0, 4).map(label => `<span class="badge">${escapeHtml(label)}</span>`).join('')}${row.requirements.size > 4 ? `<div class="object-id">+${formatNumber(row.requirements.size - 4)} more</div>` : ''}</td>
                       <td>${formatNumber(row.count)}</td>
                       <td>${Object.entries(row.statuses).map(([status, count]) => `<span class="badge">${escapeHtml(status)}: ${formatNumber(count)}</span>`).join('')}</td>
                     </tr>
@@ -4201,9 +4245,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <div class="section-stack">
             ${requirements.map(requirement => `
               <article class="requirement-card">
-                <div class="requirement-name">${escapeHtml(formatTitleCase(requirement.id || 'requirement'))}</div>
+                <div class="requirement-name">${escapeHtml(requirementDisplayLabel(object, requirement))}</div>
                 <div class="requirement-badges">
-                  ${requirement.externalControlId ? `<span class="requirement-badge">${escapeHtml(requirement.externalControlId)}</span>` : ''}
+                  ${requirement.externalControlId ? `<span class="requirement-badge">${escapeHtml(requirementSourceText(object))}</span>` : ''}
                   ${requirement.relatedCapability ? `<span class="requirement-badge">${escapeHtml(requirement.relatedCapability)}</span>` : ''}
                   <span class="requirement-badge ${requirement.requirementMode === 'conditional' ? 'conditional' : ''}">${escapeHtml(requirement.requirementMode || 'mandatory')}</span>
                   ${requirement.naAllowed ? '<span class="requirement-badge conditional">N/A allowed</span>' : ''}
@@ -4229,6 +4273,51 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
+    function requirementEvidenceMarkup(object) {
+      const implementations = object.requirementImplementations || [];
+      if (!implementations.length) {
+        return '';
+      }
+      return `
+        <section class="section-card">
+          <h3>Requirement Evidence</h3>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Requirement</th>
+                  <th>Status</th>
+                  <th>Mechanism</th>
+                  <th>Evidence</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${implementations.map(implementation => {
+                  const group = objectLookup[implementation.requirementGroup] || null;
+                  const requirement = findRequirementInGroup(group, implementation.requirementId);
+                  const refObject = implementation.ref ? objectLookup[implementation.ref] : null;
+                  const evidence = refObject
+                    ? `<span class="ard-link" data-object-link="${escapeHtml(refObject.id)}">${escapeHtml(refObject.name)}</span>`
+                    : escapeHtml(implementation.ref || implementation.key || implementation.notes || 'Not documented');
+                  return `
+                    <tr>
+                      <td>
+                        <strong>${escapeHtml(requirementDisplayLabel(group, requirement || { id: implementation.requirementId }))}</strong>
+                        <div class="object-id">${escapeHtml(requirementSourceText(group))}</div>
+                      </td>
+                      <td><span class="badge">${escapeHtml(implementation.status || 'unknown')}</span></td>
+                      <td>${escapeHtml(implementation.mechanism || 'unknown')}</td>
+                      <td>${evidence}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+
     function requirementGroupByName(name) {
       return allObjects.find(object => object.type === 'requirement_group' && object.name === name) || null;
     }
@@ -4247,9 +4336,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               const requirements = group?.requirements || [];
               return `
                 <article class="odc-card">
-                  <div class="odc-name">Addresses: ${escapeHtml(groupId)}</div>
+                  <div class="odc-name">Addresses: ${escapeHtml(group?.name || groupId)}</div>
                   ${requirements.length ? requirements.map(requirement => `
-                    <div class="odc-requirement-line">- ${escapeHtml(requirement.id || 'requirement')}${requirement.relatedCapability ? ` (${escapeHtml(requirement.relatedCapability)})` : ''}</div>
+                    <div class="odc-requirement-line">- ${escapeHtml(requirementDisplayLabel(group, requirement))}${requirement.relatedCapability ? ` (${escapeHtml(requirement.relatedCapability)})` : ''}</div>
                   `).join('') : '<div class="interaction-notes">No requirements found on referenced Requirement Group.</div>'}
                 </article>
               `;
@@ -5234,7 +5323,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <span class="badge">${escapeHtml(object.typeLabel)}</span>
               ${object.lifecycleStatus ? lifecycleBadge(object.lifecycleStatus) : ''}
               ${catalogBadge(object.catalogStatus)}
-              ${(object.requirementGroups || []).map(groupId => `<span class="badge">Requirement: ${escapeHtml(shortRefLabel(groupId))}</span>`).join('')}
+              ${(object.requirementGroups || []).map(groupId => `<span class="badge">Requirement: ${escapeHtml(requirementGroupName(objectLookup[groupId] || { id: groupId }))}</span>`).join('')}
             </div>
           </div>
           <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
@@ -5288,6 +5377,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         detailBody = `
           ${headerMarkup}
           ${productServiceDetailMarkup(object)}
+          ${requirementEvidenceMarkup(object)}
           <section class="middle-grid">
             <div class="section-card">
               <h3>Internal Components</h3>
@@ -5322,6 +5412,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               </div>
             </section>
             ${businessContextMarkup(object)}
+            ${requirementEvidenceMarkup(object)}
             ${sdmServiceGroupsMarkup(object)}
             ${sdmRisksMarkup(object)}
             ${sourceRepositoryMarkup(object)}
@@ -5346,6 +5437,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <button class="detail-tab active" data-sdm-tab="topology">Deployment Pattern</button>
           </div>
           <div class="detail-panel" data-sdm-panel="details" hidden>
+            ${requirementEvidenceMarkup(object)}
             ${sdmServiceGroupsMarkup(object)}
             <section class="decisions-card">
               <h3>Architectural Decision Entries</h3>
@@ -5370,6 +5462,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         detailBody = `
           ${headerMarkup}
           ${deliveryModelDetailMarkup(object)}
+          ${requirementEvidenceMarkup(object)}
           <section class="middle-grid">
             <div class="section-card">
               <h3>Internal Components</h3>

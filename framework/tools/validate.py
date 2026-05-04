@@ -365,6 +365,37 @@ def object_label(obj: dict[str, Any]) -> str:
     return str(obj.get("name") or obj.get("uid") or obj.get("id") or "unknown")
 
 
+def requirement_group_name(group: dict[str, Any], fallback: str = "Requirement Group") -> str:
+    name = str(group.get("name") or fallback)
+    return re.sub(r"\s+Requirement Group$", "", name).strip() or fallback
+
+
+def requirement_authority_prefix(group: dict[str, Any]) -> str:
+    authority = group.get("authority")
+    if isinstance(authority, dict):
+        for key in ("shortName", "name"):
+            value = authority.get(key)
+            if is_non_empty(value):
+                return str(value).strip()
+    provider = group.get("provider")
+    if isinstance(provider, dict):
+        for key in ("shortName", "name", "id"):
+            value = provider.get(key)
+            if is_non_empty(value):
+                return str(value).strip()
+    return ""
+
+
+def requirement_display_label(group: dict[str, Any], requirement: dict[str, Any]) -> str:
+    requirement_id = str(requirement.get("id") or requirement.get("externalControlId") or "unknown")
+    if requirement.get("externalControlId"):
+        prefix = requirement_authority_prefix(group)
+        return f"{prefix}.{requirement_id}" if prefix else requirement_id
+    prefix = requirement_authority_prefix(group)
+    group_name = requirement_group_name(group)
+    return f"{prefix} {group_name} / {requirement_id}" if prefix else f"{group_name} / {requirement_id}"
+
+
 def uid_repair_command(workspace_root: Path, path: Path, suggested_uid: str) -> str:
     try:
         file_arg = path.resolve().relative_to(workspace_root).as_posix()
@@ -905,9 +936,12 @@ def validate_requirement(
     if minimum > 1:
         mechanism_text = f"at least {minimum} of {mechanism_text}"
     related_text = f" — see capability {related} for approved implementations" if related else ""
+    group = catalog_by_id.get(group_id, {})
+    label = requirement_display_label(group, requirement)
+    source = str(group.get("name") or group_id)
     return (
         False,
-        f"[{object_label(obj)}] Satisfy requirement '{requirement_id}' from {group_id} using {mechanism_text}{related_text}",
+        f"[{object_label(obj)}] Satisfy {label} from {source} using {mechanism_text}{related_text}",
     )
 
 
@@ -1889,10 +1923,11 @@ def validate_requirement_implementations(
             continue
         status = implementation.get("status")
         if status == "not-compliant":
+            label = requirement_display_label(group, requirement)
             record_requirement_gap(
                 obj,
                 path,
-                f"[{object_label(obj)}] Resolve not-compliant requirement '{requirement_id}' from {group_id} before approving this object",
+                f"[{object_label(obj)}] Resolve not-compliant {label} from {group.get('name') or group_id} before approving this object",
                 failures,
                 warnings,
             )

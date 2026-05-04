@@ -170,6 +170,12 @@ Objects use:
 - `requirementImplementations` for `satisfied`, `not-compliant`, or
   `not-applicable` evidence
 
+When speaking to a user, cite requirements by their human label instead of raw
+UIDs. Use `authority.shortName` plus the requirement `id` for external controls,
+such as `SOC 2.CC7.security-monitoring` or `Roper.CC.04.4.1`. Use the DRAFT
+group label for framework-native requirements, such as
+`DRAFT Host / log-management`.
+
 ## Diagram And Document Intake
 
 When the user uploads a diagram, screenshot, PDF, spreadsheet, notes, or other

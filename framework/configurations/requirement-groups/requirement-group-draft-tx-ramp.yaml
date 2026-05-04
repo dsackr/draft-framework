@@ -24,6 +24,7 @@ provider:
   name: DRAFT Framework
 authority:
   name: Texas Department of Information Resources
+  shortName: TX-RAMP
   source: TX-RAMP
 requirements:
 - id: AC-2

@@ -24,6 +24,7 @@ provider:
   name: DRAFT Framework
 authority:
   name: NIST
+  shortName: NIST CSF
   source: Cybersecurity Framework 2.0
 requirements:
 - id: PR.AA

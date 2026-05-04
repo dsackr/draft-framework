@@ -52,6 +52,19 @@ For external controls, DRAFT keeps the source control ID in
 `externalControlId`. When a source control ID appears more than once, the DRAFT
 requirement `id` is made unique while preserving `externalControlId`.
 
+Requirement Groups can also declare `authority.shortName` for human citation.
+The UID remains the machine reference, but generated UI and validation messages
+use the short name to make controls readable:
+
+- framework-native requirements render as `DRAFT Host / operating-system`
+- framework-mapped external controls render as `SOC 2.CC7.security-monitoring`
+- company-mapped external controls render as `Roper.CC.04.4.1`
+
+Use `provider` for the organization that supplies the DRAFT mapping and
+`authority` for the external or framework source that owns the requirement
+language. For example, a company-owned Roper mapping can have
+`provider.name: Frontline Education` and `authority.shortName: Roper`.
+
 ## Capability Demand
 
 Requirement Groups are the demand signal for capabilities. When a requirement

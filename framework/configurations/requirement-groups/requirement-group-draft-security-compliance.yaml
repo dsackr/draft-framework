@@ -24,6 +24,7 @@ provider:
   name: DRAFT Framework
 authority:
   name: DRAFT Framework
+  shortName: DRAFT Security
   source: Security Compliance Requirements
 requirements:
 - id: CC.SecurityCompliance.04.2.2

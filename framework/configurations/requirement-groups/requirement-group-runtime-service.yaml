@@ -8,6 +8,10 @@ catalogStatus: approved
 owner:
   team: cloud-architecture
   contact: cloud-architecture@example.com
+authority:
+  name: DRAFT Framework
+  shortName: DRAFT
+  source: DRAFT Framework
 activation: always
 appliesTo:
 - runtime_service

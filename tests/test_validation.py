@@ -158,7 +158,7 @@ class ValidationTests(unittest.TestCase):
             result = validate_workspace(workspace)
 
         self.assertFalse(result.ok, result.stdout + result.stderr)
-        self.assertIn("Satisfy requirement 'company-required-field'", result.stdout)
+        self.assertIn("Satisfy Company Control / company-required-field", result.stdout)
 
     def test_requirement_implementation_evidence_satisfies_declared_workspace_group(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

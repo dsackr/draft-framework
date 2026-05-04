@@ -3,6 +3,51 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.12.0 - 2026-05-04
+
+### Compatibility Impact
+
+No workspace migration is required. Requirement Group machine references remain
+unchanged: objects still store `requirementGroup` as the group UID and
+`requirementId` as the requirement-local ID. Generated UI and validation
+messages now resolve those keys into human-readable requirement citations.
+
+### Added
+
+- Added `authority.shortName` guidance for Requirement Groups so external
+  controls can render as labels such as `SOC 2.CC7.security-monitoring`,
+  `NIST CSF.PR.AA`, `TX-RAMP.AC-2`, or `Roper.CC.04.4.1`.
+- Added explicit DRAFT authority metadata to framework-native always-on
+  Requirement Groups so they render as labels such as
+  `DRAFT Host / operating-system`.
+- Added Requirement Evidence detail tables to generated browser artifact pages
+  when object-level requirement implementations are recorded.
+
+### Changed
+
+- Changed generated browser requirement cards, object Requirement Group badges,
+  requirement evidence drill-downs, and artifact evidence tables to use
+  source-aware requirement labels instead of raw Requirement Group UIDs or
+  unsourced control IDs.
+- Changed validation failure messages for unmet or not-compliant requirements
+  to cite the resolved requirement label and source Requirement Group.
+- Updated Draftsman and authoring documentation to tell AI agents to use
+  sourced requirement labels in conversation.
+
+### Fixed
+
+- Fixed ambiguous requirement/control display where controls such as `CC.04.4.1`
+  appeared without showing whether they came from Roper, SOC 2, DRAFT Security,
+  or another activated Requirement Group.
+
+### Migration Notes
+
+- Refresh the framework and regenerate `docs/index.html` to pick up sourced
+  requirement labels.
+- Company-owned external control mappings should add `authority.shortName` to
+  their Requirement Groups. Existing objects do not need their
+  `requirementGroups` or `requirementImplementations` rewritten.
+
 ## 0.11.0 - 2026-05-04
 
 ### Compatibility Impact
