@@ -48,9 +48,17 @@ Objects use `requirementGroups` to claim a workspace-mode group and
 
 When a requirement has `relatedCapability`, the Draftsman resolves the capability
 object, reads the company capability owner, and recommends `preferred` or
-`existing-only` Technology Component implementations before asking the user. This
-means compliance questions are grounded in the same capability model as base
-object-definition questions.
+`existing-only` Technology Component implementations as concrete choices before
+asking the user. If `relatedCapability` is absent but a satisfaction mechanism
+criteria names a capability, the Draftsman uses that capability for the same
+lookup. This means compliance questions are grounded in the same capability
+model as base object-definition questions.
+
+Compliance interviews should cite the resolved requirement label and then offer
+the company's current acceptable-use options. "Something else" is an exception
+path that creates or identifies a candidate Technology Component for capability
+owner review; it is not treated as compliant evidence until the requirement can
+be satisfied by an approved implementation or another valid mechanism.
 
 ## Overlap With Base Requirements
 

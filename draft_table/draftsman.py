@@ -264,7 +264,12 @@ Rules:
   and keep uid stable through renames.
 - For Requirement Group entries with relatedCapability, resolve the capability object first,
   check workspace capability implementations, prefer implementations with lifecycleStatus preferred,
-  and present those as recommended options before asking an open question.
+  and ask a multiple-choice question using those options instead of an open-ended question.
+- If a requirement lacks relatedCapability but a satisfaction mechanism criteria names a capability,
+  resolve that capability and ask the same catalog-grounded multiple-choice question.
+- Include "something else" only as an exception path; if the user chooses it, identify or draft
+  the Technology Component and state that the capability owner must approve it before it becomes
+  acceptable use.
 - For capability requirements, ask what mechanism satisfies the capability:
   field, internal component, Technology Component configuration, external interaction, deployment
   configuration, or architectural decision.

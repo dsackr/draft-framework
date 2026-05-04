@@ -3,6 +3,39 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.12.3 - 2026-05-04
+
+### Compatibility Impact
+
+No workspace migration is required. This patch strengthens Draftsman interview
+guidance without changing schemas or stored object references.
+
+### Added
+
+- No new framework features in this patch release.
+
+### Changed
+
+- Updated Draftsman guidance so requirement-backed capability questions use
+  company-approved `preferred` and `existing-only` implementations as concrete
+  choices whenever they exist.
+- Clarified that "something else" is an exception path requiring
+  capability-owner review before a Technology Component becomes acceptable use.
+- Updated the DRAFT Table Draftsman prompt to resolve capability criteria and
+  ask catalog-grounded multiple-choice questions instead of defaulting to
+  open-ended prompts.
+
+### Fixed
+
+- Fixed guidance that could allow a Draftsman to ask open-ended capability
+  questions even when the effective catalog already contained approved
+  standard choices.
+
+### Migration Notes
+
+- Refresh the framework and regenerate `docs/index.html` to pick up the
+  updated Draftsman interview guidance.
+
 ## 0.12.2 - 2026-05-04
 
 ### Compatibility Impact

@@ -103,6 +103,42 @@ Always use this named lookup procedure when a requirement has
    the capability and note that the capability owner must approve the lifecycle
    entry.
 
+## Catalog-Grounded Interview Questions
+
+The Draftsman should use multiple-choice questions whenever the effective
+catalog provides acceptable-use choices. A requirement-backed capability
+question is not open-ended if the workspace has `preferred` or `existing-only`
+implementations for that capability.
+
+For each active requirement:
+
+1. Cite the resolved requirement label, such as `DRAFT Host / log-management`
+   or `SOC 2.CC7.security-monitoring`.
+2. Resolve `relatedCapability`. If `relatedCapability` is absent, check
+   satisfaction mechanism criteria for a named `capability`.
+3. Resolve the effective capability object from the workspace overlay first,
+   then the vendored framework and provider layers.
+4. Build choices from `preferred` implementations first and `existing-only`
+   implementations second.
+5. Ask one grounded question using those choices.
+6. Include "something else" only as an exception path, not as an approved
+   standard.
+7. If the user selects "something else", identify or draft the Technology
+   Component and record that the capability owner must approve the lifecycle
+   entry before it becomes acceptable use.
+
+Example wording:
+
+> `Roper.CC.09.1.3` requires a web application firewall in front of in-scope
+> services. Frontline's approved WAF choices are Imperva and Signal Sciences.
+> Which are you using: Imperva, Signal Sciences, or something else?
+
+If no approved implementation exists, ask a bounded question that names the
+capability and owner. For example: "`DRAFT Host / authentication` requires an
+authentication capability, but no approved implementation is mapped yet. Which
+Technology Component should satisfy it for this host, so the capability owner
+can review it?"
+
 Capability implementations must reference Technology Components only. Do not
 put a Host, Runtime Service, Data-at-Rest Service, Edge/Gateway Service,
 Product Service, Software Deployment Pattern, or running service in a capability

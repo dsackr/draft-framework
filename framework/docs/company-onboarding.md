@@ -239,8 +239,8 @@ During onboarding, treat these as framework gaps worth addressing before 1.0:
 
 - a company cannot tell which Requirement Groups are object definitions,
   delivery overlays, or workspace governance
-- the Draftsman asks open-ended capability questions when approved
-  implementations exist
+- capability-backed questions do not resolve to the company's approved
+  multiple-choice options when approved implementations exist
 - Technology Components appear to have company lifecycle outside capability
   mappings
 - a company cannot identify the owner for a capability decision
@@ -251,4 +251,3 @@ During onboarding, treat these as framework gaps worth addressing before 1.0:
   look next
 - the generated UI shows runtime filters instead of build-time governance
   decisions
-

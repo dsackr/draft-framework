@@ -94,7 +94,13 @@ workspace disposition is enabled.
 For every requirement with `relatedCapability`, the Draftsman resolves the
 capability before asking the user. The Draftsman reads the capability owner,
 then presents `preferred` implementations first and `existing-only` implementations
-second as recommended options. The question should not be open-ended unless the
-company has not mapped an implementation. If no implementation is mapped, the
-Draftsman asks which Technology Component should satisfy the capability and
-records that the capability owner must approve the lifecycle entry.
+second as concrete multiple-choice options. The question should not be
+open-ended unless the company has not mapped an implementation. If the
+requirement does not use `relatedCapability`, the Draftsman should also inspect
+the satisfaction mechanism criteria for a named `capability` and use the same
+lookup.
+
+The Draftsman may include "something else" as an exception path, but that path
+is not an approved standard. If the user chooses it, the Draftsman drafts or
+identifies the Technology Component and records that the capability owner must
+approve the lifecycle entry before it becomes acceptable use.

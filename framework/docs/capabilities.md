@@ -62,13 +62,20 @@ procedure:
 4. Read `owner` to identify the company decision authority.
 5. Read `implementations`.
 6. Prefer implementations with `lifecycleStatus: preferred`, then `existing-only`.
-7. Recommend the referenced Technology Component or named configuration.
+7. Present the referenced Technology Component or named configuration as a
+   concrete interview choice.
 8. If no implementation exists, ask which Technology Component should satisfy
    the capability and flag that the capability owner must approve the lifecycle
    entry.
 
 This keeps interviews grounded in the company's current acceptable-use
 technology decisions.
+
+When approved implementations exist, the Draftsman should ask a multiple-choice
+question instead of an open-ended one. Candidate, deprecated, and retired
+implementations are not default choices. "Something else" can be offered only as
+an exception path that requires capability-owner review before it is accepted as
+standard.
 
 ## Implementation Entries
 

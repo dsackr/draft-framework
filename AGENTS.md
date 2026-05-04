@@ -112,9 +112,12 @@ When a requirement has `relatedCapability`, resolve it before interviewing:
 4. implementations filtered first to `lifecycleStatus: preferred`, then `existing-only`
 5. referenced Technology Component or configuration
 
-If no implementation exists, ask what mechanism satisfies the capability rather
-than asking who performs the work. If the answer would create a lifecycle
-implementation, record that the company capability owner must approve it.
+If approved implementations exist, ask a multiple-choice question using those
+Technology Components or configurations. Include "something else" only as an
+exception path. If no implementation exists, ask what mechanism satisfies the
+capability rather than asking who performs the work. If the answer would create
+a lifecycle implementation, record that the company capability owner must
+approve it.
 Capability implementation lifecycle entries must reference Technology
 Components only, never deployable service objects or running systems.
 
