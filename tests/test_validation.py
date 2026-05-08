@@ -197,6 +197,62 @@ class ValidationTests(unittest.TestCase):
         self.assertIn("DRAFT Service Behavior / runtime-substrate", result.stdout)
         self.assertIn("field(host)", result.stdout)
 
+    def test_software_deployment_pattern_rejects_direct_host_refs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            host_dir = workspace / "catalog" / "hosts"
+            host_dir.mkdir(parents=True, exist_ok=True)
+            (host_dir / "host-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF52-HOST
+                    type: host
+                    name: Test Host
+                    catalogStatus: draft
+                    lifecycleStatus: candidate
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            pattern_dir = workspace / "catalog" / "software-deployment-patterns"
+            pattern_dir.mkdir(parents=True, exist_ok=True)
+            (pattern_dir / "software-deployment-pattern-host-ref.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF53-SDMP
+                    type: software_deployment_pattern
+                    name: Host Ref Pattern
+                    catalogStatus: draft
+                    lifecycleStatus: candidate
+                    architecturalDecisions:
+                      noApplicablePattern: Test fixture.
+                      deploymentTargets: Test target.
+                      availabilityRequirement: Test availability.
+                      dataClassification: Test data.
+                      failureDomain: Test failure domain.
+                      noPatternDeviations: Test fixture.
+                      noAdditionalInteractions: Test fixture.
+                    serviceGroups:
+                      - name: Application Tier
+                        deploymentTarget: Test target
+                        deployableObjects:
+                          - ref: 01KQS0TF52-HOST
+                            diagramTier: application
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("references host '01KQS0TF52-HOST' directly", result.stdout)
+
     def test_requirement_implementation_evidence_satisfies_declared_workspace_group(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)

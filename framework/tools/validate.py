@@ -2048,7 +2048,20 @@ def validate_service_group_structure(
                 continue
             ref = entry.get("ref")
             target = catalog_by_id.get(ref) if ref else None
-            if ref and (not target or target.get("type") not in STANDARD_TYPES):
+            target_type = target.get("type") if target else None
+            if ref and not target:
+                failures.append(f"{path}: serviceGroup '{group_name}' references unknown deployable object '{ref}'")
+            elif (
+                ref
+                and obj.get("type") == "software_deployment_pattern"
+                and target_type in {"host", "technology_component"}
+            ):
+                failures.append(
+                    f"{path}: software deployment pattern serviceGroup '{group_name}' references {target_type} "
+                    f"'{ref}' directly; serviceGroups must reference service-level deployable objects, "
+                    "and the Host or Technology Component must be modeled on that service object"
+                )
+            elif ref and target_type not in STANDARD_TYPES:
                 failures.append(f"{path}: serviceGroup '{group_name}' references unknown deployable object '{ref}'")
             diagram_tier = entry.get("diagramTier")
             if diagram_tier not in VALID_DIAGRAM_TIERS:
