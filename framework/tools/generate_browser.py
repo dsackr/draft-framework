@@ -1362,6 +1362,26 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .detail-panel[hidden] {
       display: none !important;
     }
+    .detail-disclosures {
+      display: grid;
+      gap: 12px;
+    }
+    .detail-disclosure {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(15,23,42,0.55);
+    }
+    .detail-disclosure summary {
+      cursor: pointer;
+      padding: 14px 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .detail-disclosure-content {
+      display: grid;
+      gap: 14px;
+      padding: 0 16px 16px;
+    }
     .header-card {
       padding: 22px;
       display: grid;
@@ -1445,9 +1465,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .interactions-list {
       display: grid;
       gap: 12px;
-      max-height: 350px;
-      overflow: auto;
-      padding-right: 4px;
     }
     .interaction-card {
       padding: 14px;
@@ -4175,7 +4192,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return `
         <div class="decisions-grid single">
           <section class="decision-card">
-            <h4>Architectural Decision Entries</h4>
+            <h4>Architecture Decisions</h4>
             <dl class="definition-list">
               ${entries.map(entry => `<dt>${escapeHtml(entry.key)}</dt><dd>${escapeHtml(entry.value)}</dd>`).join('')}
             </dl>
@@ -4376,32 +4393,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function requirementGroupByName(name) {
       return allObjects.find(object => object.type === 'requirement_group' && object.name === name) || null;
-    }
-
-    function rbbOdcMarkup(object) {
-      const groupIds = object.requirementGroups || [];
-      if (!groupIds.length) {
-        return '';
-      }
-      return `
-        <section class="section-card">
-          <h3>Requirement Groups</h3>
-          <div class="section-stack">
-            ${groupIds.map(groupId => {
-              const group = objectLookup[groupId];
-              const requirements = group?.requirements || [];
-              return `
-                <article class="odc-card">
-                  <div class="odc-name">Addresses: ${escapeHtml(group?.name || groupId)}</div>
-                  ${requirements.length ? requirements.map(requirement => `
-                    <div class="odc-requirement-line">- ${escapeHtml(requirementDisplayLabel(group, requirement))}${requirement.relatedCapability ? ` (${escapeHtml(requirement.relatedCapability)})` : ''}</div>
-                  `).join('') : '<div class="interaction-notes">No requirements found on referenced Requirement Group.</div>'}
-                </article>
-              `;
-            }).join('')}
-          </div>
-        </section>
-      `;
     }
 
     function sdmRisksMarkup(object) {
@@ -5181,6 +5172,57 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       `;
     }
 
+    function detailDisclosureMarkup(title, bodyMarkup) {
+      const content = String(bodyMarkup || '').trim();
+      if (!content) {
+        return '';
+      }
+      return `
+        <details class="detail-disclosure">
+          <summary>${escapeHtml(title)}</summary>
+          <div class="detail-disclosure-content">
+            ${content}
+          </div>
+        </details>
+      `;
+    }
+
+    function secondaryDetailMarkup(sections) {
+      const content = sections
+        .map(section => detailDisclosureMarkup(section.title, section.body))
+        .filter(Boolean)
+        .join('');
+      if (!content) {
+        return '';
+      }
+      return `<section class="detail-disclosures">${content}</section>`;
+    }
+
+    function referencesMarkup(object) {
+      return secondaryDetailMarkup([
+        { title: 'References', body: usedByMarkup(object) }
+      ]);
+    }
+
+    function architectureDetailMarkup(interactionSource, decisionSource, emptyInteractionText, emptyDecisionText) {
+      return `
+        <section class="middle-grid">
+          <div class="section-card">
+            <h3>Internal Components</h3>
+            <div id="detail-cy"></div>
+          </div>
+          <div class="section-card">
+            <h3>External Interactions</h3>
+            ${interactionSource ? interactionMarkup(interactionSource) : `<div class="empty-card">${escapeHtml(emptyInteractionText || 'No external interactions are documented for this object.')}</div>`}
+          </div>
+        </section>
+        <section class="decisions-card">
+          <h3>Architecture Decisions</h3>
+          ${decisionSource ? decisionMarkup(decisionSource) : `<div class="empty-card">${escapeHtml(emptyDecisionText || 'No architectural decisions are documented for this object.')}</div>`}
+        </section>
+      `;
+    }
+
     function genericObjectMarkup(object) {
       const detail = JSON.parse(object.detail || '{}');
       const rows = Object.entries(detail)
@@ -5424,7 +5466,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <span class="badge">${escapeHtml(object.typeLabel)}</span>
               ${object.lifecycleStatus ? lifecycleBadge(object.lifecycleStatus) : ''}
               ${catalogBadge(object.catalogStatus)}
-              ${(object.requirementGroups || []).map(groupId => `<span class="badge">Requirement: ${escapeHtml(requirementGroupName(objectLookup[groupId] || { id: groupId }))}</span>`).join('')}
             </div>
           </div>
           <div class="header-description">${escapeHtml(object.description || 'No description provided.')}</div>
@@ -5447,63 +5488,62 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         detailBody = `
           ${headerMarkup}
           ${odcRequirementsMarkup(object)}
-          ${usedByMarkup(object)}
+          ${referencesMarkup(object)}
         `;
       } else if (object.type === 'capability') {
         detailBody = `
           ${headerMarkup}
           ${capabilityDetailMarkup(object)}
-          ${usedByMarkup(object)}
+          ${referencesMarkup(object)}
         `;
       } else if (object.type === 'domain') {
         detailBody = `
           ${headerMarkup}
           ${domainDetailMarkup(object)}
-          ${usedByMarkup(object)}
+          ${referencesMarkup(object)}
         `;
       } else if (object.type === 'decision_record') {
         detailBody = `
           ${ardDetailMarkup(object)}
-          ${usedByMarkup(object)}
+          ${referencesMarkup(object)}
         `;
       } else if (object.type === 'drafting_session') {
         detailBody = `
           ${headerMarkup}
           ${draftingSessionDetailMarkup(object)}
-          ${usedByMarkup(object)}
+          ${referencesMarkup(object)}
         `;
       } else if (object.type === 'product_service') {
         const interactionSource = preferredInteractionSource(object, softwareServiceRunsOn);
         const decisionSource = preferredDecisionSource(object, softwareServiceRunsOn);
         detailBody = `
           ${headerMarkup}
-          ${productServiceDetailMarkup(object)}
-          ${requirementEvidenceMarkup(object)}
-          <section class="middle-grid">
-            <div class="section-card">
-              <h3>Internal Components</h3>
-              <div id="detail-cy"></div>
-            </div>
-            <div class="section-card">
-              <h3>External Interactions</h3>
-              ${interactionSource ? interactionMarkup(interactionSource) : '<div class="empty-card">The underlying deployable object is not available for this Product Service.</div>'}
-            </div>
-          </section>
-          <section class="decisions-card">
-            <h3>Architectural Decision Entries</h3>
-            ${decisionSource ? decisionMarkup(decisionSource) : '<div class="empty-card">No architectural decisions are available because the underlying deployable object is not documented.</div>'}
-          </section>
-          ${usedByMarkup(object)}
+          ${architectureDetailMarkup(
+            interactionSource,
+            decisionSource,
+            'The underlying deployable object is not available for this Product Service.',
+            'No architectural decisions are available because the underlying deployable object is not documented.'
+          )}
+          ${secondaryDetailMarkup([
+            { title: 'Product Service Classification', body: productServiceDetailMarkup(object) },
+            { title: 'Requirement Evidence', body: requirementEvidenceMarkup(object) },
+            { title: 'References', body: usedByMarkup(object) }
+          ])}
         `;
       } else if (object.type === 'software_deployment_pattern') {
-        const hasSourceRepositories = Array.isArray(object.architecturalDecisions?.sourceRepositories) && object.architecturalDecisions.sourceRepositories.length > 0;
         detailBody = `
           ${headerMarkup}
           <div class="detail-tabs">
-            <button class="detail-tab ${hasSourceRepositories ? 'active' : ''}" data-sdm-tab="details">Details</button>
-            <button class="detail-tab ${hasSourceRepositories ? '' : 'active'}" data-sdm-tab="topology">Deployment Topology</button>
+            <button class="detail-tab active" data-sdm-tab="topology">Deployment Topology</button>
+            <button class="detail-tab" data-sdm-tab="details">Governance & Source</button>
           </div>
-          <div class="detail-panel" data-sdm-panel="details" ${hasSourceRepositories ? '' : 'hidden'}>
+          <div class="detail-panel" data-sdm-panel="topology">
+            <section class="section-card">
+              <h3>Deployment Topology</h3>
+              <div id="topology-canvas"></div>
+            </section>
+          </div>
+          <div class="detail-panel" data-sdm-panel="details" hidden>
             <section class="section-card">
               <h3>Applied Pattern</h3>
               <div class="section-stack">
@@ -5518,30 +5558,24 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${sdmRisksMarkup(object)}
             ${sourceRepositoryMarkup(object)}
             <section class="decisions-card">
-              <h3>Architectural Decision Entries</h3>
+              <h3>Architecture Decisions</h3>
               ${decisionMarkup(object, ['sourceRepositories'])}
             </section>
           </div>
-          <div class="detail-panel" data-sdm-panel="topology" ${hasSourceRepositories ? 'hidden' : ''}>
-            <section class="section-card">
-              <h3>Deployment Topology</h3>
-              <div id="topology-canvas"></div>
-            </section>
-          </div>
-          ${usedByMarkup(object)}
+          ${referencesMarkup(object)}
         `;
       } else if (object.type === 'reference_architecture') {
         detailBody = `
           ${headerMarkup}
           <div class="detail-tabs">
-            <button class="detail-tab" data-sdm-tab="details">Details</button>
             <button class="detail-tab active" data-sdm-tab="topology">Deployment Pattern</button>
+            <button class="detail-tab" data-sdm-tab="details">Governance & Decisions</button>
           </div>
           <div class="detail-panel" data-sdm-panel="details" hidden>
             ${requirementEvidenceMarkup(object)}
             ${sdmServiceGroupsMarkup(object)}
             <section class="decisions-card">
-              <h3>Architectural Decision Entries</h3>
+              <h3>Architecture Decisions</h3>
               ${decisionMarkup(object)}
             </section>
           </div>
@@ -5551,42 +5585,30 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <div id="topology-canvas"></div>
             </section>
           </div>
-          ${usedByMarkup(object)}
+          ${referencesMarkup(object)}
         `;
       } else if (object.type === 'technology_component') {
         detailBody = `
           ${headerMarkup}
           ${abbDetailMarkup(object)}
-          ${usedByMarkup(object)}
+          ${referencesMarkup(object)}
         `;
       } else if (DEPLOYABLE_STANDARD_TYPES.includes(object.type)) {
         detailBody = `
           ${headerMarkup}
-          ${deliveryModelDetailMarkup(object)}
-          ${requirementEvidenceMarkup(object)}
-          <section class="middle-grid">
-            <div class="section-card">
-              <h3>Internal Components</h3>
-              <div id="detail-cy"></div>
-            </div>
-            <div class="section-card">
-              <h3>External Interactions</h3>
-              ${interactionMarkup(object)}
-            </div>
-          </section>
-          ${rbbOdcMarkup(object)}
-          ${deploymentConfigurationsMarkup(object)}
-          <section class="decisions-card">
-            <h3>Architectural Decision Entries</h3>
-            ${decisionMarkup(object)}
-          </section>
-          ${usedByMarkup(object)}
+          ${architectureDetailMarkup(object, object)}
+          ${secondaryDetailMarkup([
+            { title: 'Delivery Details', body: deliveryModelDetailMarkup(object) },
+            { title: 'Requirement Evidence', body: requirementEvidenceMarkup(object) },
+            { title: 'Deployment Configurations', body: deploymentConfigurationsMarkup(object) },
+            { title: 'References', body: usedByMarkup(object) }
+          ])}
         `;
       } else {
         detailBody = `
           ${headerMarkup}
           ${genericObjectMarkup(object)}
-          ${usedByMarkup(object)}
+          ${referencesMarkup(object)}
         `;
       }
 
