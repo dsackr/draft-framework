@@ -1610,6 +1610,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       color: #fdba74;
       border: 1px solid rgba(249,115,22,0.35);
     }
+    .topology-interaction-icon svg,
+    .topology-node-icon svg {
+      width: 52px;
+      height: 52px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.1;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
     .topology-interaction-icon.network {
       background: rgba(16,185,129,0.18);
       border-color: rgba(16,185,129,0.35);
@@ -1629,6 +1639,57 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       background: rgba(148,163,184,0.18);
       border-color: rgba(148,163,184,0.35);
       color: #e2e8f0;
+    }
+    .topology-node-icon.technology {
+      background: rgba(249,115,22,0.18);
+      border-color: rgba(249,115,22,0.35);
+      color: #fdba74;
+    }
+    .topology-node-icon.host,
+    .topology-node-icon.pod {
+      background: rgba(59,130,246,0.18);
+      color: #93c5fd;
+      border-color: rgba(59,130,246,0.35);
+    }
+    .topology-node-icon.runtime,
+    .topology-node-icon.product {
+      background: rgba(20,184,166,0.18);
+      color: #5eead4;
+      border-color: rgba(20,184,166,0.35);
+    }
+    .topology-node-icon.data {
+      background: rgba(168,85,247,0.18);
+      color: #d8b4fe;
+      border-color: rgba(168,85,247,0.35);
+    }
+    .topology-node-icon.gateway {
+      background: rgba(34,197,94,0.18);
+      color: #86efac;
+      border-color: rgba(34,197,94,0.35);
+    }
+    .topology-node-icon.cloud,
+    .topology-node-icon.appliance {
+      background: rgba(148,163,184,0.18);
+      color: #cbd5e1;
+      border-color: rgba(148,163,184,0.35);
+    }
+    .related-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      color: #93c5fd;
+      flex: 0 0 auto;
+    }
+    .related-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.1;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
     .topology-scaling-units,
     .topology-unscoped-groups {
@@ -1901,11 +1962,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .topology-node.pod {
       border-color: rgba(59,130,246,0.45);
       background: rgba(30,41,59,0.88);
-    }
-    .topology-node-icon.pod {
-      background: rgba(59,130,246,0.18);
-      color: #93c5fd;
-      border-color: rgba(59,130,246,0.35);
     }
     .topology-node-label {
       font-size: 13px;
@@ -4677,35 +4733,53 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return !!object && object.type === 'host' && String(object.id || '').startsWith('host.container.');
     }
 
+    function objectIconSvg(name) {
+      const icons = {
+        document: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M6 2.8h8.2L18 6.6v14.6H6z"></path><path d="M14 2.8v4h4"></path><path d="M9 10h6"></path><path d="M9 13.4h6"></path><path d="M9 16.8h4"></path></svg>',
+        monitor: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><rect x="3.4" y="4.4" width="17.2" height="11.8" rx="1.8"></rect><path d="M9 20h6"></path><path d="M12 16.2V20"></path><path d="M6.8 7.8h10.4"></path></svg>',
+        gear: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 2.9v2.3"></path><path d="M12 18.8v2.3"></path><path d="M2.9 12h2.3"></path><path d="M18.8 12h2.3"></path><path d="M5.6 5.6l1.7 1.7"></path><path d="M16.7 16.7l1.7 1.7"></path><path d="M18.4 5.6l-1.7 1.7"></path><path d="M7.3 16.7l-1.7 1.7"></path></svg>',
+        database: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><ellipse cx="12" cy="5.6" rx="7" ry="3"></ellipse><path d="M5 5.6v12.8c0 1.7 3.1 3 7 3s7-1.3 7-3V5.6"></path><path d="M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"></path></svg>',
+        gateway: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M4 8h13"></path><path d="M13.5 4.5L17 8l-3.5 3.5"></path><path d="M20 16H7"></path><path d="M10.5 12.5L7 16l3.5 3.5"></path></svg>',
+        cloud: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M7.6 18h9.4a4.2 4.2 0 0 0 .2-8.4 6.2 6.2 0 0 0-11.8 2A3.4 3.4 0 0 0 7.6 18z"></path></svg>',
+        code: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M9.5 8.2L5.7 12l3.8 3.8"></path><path d="M14.5 8.2l3.8 3.8-3.8 3.8"></path><path d="M12.8 6.5l-1.6 11"></path></svg>',
+        container: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M12 3.5l7.4 4.25v8.5L12 20.5l-7.4-4.25v-8.5z"></path><path d="M12 12l7.1-4.1"></path><path d="M12 12v8.2"></path><path d="M12 12L4.9 7.9"></path></svg>',
+        wrench: '<svg aria-hidden="true" focusable="false" viewBox="0 0 24 24"><path d="M14.7 5.3a4.6 4.6 0 0 0 4.4 6.1l-7.7 7.7a2.5 2.5 0 0 1-3.5-3.5l7.7-7.7a4.6 4.6 0 0 0-.9-2.6z"></path><path d="M7.3 17.9l-2 2"></path></svg>'
+      };
+      return icons[name] || icons.gear;
+    }
+
     function topologyNodeIcon(entry, objectType = 'host') {
       const ref = entry.ref || '';
       const object = objectLookup[ref];
       const serviceObject = object?.type === 'product_service' && object?.runsOn ? objectLookup[object.runsOn] : object;
       if (objectType === 'appliance') {
         const caps = object?.capabilities || [];
-        if (caps.some(c => ['file-storage', 'data-persistence', 'storage'].includes(c))) return { icon: '💾', cls: '' };
-        return { icon: '🔧', cls: '' };
+        if (caps.some(c => ['file-storage', 'data-persistence', 'storage'].includes(c))) return { icon: objectIconSvg('database'), cls: 'data' };
+        return { icon: objectIconSvg('wrench'), cls: 'appliance' };
       }
-      if (object?.deliveryModel === 'saas') return { icon: '☁', cls: 'cloud' };
-      if (object?.deliveryModel === 'paas') return { icon: '☁', cls: 'cloud' };
+      if (object?.type === 'technology_component') return { icon: objectIconSvg('document'), cls: 'technology' };
+      if (object?.type === 'host') return { icon: objectIconSvg('monitor'), cls: 'host' };
+      if (object?.deliveryModel === 'saas') return { icon: objectIconSvg('cloud'), cls: 'cloud' };
+      if (object?.deliveryModel === 'paas') return { icon: objectIconSvg('cloud'), cls: 'cloud' };
       if (object?.type === 'product_service' && isContainerHostObject(objectLookup[object?.runsOn])) {
-        return { icon: '⬢', cls: 'pod' };
+        return { icon: objectIconSvg('container'), cls: 'pod' };
       }
-      if (object?.type === 'edge_gateway_service') return { icon: '⇄', cls: '' };
-      if (serviceObject?.type === 'data_at_rest_service') return { icon: '🗄', cls: '' };
-      if (serviceObject?.type === 'runtime_service') return { icon: '⚙', cls: '' };
-      return { icon: '⚙', cls: '' };
+      if (object?.type === 'product_service') return { icon: objectIconSvg('code'), cls: 'product' };
+      if (object?.type === 'edge_gateway_service') return { icon: objectIconSvg('gateway'), cls: 'gateway' };
+      if (serviceObject?.type === 'data_at_rest_service') return { icon: objectIconSvg('database'), cls: 'data' };
+      if (serviceObject?.type === 'runtime_service') return { icon: objectIconSvg('gear'), cls: 'runtime' };
+      return { icon: objectIconSvg('gear'), cls: 'runtime' };
     }
 
     function deploymentTargetPresentation(location) {
       const text = String(location || 'Unspecified');
       if (/AWS/i.test(text)) {
-        return { cls: 'aws', badge: 'AWS', icon: '🟧' };
+        return { cls: 'aws', badge: 'AWS', icon: objectIconSvg('cloud') };
       }
       if (/Datacenter|\\bDC\\b/i.test(text)) {
-        return { cls: 'datacenter', badge: 'DC', icon: '☁' };
+        return { cls: 'datacenter', badge: 'DC', icon: objectIconSvg('cloud') };
       }
-      return { cls: 'generic', badge: 'Host', icon: '🖧' };
+      return { cls: 'generic', badge: 'Host', icon: objectIconSvg('monitor') };
     }
 
     function colorForToken(value) {
