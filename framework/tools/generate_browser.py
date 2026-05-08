@@ -5763,6 +5763,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       detailCy = cytoscape({
         container: document.getElementById('detail-cy'),
         elements: buildDetailElements(object),
+        userZoomingEnabled: false,
+        userPanningEnabled: false,
+        boxSelectionEnabled: false,
+        autoungrabify: true,
         layout: {
           name: 'breadthfirst',
           directed: true,
