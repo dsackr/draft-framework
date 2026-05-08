@@ -5035,9 +5035,9 @@
             borderColor: objectVisual.borderColor,
             iconImage: objectVisual.image,
             lifecycleStatus: object.lifecycleStatus,
-            nodeWidth: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 156 : 146,
-            nodeHeight: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 112 : 104,
-            textMaxWidth: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 150 : 140
+            nodeWidth: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 172 : 160,
+            nodeHeight: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 132 : 122,
+            textMaxWidth: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 156 : 146
           },
           classes: object.name.length > 20 ? 'long-label' : ''
         }
@@ -5060,9 +5060,9 @@
             borderColor: refVisual.borderColor,
             iconImage: refVisual.image,
             lifecycleStatus: refObject.lifecycleStatus,
-            nodeWidth: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 146 : 136,
-            nodeHeight: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 106 : 98,
-            textMaxWidth: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 140 : 130
+            nodeWidth: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 162 : 150,
+            nodeHeight: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 124 : 114,
+            textMaxWidth: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 148 : 138
           },
           classes: refObject.name.length > 20 ? 'long-label' : ''
         });
@@ -5100,19 +5100,22 @@
               'background-color': 'data(color)',
               'background-image': 'data(iconImage)',
               'background-fit': 'none',
-              'background-width': 42,
-              'background-height': 42,
+              'background-width': 40,
+              'background-height': 40,
               'background-position-x': '50%',
-              'background-position-y': '34%',
+              'background-position-y': '28%',
               'border-width': 1,
               'border-color': 'data(borderColor)',
-              'color': 'e2e8f0',
+              'color': '#f8fafc',
               'font-size': 11,
+              'font-weight': 600,
               'text-wrap': 'wrap',
               'text-max-width': 'data(textMaxWidth)',
-              'text-valign': 'bottom',
+              'text-valign': 'center',
               'text-halign': 'center',
-              'text-margin-y': -8,
+              'text-margin-y': 36,
+              'text-outline-width': 2,
+              'text-outline-color': '#1e293b',
               'width': 'data(nodeWidth)',
               'height': 'data(nodeHeight)',
               'cursor': 'pointer'
