@@ -546,6 +546,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
                 "id": object_id,
                 "uid": object_id,
                 "name": obj["name"],
+                "aliases": obj.get("aliases", []),
                 "type": obj["type"],
                 "typeLabel": type_label_for(obj),
                 "filterType": filter_type_for(obj),
@@ -3068,6 +3069,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function filterObjects() {
       return filterObjectsByTypes(activeFilterConfig().types);
+    }
+
+    function objectSearchText(object) {
+      const aliases = Array.isArray(object.aliases) ? object.aliases.join(' ') : '';
+      return `${object.name} ${object.id} ${aliases}`.toLowerCase();
     }
 
     function businessPillarForObject(object) {
@@ -5925,8 +5931,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     function impactSidebarMarkup(selection) {
       const searchMatches = impactSearchTerm
         ? allObjects.filter(object => deployableTypes.has(object.type)).filter(object => {
-            const haystack = `${object.name} ${object.id}`.toLowerCase();
-            return haystack.includes(impactSearchTerm.toLowerCase());
+            return objectSearchText(object).includes(impactSearchTerm.toLowerCase());
           }).slice(0, 8)
         : [];
 
@@ -5938,7 +5943,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <aside class="impact-sidebar">
           <div>
             <h3 style="margin:0 0 10px">Impact Analysis</h3>
-            <input id="impact-search" class="impact-search" type="text" placeholder="Search by name or UID" value="${escapeHtml(impactSearchTerm)}">
+            <input id="impact-search" class="impact-search" type="text" placeholder="Search by name, alias, or UID" value="${escapeHtml(impactSearchTerm)}">
           </div>
           ${searchMatches.length ? `
             <div class="search-results">
@@ -6303,7 +6308,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         });
         searchInput.addEventListener('keydown', event => {
           if (event.key === 'Enter') {
-            const firstMatch = allObjects.find(object => deployableTypes.has(object.type) && `${object.name} ${object.id}`.toLowerCase().includes(impactSearchTerm.toLowerCase()));
+            const firstMatch = allObjects.find(object => deployableTypes.has(object.type) && objectSearchText(object).includes(impactSearchTerm.toLowerCase()));
             if (firstMatch) {
               runImpactAnalysis(firstMatch.id);
             }
