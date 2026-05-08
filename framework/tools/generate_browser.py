@@ -4748,6 +4748,25 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return icons[name] || icons.gear;
     }
 
+    function objectIconStroke(cls) {
+      if (cls === 'technology') return '#fdba74';
+      if (cls === 'host' || cls === 'pod') return '#93c5fd';
+      if (cls === 'runtime' || cls === 'product') return '#5eead4';
+      if (cls === 'data') return '#d8b4fe';
+      if (cls === 'gateway') return '#86efac';
+      if (cls === 'cloud' || cls === 'appliance') return '#cbd5e1';
+      return '#e2e8f0';
+    }
+
+    function objectIconDataUri(svgMarkup, cls) {
+      const stroke = objectIconStroke(cls);
+      const source = svgMarkup.replace(
+        '<svg ',
+        `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="${stroke}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" `
+      );
+      return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`;
+    }
+
     function topologyNodeIcon(entry, objectType = 'host') {
       const ref = entry.ref || '';
       const object = objectLookup[ref];
@@ -4780,6 +4799,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         return { cls: 'datacenter', badge: 'DC', icon: objectIconSvg('cloud') };
       }
       return { cls: 'generic', badge: 'Host', icon: objectIconSvg('monitor') };
+    }
+
+    function detailNodeVisual(object) {
+      const icon = topologyNodeIcon({ref: object.id});
+      return {
+        image: objectIconDataUri(icon.icon, icon.cls),
+        borderColor: object.color || '#334155'
+      };
     }
 
     function colorForToken(value) {
@@ -5655,16 +5682,18 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function buildDetailElements(object) {
+      const objectVisual = detailNodeVisual(object);
       const nodes = [
         {
           data: {
             id: object.id,
             label: object.name,
-            shape: object.shape,
-            color: object.color,
+            color: '#1e293b',
+            borderColor: objectVisual.borderColor,
+            iconImage: objectVisual.image,
             lifecycleStatus: object.lifecycleStatus,
-            nodeWidth: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 150 : 140,
-            nodeHeight: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 90 : 80,
+            nodeWidth: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 156 : 146,
+            nodeHeight: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 112 : 104,
             textMaxWidth: object.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(object.type) ? 150 : 140
           },
           classes: object.name.length > 20 ? 'long-label' : ''
@@ -5679,15 +5708,17 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           return;
         }
         seen.add(refObject.id);
+        const refVisual = detailNodeVisual(refObject);
         nodes.push({
           data: {
             id: refObject.id,
             label: refObject.name,
-            shape: refObject.shape,
-            color: refObject.color,
+            color: '#1e293b',
+            borderColor: refVisual.borderColor,
+            iconImage: refVisual.image,
             lifecycleStatus: refObject.lifecycleStatus,
-            nodeWidth: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 140 : 130,
-            nodeHeight: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 84 : 78,
+            nodeWidth: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 146 : 136,
+            nodeHeight: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 106 : 98,
             textMaxWidth: refObject.type === 'technology_component' || DEPLOYABLE_STANDARD_TYPES.includes(refObject.type) ? 140 : 130
           },
           classes: refObject.name.length > 20 ? 'long-label' : ''
@@ -5722,16 +5753,23 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             selector: 'node',
             style: {
               'label': 'data(label)',
-              'shape': 'data(shape)',
+              'shape': 'round-rectangle',
               'background-color': 'data(color)',
+              'background-image': 'data(iconImage)',
+              'background-fit': 'none',
+              'background-width': 42,
+              'background-height': 42,
+              'background-position-x': '50%',
+              'background-position-y': '34%',
               'border-width': 1,
-              'border-color': '334155',
+              'border-color': 'data(borderColor)',
               'color': 'e2e8f0',
               'font-size': 11,
               'text-wrap': 'wrap',
               'text-max-width': 'data(textMaxWidth)',
-              'text-valign': 'center',
+              'text-valign': 'bottom',
               'text-halign': 'center',
+              'text-margin-y': -8,
               'width': 'data(nodeWidth)',
               'height': 'data(nodeHeight)',
               'cursor': 'pointer'
