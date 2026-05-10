@@ -925,6 +925,75 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       color: var(--text);
       font-size: 20px;
     }
+    /* --- v1 dashboard: KPI strip, donut, coverage --- */
+    .dashboard-kpi-strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .dashboard-kpi {
+      display: grid;
+      gap: 6px;
+      padding: 18px 20px;
+      border: 1px solid var(--border);
+      border-top: 4px solid var(--accent);
+      border-radius: 14px;
+      background: var(--card);
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      color: var(--text);
+      transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+    }
+    .dashboard-kpi:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(31,26,20,0.08); }
+    .dashboard-kpi-value { font-size: 36px; font-weight: 800; line-height: 1; letter-spacing: -0.01em; }
+    .dashboard-kpi-label { font-size: 13px; color: var(--muted); }
+    .dashboard-kpi-plum { border-top-color: #7c3a6b; }
+    .dashboard-kpi-teal { border-top-color: #0e6b62; }
+    .dashboard-kpi-amber { border-top-color: #c47a14; }
+    .dashboard-kpi-mint { border-top-color: #1f8a5b; }
+    .dashboard-kpi-rose { border-top-color: #b93a3a; }
+    .dashboard-row-2 {
+      display: grid;
+      grid-template-columns: minmax(320px, 1fr) minmax(0, 1.4fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+    .donut-card .donut-body {
+      display: grid;
+      grid-template-columns: 160px minmax(0, 1fr);
+      gap: 22px;
+      align-items: center;
+      padding: 8px 4px 4px;
+    }
+    .donut-svg { width: 160px; height: 160px; }
+    .donut-center-num { font-size: 28px; font-weight: 800; fill: var(--text); }
+    .donut-center-label { font-size: 11px; fill: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .donut-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .donut-legend-row {
+      display: grid;
+      grid-template-columns: 14px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+      color: var(--subtle);
+    }
+    .donut-swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+    .donut-legend-count { font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+    .coverage-bar-track {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      min-width: 80px;
+    }
+    .coverage-bar-fill { height: 100%; min-width: 3px; border-radius: 999px; }
+    .coverage-num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+    @media (max-width: 1180px) {
+      .dashboard-kpi-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .dashboard-row-2 { grid-template-columns: 1fr; }
+    }
     .executive-mosaic {
       display: grid;
       grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -3691,61 +3760,102 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               <div class="executive-snapshot-row"><span>Mapped Technologies</span><strong>${formatNumber(stats.acceptableUseTechnologyCount)}</strong></div>
             </div>
           </section>
-          <section class="executive-mosaic">
-            ${executiveMetricTile({
-              target: 'controls',
-              value: stats.controlEvidenceCount,
-              label: 'Controls Addressed',
-              description: `${pluralize(stats.controlEvidenceObjectCount, 'artifact')} with recorded requirement evidence.`,
-              size: 'large',
-              accent: 'green',
-              big: true
-            })}
-            ${executiveMetricTile({
-              target: 'technologies',
-              value: stats.technologyCount,
-              label: 'Technology Components',
-              description: 'Discrete vendor products and versions available to compose deployable objects.',
-              size: 'medium',
-              accent: 'cyan'
-            })}
-            ${executiveMetricTile({
-              target: 'capabilities',
-              value: stats.capabilityCount,
-              label: 'Capabilities',
-              description: 'The named abilities requirements resolve through before technology is selected.',
-              size: 'small',
-              accent: 'teal'
-            })}
-            ${executiveMetricTile({
-              target: 'deployments',
-              value: stats.softwareDeploymentPatternCount,
-              label: 'Software Deployment Patterns',
-              description: 'Intentional product deployment shapes documented in this catalog.',
-              size: 'wide',
-              accent: 'amber'
-            })}
-            ${executiveMetricTile({
-              target: 'requirements',
-              value: stats.requirementDefinitionCount,
-              label: 'Requirement Definitions',
-              description: `${pluralize(stats.requirementGroupCount, 'Requirement Group')} available for interviews and validation.`,
-              size: 'medium',
-              accent: 'violet'
-            })}
-            ${executiveMetricTile({
-              target: 'acceptable-use',
-              value: stats.acceptableUseMappingCount,
-              label: 'Acceptable Use Mappings',
-              description: `${pluralize(stats.acceptableUseTechnologyCount, 'unique Technology Component')} mapped to capability lifecycle decisions.`,
-              size: 'small',
-              accent: 'rose'
-            })}
-            ${executiveLifecyclePanelMarkup(stats)}
-            ${executiveDomainPanelMarkup(stats)}
-            ${executiveArchitecturePanelMarkup(stats)}
-            ${executiveControlDrilldownMarkup(stats)}
-          </section>
+          ${(() => {
+            // --- v1 dashboard: 5-up KPI strip ---
+            const _kpis = [
+              { target: 'technologies', value: stats.technologyCount, label: 'Technology Components', accent: 'plum' },
+              { target: 'capabilities', value: stats.capabilityCount, label: 'Capabilities', accent: 'teal' },
+              { target: 'deployments', value: stats.softwareDeploymentPatternCount, label: 'Deployment Patterns', accent: 'amber' },
+              { target: 'requirements', value: stats.requirementDefinitionCount, label: 'Requirement Definitions', accent: 'mint' },
+              { target: 'controls', value: stats.controlEvidenceCount, label: 'Controls Addressed', accent: 'rose' },
+            ];
+            return `
+              <section class="dashboard-kpi-strip" aria-label="Catalog metrics">
+                ${_kpis.map(k => `
+                  <button class="dashboard-kpi dashboard-kpi-${k.accent}" data-executive-target="${escapeHtml(k.target)}">
+                    <div class="dashboard-kpi-value">${formatNumber(k.value)}</div>
+                    <div class="dashboard-kpi-label">${escapeHtml(k.label)}</div>
+                  </button>
+                `).join('')}
+              </section>
+            `;
+          })()}
+          ${(() => {
+            // --- v1 dashboard: Lifecycle donut + Domain coverage side-by-side ---
+            const _impactTypes = new Set(['reference_architecture','software_deployment_pattern','host','runtime_service','data_at_rest_service','edge_gateway_service','product_service','technology_component']);
+            const _byStatus = {};
+            (browserData.objects || []).forEach(o => { if (_impactTypes.has(o.type)) { const s = o.lifecycleStatus || 'unknown'; _byStatus[s] = (_byStatus[s] || 0) + 1; } });
+            const _statusOrder = ['preferred','existing-only','candidate','deprecated','retired','unknown'];
+            const _statusColor = { preferred: '#1f8a5b', 'existing-only': '#2a6fdb', candidate: '#7c3a6b', deprecated: '#c47a14', retired: '#b93a3a', unknown: '#7a6e60' };
+            const _entries = _statusOrder.filter(s => _byStatus[s]).map(s => ({ status: s, count: _byStatus[s] }));
+            const _total = _entries.reduce((sum, e) => sum + e.count, 0);
+            // Donut SVG
+            const _R = 64, _C = 2 * Math.PI * _R;
+            let _offset = 0;
+            const _donutSlices = _entries.map(e => {
+              const frac = e.count / (_total || 1);
+              const dash = frac * _C;
+              const slice = `<circle r="${_R}" cx="80" cy="80" fill="transparent" stroke="${_statusColor[e.status]}" stroke-width="22" stroke-dasharray="${dash} ${_C - dash}" stroke-dashoffset="${-_offset}" transform="rotate(-90 80 80)"/>`;
+              _offset += dash;
+              return slice;
+            }).join('');
+            const _donutLegend = _entries.map(e => `
+              <li class="donut-legend-row">
+                <span class="donut-swatch" style="background:${_statusColor[e.status]};"></span>
+                <span class="donut-legend-label">${escapeHtml(e.status)}</span>
+                <span class="donut-legend-count">${e.count}</span>
+              </li>
+            `).join('');
+            // Domain coverage table
+            const _domainStats = (stats.domainStats || []).slice(0, 8);
+            const _maxDomain = Math.max(1, ..._domainStats.map(d => d.capabilityCount || 0));
+            const _coverageRows = _domainStats.map(d => `
+              <tr>
+                <td><strong>${escapeHtml(d.name)}</strong></td>
+                <td><div class="coverage-bar-track"><div class="coverage-bar-fill" style="width:${Math.round((d.capabilityCount || 0) / _maxDomain * 100)}%; background:var(--accent);"></div></div></td>
+                <td class="coverage-num">${d.capabilityCount || 0}</td>
+                <td class="coverage-num">${d.technologyCount || 0}</td>
+              </tr>
+            `).join('');
+            return `
+              <section class="dashboard-row-2">
+                <article class="section-card donut-card">
+                  <div class="header-top">
+                    <div class="header-title">
+                      <h3>Technology Lifecycle Mix</h3>
+                      <div class="object-id">${_total} components across reference architectures, deployments, and services</div>
+                    </div>
+                  </div>
+                  <div class="donut-body">
+                    ${_total ? `
+                      <svg class="donut-svg" viewBox="0 0 160 160" aria-hidden="true">
+                        ${_donutSlices}
+                        <text x="80" y="76" text-anchor="middle" class="donut-center-num">${_total}</text>
+                        <text x="80" y="96" text-anchor="middle" class="donut-center-label">total</text>
+                      </svg>
+                      <ul class="donut-legend">${_donutLegend}</ul>
+                    ` : '<div class="empty-card">No lifecycle-tracked components yet.</div>'}
+                  </div>
+                </article>
+                <article class="section-card coverage-card">
+                  <div class="header-top">
+                    <div class="header-title">
+                      <h3>Capability Domain Coverage</h3>
+                      <div class="object-id">Capabilities and technology components per strategic domain</div>
+                    </div>
+                  </div>
+                  ${_domainStats.length ? `
+                    <div class="table-wrap">
+                      <table class="data-table">
+                        <thead><tr><th>Domain</th><th>Coverage</th><th class="coverage-num">Capabilities</th><th class="coverage-num">Tech</th></tr></thead>
+                        <tbody>${_coverageRows}</tbody>
+                      </table>
+                    </div>
+                  ` : '<div class="empty-card">No mapped capability domains.</div>'}
+                </article>
+              </section>
+            `;
+          })()}
           ${(() => {
             const _stubObjects = (browserData.objects || []).filter(o => o.catalogStatus === 'stub');
             if (!_stubObjects.length) return '';
