@@ -671,6 +671,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       --page: #f6f4ef;       /* warm off-white background */
       --panel: #ffffff;      /* sidebar / panel surfaces */
       --card: #ffffff;       /* card surface */
+      --surface: #faf8f3;        /* default soft surface for inset bands */
+      --surface-soft: #f3efe6;   /* slightly tinted soft surface */
+      --surface-strong: #ffffff; /* solid surface for prominent panels */
       --border: #e7e1d6;     /* warm hairline */
       --border-strong: #d6cfc1;
       --muted: #7a6e60;      /* secondary text */
@@ -1220,29 +1223,30 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       padding: 6px 10px;
       border-radius: 999px;
       font-size: 12px;
-      border: 1px solid rgba(148,163,184,0.18);
-      background: rgba(15,23,42,0.65);
+      border: 1px solid var(--border-strong);
+      background: rgba(231,225,214,0.45);
       color: var(--subtle);
     }
-    .catalog-approved { border-color: rgba(16,185,129,0.45); color: #d1fae5; }
-    .catalog-draft { border-color: rgba(245,158,11,0.45); color: #fde68a; }
-    .catalog-stub { border-color: rgba(148,163,184,0.35); color: #3a342c; }
-    .ard-risk { border-color: rgba(245,158,11,0.45); color: #fde68a; }
-    .ard-decision { border-color: rgba(59,130,246,0.45); color: #bfdbfe; }
-    .ard-status { border-color: rgba(148,163,184,0.35); color: #3a342c; }
+    .catalog-approved { border-color: rgba(31,138,91,0.45); color: #1f5b3a; background: rgba(31,138,91,0.10); }
+    .catalog-draft { border-color: rgba(196,122,20,0.45); color: #7a4a0c; background: rgba(196,122,20,0.10); }
+    .catalog-stub { border-color: rgba(148,163,184,0.35); color: #3a342c; background: rgba(231,225,214,0.45); }
+    .ard-risk { border-color: rgba(196,122,20,0.45); color: #7a4a0c; background: rgba(196,122,20,0.10); }
+    .ard-decision { border-color: rgba(42,111,219,0.45); color: #1d4f9e; background: rgba(42,111,219,0.10); }
+    .ard-status { border-color: rgba(148,163,184,0.35); color: #3a342c; background: rgba(231,225,214,0.45); }
     .ps-badge {
       border-color: rgba(20,184,166,0.45);
-      color: #99f6e4;
+      color: #0e6b62;
       background: rgba(20,184,166,0.12);
     }
     .saas-badge {
-      border-color: rgba(168,85,247,0.45);
-      color: #e9d5ff;
-      background: rgba(168,85,247,0.14);
+      border-color: rgba(124,58,107,0.45);
+      color: var(--accent-strong);
+      background: rgba(124,58,107,0.10);
     }
     .paas-badge {
-      border-color: rgba(59,130,246,0.45);
-      color: #bfdbfe;
+      border-color: rgba(42,111,219,0.45);
+      color: #1d4f9e;
+      background: rgba(42,111,219,0.10);
       background: rgba(59,130,246,0.14);
     }
     .appliance-badge {
@@ -1443,7 +1447,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .detail-disclosure {
       border: 1px solid var(--border);
       border-radius: 14px;
-      background: rgba(15,23,42,0.55);
+      background: var(--surface);
     }
     .detail-disclosure summary {
       cursor: pointer;
@@ -1504,7 +1508,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       transform: translateY(-1px);
     }
     .action-button.secondary {
-      background: rgba(30,41,59,0.82);
+      background: var(--surface-strong);
     }
     .owner-line {
       display: flex;
@@ -1550,7 +1554,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       padding: 14px;
       display: grid;
       gap: 10px;
-      background: rgba(15,23,42,0.55);
+      background: var(--surface);
       border: 1px solid rgba(51,65,85,0.85);
       border-radius: 14px;
     }
@@ -1606,7 +1610,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       padding: 12px;
       border-radius: 12px;
       border: 1px solid rgba(51,65,85,0.85);
-      background: rgba(15,23,42,0.45);
+      background: var(--surface-soft);
       display: grid;
       gap: 6px;
     }
@@ -1665,7 +1669,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .scaling-unit-box,
     .service-group-box,
     .deployment-target-cluster {
-      background: rgba(15,23,42,0.78);
+      background: var(--surface);
       border-radius: 18px;
     }
     .topology-strip {
@@ -1686,7 +1690,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       padding: 12px;
       border-radius: 14px;
       border: 1px solid #d6cfc1;
-      background: rgba(30,41,59,0.9);
+      background: var(--surface-strong);
     }
     .topology-interaction-icon,
     .topology-node-icon {
@@ -1809,7 +1813,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       padding: 8px 12px;
       border-radius: 999px;
       border: 1px solid rgba(71,85,105,0.8);
-      background: rgba(30,41,59,0.94);
+      background: var(--surface-strong);
       color: #1f1a14;
       font-size: 14px;
       cursor: pointer;
@@ -1851,7 +1855,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       padding: 5px 10px;
       border-radius: 999px;
       font-size: 11px;
-      background: rgba(15,23,42,0.7);
+      background: var(--surface);
       border: 1px solid rgba(148,163,184,0.3);
       color: #1f1a14;
     }
@@ -1878,7 +1882,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       padding: 12px;
       border-radius: 16px;
       border: 1px solid rgba(71,85,105,0.82);
-      background: rgba(15,23,42,0.52);
+      background: var(--surface-soft);
     }
     .topology-tier-header {
       padding: 10px 12px;
@@ -1939,7 +1943,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border-radius: 16px;
       border: 1px solid rgba(71,85,105,0.85);
       border-left: 6px solid var(--scaling-accent, rgba(71,85,105,0.9));
-      background: rgba(30,41,59,0.96);
+      background: var(--surface-strong);
       transition: opacity 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     }
     .service-group-section-meta {
@@ -1965,7 +1969,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border: 1px solid rgba(71,85,105,0.9);
       display: grid;
       gap: 12px;
-      background: rgba(30,41,59,0.96);
+      background: var(--surface-strong);
     }
     .service-group-lanes {
       display: grid;
@@ -1998,7 +2002,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .eks-box {
       padding: 14px;
       border: 2px dashed rgba(71,85,105,0.9);
-      background: rgba(15,23,42,0.74);
+      background: var(--surface);
       display: grid;
       gap: 12px;
     }
@@ -2015,7 +2019,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       padding: 12px;
       border-radius: 14px;
       border: 1px solid rgba(71,85,105,0.85);
-      background: rgba(30,41,59,0.95);
+      background: var(--surface-strong);
       display: grid;
       gap: 10px;
       min-width: 180px;
@@ -2052,7 +2056,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
     .topology-node.pod {
       border-color: rgba(59,130,246,0.45);
-      background: rgba(30,41,59,0.88);
+      background: var(--surface-strong);
     }
     .topology-node-label {
       font-size: 13px;
@@ -2128,7 +2132,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border-radius: 12px;
       border: 1px dashed rgba(148,163,184,0.45);
       color: var(--subtle);
-      background: rgba(15,23,42,0.5);
+      background: var(--surface-soft);
       font-size: 13px;
       line-height: 1.5;
     }
@@ -2146,7 +2150,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       width: 100%;
       border: 1px solid rgba(148,163,184,0.18);
       border-radius: 12px;
-      background: rgba(15,23,42,0.78);
+      background: var(--surface);
       color: var(--text);
       padding: 11px 12px;
       font: inherit;
@@ -2160,7 +2164,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .impact-item {
       border: 1px solid rgba(51,65,85,0.85);
       border-radius: 12px;
-      background: rgba(15,23,42,0.55);
+      background: var(--surface);
       padding: 10px 12px;
       cursor: pointer;
       display: grid;
@@ -2213,7 +2217,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .lifecycle-filter-button {
       border: 1px solid rgba(51,65,85,0.9);
       border-radius: 999px;
-      background: rgba(15,23,42,0.78);
+      background: var(--surface);
       color: var(--subtle);
       padding: 8px 12px;
       font: inherit;
@@ -2400,7 +2404,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border: 1px solid rgba(71,85,105,0.78);
       border-radius: 16px;
       padding: 16px;
-      background: rgba(15,23,42,0.52);
+      background: var(--surface-soft);
       display: grid;
       gap: 14px;
     }
@@ -2486,7 +2490,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       color: #dbeafe;
     }
     .decisions-card {
-      background: rgba(30,41,59,0.92);
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 18px;
       padding: 18px;
