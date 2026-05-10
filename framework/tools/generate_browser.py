@@ -51,12 +51,12 @@ CATALOG_FOLDERS = [
     "domains",
 ]
 LIFECYCLE_COLORS = {
-    "preferred": "10b981",
-    "existing-only": "3b82f6",
-    "deprecated": "f59e0b",
-    "retired": "ef4444",
-    "candidate": "8b5cf6",
-    "unknown": "475569",
+    "preferred": "1f8a5b",
+    "existing-only": "2a6fdb",
+    "deprecated": "c47a14",
+    "retired": "b93a3a",
+    "candidate": "7c3a6b",
+    "unknown": "7a6e60",
 }
 REF_CONTAINER_KEYS = {
     "ref",
@@ -666,15 +666,29 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
   <style>
     :root {
-      color-scheme: dark;
-      --page: #0f172a;
-      --panel: #111827;
-      --card: #1e293b;
-      --border: #334155;
-      --muted: #94a3b8;
-      --text: #e2e8f0;
-      --subtle: #cbd5e1;
-      --accent: #38bdf8;
+      color-scheme: light;
+      /* Light + plum theme tokens (re-skin v1) */
+      --page: #f6f4ef;       /* warm off-white background */
+      --panel: #ffffff;      /* sidebar / panel surfaces */
+      --card: #ffffff;       /* card surface */
+      --border: #e7e1d6;     /* warm hairline */
+      --border-strong: #d6cfc1;
+      --muted: #7a6e60;      /* secondary text */
+      --text: #1f1a14;       /* primary text */
+      --subtle: #3a342c;     /* tertiary headings / strong copy */
+      --accent: #7c3a6b;     /* plum primary */
+      --accent-soft: rgba(124, 58, 107, 0.10);
+      --accent-strong: #5d2950;
+      --shadow-sm: 0 1px 2px rgba(31, 26, 20, 0.04), 0 1px 3px rgba(31, 26, 20, 0.06);
+      --shadow-md: 0 4px 12px rgba(31, 26, 20, 0.06), 0 2px 4px rgba(31, 26, 20, 0.04);
+      --shadow-lg: 0 12px 28px rgba(31, 26, 20, 0.08), 0 4px 10px rgba(31, 26, 20, 0.05);
+      /* Lifecycle accents (consistent across views) */
+      --lc-preferred: #1f8a5b;
+      --lc-existing: #2a6fdb;
+      --lc-deprecated: #c47a14;
+      --lc-retired: #b93a3a;
+      --lc-candidate: #7c3a6b;
+      --lc-unknown: #7a6e60;
     }
     * { box-sizing: border-box; }
     html, body {
@@ -693,11 +707,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
     .sidebar,
     .main {
-      background: linear-gradient(180deg, rgba(15,23,42,0.98), rgba(17,24,39,0.98));
+      background: #ffffff;
     }
     .sidebar {
       padding: 24px 20px;
-      border-right: 1px solid rgba(51,65,85,0.7);
+      border-right: 1px solid #e7e1d6;
     }
     .sidebar h1 {
       margin: 0;
@@ -726,10 +740,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       width: fit-content;
       margin-top: 10px;
       padding: 5px 9px;
-      border: 1px solid rgba(56,189,248,0.38);
+      border: 1px solid rgba(124, 58, 107, 0.5);
       border-radius: 999px;
-      color: #bae6fd;
-      background: rgba(56,189,248,0.12);
+      color: #7c3a6b;
+      background: rgba(124, 58, 107, 0.10);
       font-size: 11px;
       font-weight: 700;
     }
@@ -747,7 +761,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .legend-block {
       margin-top: 28px;
       padding-top: 20px;
-      border-top: 1px solid rgba(51,65,85,0.8);
+      border-top: 1px solid #d6cfc1;
     }
     .legend-title {
       margin: 0 0 12px;
@@ -772,7 +786,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       width: 12px;
       height: 12px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.18);
+      border: 1px solid rgba(31, 26, 20, 0.15);
       flex: 0 0 auto;
     }
     .main {
@@ -782,21 +796,80 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       display: grid;
       gap: 22px;
     }
+    .dashboard-alerts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .alert-card {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto;
+      column-gap: 12px;
+      row-gap: 4px;
+      align-items: baseline;
+      text-align: left;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      font: inherit;
+      color: var(--text);
+      transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+    }
+    .alert-card:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+    .alert-card:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .alert-card.sev-critical { border-left: 4px solid #b91c1c; }
+    .alert-card.sev-warning  { border-left: 4px solid #b45309; }
+    .alert-card.sev-info     { border-left: 4px solid var(--accent); }
+    .alert-sev {
+      grid-column: 1;
+      grid-row: 1;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .alert-card.sev-critical .alert-sev { color: #b91c1c; }
+    .alert-card.sev-warning  .alert-sev { color: #b45309; }
+    .alert-card.sev-info     .alert-sev { color: var(--accent); }
+    .alert-label {
+      grid-column: 2;
+      grid-row: 1;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .alert-detail {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
     .executive-hero {
       position: relative;
       overflow: hidden;
-      border: 1px solid rgba(56,189,248,0.26);
+      border: 1px solid rgba(124, 58, 107, 0.32);
       border-radius: 18px;
       padding: 30px;
       min-height: 260px;
       background:
-        linear-gradient(135deg, rgba(14,165,233,0.24), rgba(30,41,59,0.88) 46%, rgba(20,184,166,0.15)),
-        repeating-linear-gradient(90deg, rgba(148,163,184,0.06) 0, rgba(148,163,184,0.06) 1px, transparent 1px, transparent 34px);
+        linear-gradient(135deg, rgba(124, 58, 107, 0.12), #ffffff 46%, rgba(217, 119, 87, 0.10)),
+        repeating-linear-gradient(90deg, rgba(122, 110, 96, 0.05) 0, rgba(122, 110, 96, 0.05) 1px, transparent 1px, transparent 34px);
       display: grid;
       grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
       gap: 26px;
       align-items: end;
-      box-shadow: 0 18px 42px rgba(2,6,23,0.28);
+      box-shadow: 0 18px 42px rgba(31, 26, 20, 0.08);
     }
     .executive-hero h2 {
       margin: 0;
@@ -815,7 +888,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       height: 132px;
       object-fit: contain;
       flex: 0 0 auto;
-      filter: drop-shadow(0 12px 22px rgba(2,6,23,0.28));
+      filter: drop-shadow(0 12px 22px rgba(31, 26, 20, 0.08));
     }
     .executive-hero p {
       margin: 14px 0 0;
@@ -833,9 +906,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       display: grid;
       gap: 12px;
       padding: 18px;
-      border: 1px solid rgba(148,163,184,0.2);
+      border: 1px solid rgba(122, 110, 96, 0.18);
       border-radius: 16px;
-      background: rgba(15,23,42,0.62);
+      background: #ffffff;
     }
     .executive-snapshot-row {
       display: flex;
@@ -859,8 +932,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .executive-panel {
       border: 1px solid var(--border);
       border-radius: 18px;
-      background: rgba(30,41,59,0.74);
-      box-shadow: 0 12px 28px rgba(2,6,23,0.18);
+      background: #ffffff;
+      box-shadow: 0 12px 28px rgba(31, 26, 20, 0.06);
     }
     .executive-tile {
       min-height: 148px;
@@ -872,12 +945,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
     }
     .executive-tile:hover {
-      border-color: rgba(56,189,248,0.58);
+      border-color: rgba(124, 58, 107, 0.7);
       transform: translateY(-2px);
-      box-shadow: 0 16px 34px rgba(2,6,23,0.26);
+      box-shadow: 0 16px 34px rgba(31, 26, 20, 0.08);
     }
     .executive-tile:focus-visible {
-      outline: 2px solid rgba(56,189,248,0.82);
+      outline: 2px solid rgba(124, 58, 107, 0.85);
       outline-offset: 2px;
     }
     .executive-tile.large { grid-column: span 5; min-height: 190px; }
@@ -916,28 +989,28 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       font-size: 13px;
     }
     .executive-accent-cyan {
-      border-color: rgba(56,189,248,0.42);
-      background: linear-gradient(135deg, rgba(56,189,248,0.20), rgba(30,41,59,0.74) 62%);
+      border-color: rgba(124, 58, 107, 0.55);
+      background: linear-gradient(135deg, rgba(124, 58, 107, 0.24), #ffffff 62%);
     }
     .executive-accent-green {
       border-color: rgba(34,197,94,0.38);
-      background: linear-gradient(135deg, rgba(34,197,94,0.18), rgba(30,41,59,0.74) 62%);
+      background: linear-gradient(135deg, rgba(34,197,94,0.18), #ffffff 62%);
     }
     .executive-accent-amber {
       border-color: rgba(245,158,11,0.42);
-      background: linear-gradient(135deg, rgba(245,158,11,0.20), rgba(30,41,59,0.74) 62%);
+      background: linear-gradient(135deg, rgba(245,158,11,0.20), #ffffff 62%);
     }
     .executive-accent-violet {
       border-color: rgba(168,85,247,0.42);
-      background: linear-gradient(135deg, rgba(168,85,247,0.18), rgba(30,41,59,0.74) 62%);
+      background: linear-gradient(135deg, rgba(168,85,247,0.18), #ffffff 62%);
     }
     .executive-accent-rose {
       border-color: rgba(244,63,94,0.38);
-      background: linear-gradient(135deg, rgba(244,63,94,0.18), rgba(30,41,59,0.74) 62%);
+      background: linear-gradient(135deg, rgba(244,63,94,0.18), #ffffff 62%);
     }
     .executive-accent-teal {
       border-color: rgba(20,184,166,0.42);
-      background: linear-gradient(135deg, rgba(20,184,166,0.20), rgba(30,41,59,0.74) 62%);
+      background: linear-gradient(135deg, rgba(20,184,166,0.20), #ffffff 62%);
     }
     .executive-panel {
       padding: 18px;
@@ -965,8 +1038,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .executive-bar-track {
       height: 10px;
       border-radius: 999px;
-      background: rgba(15,23,42,0.86);
-      border: 1px solid rgba(148,163,184,0.16);
+      background: #f6f4ef;
+      border: 1px solid rgba(122, 110, 96, 0.14);
       overflow: hidden;
     }
     .executive-bar-fill {
@@ -987,7 +1060,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .nav-button {
       border: 1px solid var(--border);
       border-radius: 999px;
-      background: rgba(15,23,42,0.72);
+      background: #ffffff;
       color: var(--text);
       padding: 10px 16px;
       font: inherit;
@@ -995,13 +1068,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
     }
     .nav-button:hover {
-      border-color: rgba(56,189,248,0.55);
+      border-color: rgba(124, 58, 107, 0.65);
       transform: translateY(-1px);
     }
     .nav-button.active {
-      background: rgba(56,189,248,0.18);
-      border-color: rgba(56,189,248,0.6);
-      color: #dff7ff;
+      background: rgba(124, 58, 107, 0.18);
+      border-color: rgba(124, 58, 107, 0.7);
+      color: #5d2950;
     }
     .nav-button:disabled {
       cursor: default;
@@ -1019,7 +1092,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .back-button {
       border: 1px solid var(--border);
       border-radius: 999px;
-      background: rgba(30,41,59,0.78);
+      background: #ffffff;
       color: var(--text);
       padding: 10px 16px;
       font: inherit;
@@ -1028,20 +1101,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
     .tab-button {
       padding: 12px 18px;
-      background: rgba(15,23,42,0.82);
+      background: #ffffff;
       font-weight: 600;
     }
     .tab-button:hover,
     .filter-button:hover,
     .back-button:hover {
-      border-color: rgba(56,189,248,0.55);
+      border-color: rgba(124, 58, 107, 0.65);
       transform: translateY(-1px);
     }
     .tab-button.active,
     .filter-button.active {
-      background: rgba(56,189,248,0.18);
-      border-color: rgba(56,189,248,0.6);
-      color: #dff7ff;
+      background: rgba(124, 58, 107, 0.18);
+      border-color: rgba(124, 58, 107, 0.7);
+      color: #5d2950;
     }
     .content-rows {
       display: grid;
@@ -1057,7 +1130,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       justify-content: space-between;
       gap: 16px;
       padding-bottom: 10px;
-      border-bottom: 1px solid rgba(51,65,85,0.72);
+      border-bottom: 1px solid #e7e1d6;
     }
     .content-row-title {
       margin: 0;
@@ -1088,9 +1161,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       justify-content: space-between;
       gap: 16px;
       padding: 10px 12px;
-      border: 1px solid rgba(148,163,184,0.16);
+      border: 1px solid rgba(122, 110, 96, 0.14);
       border-radius: 8px;
-      background: rgba(15,23,42,0.42);
+      background: #fbfaf6;
     }
     .business-pillar-title {
       margin: 0;
@@ -1153,10 +1226,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
     .catalog-approved { border-color: rgba(16,185,129,0.45); color: #d1fae5; }
     .catalog-draft { border-color: rgba(245,158,11,0.45); color: #fde68a; }
-    .catalog-stub { border-color: rgba(148,163,184,0.35); color: #cbd5e1; }
+    .catalog-stub { border-color: rgba(148,163,184,0.35); color: #3a342c; }
     .ard-risk { border-color: rgba(245,158,11,0.45); color: #fde68a; }
     .ard-decision { border-color: rgba(59,130,246,0.45); color: #bfdbfe; }
-    .ard-status { border-color: rgba(148,163,184,0.35); color: #cbd5e1; }
+    .ard-status { border-color: rgba(148,163,184,0.35); color: #3a342c; }
     .ps-badge {
       border-color: rgba(20,184,166,0.45);
       color: #99f6e4;
@@ -1349,16 +1422,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .detail-tab {
       border: 1px solid var(--border);
       border-radius: 999px;
-      background: rgba(30,41,59,0.78);
+      background: #ffffff;
       color: var(--text);
       padding: 10px 16px;
       font: inherit;
       cursor: pointer;
     }
     .detail-tab.active {
-      background: rgba(56,189,248,0.18);
-      border-color: rgba(56,189,248,0.6);
-      color: #dff7ff;
+      background: rgba(124, 58, 107, 0.18);
+      border-color: rgba(124, 58, 107, 0.7);
+      color: #5d2950;
     }
     .detail-panel[hidden] {
       display: none !important;
@@ -1418,7 +1491,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .action-button {
       border: 1px solid var(--border);
       border-radius: 12px;
-      background: rgba(15,23,42,0.82);
+      background: #ffffff;
       color: var(--text);
       padding: 10px 14px;
       font: inherit;
@@ -1427,7 +1500,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       text-decoration: none;
     }
     .action-button:hover {
-      border-color: rgba(56,189,248,0.55);
+      border-color: rgba(124, 58, 107, 0.65);
       transform: translateY(-1px);
     }
     .action-button.secondary {
@@ -1461,7 +1534,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       height: 350px;
       border-radius: 14px;
       border: 1px solid rgba(51,65,85,0.85);
-      background: #0f172a;
+      background: #f6f4ef;
     }
     .interactions-list {
       display: grid;
@@ -1612,7 +1685,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       gap: 6px;
       padding: 12px;
       border-radius: 14px;
-      border: 1px solid rgba(51,65,85,0.8);
+      border: 1px solid #d6cfc1;
       background: rgba(30,41,59,0.9);
     }
     .topology-interaction-icon,
@@ -1656,7 +1729,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .topology-interaction-icon.cloud {
       background: rgba(148,163,184,0.18);
       border-color: rgba(148,163,184,0.35);
-      color: #e2e8f0;
+      color: #1f1a14;
     }
     .topology-node-icon.technology {
       background: rgba(249,115,22,0.18);
@@ -1688,7 +1761,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .topology-node-icon.cloud,
     .topology-node-icon.appliance {
       background: rgba(148,163,184,0.18);
-      color: #cbd5e1;
+      color: #3a342c;
       border-color: rgba(148,163,184,0.35);
     }
     .related-icon {
@@ -1725,7 +1798,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       padding: 12px 14px;
       border: 1px solid rgba(51,65,85,0.85);
       border-radius: 14px;
-      background: rgba(15,23,42,0.72);
+      background: #ffffff;
     }
     .topology-filter-buttons {
       display: flex;
@@ -1737,7 +1810,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       border-radius: 999px;
       border: 1px solid rgba(71,85,105,0.8);
       background: rgba(30,41,59,0.94);
-      color: #e2e8f0;
+      color: #1f1a14;
       font-size: 14px;
       cursor: pointer;
       transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
@@ -1745,7 +1818,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .topology-filter-button.active {
       border-color: rgba(14,165,233,0.65);
       background: rgba(14,165,233,0.16);
-      color: #bae6fd;
+      color: #7c3a6b;
     }
     .topology-filter-help {
       color: var(--muted);
@@ -1780,7 +1853,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       font-size: 11px;
       background: rgba(15,23,42,0.7);
       border: 1px solid rgba(148,163,184,0.3);
-      color: #e2e8f0;
+      color: #1f1a14;
     }
     .location-badge.aws {
       border-color: rgba(233,30,140,0.45);
@@ -1811,7 +1884,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       padding: 10px 12px;
       border-radius: 12px;
       border: 1px solid rgba(71,85,105,0.8);
-      background: rgba(15,23,42,0.72);
+      background: #ffffff;
       font-size: 14px;
       font-weight: 700;
       color: #f8fafc;
@@ -1930,7 +2003,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       gap: 12px;
     }
     .eks-label {
-      color: #cbd5e1;
+      color: #3a342c;
     }
     .node-grid {
       display: grid;
@@ -2171,7 +2244,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       height: 720px;
       border-radius: 14px;
       border: 1px solid rgba(51,65,85,0.85);
-      background: #0f172a;
+      background: #f6f4ef;
       overflow: hidden;
     }
     .impact-dot {
@@ -2281,7 +2354,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       width: 100%;
       border: 1px solid rgba(51,65,85,0.9);
       border-radius: 12px;
-      background: rgba(15,23,42,0.86);
+      background: #f6f4ef;
       color: var(--text);
       font: inherit;
       padding: 12px 14px;
@@ -2367,7 +2440,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       padding: 10px 12px;
       border: 1px solid rgba(71,85,105,0.72);
       border-radius: 12px;
-      background: rgba(15,23,42,0.72);
+      background: #ffffff;
       color: var(--text);
       font-size: 14px;
     }
@@ -2462,7 +2535,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .cap-security { background: rgba(239,68,68,0.18); border-color: rgba(239,68,68,0.4); color: #fecaca; }
     .cap-monitoring { background: rgba(16,185,129,0.18); border-color: rgba(16,185,129,0.4); color: #bbf7d0; }
     .cap-patch-management { background: rgba(245,158,11,0.18); border-color: rgba(245,158,11,0.4); color: #fde68a; }
-    .cap-default { background: rgba(100,116,139,0.18); border-color: rgba(100,116,139,0.4); color: #cbd5e1; }
+    .cap-default { background: rgba(100,116,139,0.18); border-color: rgba(100,116,139,0.4); color: #3a342c; }
     .sidebar p,
     .legend-title,
     .legend-item,
@@ -2519,7 +2592,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
     @media (max-width: 980px) {
       .page-shell { grid-template-columns: 1fr; }
-      .sidebar { border-right: 0; border-bottom: 1px solid rgba(51,65,85,0.7); }
+      .sidebar { border-right: 0; border-bottom: 1px solid #e7e1d6; }
       .main { padding: 20px; }
       .decisions-grid { grid-template-columns: 1fr; }
       .definition-list { grid-template-columns: 1fr; }
@@ -2971,7 +3044,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return `
         <div class="sidebar-block">
           <div class="legend-title">Current Filter</div>
-          <div class="current-filter"><span class="dot" style="background:#38bdf8"></span><span>${escapeHtml(categoryConfig().label)} / ${escapeHtml(formatListFilterLabel(activeFilter))}</span></div>
+          <div class="current-filter"><span class="dot" style="background:#7c3a6b"></span><span>${escapeHtml(categoryConfig().label)} / ${escapeHtml(formatListFilterLabel(activeFilter))}</span></div>
         </div>
       `;
     }
@@ -3411,7 +3484,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return `
         <div class="sidebar-block">
           <div class="legend-title">DRAFT Overview</div>
-          <div class="current-filter"><span class="dot" style="background:#38bdf8"></span><span>${pluralize(stats.objectCount, 'catalog object')}</span></div>
+          <div class="current-filter"><span class="dot" style="background:#7c3a6b"></span><span>${pluralize(stats.objectCount, 'catalog object')}</span></div>
           <div class="current-filter"><span class="dot" style="background:#22c55e"></span><span>${pluralize(stats.acceptableUseTechnologyCount, 'mapped Technology Component')}</span></div>
           <div class="current-filter"><span class="dot" style="background:#f59e0b"></span><span>${pluralize(stats.controlEvidenceCount, 'control answer')}</span></div>
         </div>
@@ -3572,14 +3645,35 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       syncHashForExecutiveView();
       const stats = executiveStats();
       renderSidebarContent(executiveSidebarMarkup(stats));
+      // --- v1 dashboard alert banner: derive from real catalog state ---
+      const _openRisks = (browserData.objects || []).filter(o => o.type === 'decision_record' && o.category === 'risk' && (o.status === 'open' || o.status === 'accepted'));
+      const _retiredInUse = (browserData.objects || []).filter(o => o.lifecycleStatus === 'retired' && (o.referencedBy || []).length > 0);
+      const _stubs = (browserData.objects || []).filter(o => o.catalogStatus === 'stub');
+      const _alerts = [];
+      if (_openRisks.length) _alerts.push({ severity: 'critical', label: `${_openRisks.length} open risk${_openRisks.length === 1 ? '' : 's'}`, detail: 'Decision records with open or accepted-but-unmitigated risk', target: 'risks' });
+      if (_retiredInUse.length) _alerts.push({ severity: 'warning', label: `${_retiredInUse.length} retired component${_retiredInUse.length === 1 ? '' : 's'} still referenced`, detail: 'Lifecycle = retired but inbound references exist', target: 'retired' });
+      if (_stubs.length) _alerts.push({ severity: 'info', label: `${_stubs.length} stub${_stubs.length === 1 ? '' : 's'} in drafting table`, detail: 'Catalog status = stub; awaiting authoring', target: 'drafting-table' });
+      const _alertSeverity = sev => ({ critical: '#b93a3a', warning: '#c47a14', info: '#2a6fdb' }[sev] || '#7a6e60');
+      const _alertBanner = _alerts.length ? `
+        <section class="dashboard-alerts" aria-label="Catalog posture alerts">
+          ${_alerts.map(a => `
+            <button class="alert-card alert-${a.severity}" data-executive-target="${escapeHtml(a.target)}" style="border-left:4px solid ${_alertSeverity(a.severity)};">
+              <span class="alert-sev" style="color:${_alertSeverity(a.severity)};">${a.severity.toUpperCase()}</span>
+              <span class="alert-label">${escapeHtml(a.label)}</span>
+              <span class="alert-detail">${escapeHtml(a.detail)}</span>
+            </button>
+          `).join('')}
+        </section>
+      ` : '';
       pageRoot.innerHTML = `
         <div class="view-shell">
           ${topNavMarkup()}
+          ${_alertBanner}
           <section class="executive-hero">
             <div class="executive-hero-copy">
               <img class="executive-hero-logo" src="${escapeHtml(browserData.logoDataUri || 'draft-logo.png')}" alt="DRAFT">
               <div>
-                <h2>Welcome to the DRAFTing Table</h2>
+                <h2>${escapeHtml(browserData.catalogName || 'DRAFT')} catalog overview</h2>
                 <p>${escapeHtml(browserData.catalogName || 'This catalog')} connects deployable architecture, technology lifecycle decisions, requirements, and deployment patterns so teams can draft systems from governed building blocks.</p>
                 <div class="executive-hero-actions">
                   <button class="action-button" data-executive-target="drafting-table">Open Drafting Table</button>
@@ -3648,6 +3742,96 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             ${executiveArchitecturePanelMarkup(stats)}
             ${executiveControlDrilldownMarkup(stats)}
           </section>
+          ${(() => {
+            const _stubObjects = (browserData.objects || []).filter(o => o.catalogStatus === 'stub');
+            if (!_stubObjects.length) return '';
+            const _statusFor = o => {
+              if (o.type === 'decision_record' && o.status === 'open') return { label: 'blocked', tone: 'warn' };
+              if ((o.unresolvedQuestions || []).length > 0) return { label: 'review', tone: 'info' };
+              return { label: 'drafting', tone: 'neutral' };
+            };
+            return `
+              <section class="section-card" id="drafting-table-section" aria-label="Drafting table queue">
+                <div class="header-top">
+                  <div class="header-title">
+                    <h3>Drafting Table</h3>
+                    <div class="object-id">${pluralize(_stubObjects.length, 'stub')} awaiting authoring</div>
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table class="data-table">
+                    <thead><tr><th>Object</th><th>Type</th><th>Status</th><th>Owner</th></tr></thead>
+                    <tbody>
+                      ${_stubObjects.map(o => {
+                        const s = _statusFor(o);
+                        const ownerName = (o.owner && (o.owner.name || o.owner.team)) || (o.definitionOwner && (o.definitionOwner.name || o.definitionOwner.team)) || '—';
+                        return `
+                          <tr>
+                            <td><a href="#" class="object-link" data-object-id="${escapeHtml(o.uid)}"><strong>${escapeHtml(o.name)}</strong></a><div class="object-id">${escapeHtml(o.uid)}</div></td>
+                            <td>${escapeHtml(o.typeLabel)}</td>
+                            <td><span class="badge tone-${s.tone}">${s.label}</span></td>
+                            <td>${escapeHtml(ownerName)}</td>
+                          </tr>
+                        `;
+                      }).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            `;
+          })()}
+          ${(() => {
+            const _today = Date.now();
+            const _DAY = 86400000;
+            const _parse = d => { if (!d) return null; const t = Date.parse(d); return isNaN(t) ? null : t; };
+            const _runwayItems = (browserData.objects || [])
+              .filter(o => o.type === 'technology_component')
+              .map(o => {
+                const vl = o.vendorLifecycle || {};
+                const eol = _parse(vl.endOfLifeDate) || _parse(vl.endOfSupportDate);
+                const mig = _parse(o.targetMigrationDate);
+                return { o, eol, mig };
+              })
+              .filter(r => r.eol || r.mig)
+              .sort((a, b) => (a.eol || a.mig || Infinity) - (b.eol || b.mig || Infinity));
+            if (!_runwayItems.length) return '';
+            const _fmtDays = ms => {
+              const days = Math.round(ms / _DAY);
+              if (Math.abs(days) < 60) return `${days >= 0 ? 'in ' : ''}${days} day${Math.abs(days) === 1 ? '' : 's'}${days < 0 ? ' ago' : ''}`;
+              const months = Math.round(days / 30);
+              return `${months >= 0 ? 'in ' : ''}${months} mo${Math.abs(months) === 1 ? '' : 's'}${months < 0 ? ' ago' : ''}`;
+            };
+            const _tone = ms => ms == null ? 'neutral' : ms < 0 ? 'warn' : ms < 90 * _DAY ? 'warn' : ms < 365 * _DAY ? 'info' : 'neutral';
+            return `
+              <section class="section-card" id="eol-runway-section" aria-label="EOL and migration runway">
+                <div class="header-top">
+                  <div class="header-title">
+                    <h3>EOL &amp; Migration Runway</h3>
+                    <div class="object-id">${pluralize(_runwayItems.length, 'technology component')} with vendor end-of-life or planned migration dates</div>
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table class="data-table">
+                    <thead><tr><th>Component</th><th>Vendor EOL</th><th>Target Migration</th><th>Lifecycle</th></tr></thead>
+                    <tbody>
+                      ${_runwayItems.map(r => {
+                        const eolDelta = r.eol == null ? null : r.eol - _today;
+                        const migDelta = r.mig == null ? null : r.mig - _today;
+                        return `
+                          <tr>
+                            <td><a href="#" class="object-link" data-object-id="${escapeHtml(r.o.uid)}"><strong>${escapeHtml(r.o.name)}</strong></a><div class="object-id">${escapeHtml(r.o.classification || r.o.subtype || '')}</div></td>
+                            <td>${r.eol ? `<span class="badge tone-${_tone(eolDelta)}">${_fmtDays(eolDelta)}</span>` : '<span class="object-id">—</span>'}</td>
+                            <td>${r.mig ? `<span class="badge tone-${_tone(migDelta)}">${_fmtDays(migDelta)}</span>` : '<span class="object-id">unset</span>'}</td>
+                            <td><span class="badge">${escapeHtml(r.o.lifecycleStatus || 'unknown')}</span></td>
+                          </tr>
+                        `;
+                      }).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            `;
+          })()}
         </div>
       `;
       attachTopNavHandlers();
@@ -3789,7 +3973,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <div class="sidebar-block">
           <div class="legend-title">Onboarding Path</div>
           <div class="current-filter"><span class="dot" style="background:#22c55e"></span><span>Install and create workspace</span></div>
-          <div class="current-filter"><span class="dot" style="background:#38bdf8"></span><span>Activate requirements</span></div>
+          <div class="current-filter"><span class="dot" style="background:#7c3a6b"></span><span>Activate requirements</span></div>
           <div class="current-filter"><span class="dot" style="background:#8b5cf6"></span><span>Map acceptable-use technology</span></div>
           <div class="current-filter"><span class="dot" style="background:#f59e0b"></span><span>Draft deployable architecture</span></div>
         </div>
@@ -3958,7 +4142,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return `
         <div class="sidebar-block">
           <div class="legend-title">Acceptable Use Technology</div>
-          <div class="current-filter"><span class="dot" style="background:#38bdf8"></span><span>${mappedCount} mapped Technology Components</span></div>
+          <div class="current-filter"><span class="dot" style="background:#7c3a6b"></span><span>${mappedCount} mapped Technology Components</span></div>
           <div class="current-filter"><span class="dot" style="background:#22c55e"></span><span>${capabilityCount} capability groups</span></div>
           <div class="current-filter"><span class="dot" style="background:#f59e0b"></span><span>${groups.length} domain groups</span></div>
         </div>
@@ -4751,8 +4935,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (cls === 'runtime' || cls === 'product') return '#5eead4';
       if (cls === 'data') return '#d8b4fe';
       if (cls === 'gateway') return '#86efac';
-      if (cls === 'cloud' || cls === 'appliance') return '#cbd5e1';
-      return '#e2e8f0';
+      if (cls === 'cloud' || cls === 'appliance') return '#3a342c';
+      return '#1f1a14';
     }
 
     function objectIconDataUri(svgMarkup, cls) {
@@ -4802,12 +4986,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       const icon = topologyNodeIcon({ref: object.id});
       return {
         image: objectIconDataUri(icon.icon, icon.cls),
-        borderColor: object.color || '#334155'
+        borderColor: object.color || '#e7e1d6'
       };
     }
 
     function colorForToken(value) {
-      const palette = ['#38bdf8', '#22c55e', '#f59e0b', '#a855f7', '#ef4444', '#14b8a6', '#e879f9', '#64748b'];
+      const palette = ['#7c3a6b', '#22c55e', '#f59e0b', '#a855f7', '#ef4444', '#14b8a6', '#e879f9', '#64748b'];
       const token = String(value || '');
       let hash = 0;
       for (let index = 0; index < token.length; index += 1) {
@@ -5716,7 +5900,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           data: {
             id: object.id,
             label: object.name,
-            color: '#1e293b',
+            color: '#ffffff',
             borderColor: objectVisual.borderColor,
             iconImage: objectVisual.image,
             lifecycleStatus: object.lifecycleStatus,
@@ -5741,7 +5925,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           data: {
             id: refObject.id,
             label: refObject.name,
-            color: '#1e293b',
+            color: '#ffffff',
             borderColor: refVisual.borderColor,
             iconImage: refVisual.image,
             lifecycleStatus: refObject.lifecycleStatus,
@@ -5795,7 +5979,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               'background-position-y': '28%',
               'border-width': 1,
               'border-color': 'data(borderColor)',
-              'color': '#f8fafc',
+              'color': '#1f1a14',
               'font-size': 11,
               'font-weight': 600,
               'text-wrap': 'wrap',
@@ -5804,7 +5988,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               'text-halign': 'center',
               'text-margin-y': 36,
               'text-outline-width': 2,
-              'text-outline-color': '#1e293b',
+              'text-outline-color': '#fbf8f3',
               'width': 'data(nodeWidth)',
               'height': 'data(nodeHeight)',
               'cursor': 'pointer'
@@ -5821,8 +6005,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             style: {
               'curve-style': 'bezier',
               'width': 2,
-              'line-color': '64748b',
-              'target-arrow-color': '64748b',
+              'line-color': '#a89784',
+              'target-arrow-color': '#a89784',
               'target-arrow-shape': 'triangle'
             }
           }
@@ -6179,13 +6363,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               'background-color': 'data(color)',
               'border-width': 2,
               'border-style': 'data(borderStyle)',
-              'border-color': '334155',
-              'color': 'e2e8f0',
+              'border-color': '#a89784',
+              'color': '#1f1a14',
               'font-size': 10,
               'text-wrap': 'wrap',
               'text-max-width': 'data(textMaxWidth)',
               'text-valign': 'center',
               'text-halign': 'center',
+              'text-outline-width': 2,
+              'text-outline-color': '#fbf8f3',
               'width': 'data(nodeWidth)',
               'height': 'data(nodeHeight)',
               'cursor': 'pointer',
@@ -6197,8 +6383,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             style: {
               'curve-style': 'bezier',
               'width': 1.8,
-              'line-color': '64748b',
-              'target-arrow-color': '64748b',
+              'line-color': '#a89784',
+              'target-arrow-color': '#a89784',
               'target-arrow-shape': 'triangle',
               'opacity': 0.35
             }
@@ -6219,7 +6405,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             selector: 'node.selected-impact',
             style: {
               'opacity': 1,
-              'border-color': 'f59e0b',
+              'border-color': '#b45309',
               'border-width': 4
             }
           },
@@ -6227,7 +6413,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             selector: 'node.impacted-impact',
             style: {
               'opacity': 1,
-              'border-color': 'ef4444',
+              'border-color': '#b91c1c',
               'border-width': 3
             }
           },
@@ -6235,7 +6421,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             selector: 'node.sibling-impact',
             style: {
               'opacity': 1,
-              'border-color': '8b5cf6',
+              'border-color': '#7a3a8a',
               'border-width': 3
             }
           },
