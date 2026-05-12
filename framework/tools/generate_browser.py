@@ -1483,6 +1483,50 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       color: var(--muted);
       font-size: 14px;
     }
+    .catalog-search-panel {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+    }
+    .catalog-search-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .catalog-search-header label {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .catalog-search-count {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .catalog-search-control {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+    }
+    .catalog-search-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--text);
+      padding: 11px 12px;
+      font: inherit;
+    }
+    .catalog-search-input:focus {
+      outline: none;
+      border-color: rgba(124, 58, 107, 0.7);
+      box-shadow: 0 0 0 3px rgba(124, 58, 107, 0.12);
+    }
     .detail-layout {
       display: grid;
       gap: 22px;
@@ -2231,7 +2275,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
     .search-result,
     .impact-item {
-      border: 1px solid rgba(51,65,85,0.85);
+      border: 1px solid var(--border);
       border-radius: 12px;
       background: var(--surface);
       padding: 10px 12px;
@@ -2688,6 +2732,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       .executive-number.big,
       .executive-number { font-size: 46px; }
       .executive-bar-row { grid-template-columns: 86px minmax(0, 1fr) 34px; }
+      .catalog-search-header,
+      .view-title {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .catalog-search-control {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -2820,6 +2872,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     let currentMode = 'executive';
     let executiveDrilldown = null;
     const navHistory = [];
+    let listSearchTerm = '';
     let detailCy = null;
     let impactCy = null;
     let impactSelectedId = null;
@@ -3019,7 +3072,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       setHashState({
         view: 'list',
         category: activeCategory !== 'architecture' ? activeCategory : null,
-        filter: activeFilter !== 'all' ? activeFilter : null
+        filter: activeFilter !== 'all' ? activeFilter : null,
+        q: listSearchTerm.trim() || null
       });
     }
 
@@ -3047,7 +3101,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (suppressHashSync) return;
       const params = currentHashState();
       const view = params.get('view');
-      if (view === 'executive' || (!view && !params.get('category') && !params.get('filter'))) {
+      if (view === 'executive' || (!view && !params.get('category') && !params.get('filter') && !params.get('q'))) {
         executiveDrilldown = params.get('drill') || null;
         currentDetailId = null;
         renderExecutiveView();
@@ -3091,6 +3145,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         : requestedFilter && categoryFilters.some(item => item.types.includes(requestedFilter))
           ? requestedFilter
           : 'all';
+      listSearchTerm = params.get('q') || '';
       currentDetailId = null;
       renderListView();
     }
@@ -3219,7 +3274,50 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function objectSearchText(object) {
       const aliases = Array.isArray(object.aliases) ? object.aliases.join(' ') : '';
-      return `${object.name} ${object.id} ${aliases}`.toLowerCase();
+      const values = [
+        object.name,
+        object.id,
+        object.uid,
+        object.type,
+        object.typeLabel,
+        object.description,
+        object.product,
+        object.vendor,
+        object.catalogStatus,
+        object.lifecycleStatus,
+        object.deliveryModel,
+        object.owner?.team,
+        object.owner?.contact,
+        aliases
+      ];
+      return values.filter(Boolean).join(' ').toLowerCase();
+    }
+
+    function normalizedSearchTerm(value) {
+      return String(value || '').trim().toLowerCase();
+    }
+
+    function objectMatchesSearch(object, searchTerm) {
+      const tokens = normalizedSearchTerm(searchTerm).split(/\s+/).filter(Boolean);
+      if (!tokens.length) return true;
+      const searchText = objectSearchText(object);
+      return tokens.every(token => searchText.includes(token));
+    }
+
+    function catalogSearchMarkup(matchCount, baseCount) {
+      const hasSearch = Boolean(listSearchTerm.trim());
+      return `
+        <section class="catalog-search-panel">
+          <div class="catalog-search-header">
+            <label for="catalog-search">Search Current View</label>
+            <span class="catalog-search-count">${hasSearch ? `${matchCount} of ${baseCount} matching` : `${baseCount} available`}</span>
+          </div>
+          <div class="catalog-search-control">
+            <input id="catalog-search" class="catalog-search-input" type="search" autocomplete="off" placeholder="Name, UID, type, owner, product, vendor" value="${escapeHtml(listSearchTerm)}">
+            ${hasSearch ? '<button class="filter-button" data-clear-list-search>Clear</button>' : ''}
+          </div>
+        </section>
+      `;
     }
 
     function businessPillarForObject(object) {
@@ -3334,7 +3432,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function objectCardMarkup(object) {
       return `
-        <article class="object-card" data-object-id="${object.id}">
+        <article class="object-card" data-object-id="${object.id}" role="button" tabindex="0">
           <div>
             <h3>${escapeHtml(objectCardTitle(object))}</h3>
             <div class="object-id">${escapeHtml(object.id)}</div>
@@ -4186,6 +4284,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (target === 'drafting-table') {
         activeCategory = 'architecture';
         activeFilter = 'all';
+        listSearchTerm = '';
         executiveDrilldown = null;
         renderListView();
         return;
@@ -4193,6 +4292,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (target === 'technologies') {
         activeCategory = 'supporting';
         activeFilter = 'technology_component';
+        listSearchTerm = '';
         executiveDrilldown = null;
         renderListView();
         return;
@@ -4200,6 +4300,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (target === 'capabilities') {
         activeCategory = 'framework';
         activeFilter = 'capability';
+        listSearchTerm = '';
         executiveDrilldown = null;
         renderListView();
         return;
@@ -4207,6 +4308,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (target === 'deployments') {
         activeCategory = 'architecture';
         activeFilter = 'software_deployment_pattern';
+        listSearchTerm = '';
         executiveDrilldown = null;
         renderListView();
         return;
@@ -4214,6 +4316,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (target === 'requirements') {
         activeCategory = 'framework';
         activeFilter = 'requirement_group';
+        listSearchTerm = '';
         executiveDrilldown = null;
         renderListView();
         return;
@@ -4408,7 +4511,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       destroyDetailCy();
       destroyImpactCy();
       const category = categoryConfig();
-      const filtered = filterObjects();
+      const baseObjects = filterObjects();
+      const searchTerm = normalizedSearchTerm(listSearchTerm);
+      const filtered = searchTerm
+        ? baseObjects.filter(object => objectMatchesSearch(object, searchTerm))
+        : baseObjects;
       const rows = activeFilter === 'all'
         ? category.rows.map(row => ({ row, objects: filterObjectsByTypes(row.types) })).filter(section => section.objects.length)
         : (() => {
@@ -4417,6 +4524,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
               || { id: filter.id, label: filter.label, types: filter.types };
             return [{ row, objects: filtered }];
           })();
+      if (activeFilter === 'all' && searchTerm) {
+        rows.forEach(section => {
+          section.objects = section.objects.filter(object => objectMatchesSearch(object, searchTerm));
+        });
+      }
+      const visibleRows = rows.filter(section => section.objects.length);
       syncHashForListView();
       renderSidebarContent(sidebarMarkup(businessPillarSidebarMarkup(filtered)));
       pageRoot.innerHTML = `
@@ -4428,15 +4541,48 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <div class="filter-row">
             ${category.filters.map(filter => `<button class="filter-button ${filter.id === activeFilter ? 'active' : ''}" data-filter="${filter.id}">${escapeHtml(filter.label)}</button>`).join('')}
           </div>
+          ${catalogSearchMarkup(filtered.length, baseObjects.length)}
           <div class="view-title">
             <span>${filtered.length} objects</span>
-            <span>Showing ${escapeHtml(category.label)}${activeFilter === 'all' ? '' : ` / ${escapeHtml(formatListFilterLabel(activeFilter))}`}</span>
+            <span>${searchTerm ? 'Search results in ' : 'Showing '}${escapeHtml(category.label)}${activeFilter === 'all' ? '' : ` / ${escapeHtml(formatListFilterLabel(activeFilter))}`}</span>
           </div>
           <div class="content-rows">
-            ${rows.map(section => listRowMarkup(section.row, section.objects)).join('') || `<div class="empty-card" style="padding:24px;">No objects in this view.</div>`}
+            ${visibleRows.map(section => listRowMarkup(section.row, section.objects)).join('') || `<div class="empty-card" style="padding:24px;">${searchTerm ? 'No objects match this search.' : 'No objects in this view.'}</div>`}
           </div>
         </div>
       `;
+
+      const searchInput = document.getElementById('catalog-search');
+      if (searchInput) {
+        searchInput.addEventListener('input', event => {
+          listSearchTerm = event.target.value;
+          const cursorStart = event.target.selectionStart ?? listSearchTerm.length;
+          const cursorEnd = event.target.selectionEnd ?? listSearchTerm.length;
+          renderListView();
+          const refreshedInput = document.getElementById('catalog-search');
+          if (refreshedInput) {
+            refreshedInput.focus();
+            refreshedInput.setSelectionRange(cursorStart, cursorEnd);
+          }
+        });
+        searchInput.addEventListener('keydown', event => {
+          if (event.key === 'Enter' && filtered.length) {
+            event.preventDefault();
+            showDetailView(filtered[0].id);
+          }
+          if (event.key === 'Escape' && listSearchTerm) {
+            event.preventDefault();
+            listSearchTerm = '';
+            renderListView();
+          }
+        });
+      }
+
+      pageRoot.querySelector('[data-clear-list-search]')?.addEventListener('click', () => {
+        listSearchTerm = '';
+        renderListView();
+        document.getElementById('catalog-search')?.focus();
+      });
 
       pageRoot.querySelectorAll('[data-category-tab]').forEach(button => {
         button.addEventListener('click', () => {
@@ -4456,6 +4602,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       pageRoot.querySelectorAll('[data-object-id]').forEach(card => {
         card.addEventListener('click', () => {
           showDetailView(card.dataset.objectId);
+        });
+        card.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            showDetailView(card.dataset.objectId);
+          }
         });
       });
 
