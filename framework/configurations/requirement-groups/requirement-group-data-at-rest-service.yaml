@@ -31,6 +31,24 @@ requirements:
   naAllowed: false
   validAnswerTypes:
   - architecturalDecision
+- id: backup-platform
+  description: The Data-at-Rest service must document the backup platform, vault, or managed service responsible for storing or managing backups.
+  rationale: Backup strategy says what recovery posture is expected; the backup platform makes the operational dependency explicit.
+  canBeSatisfiedBy:
+  - mechanism: externalInteraction
+    criteria:
+      capability: 01KQQ4Q026-7T2H
+    example: An enterprise backup vault, backup service, object store, or managed provider backup capability.
+  - mechanism: architecturalDecision
+    key: backup.platform
+    example: Provider-managed backups retained inside the managed database service.
+  minimumSatisfactions: 1
+  relatedCapability: 01KQQ4Q026-7T2H
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - architecturalDecision
+  - externalInteraction
 - id: recovery-time-objective
   description: The Data-at-Rest service must document its recovery time objective.
   rationale: Recovery time must be explicit so operators and product teams understand the recovery expectation.

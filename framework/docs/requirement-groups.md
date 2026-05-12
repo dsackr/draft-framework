@@ -89,6 +89,13 @@ Always-on requirement groups are applied by object type. Workspace-mode groups
 are applied only when activated and claimed by the object, or when strict
 workspace disposition is enabled.
 
+`internalComponents` and `externalInteractions` are also evidence only when
+they map to an applicable requirement. If one of those dependencies is modeled
+for a reason that does not directly satisfy an applicable requirement, the
+object must document that reason in `architecturalDecisions` using
+`externalInteractionRationales`, `internalComponentRationales`, or
+`dependencyRationales`.
+
 ## Draftsman Behavior
 
 For every requirement with `relatedCapability`, the Draftsman resolves the

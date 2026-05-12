@@ -160,6 +160,31 @@ platform, installed component, Technology Component configuration, external
 interaction, or architectural decision applies patches. It does not ask which
 team owns patching.
 
+## Dependency Rationale
+
+When adding `internalComponents` or `externalInteractions`, verify that each
+entry directly satisfies an applicable Requirement Group requirement. The entry
+is direct evidence only when it matches a `canBeSatisfiedBy` mechanism for an
+applicable requirement, or when a valid `requirementImplementations` entry
+points at that mechanism.
+
+If the dependency is real but does not directly satisfy a requirement, ask why
+it belongs on the object and record the answer as an architectural decision:
+
+- `architecturalDecisions.externalInteractionRationales` for external systems
+  and platforms
+- `architecturalDecisions.internalComponentRationales` for local components
+- `architecturalDecisions.dependencyRationales` when a shared dependency
+  rationale is clearer
+
+Do not treat adjacent capabilities as equivalent. For example, an APM agent or
+APM platform on a Host does not satisfy host health and welfare monitoring
+unless the applicable requirement explicitly accepts that APM capability. If it
+is included for application telemetry, document that architectural decision.
+If the dependency is intended to satisfy a requirement, attach the matching
+capability or record valid `requirementImplementations` evidence instead of
+writing a rationale.
+
 ## Requirement Overlap
 
 Always-on base requirements and workspace-activated control requirements can

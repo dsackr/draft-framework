@@ -426,6 +426,142 @@ class ValidationTests(unittest.TestCase):
             text=True,
         )
 
+    def _write_complete_host_with_extra_apm_interaction(
+        self,
+        workspace: Path,
+        include_rationale: bool,
+        rationale_kind: str = "external",
+        include_apm_interaction: bool = True,
+        apm_classification: str = "agent",
+    ) -> None:
+        tech_dir = workspace / "catalog" / "technology-components"
+        host_dir = workspace / "catalog" / "hosts"
+        tech_dir.mkdir(parents=True, exist_ok=True)
+        host_dir.mkdir(parents=True, exist_ok=True)
+        components = {
+            "technology-os-test.yaml": (
+                "01KQS0TF60-ABCD",
+                "Test Operating System",
+                "operating-system",
+                ["01KQQ4Q026-QM2X"],
+            ),
+            "technology-compute-test.yaml": (
+                "01KQS0TF60-EFGH",
+                "Test Compute Platform",
+                "compute-platform",
+                ["01KQQ4Q026-1HZP"],
+            ),
+            "technology-security-agent-test.yaml": (
+                "01KQS0TF60-JKMX",
+                "Test Security Agent",
+                "agent",
+                ["01KQQ4Q026-JW52"],
+            ),
+            "technology-patch-agent-test.yaml": (
+                "01KQS0TF60-NPQR",
+                "Test Patch Agent",
+                "agent",
+                ["01KQQ4Q026-BH6E"],
+            ),
+            "technology-apm-agent-test.yaml": (
+                "01KQS0TF60-STVW",
+                "Test APM Agent",
+                apm_classification,
+                ["01KQQ4Q026-NB1W"],
+            ),
+        }
+        for filename, (uid, name, classification, capabilities) in components.items():
+            capability_lines = "\n".join(f"  - {capability}" for capability in capabilities)
+            (tech_dir / filename).write_text(
+                textwrap.dedent(
+                    f"""
+                    schemaVersion: "1.0"
+                    uid: {uid}
+                    type: technology_component
+                    name: {name}
+                    vendor: Test Vendor
+                    productName: {name}
+                    productVersion: "1"
+                    classification: {classification}
+                    catalogStatus: draft
+                    capabilities:
+                    {capability_lines}
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+        if include_rationale and rationale_kind == "internal":
+            decisions = (
+                "internalComponentRationales:\n"
+                "  01KQS0TF60-STVW: Included as optional application performance telemetry for runtimes deployed on this host standard."
+            )
+        elif include_rationale:
+            decisions = (
+                "externalInteractionRationales:\n"
+                "  Dynatrace Platform: Included as optional application performance telemetry for runtimes deployed on this host standard."
+            )
+        else:
+            decisions = "lifecycleRationale: Test approved host fixture."
+        decision_lines = textwrap.indent(decisions, "  ")
+        apm_interaction = (
+            """  - name: Dynatrace Platform
+    enabledBy: 01KQS0TF60-STVW
+    capabilities:
+      - 01KQQ4Q026-NB1W
+"""
+            if include_apm_interaction
+            else ""
+        )
+        (host_dir / "host-test-complete.yaml").write_text(
+            f"""schemaVersion: "1.0"
+uid: 01KQS0TF60-XYZ1
+type: host
+name: Test Complete Host
+catalogStatus: approved
+lifecycleStatus: preferred
+category: host
+operatingSystemComponent: 01KQS0TF60-ABCD
+computePlatformComponent: 01KQS0TF60-EFGH
+internalComponents:
+  - ref: 01KQS0TF60-ABCD
+    role: os
+  - ref: 01KQS0TF60-EFGH
+    role: hardware
+  - ref: 01KQS0TF60-JKMX
+    role: agent
+  - ref: 01KQS0TF60-NPQR
+    role: agent
+  - ref: 01KQS0TF60-STVW
+    role: agent
+externalInteractions:
+  - name: Identity Platform
+    capabilities:
+      - 01KQQ4Q026-MHJM
+  - name: Logging Platform
+    capabilities:
+      - 01KQQ4Q026-D04B
+  - name: Health Monitoring Platform
+    capabilities:
+      - 01KQQ4Q026-98VD
+  - name: Security Monitoring Platform
+    enabledBy: 01KQS0TF60-JKMX
+    capabilities:
+      - 01KQQ4Q026-JW52
+  - name: Patch Management Platform
+    enabledBy: 01KQS0TF60-NPQR
+    capabilities:
+      - 01KQQ4Q026-BH6E
+{apm_interaction.rstrip()}
+architecturalDecisions:
+{decision_lines}
+requirementGroups:
+  - 01KQQ4Q027-THYN
+""",
+            encoding="utf-8",
+        )
+
     def test_appliance_delivery_satisfies_service_like_capabilities_directly(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)
@@ -512,6 +648,246 @@ class ValidationTests(unittest.TestCase):
 
         self.assertFalse(result.ok, result.stdout + result.stderr)
         self.assertIn("externalInteractions[0].ref references unknown object", result.stdout)
+
+    def test_unrequired_host_external_interaction_requires_architectural_decision(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            self._write_complete_host_with_extra_apm_interaction(workspace, include_rationale=False)
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("externalInteractionRationales['Dynatrace Platform']", result.stdout)
+        self.assertIn("does not directly satisfy any applicable requirement", result.stdout)
+
+    def test_unrequired_host_external_interaction_with_architectural_decision_validates(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            self._write_complete_host_with_extra_apm_interaction(workspace, include_rationale=True)
+
+            result = validate_workspace(workspace)
+
+        self.assertTrue(result.ok, result.stdout + result.stderr)
+        self.assertNotIn("does not directly satisfy any applicable requirement", result.stdout)
+
+    def test_unrequired_host_internal_component_requires_architectural_decision(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            self._write_complete_host_with_extra_apm_interaction(
+                workspace,
+                include_rationale=False,
+                include_apm_interaction=False,
+                apm_classification="software",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("internalComponentRationales['01KQS0TF60-STVW']", result.stdout)
+        self.assertIn("does not directly satisfy any applicable requirement", result.stdout)
+
+    def test_unrequired_host_internal_component_with_architectural_decision_validates(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            self._write_complete_host_with_extra_apm_interaction(
+                workspace,
+                include_rationale=True,
+                rationale_kind="internal",
+                include_apm_interaction=False,
+                apm_classification="software",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertTrue(result.ok, result.stdout + result.stderr)
+        self.assertNotIn("does not directly satisfy any applicable requirement", result.stdout)
+
+    def test_primary_technology_component_internal_component_validates_without_rationale(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            tech_dir = workspace / "catalog" / "technology-components"
+            host_dir = workspace / "catalog" / "hosts"
+            data_dir = workspace / "catalog" / "data-at-rest-services"
+            tech_dir.mkdir(parents=True, exist_ok=True)
+            host_dir.mkdir(parents=True, exist_ok=True)
+            data_dir.mkdir(parents=True, exist_ok=True)
+            (tech_dir / "technology-db-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF61-DBMS
+                    type: technology_component
+                    name: Test DBMS
+                    vendor: Test Vendor
+                    productName: Test DBMS
+                    productVersion: "1"
+                    classification: software
+                    catalogStatus: draft
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (host_dir / "host-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF61-HST1
+                    type: host
+                    name: Test Host
+                    catalogStatus: draft
+                    lifecycleStatus: candidate
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (data_dir / "database-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF61-DATA
+                    type: data_at_rest_service
+                    name: Test Data Service
+                    deliveryModel: self-managed
+                    catalogStatus: approved
+                    lifecycleStatus: preferred
+                    host: 01KQS0TF61-HST1
+                    primaryTechnologyComponent: 01KQS0TF61-DBMS
+                    internalComponents:
+                      - ref: 01KQS0TF61-HST1
+                        role: host
+                      - ref: 01KQS0TF61-DBMS
+                        role: function
+                    architecturalDecisions:
+                      serviceAuthentication: Uses centralized identity.
+                      secretsManagement: Uses managed secrets injection.
+                      serviceLogging: Emits logs to the central logging platform.
+                      healthWelfareMonitoring: Exposes health telemetry.
+                      availabilityModel: Single-instance candidate service.
+                      scalabilityModel: Vertical scale.
+                      recoverabilityModel: Recreated from deployment automation.
+                      failureDomain: Single database service instance.
+                      backup:
+                        strategy: Daily full backup.
+                        platform: Test backup vault.
+                        rto: 4h
+                        rpo: 24h
+                      ha:
+                        mechanism: none
+                      encryption:
+                        atRest: encrypted storage
+                      accessControl:
+                        model: Role-based access.
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertTrue(result.ok, result.stdout + result.stderr)
+        self.assertNotIn("internalComponentRationales['01KQS0TF61-DBMS']", result.stdout)
+        self.assertNotIn("does not directly satisfy any applicable requirement", result.stdout)
+
+    def test_backup_platform_external_interaction_satisfies_data_at_rest_requirement(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            tech_dir = workspace / "catalog" / "technology-components"
+            host_dir = workspace / "catalog" / "hosts"
+            data_dir = workspace / "catalog" / "data-at-rest-services"
+            tech_dir.mkdir(parents=True, exist_ok=True)
+            host_dir.mkdir(parents=True, exist_ok=True)
+            data_dir.mkdir(parents=True, exist_ok=True)
+            (tech_dir / "technology-db-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF62-DBMS
+                    type: technology_component
+                    name: Test DBMS
+                    vendor: Test Vendor
+                    productName: Test DBMS
+                    productVersion: "1"
+                    classification: software
+                    catalogStatus: draft
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (host_dir / "host-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF62-HST1
+                    type: host
+                    name: Test Host
+                    catalogStatus: draft
+                    lifecycleStatus: candidate
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (data_dir / "database-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF62-DATA
+                    type: data_at_rest_service
+                    name: Test Data Service
+                    deliveryModel: self-managed
+                    catalogStatus: approved
+                    lifecycleStatus: preferred
+                    host: 01KQS0TF62-HST1
+                    primaryTechnologyComponent: 01KQS0TF62-DBMS
+                    internalComponents:
+                      - ref: 01KQS0TF62-HST1
+                        role: host
+                      - ref: 01KQS0TF62-DBMS
+                        role: function
+                    externalInteractions:
+                      - name: Test Backup Vault
+                        capabilities:
+                          - 01KQQ4Q026-7T2H
+                    architecturalDecisions:
+                      serviceAuthentication: Uses centralized identity.
+                      secretsManagement: Uses managed secrets injection.
+                      serviceLogging: Emits logs to the central logging platform.
+                      healthWelfareMonitoring: Exposes health telemetry.
+                      availabilityModel: Single-instance candidate service.
+                      scalabilityModel: Vertical scale.
+                      recoverabilityModel: Recreated from deployment automation.
+                      failureDomain: Single database service instance.
+                      backup:
+                        strategy: Daily full backup.
+                        rto: 4h
+                        rpo: 24h
+                      ha:
+                        mechanism: none
+                      encryption:
+                        atRest: encrypted storage
+                      accessControl:
+                        model: Role-based access.
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertTrue(result.ok, result.stdout + result.stderr)
+        self.assertNotIn("externalInteractionRationales['Test Backup Vault']", result.stdout)
+        self.assertNotIn("does not directly satisfy any applicable requirement", result.stdout)
 
     def test_capability_implementation_requires_company_owner(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

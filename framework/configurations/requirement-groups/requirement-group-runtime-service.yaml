@@ -31,6 +31,18 @@ requirements:
   naAllowed: false
   validAnswerTypes:
   - field
+- id: primary-technology-component
+  description: A self-managed service must reference the primary Technology Component that provides its runtime, gateway, or data-service function.
+  rationale: A service is not complete until the product or component that performs the service function is explicit.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: primaryTechnologyComponent
+    example: Reference the main Technology Component such as IIS, SQL Server, NGINX, Java, or another workspace-defined component.
+  minimumSatisfactions: 1
+  requirementMode: mandatory
+  naAllowed: false
+  validAnswerTypes:
+  - field
 - id: service-authentication
   description: The service must address how service identities or administrators authenticate to the service.
   rationale: A service is incomplete until its service-level authentication model is explicit.
