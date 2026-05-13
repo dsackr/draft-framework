@@ -37,8 +37,11 @@ At minimum, a Product Service YAML should include:
 - `catalogStatus`
 - `lifecycleStatus`
 
-Most Product Services also include `description`. `architecturalDecisions` is
-used when the Software Deployment Pattern or an attached Requirement Group needs
+Most Product Services also include `description`, `internalProcesses`,
+`apiEndpoints`, `internalComponents`, `externalInteractions`, or
+`deploymentConfigurations` when the first-party service has meaningful internal
+architecture to document. `architecturalDecisions` is used when the Software
+Deployment Pattern, an attached Requirement Group, or a modeled dependency needs
 an answer that is not otherwise expressed directly in the YAML.
 
 ## What A Product Service Documents
@@ -48,13 +51,56 @@ A Product Service captures:
 - the owning product
 - the deployable object it runs on via `runsOn`
 - lifecycle and catalog status
+- named first-party processes via `internalProcesses`
+- exposed API or protocol surfaces via `apiEndpoints`
+- consumed Technology Components or deployable objects via `internalComponents`
+- outbound or external platform calls via `externalInteractions`
+- meaningful deployment variants via `deploymentConfigurations`
 - descriptive notes about the component's purpose
 - any architectural decision entries needed to explain required answers or
   non-obvious additions
 
 DRAFT does not require enumeration of every internal package, library, or
 repository that contributes code to the component. The framework only needs to
-know that a first-party deployable component exists and where it is deployed.
+know the first-party deployable boundary, the important process/API surfaces,
+and any dependencies that are architecturally relevant.
+
+## Internal Process And API Modeling
+
+Use `internalProcesses` for named runtime units inside the Product Service, such
+as an API process, worker, scheduler, conductor, or queue processor. Use
+`apiEndpoints` to document externally meaningful interfaces. If an endpoint sets
+`exposedBy`, the value must match an `internalProcesses[].name` value.
+
+Example:
+
+```yaml
+internalProcesses:
+  - name: orders-api
+    role: api
+    exposesApi: true
+    communicationModel: both
+apiEndpoints:
+  - name: Orders REST API
+    path: /orders
+    protocol: REST
+    authenticationModel: oauth
+    exposedBy: orders-api
+```
+
+## Product Dependencies
+
+Use `internalComponents` when the Product Service consumes a specific
+Technology Component or deployable object inside its runtime boundary. When the
+referenced object is a Technology Component, `configuration` can point to a
+specific named Technology Component configuration.
+
+Use `externalInteractions` for outbound calls or external platforms the Product
+Service depends on. Product Service dependencies follow the same validation rule
+as other deployable objects: if an internal component or external interaction
+does not directly satisfy an applicable requirement, explain why it exists under
+`architecturalDecisions.internalComponentRationales` or
+`architecturalDecisions.externalInteractionRationales`.
 
 ## Product Service Versus Reusable Services
 

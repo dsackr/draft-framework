@@ -94,7 +94,18 @@ internalComponent:
   - ref
   optionalFields:
   - role
+  - configuration
   - notes
+  fieldTypes:
+    ref: str
+    role: str
+    configuration: str
+    notes: str
+  fieldDescriptions:
+    ref: Reference the Technology Component, Host, or deployable object included inside this service.
+    role: Describe the component role inside this service.
+    configuration: Reference a configuration id on the referenced Technology Component when this service uses a specific named variant.
+    notes: Add context that does not belong in role or configuration.
 externalInteraction:
   requiredFields:
   - capabilities

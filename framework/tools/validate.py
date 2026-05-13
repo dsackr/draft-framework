@@ -508,7 +508,9 @@ def validate_schema_section(
     schema: dict[str, Any],
     context: str,
     failures: list[str],
+    root_schema: dict[str, Any] | None = None,
 ) -> None:
+    root_schema = root_schema or schema
     field_descriptions = schema.get("fieldDescriptions") if isinstance(schema.get("fieldDescriptions"), dict) else {}
     for field in schema.get("requiredFields", []):
         if not has_required_value(node, field):
@@ -560,14 +562,14 @@ def validate_schema_section(
         if not isinstance(value, list):
             failures.append(f"{context}: Change field '{field}' to a list")
             continue
-        child_schema = schema.get(section_name)
+        child_schema = schema.get(section_name) or root_schema.get(section_name)
         if not isinstance(child_schema, dict):
             continue
         for index, item in enumerate(value):
             if not isinstance(item, dict):
                 failures.append(f"{context}: Change '{field}[{index}]' to a mapping")
                 continue
-            validate_schema_section(item, child_schema, f"{context}: {field}[{index}]", failures)
+            validate_schema_section(item, child_schema, f"{context}: {field}[{index}]", failures, root_schema)
 
 
 def resolve_requirement_group_requirements(
@@ -1329,6 +1331,81 @@ def validate_external_interaction_refs(
                 f"{path}: externalInteractions[{index}].ref references unknown object '{ref}' — "
                 "model the interacted platform as a Host, Runtime Service, Data-at-Rest Service, Edge/Gateway Service, Product Service, or Technology Component, "
                 "or remove ref until the target object exists"
+            )
+
+
+def technology_configuration_ids(obj: dict[str, Any]) -> set[str]:
+    configurations = obj.get("configurations", [])
+    if not isinstance(configurations, list):
+        return set()
+    return {
+        str(configuration.get("id"))
+        for configuration in configurations
+        if isinstance(configuration, dict) and is_non_empty(configuration.get("id"))
+    }
+
+
+def validate_internal_component_configuration_refs(
+    obj: dict[str, Any],
+    path: Path,
+    catalog_by_id: dict[str, dict[str, Any]],
+    failures: list[str],
+) -> None:
+    components = obj.get("internalComponents", [])
+    if not isinstance(components, list):
+        return
+    for index, component in enumerate(components):
+        if not isinstance(component, dict):
+            continue
+        configuration = component.get("configuration")
+        if not is_non_empty(configuration):
+            continue
+        ref = component.get("ref")
+        target = catalog_by_id.get(str(ref)) if is_non_empty(ref) else None
+        if not target or target.get("type") != "technology_component":
+            failures.append(
+                f"{path}: internalComponents[{index}].configuration requires ref to an existing Technology Component; "
+                f"'{ref or 'missing'}' was not found as a Technology Component"
+            )
+            continue
+        if str(configuration) not in technology_configuration_ids(target):
+            failures.append(
+                f"{path}: internalComponents[{index}].configuration references unknown configuration "
+                f"'{configuration}' on Technology Component '{ref}'"
+            )
+
+
+def validate_product_service_architecture_refs(
+    obj: dict[str, Any],
+    path: Path,
+    failures: list[str],
+) -> None:
+    if obj.get("type") != "product_service":
+        return
+    processes = obj.get("internalProcesses", [])
+    process_names: set[str] = set()
+    duplicate_names: set[str] = set()
+    if isinstance(processes, list):
+        for process in processes:
+            if not isinstance(process, dict) or not is_non_empty(process.get("name")):
+                continue
+            name = str(process["name"])
+            if name in process_names:
+                duplicate_names.add(name)
+            process_names.add(name)
+    for name in sorted(duplicate_names):
+        failures.append(f"{path}: internalProcesses contains duplicate process name '{name}'")
+
+    endpoints = obj.get("apiEndpoints", [])
+    if not isinstance(endpoints, list):
+        return
+    for index, endpoint in enumerate(endpoints):
+        if not isinstance(endpoint, dict):
+            continue
+        exposed_by = endpoint.get("exposedBy")
+        if is_non_empty(exposed_by) and str(exposed_by) not in process_names:
+            failures.append(
+                f"{path}: apiEndpoints[{index}].exposedBy references unknown internal process '{exposed_by}'"
             )
 
 
@@ -2484,6 +2561,8 @@ def main(argv: list[str] | None = None) -> int:
     for path, obj in objects.items():
         validate_against_schema(obj, path, schemas, failures)
         validate_external_interaction_refs(obj, path, catalog_by_id, failures)
+        validate_internal_component_configuration_refs(obj, path, catalog_by_id, failures)
+        validate_product_service_architecture_refs(obj, path, failures)
         if obj.get("type") == "capability":
             validate_capability(obj, path, catalog_by_id, domain_ids, requirement_capability_refs, failures, warnings)
         if obj.get("type") == "requirement_group":

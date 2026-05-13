@@ -115,3 +115,39 @@ Do not place a deployable object in a capability implementation lifecycle list.
 If a service is governed by technology lifecycle, model the specific vendor
 product and version as a Technology Component and let the deployable object
 compose that product into useful architecture.
+
+## Configuration Network Bindings
+
+Technology Component `configurations` can include `networkBindings` when a
+specific configuration variant exposes or uses known network behavior. Put this
+data on the configuration, not the top-level Technology Component, so different
+variants can declare different ports, protocols, or traffic directions.
+
+Example:
+
+```yaml
+configurations:
+  - id: amqp-listener
+    name: AMQP Listener
+    description: Standard AMQP listener configuration.
+    capabilities:
+      - 01KQQ4Q026-D04B
+    networkBindings:
+      - port: 5672
+        protocol: AMQP
+        direction: inbound
+        description: Client AMQP listener.
+```
+
+Deployable objects can reference that named variant from an
+`internalComponents` entry:
+
+```yaml
+internalComponents:
+  - ref: 01KQS0TF66-RBMQ
+    role: broker-client
+    configuration: amqp-listener
+```
+
+When `configuration` is present, validation requires the `ref` to resolve to a
+Technology Component and the named configuration to exist on that component.

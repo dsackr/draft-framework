@@ -52,7 +52,18 @@ internalComponent:
   - ref
   optionalFields:
   - role
+  - configuration
   - notes
+  fieldTypes:
+    ref: str
+    role: str
+    configuration: str
+    notes: str
+  fieldDescriptions:
+    ref: Reference the Technology Component, Host, or deployable object included inside this object.
+    role: Describe the component role inside this object.
+    configuration: Reference a configuration id on the referenced Technology Component when this component uses a specific named variant.
+    notes: Add context that does not belong in role or configuration.
 externalInteraction:
   requiredFields:
   - capabilities

@@ -889,6 +889,382 @@ requirementGroups:
         self.assertNotIn("externalInteractionRationales['Test Backup Vault']", result.stdout)
         self.assertNotIn("does not directly satisfy any applicable requirement", result.stdout)
 
+    def test_technology_component_configuration_accepts_network_bindings(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            tech_dir = workspace / "catalog" / "technology-components"
+            tech_dir.mkdir(parents=True, exist_ok=True)
+            (tech_dir / "technology-rabbitmq.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF63-RBMQ
+                    type: technology_component
+                    name: RabbitMQ 3.13
+                    vendor: Broadcom
+                    productName: RabbitMQ
+                    productVersion: "3.13"
+                    classification: software
+                    catalogStatus: draft
+                    configurations:
+                      - id: amqp-listener
+                        name: AMQP Listener
+                        description: Standard AMQP listener configuration.
+                        capabilities:
+                          - 01KQQ4Q026-D04B
+                        networkBindings:
+                          - port: 5672
+                            protocol: AMQP
+                            direction: inbound
+                            description: AMQP client listener.
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertTrue(result.ok, result.stdout + result.stderr)
+
+    def test_technology_component_network_binding_validates_shape(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            tech_dir = workspace / "catalog" / "technology-components"
+            tech_dir.mkdir(parents=True, exist_ok=True)
+            (tech_dir / "technology-rabbitmq.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF64-RBMQ
+                    type: technology_component
+                    name: RabbitMQ 3.13
+                    vendor: Broadcom
+                    productName: RabbitMQ
+                    productVersion: "3.13"
+                    classification: software
+                    catalogStatus: draft
+                    configurations:
+                      - id: amqp-listener
+                        name: AMQP Listener
+                        description: Standard AMQP listener configuration.
+                        capabilities:
+                          - 01KQQ4Q026-D04B
+                        networkBindings:
+                          - port: "5672"
+                            protocol: AMQP
+                            direction: sideways
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("Change field 'port' to type int", result.stdout)
+        self.assertIn("Set direction to one of", result.stdout)
+
+    def test_internal_component_configuration_must_exist_on_referenced_technology_component(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            tech_dir = workspace / "catalog" / "technology-components"
+            host_dir = workspace / "catalog" / "hosts"
+            product_dir = workspace / "catalog" / "product-services"
+            tech_dir.mkdir(parents=True, exist_ok=True)
+            host_dir.mkdir(parents=True, exist_ok=True)
+            product_dir.mkdir(parents=True, exist_ok=True)
+            (tech_dir / "technology-rabbitmq.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF65-RBMQ
+                    type: technology_component
+                    name: RabbitMQ 3.13
+                    vendor: Broadcom
+                    productName: RabbitMQ
+                    productVersion: "3.13"
+                    classification: software
+                    catalogStatus: draft
+                    configurations:
+                      - id: amqp-listener
+                        name: AMQP Listener
+                        description: Standard AMQP listener configuration.
+                        capabilities:
+                          - 01KQQ4Q026-D04B
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (host_dir / "host-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF65-HST1
+                    type: host
+                    name: Test Host
+                    catalogStatus: draft
+                    lifecycleStatus: candidate
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (product_dir / "product-service-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF65-PRDS
+                    type: product_service
+                    name: Messaging API
+                    product: test-product
+                    runsOn: 01KQS0TF65-HST1
+                    catalogStatus: draft
+                    lifecycleStatus: candidate
+                    internalComponents:
+                      - ref: 01KQS0TF65-RBMQ
+                        role: broker-client
+                        configuration: missing-listener
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("internalComponents[0].configuration references unknown configuration 'missing-listener'", result.stdout)
+
+    def test_product_service_accepts_processes_endpoints_and_configured_components(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            tech_dir = workspace / "catalog" / "technology-components"
+            host_dir = workspace / "catalog" / "hosts"
+            product_dir = workspace / "catalog" / "product-services"
+            tech_dir.mkdir(parents=True, exist_ok=True)
+            host_dir.mkdir(parents=True, exist_ok=True)
+            product_dir.mkdir(parents=True, exist_ok=True)
+            (tech_dir / "technology-rabbitmq.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF66-RBMQ
+                    type: technology_component
+                    name: RabbitMQ 3.13
+                    vendor: Broadcom
+                    productName: RabbitMQ
+                    productVersion: "3.13"
+                    classification: software
+                    catalogStatus: draft
+                    configurations:
+                      - id: amqp-listener
+                        name: AMQP Listener
+                        description: Standard AMQP listener configuration.
+                        capabilities:
+                          - 01KQQ4Q026-D04B
+                        networkBindings:
+                          - port: 5672
+                            protocol: AMQP
+                            direction: inbound
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (host_dir / "host-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF66-HST1
+                    type: host
+                    name: Test Host
+                    catalogStatus: draft
+                    lifecycleStatus: candidate
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (product_dir / "product-service-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF66-PRDS
+                    type: product_service
+                    name: Messaging API
+                    product: test-product
+                    runsOn: 01KQS0TF66-HST1
+                    catalogStatus: draft
+                    lifecycleStatus: candidate
+                    internalProcesses:
+                      - name: messaging-api
+                        role: api
+                        exposesApi: true
+                        communicationModel: both
+                    apiEndpoints:
+                      - name: Public REST API
+                        path: /messages
+                        protocol: REST
+                        authenticationModel: oauth
+                        exposedBy: messaging-api
+                    internalComponents:
+                      - ref: 01KQS0TF66-RBMQ
+                        role: broker-client
+                        configuration: amqp-listener
+                    deploymentConfigurations:
+                      - id: multi-tenant
+                        name: Multi-tenant
+                        description: Shared product deployment.
+                        addressesQualities:
+                          - scalability
+                    architecturalDecisions:
+                      internalComponentRationales:
+                        01KQS0TF66-RBMQ: Required broker client dependency for queue-mediated message publishing.
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertTrue(result.ok, result.stdout + result.stderr)
+        self.assertNotIn("apiEndpoints[0].exposedBy references unknown", result.stdout)
+        self.assertNotIn("unknown configuration", result.stdout)
+
+    def test_product_service_endpoint_protocol_and_process_reference_validate(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            host_dir = workspace / "catalog" / "hosts"
+            product_dir = workspace / "catalog" / "product-services"
+            host_dir.mkdir(parents=True, exist_ok=True)
+            product_dir.mkdir(parents=True, exist_ok=True)
+            (host_dir / "host-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF67-HST1
+                    type: host
+                    name: Test Host
+                    catalogStatus: draft
+                    lifecycleStatus: candidate
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (product_dir / "product-service-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF67-PRDS
+                    type: product_service
+                    name: Messaging API
+                    product: test-product
+                    runsOn: 01KQS0TF67-HST1
+                    catalogStatus: draft
+                    lifecycleStatus: candidate
+                    internalProcesses:
+                      - name: messaging-api
+                        role: api
+                    apiEndpoints:
+                      - name: Invalid API
+                        protocol: SOAP
+                        exposedBy: missing-process
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("Set protocol to one of", result.stdout)
+        self.assertIn("apiEndpoints[0].exposedBy references unknown internal process 'missing-process'", result.stdout)
+
+    def test_product_service_dependency_without_rationale_fails_when_approved(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            tech_dir = workspace / "catalog" / "technology-components"
+            host_dir = workspace / "catalog" / "hosts"
+            product_dir = workspace / "catalog" / "product-services"
+            tech_dir.mkdir(parents=True, exist_ok=True)
+            host_dir.mkdir(parents=True, exist_ok=True)
+            product_dir.mkdir(parents=True, exist_ok=True)
+            (tech_dir / "technology-rabbitmq.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF68-RBMQ
+                    type: technology_component
+                    name: RabbitMQ 3.13
+                    vendor: Broadcom
+                    productName: RabbitMQ
+                    productVersion: "3.13"
+                    classification: software
+                    catalogStatus: draft
+                    configurations:
+                      - id: amqp-listener
+                        name: AMQP Listener
+                        description: Standard AMQP listener configuration.
+                        capabilities:
+                          - 01KQQ4Q026-D04B
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (host_dir / "host-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF68-HST1
+                    type: host
+                    name: Test Host
+                    catalogStatus: draft
+                    lifecycleStatus: candidate
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+            (product_dir / "product-service-test.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    uid: 01KQS0TF68-PRDS
+                    type: product_service
+                    name: Messaging API
+                    product: test-product
+                    runsOn: 01KQS0TF68-HST1
+                    catalogStatus: approved
+                    lifecycleStatus: candidate
+                    internalComponents:
+                      - ref: 01KQS0TF68-RBMQ
+                        role: broker-client
+                        configuration: amqp-listener
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("internalComponentRationales['01KQS0TF68-RBMQ']", result.stdout)
+        self.assertIn("does not directly satisfy any applicable requirement", result.stdout)
+
     def test_capability_implementation_requires_company_owner(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)
