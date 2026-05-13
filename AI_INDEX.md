@@ -29,6 +29,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | RELEASE.md | Release checklist for version, changelog, validation, and publishing steps. |
 | pyproject.toml | Python packaging and draft-table CLI entry point. |
 | draft_table | Local-first DRAFT Table CLI and web shell. |
+| framework/browser | Static browser shell, CSS, JavaScript, and default theme assets copied by generate_browser.py. |
 | security.md | DRAFT Table credential and local security boundary. |
 | framework/docs/draftsman.md | Draftsman role, intent routing, and authoring rules. |
 | framework/docs/company-onboarding.md | Company onboarding tutorial for implementing DRAFT in a private workspace. |

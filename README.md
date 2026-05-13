@@ -42,11 +42,13 @@ framework has been vendored there.
 
 ```text
 framework/              # Core schemas, tools, docs, and base configurations
+framework/browser/      # Static browser shell, CSS, JavaScript, and theme assets
 framework/configurations/
                         # Base capabilities, Requirement Groups, and domains
 examples/catalog/       # Sample content used to validate and demo the framework
 templates/              # Object and company repo templates
 docs/index.html         # Generated static browser for the example workspace
+docs/assets/            # Generated browser data plus copied browser assets
 docs/user-manual.html   # Generated DRAFT user manual
 draft_table/            # Local-first DRAFT Table CLI and web shell
 ```
@@ -239,8 +241,8 @@ Inside a company repo, validate against the vendored framework copy:
 python3 .draft/framework/tools/validate.py --workspace .
 ```
 
-Regenerate the static browser, user manual, and AI index after YAML, docs,
-schema, or template changes:
+Regenerate the static browser, browser assets, user manual, and AI index after
+YAML, docs, schema, browser, or template changes:
 
 ```bash
 python3 framework/tools/generate_browser.py
@@ -283,7 +285,8 @@ The generated static browser is published at:
 
 [https://dsackr.github.io/draft-framework/](https://dsackr.github.io/draft-framework/)
 
-GitHub Pages is read-only. `docs/index.html` is generated from
-`framework/configurations/` and `examples/catalog/` by
-`framework/tools/generate_browser.py`. The same generator renders
-`framework/docs/user-manual.md` to `docs/user-manual.html`.
+GitHub Pages is read-only. `docs/index.html` is a generated shell. The browser
+data is written to `docs/assets/browser-data.js`, and framework-owned CSS,
+JavaScript, and default theme assets are copied from `framework/browser/`.
+The same generator renders `framework/docs/user-manual.md` to
+`docs/user-manual.html`.

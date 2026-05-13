@@ -24,6 +24,7 @@ WORKSPACE_DIRS = (
     "catalog/decision-records",
     "catalog/sessions",
     "configurations",
+    "configurations/browser",
     "configurations/capabilities",
     "configurations/requirement-groups",
     "configurations/object-patches",
@@ -34,6 +35,7 @@ WORKSPACE_DIRS = (
 )
 
 FRAMEWORK_VENDOR_DIRS = (
+    "browser",
     "configurations",
     "docs",
     "schemas",
@@ -246,11 +248,15 @@ def copy_workspace_templates(workspace: Path, framework_repo: Path = REPO_ROOT, 
 
 
 def vendored_framework_text(text: str) -> str:
+    protected_vendor_root = "__DRAFT_VENDOR_FRAMEWORK_ROOT__"
+    text = text.replace(".draft/framework", protected_vendor_root)
     replacements = {
+        "framework/browser/": "browser/",
         "framework/docs/": "docs/",
         "framework/schemas/": "schemas/",
         "framework/configurations/": "configurations/",
         "framework/tools/": "tools/",
+        "framework/browser": "browser",
         "framework/docs": "docs",
         "framework/schemas": "schemas",
         "framework/configurations": "configurations",
@@ -258,7 +264,7 @@ def vendored_framework_text(text: str) -> str:
     }
     for old, new in replacements.items():
         text = text.replace(old, new)
-    return text
+    return text.replace(protected_vendor_root, ".draft/framework")
 
 
 def vendor_framework(workspace: Path, framework_repo: Path = REPO_ROOT, overwrite: bool = False) -> list[Path]:

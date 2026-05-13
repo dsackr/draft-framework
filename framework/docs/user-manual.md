@@ -42,7 +42,7 @@ DRAFT separates four concerns:
 | Framework rules | `.draft/framework/` in company workspaces, `framework/` upstream | Schemas, base capabilities, Requirement Groups, docs, and tools. |
 | Company architecture | `catalog/` | Hosts, services, Product Services, Software Deployment Patterns, and other architecture inventory. |
 | Company extensions | `configurations/` | Capability mappings, object patches, company Requirement Groups, and local domains. |
-| Generated views | `docs/` | Static HTML generated from YAML and Markdown source. |
+| Generated views | `docs/` | Static HTML, browser assets, and browser data generated from YAML and Markdown source. |
 
 Framework files are not normal authoring targets inside a company workspace. Update them only through an explicit framework refresh or framework change. Architecture content belongs in the company workspace.
 
@@ -94,8 +94,9 @@ Use this decision table before editing:
 | Adjust selected fields on a framework object without copying it | `configurations/object-patches/` |
 | Change schema, validation, tools, or framework documentation | upstream framework repo |
 | Change the static browser output | source YAML, Markdown, or generator code, then regenerate |
+| Change company browser colors or branding | company-owned `configurations/browser/theme.css` |
 
-Do not hand-edit `docs/index.html` or `docs/user-manual.html`. They are generated outputs. Regenerate and commit them with the source changes when the repo expects generated docs to be committed.
+Do not hand-edit `docs/index.html`, `docs/assets/`, or `docs/user-manual.html`. They are generated outputs. Regenerate and commit them with the source changes when the repo expects generated docs to be committed.
 
 ## Requirements And Capabilities
 
@@ -297,6 +298,21 @@ python framework/tools/generate_browser.py
 ```
 
 By default, the browser generator also renders the framework-owned `docs/user-manual.md` source to `docs/user-manual.html` beside the browser output. Use `--skip-user-manual` only when you intentionally want to regenerate the browser without touching the manual.
+
+The browser shell, CSS, JavaScript, and default theme live in the framework under `browser/`. Generated catalog data is written separately to `docs/assets/browser-data.js`, which keeps content diffs separate from display framework changes.
+
+Company workspaces can add `configurations/browser/theme.css` to override stable CSS variables without editing `.draft/framework/**`. The generator copies that file to `docs/assets/workspace-theme.css` after the default browser stylesheet, so company theme values win through normal CSS cascade.
+
+Example:
+
+```css
+:root {
+  --accent: #005eb8;
+  --accent-strong: #003b71;
+  --accent-soft: rgba(0, 94, 184, 0.12);
+  --blue: #0072ce;
+}
+```
 
 GitHub Actions workflows typically regenerate derived docs on pushes that change YAML, framework docs, templates, the browser generator, AI bootstrap files, or README content. Check the local `.github/workflows/` files for the exact path filters in a given repo.
 
