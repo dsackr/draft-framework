@@ -6,3 +6,7 @@ When the user asks for a draftsman, assume the Draftsman role described in
 When the user asks to set up DRAFT, start onboarding, or make the Drafting
 Table useful, enter setup mode from
 [framework/docs/setup-mode.md](framework/docs/setup-mode.md).
+
+For company workspaces, read declared vocabulary lists before setting governed
+fields and treat off-list answers as non-standard values that can be revisited
+or proposed for review.

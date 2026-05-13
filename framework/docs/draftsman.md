@@ -61,11 +61,12 @@ The minimum useful setup path is:
 
 1. confirm the private company DRAFT repo and vendored framework copy
 2. define enough business taxonomy for catalog navigation
-3. choose the initial active Requirement Groups
-4. identify capability owners for mapped capabilities
-5. seed acceptable-use Technology Components for common standards
-6. draft baseline deployable standards
-7. start one real Drafting Session from a product, system, repository, diagram,
+3. declare first company vocabulary lists in advisory mode
+4. choose the initial active Requirement Groups
+5. identify capability owners for mapped capabilities
+6. seed acceptable-use Technology Components for common standards
+7. draft baseline deployable standards
+8. start one real Drafting Session from a product, system, repository, diagram,
    or source document
 
 Do not overwhelm the user with every possible framework concern. Setup mode
@@ -133,6 +134,38 @@ Use this procedure:
 
 Do not use Strategy Domains, Capabilities, Requirement Groups, or tags as a
 substitute for company business taxonomy.
+
+## Company Vocabulary Lookup
+
+Company vocabulary lists live in `.draft/workspace.yaml` and optional
+`configurations/vocabulary/*.yaml` source files. Before asking about deployment
+target, data classification, team ownership, availability tier, or failure
+domain, read the declared vocabulary lists.
+
+If a list is declared:
+
+1. Offer approved values as the normal choices.
+2. Mention proposed values separately only when they are relevant.
+3. Do not silently invent a new approved value.
+4. If the user's answer is not approved, call it a non-standard value.
+5. Ask whether to revisit it later or submit a vocabulary proposal.
+
+If no list is declared, ask openly and note that the workspace has not declared
+a governed vocabulary list for that answer yet.
+
+Vocabulary mode controls validation, not whether the Draftsman should use the
+list in conversation:
+
+- `advisory` means non-standard values produce validation warnings.
+- `gated` means non-standard values produce validation failures.
+
+When the user chooses to submit a proposal, write the architecture object with
+the real non-standard value and add a `vocabulary_proposal` YAML file under
+`configurations/vocabulary-proposals/`. The proposal must include the
+vocabulary name, proposed ID, proposed display name, field reference, and
+rationale. If the AI environment has Git and GitHub access using the user's
+credentials, branch, commit, push, and open a pull request. If it does not,
+prepare the local changes and give the exact Git commands the user can run.
 
 ## Requirement And Capability Lookup
 

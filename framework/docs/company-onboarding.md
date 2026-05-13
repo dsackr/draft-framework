@@ -17,6 +17,7 @@ After initial onboarding, the company should have:
 - a vendored framework copy under `.draft/framework/`
 - tracked workspace metadata in `.draft/workspace.yaml`
 - a small business taxonomy for catalog navigation
+- advisory company vocabulary lists for the first governed choices
 - one or more active Requirement Groups for new drafting work
 - owners for the first mapped capabilities
 - a starter acceptable-use technology baseline
@@ -107,7 +108,30 @@ to find architecture?
 Do not spend weeks perfecting taxonomy. Setup mode only needs the first useful
 shape. Names can be revisited later.
 
-## Step 4: Pick The Initial Governance Baseline
+## Step 4: Declare First Company Vocabulary Lists
+
+Declare only the vocabulary lists the team is ready to govern. Start in
+`advisory` mode so validation warns about non-standard values without blocking
+the first useful drafting sessions.
+
+Good first question:
+
+```text
+Which lists do we already know well enough to offer as choices: deployment
+targets, data classifications, team identifiers, availability tiers, or failure
+domains?
+```
+
+The highest-value starter lists are usually `teams` and `deploymentTargets`.
+Data classification and availability tiers can follow when the enterprise
+architecture or security team has accepted names. Move a list to `gated` only
+when the company wants pull requests to fail on non-standard values.
+
+If an engineer gives a real value that is not in a declared list, the Draftsman
+should call it a non-standard value and ask whether to revisit later or submit a
+vocabulary proposal for review.
+
+## Step 5: Pick The Initial Governance Baseline
 
 Activate the Requirement Groups that should guide new drafting work:
 
@@ -129,7 +153,7 @@ Which governance baseline should new objects address first: DRAFT-only,
 SOC 2, TX-RAMP, NIST CSF, or a company-specific group?
 ```
 
-## Step 5: Seed Acceptable-Use Technology
+## Step 6: Seed Acceptable-Use Technology
 
 Technology Components are vendor products, platforms, tools, runtimes, agents,
 operating systems, and product versions. Capabilities describe reusable needs
@@ -148,7 +172,7 @@ Which enterprise standards should we seed first for identity, logging,
 monitoring, patching, backup, compute, operating systems, database, and edge?
 ```
 
-## Step 6: Draft Baseline Deployable Standards
+## Step 7: Draft Baseline Deployable Standards
 
 Draft reusable deployable objects in this order when possible:
 
@@ -177,7 +201,7 @@ Which common deployable standard should we draft first: Host, Runtime Service,
 Data-at-Rest Service, or Edge/Gateway Service?
 ```
 
-## Step 7: Start The First Real Drafting Session
+## Step 8: Start The First Real Drafting Session
 
 The first drafting session should be a guided conversation, not a YAML editing
 exercise. Start with a real product, system, diagram, repository, or source
@@ -205,7 +229,7 @@ Which product, system, diagram, repository, or source document should we use
 for the first guided Drafting Session?
 ```
 
-## Step 8: Validate, Review, And Publish
+## Step 9: Validate, Review, And Publish
 
 Validation is the contract between conversation and source.
 

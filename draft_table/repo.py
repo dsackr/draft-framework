@@ -28,6 +28,8 @@ WORKSPACE_DIRS = (
     "configurations/capabilities",
     "configurations/requirement-groups",
     "configurations/object-patches",
+    "configurations/vocabulary",
+    "configurations/vocabulary-proposals",
     ".github",
     ".github/workflows",
     ".draft",
@@ -72,6 +74,7 @@ WORKSPACE_TEMPLATE_FILES = (
     ("templates/workspace/llms.txt.tmpl", "llms.txt"),
     ("templates/workspace/.github/copilot-instructions.md.tmpl", ".github/copilot-instructions.md"),
     ("templates/workspace/.github/workflows/draft-framework-update.yml.tmpl", ".github/workflows/draft-framework-update.yml"),
+    ("templates/workspace/.github/workflows/draft-vocabulary-proposals.yml.tmpl", ".github/workflows/draft-vocabulary-proposals.yml"),
 )
 
 
@@ -366,6 +369,7 @@ def ensure_workspace_layout(workspace: Path, framework_repo: Path = REPO_ROOT) -
                         "activeRequirementGroups": [],
                         "requireActiveRequirementGroupDisposition": False,
                     },
+                    "vocabulary": {},
                 },
                 sort_keys=False,
             ),

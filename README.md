@@ -50,6 +50,8 @@ templates/              # Object and company repo templates
 docs/index.html         # Generated static browser for the example workspace
 docs/assets/            # Generated browser data plus copied browser assets
 docs/user-manual.html   # Generated DRAFT user manual
+docs/company-vocabulary.html
+                        # Generated company vocabulary guide
 draft_table/            # Local-first DRAFT Table CLI and web shell
 ```
 
@@ -62,6 +64,10 @@ A company private DRAFT repo should use this shape:
 .draft/framework.lock  # Upstream source and synced framework commit
 catalog/                # Company architecture content
 configurations/         # Company Requirement Group, compliance, domain, and patch overlays
+configurations/vocabulary/
+                        # Optional company governed vocabulary source files
+configurations/vocabulary-proposals/
+                        # Draftsman proposals for non-standard values
 configurations/object-patches/
                         # Patch objects for framework or catalog overrides
 ```
@@ -87,7 +93,8 @@ For a new company workspace, use Draftsman setup mode after `draft-table
 onboard`. Setup mode walks the enterprise architecture team through the minimum
 steps needed to make the Drafting Table useful: repo readiness, business
 taxonomy, active Requirement Groups, capability owners, acceptable-use
-technology, baseline deployable standards, and one real first Drafting Session.
+technology, company vocabulary lists, baseline deployable standards, and one
+real first Drafting Session.
 It keeps the user aware of the current step, next step, remaining work, and
 revisit-later items.
 
@@ -162,6 +169,12 @@ company can repair catalog or configuration issues on that branch. Companies can
 disable this behavior by disabling the workflow in GitHub Actions or deleting
 the workflow file.
 
+New company workspaces also include an optional vocabulary proposal workflow at
+`.github/workflows/draft-vocabulary-proposals.yml`. When the Draftsman captures
+a real answer that is not an approved vocabulary value, it can write a
+`vocabulary_proposal` file; the workflow can turn that into a review pull
+request against the official company vocabulary list.
+
 ### Supported AI Providers
 
 DRAFT Table stores only provider type, executable path, optional model name,
@@ -197,6 +210,7 @@ See [security.md](security.md) for the threat model and credential boundary.
 - [Draftsman setup mode](framework/docs/setup-mode.md)
 - [Draftsman AI guidance](framework/docs/draftsman-ai-configuration.md)
 - [Company onboarding tutorial](framework/docs/company-onboarding.md)
+- [Company vocabulary](framework/docs/company-vocabulary.md)
 - [DRAFT object types](framework/docs/object-types.md)
 - [YAML schema reference](framework/docs/yaml-schema-reference.md)
 - [Naming conventions](framework/docs/naming-conventions.md)

@@ -1365,6 +1365,141 @@ requirementGroups:
         self.assertFalse(result.ok, result.stdout + result.stderr)
         self.assertIn("capability lifecycle applies only to discrete vendor product versions", result.stdout)
 
+    def test_advisory_vocabulary_reports_non_standard_value_as_warning(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            self._write_vocabulary_workspace(workspace, mode="advisory")
+            self._write_sdp_with_deployment_target(workspace, deployment_target="gcp-us-central1")
+
+            result = validate_workspace(workspace)
+
+        self.assertTrue(result.ok, result.stdout + result.stderr)
+        self.assertIn("uses a non-standard value", result.stdout)
+        self.assertIn("serviceGroups[0].deploymentTarget", result.stdout)
+
+    def test_gated_vocabulary_reports_non_standard_value_as_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            self._write_vocabulary_workspace(workspace, mode="gated")
+            self._write_sdp_with_deployment_target(workspace, deployment_target="gcp-us-central1")
+
+            result = validate_workspace(workspace)
+
+        self.assertFalse(result.ok, result.stdout + result.stderr)
+        self.assertIn("uses a non-standard value", result.stdout)
+        self.assertIn("Approved values: aws-us-east-2", result.stdout)
+
+    def test_apply_vocabulary_proposals_creates_review_entry(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            ensure_workspace_layout(workspace)
+            proposal_dir = workspace / "configurations" / "vocabulary-proposals"
+            proposal_dir.mkdir(parents=True, exist_ok=True)
+            (proposal_dir / "gcp-us-central1.yaml").write_text(
+                textwrap.dedent(
+                    """
+                    schemaVersion: "1.0"
+                    type: vocabulary_proposal
+                    name: Add GCP US Central 1
+                    vocabulary: deploymentTargets
+                    proposalKind: non-standard-value
+                    status: proposed
+                    proposedId: gcp-us-central1
+                    proposedName: GCP US Central 1
+                    entry:
+                      type: cloud-region
+                      provider: gcp
+                    fieldRefs:
+                      - object: 01KQS0TF70-SDMP
+                        path: serviceGroups[0].deploymentTarget
+                        value: gcp-us-central1
+                    rationale: Required by the proposed GCP deployment boundary.
+                    """
+                ).strip()
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(REPO_ROOT / "framework" / "tools" / "apply_vocabulary_proposals.py"),
+                    "--workspace",
+                    str(workspace),
+                ],
+                cwd=REPO_ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            created = workspace / "configurations" / "vocabulary" / "deployment-targets.yaml"
+            created_text = created.read_text(encoding="utf-8")
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("gcp-us-central1", created_text)
+        self.assertIn("status: proposed", created_text)
+
+    def _write_vocabulary_workspace(self, workspace: Path, mode: str) -> None:
+        (workspace / ".draft" / "workspace.yaml").write_text(
+            textwrap.dedent(
+                f"""
+                schemaVersion: "1.0"
+                workspace:
+                  name: vocabulary-test
+                framework:
+                  source: https://github.com/dsackr/draft-framework.git
+                  vendoredPath: .draft/framework
+                  updatePolicy: explicit
+                paths:
+                  catalog: catalog
+                  configurations: configurations
+                requirements:
+                  activeRequirementGroups: []
+                  requireActiveRequirementGroupDisposition: false
+                vocabulary:
+                  deploymentTargets:
+                    mode: {mode}
+                    values:
+                      - id: aws-us-east-2
+                        name: AWS US East 2
+                """
+            ).strip()
+            + "\n",
+            encoding="utf-8",
+        )
+
+    def _write_sdp_with_deployment_target(self, workspace: Path, deployment_target: str) -> None:
+        pattern_dir = workspace / "catalog" / "software-deployment-patterns"
+        pattern_dir.mkdir(parents=True, exist_ok=True)
+        (pattern_dir / "software-deployment-pattern-vocabulary.yaml").write_text(
+            textwrap.dedent(
+                f"""
+                schemaVersion: "1.0"
+                uid: 01KQS0TF70-SDMP
+                type: software_deployment_pattern
+                name: Vocabulary Test Pattern
+                catalogStatus: draft
+                lifecycleStatus: candidate
+                architecturalDecisions:
+                  noApplicablePattern: Test fixture.
+                  deploymentTargets: Test target.
+                  availabilityRequirement: Test availability.
+                  dataClassification: Test data.
+                  failureDomain: Test failure domain.
+                  noPatternDeviations: Test fixture.
+                  noAdditionalInteractions: Test fixture.
+                serviceGroups:
+                  - name: Application Tier
+                    deploymentTarget: {deployment_target}
+                    deployableObjects: []
+                """
+            ).strip()
+            + "\n",
+            encoding="utf-8",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

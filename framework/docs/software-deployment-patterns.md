@@ -201,6 +201,13 @@ Only ask for a specific geographic region when the source material names one
 or an active company/control requirement makes region part of the architecture
 answer.
 
+If `.draft/workspace.yaml` declares `vocabulary.deploymentTargets`, validation
+checks `serviceGroups[].deploymentTarget` against that list. In `advisory` mode,
+non-standard values produce warnings; in `gated` mode, they produce failures.
+`owner-interview-required` remains a valid drafting sentinel for unknown
+deployment targets, and `drafting-interview-required` can be used as the
+general interview-required sentinel.
+
 `diagramTier` places deployed objects into one of four columns:
 
 - `presentation`

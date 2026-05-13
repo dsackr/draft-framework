@@ -34,6 +34,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | framework/docs/draftsman.md | Draftsman role, intent routing, and authoring rules. |
 | framework/docs/setup-mode.md | Draftsman first-run setup mode and guided interview cadence. |
 | framework/docs/company-onboarding.md | Company onboarding tutorial for implementing DRAFT in a private workspace. |
+| framework/docs/company-vocabulary.md | Optional company vocabulary lists, advisory/gated validation, and proposal flow. |
 | framework/docs/overview.md | Framework concepts and object family overview. |
 | framework/docs/object-types.md | User-facing DRAFT object type taxonomy and deployable/non-deployable distinction. |
 | framework/docs/delivery-models.md | Delivery model meanings for self-managed, PaaS, SaaS, and appliance services. |
@@ -44,6 +45,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | framework/docs/capabilities.md | Capability object model and implementation lookup behavior. |
 | framework/docs/drafting-sessions.md | How to persist incomplete authoring work. |
 | framework/tools/validate.py | Executable validation for schemas, Requirement Groups, capabilities, and references. |
+| framework/tools/apply_vocabulary_proposals.py | Materializes Draftsman vocabulary_proposal files into reviewable company vocabulary entries. |
 | framework/tools/repair_uids.py | Explicit repair utility that adds or replaces generated object UIDs and rewrites object references. |
 | framework/tools/generate_browser.py | Static GitHub Pages browser generator. |
 | install-draft-table.sh | Local DRAFT Table installer and onboarding launcher. |
@@ -54,6 +56,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 |---|---|---|
 | framework/docs/capabilities.md | Capabilities | A Capability is a first-class framework object that names an architecture |
 | framework/docs/company-onboarding.md | Company Onboarding | This guide is the clean first-run path for a company adopting DRAFT. It keeps |
+| framework/docs/company-vocabulary.md | Company Vocabulary | Company vocabulary lists are optional governed lists in `.draft/workspace.yaml`. |
 | framework/docs/decision-records.md | Decision Records | Decision Records are first-class records for known risks, |
 | framework/docs/delivery-models.md | Delivery Models | Delivery models explain how a deployable service is operated. They apply to |
 | framework/docs/drafting-sessions.md | Drafting Sessions | A Drafting Session is a machine-readable record of partial architecture work. |
@@ -187,6 +190,7 @@ These are sample catalog objects used to validate and demonstrate the framework.
 | templates/workspace/.draft/workspace.yaml.tmpl | Reusable YAML authoring template. |
 | templates/workspace/.github/copilot-instructions.md.tmpl | Copilot Instructions |
 | templates/workspace/.github/workflows/draft-framework-update.yml.tmpl | Reusable YAML authoring template. |
+| templates/workspace/.github/workflows/draft-vocabulary-proposals.yml.tmpl | DRAFT Vocabulary Proposal PRs |
 | templates/workspace/.gitignore.tmpl | Reusable YAML authoring template. |
 | templates/workspace/AGENTS.md.tmpl | AI Agent Instructions |
 | templates/workspace/CLAUDE.md.tmpl | Claude Instructions |

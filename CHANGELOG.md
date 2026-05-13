@@ -3,6 +3,47 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.0 - 2026-05-13
+
+### Compatibility Impact
+
+No migration is required for existing workspaces. Company vocabulary lists are
+optional, and undeclared lists preserve the existing free-text behavior.
+
+### Added
+
+- Added optional workspace vocabulary declarations for deployment targets, data
+  classification levels, team IDs, availability tiers, and failure domains.
+- Added advisory and gated vocabulary validation modes.
+- Added `vocabulary` and `vocabulary_proposal` YAML document support for
+  company-owned vocabulary source files and non-standard value review flow.
+- Added `framework/tools/apply_vocabulary_proposals.py` and a workspace GitHub
+  Actions template that can open review pull requests for proposed standard
+  values.
+- Added the Company Vocabulary guide and browser navigation link.
+
+### Changed
+
+- Updated Draftsman, onboarding, setup-mode, workspace, Software Deployment
+  Pattern, and AI bootstrap guidance to use declared vocabulary choices during
+  interviews.
+- Updated workspace scaffolding to create vocabulary folders and install the
+  vocabulary proposal workflow template.
+
+### Fixed
+
+- Fixed the adoption gap where companies had no framework-supported way to
+  move from free-text deployment targets, teams, availability tiers, data
+  classifications, and failure domains toward governed choices.
+
+### Migration Notes
+
+- Existing workspaces can continue unchanged.
+- To adopt vocabulary governance, declare one list at a time under
+  `.draft/workspace.yaml`, start with `mode: advisory`, and move a list to
+  `mode: gated` only when the company wants validation to block non-standard
+  values.
+
 ## 0.12.6 - 2026-05-13
 
 ### Compatibility Impact

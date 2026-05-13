@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Company Vocabulary</title>
+  <style>
+    :root {
+      --bg: #f7f4ef;
+      --surface: #ffffff;
+      --surface-soft: #f1ece4;
+      --surface-strong: #e6ded2;
+      --text: #2d2721;
+      --subtle: #5f564b;
+      --muted: #7a6e60;
+      --border: rgba(122, 110, 96, 0.24);
+      --accent: #7c3a6b;
+      --accent-strong: #5d2950;
+      --accent-soft: rgba(124, 58, 107, 0.10);
+      --blue: #2a6fdb;
+      --green: #1f8a5b;
+      --code: #241f1a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 22px 18px;
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .sidebar h1 {
+      margin: 0 0 4px;
+      font-size: 17px;
+      line-height: 1.25;
+    }
+    .sidebar p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .toc {
+      display: grid;
+      gap: 2px;
+    }
+    .toc a {
+      display: block;
+      border-radius: 7px;
+      padding: 6px 8px;
+      color: var(--subtle);
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .toc a:hover {
+      background: var(--surface-soft);
+      color: var(--text);
+    }
+    .toc .level-3 {
+      padding-left: 22px;
+      font-size: 12px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      margin-bottom: 18px;
+      color: var(--accent-strong);
+      background: var(--accent-soft);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    main {
+      min-width: 0;
+      padding: 42px 56px 72px;
+    }
+    .content {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    h1, h2, h3, h4 {
+      color: var(--text);
+      line-height: 1.25;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(32px, 5vw, 52px);
+      letter-spacing: 0;
+    }
+    h2 {
+      margin-top: 44px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin-top: 28px;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+    h4 {
+      margin-top: 22px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+    p { margin: 12px 0; }
+    ul, ol { padding-left: 24px; }
+    li { margin: 6px 0; }
+    code {
+      border-radius: 5px;
+      padding: 2px 5px;
+      background: var(--surface-strong);
+      color: var(--code);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+    pre {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      background: #241f1a;
+      color: #f8f1e8;
+    }
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+    }
+    table {
+      width: 100%;
+      margin: 18px 0;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--surface-soft);
+      color: var(--accent-strong);
+      font-size: 13px;
+    }
+    tr:last-child td { border-bottom: 0; }
+    blockquote {
+      margin: 16px 0;
+      padding: 12px 16px;
+      border-left: 4px solid var(--green);
+      background: rgba(31, 138, 91, 0.08);
+      color: var(--subtle);
+    }
+    .footer {
+      margin-top: 54px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .toc { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+      .toc .level-3 { padding-left: 8px; }
+      main { padding: 28px 20px 52px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="back-link" href="index.html">Back to catalog</a>
+      <h1>Company Vocabulary</h1>
+      <p>Generated 2026-05-13 from the framework-owned Markdown source.</p>
+      <nav class="toc" aria-label="Table of contents">
+        <a class="level-2" href="#modes">Modes</a>
+<a class="level-2" href="#standard-value-states">Standard Value States</a>
+<a class="level-2" href="#supported-lists">Supported Lists</a>
+<a class="level-3" href="#deployment-targets">Deployment Targets</a>
+<a class="level-3" href="#data-classification-levels">Data Classification Levels</a>
+<a class="level-3" href="#teams">Teams</a>
+<a class="level-3" href="#availability-tiers">Availability Tiers</a>
+<a class="level-3" href="#failure-domains">Failure Domains</a>
+<a class="level-2" href="#source-files">Source Files</a>
+<a class="level-2" href="#non-standard-value-proposals">Non-Standard Value Proposals</a>
+<a class="level-2" href="#draftsman-interview-rules">Draftsman Interview Rules</a>
+      </nav>
+    </aside>
+    <main>
+      <article class="content">
+        <h1 id="company-vocabulary">Company Vocabulary</h1>
+<p>Company vocabulary lists are optional governed lists in <code>.draft/workspace.yaml</code>. They give the Draftsman approved choices for common architecture questions and give validation a way to detect drift without forcing every company to finish governance on day one.</p>
+<p>Undeclared lists preserve current free-text behavior. Declared lists can start in <code>advisory</code> mode and move to <code>gated</code> mode when the company is ready.</p>
+<h2 id="modes">Modes</h2>
+<p>Each vocabulary list supports:</p>
+<ul><li><code>mode: advisory</code> - validation reports non-standard values as warnings.</li><li><code>mode: gated</code> - validation reports non-standard values as failures.</li></ul>
+<p>Use advisory during onboarding, migration, and discovery. Use gated when the company wants CI and pull requests to block values that have not been accepted into the official list.</p>
+<p>Example:</p>
+<pre><code class="language-yaml">vocabulary:
+  deploymentTargets:
+    mode: advisory
+    reviewBy: 2026-07-31
+    values:
+      - id: aws-us-east-2
+        name: AWS US East 2
+        type: cloud-region
+        provider: aws
+        status: approved</code></pre>
+<p><code>status</code> defaults to <code>approved</code>. A value with <code>status: proposed</code> is visible to humans and AI agents, but it is not an approved standard value.</p>
+<h2 id="standard-value-states">Standard Value States</h2>
+<p>DRAFT uses these terms:</p>
+<ul><li>Standard value: declared in the vocabulary with <code>status: approved</code>.</li><li>Proposed standard value: declared with <code>status: proposed</code>.</li><li>Non-standard value: present in an object field but not approved in the</li></ul>
+<p>declared vocabulary list.</p>
+<ul><li>Interview-required value: an explicit unresolved marker such as</li></ul>
+<p><code>drafting-interview-required</code>; for Software Deployment Pattern deployment targets, <code>owner-interview-required</code> remains valid during drafting.</p>
+<h2 id="supported-lists">Supported Lists</h2>
+<h3 id="deployment-targets">Deployment Targets</h3>
+<p>Deployment targets describe execution boundaries such as cloud regions, cloud accounts, Kubernetes clusters, colocations, SaaS tenants, customer sites, or edge locations.</p>
+<pre><code class="language-yaml">vocabulary:
+  deploymentTargets:
+    mode: advisory
+    values:
+      - id: aws-us-east-2
+        name: AWS US East 2
+        type: cloud-region
+        provider: aws
+        notes: Primary AWS region.
+      - id: colo-ohio-mcocne
+        name: Ohio Colo MCOCNE
+        type: colocation</code></pre>
+<p>When declared, validation checks <code>software_deployment_pattern.serviceGroups[].deploymentTarget</code>. <code>owner-interview-required</code> and <code>drafting-interview-required</code> remain explicit drafting sentinels.</p>
+<h3 id="data-classification-levels">Data Classification Levels</h3>
+<pre><code class="language-yaml">vocabulary:
+  dataClassificationLevels:
+    mode: advisory
+    values:
+      - id: restricted
+        name: Restricted
+        description: Highest sensitivity data.
+      - id: confidential
+        name: Confidential</code></pre>
+<p>When declared, validation checks <code>architecturalDecisions.dataClassification</code> on Software Deployment Patterns and deployable service objects.</p>
+<h3 id="teams">Teams</h3>
+<pre><code class="language-yaml">vocabulary:
+  teams:
+    mode: advisory
+    values:
+      - id: platform-engineering
+        name: Platform Engineering
+        contact: platform-engineering@example.com</code></pre>
+<p>When declared, validation checks <code>owner.team</code> wherever an object declares an owner. <code>owner.contact</code> remains free text.</p>
+<h3 id="availability-tiers">Availability Tiers</h3>
+<pre><code class="language-yaml">vocabulary:
+  availabilityTiers:
+    mode: advisory
+    values:
+      - id: tier-1-mission-critical
+        name: Tier 1 Mission Critical
+        target: &quot;99.95%&quot;
+        notes: Incident response required.</code></pre>
+<p>When declared, validation checks <code>architecturalDecisions.availabilityRequirement</code> on Software Deployment Patterns and deployable service objects.</p>
+<h3 id="failure-domains">Failure Domains</h3>
+<pre><code class="language-yaml">vocabulary:
+  failureDomains:
+    mode: advisory
+    values:
+      - id: per-product
+        name: Per Product
+      - id: shared-platform
+        name: Shared Platform</code></pre>
+<p>When declared, validation checks <code>architecturalDecisions.failureDomain</code> on Software Deployment Patterns and deployable service objects.</p>
+<h2 id="source-files">Source Files</h2>
+<p>Small lists can live inline in <code>.draft/workspace.yaml</code>. Larger lists can live in company-owned source files:</p>
+<pre><code class="language-yaml">vocabulary:
+  deploymentTargets:
+    mode: advisory
+    source: configurations/vocabulary/deployment-targets.yaml</code></pre>
+<p>The source file shape is:</p>
+<pre><code class="language-yaml">schemaVersion: &quot;1.0&quot;
+type: vocabulary
+vocabulary: deploymentTargets
+name: Deployment Targets
+values:
+  - id: aws-us-east-2
+    name: AWS US East 2
+    status: approved</code></pre>
+<h2 id="non-standard-value-proposals">Non-Standard Value Proposals</h2>
+<p>When an engineer gives a real answer that is not in a declared list, the Draftsman should not hide it. It should ask whether to revisit later or submit a vocabulary proposal.</p>
+<p>If the user chooses a proposal, the Draftsman records the object with the non-standard value and writes a <code>vocabulary_proposal</code> file under <code>configurations/vocabulary-proposals/</code>:</p>
+<pre><code class="language-yaml">schemaVersion: &quot;1.0&quot;
+type: vocabulary_proposal
+name: Add GCP Deployment Target
+vocabulary: deploymentTargets
+proposalKind: non-standard-value
+status: proposed
+proposedId: gcp-us-central1
+proposedName: GCP US Central 1
+fieldRefs:
+  - object: 01KQS0TF53-SDMP
+    path: serviceGroups[0].deploymentTarget
+    value: gcp-us-central1
+rationale: Required for the new GCP deployment boundary.</code></pre>
+<p>Company workspaces include an optional GitHub Actions workflow that can materialize these proposal files into official vocabulary entries and open a pull request. Humans still review the pull request and decide whether the value becomes <code>approved</code>, remains <code>proposed</code>, or is rejected.</p>
+<h2 id="draftsman-interview-rules">Draftsman Interview Rules</h2>
+<p>Before asking a governed question, the Draftsman must read <code>.draft/workspace.yaml</code> and any configured vocabulary sources.</p>
+<p>When a declared list covers the question:</p>
+<ol><li>Offer the approved values as choices.</li><li>Mention proposed values separately if they are relevant.</li><li>Do not silently invent a new standard value.</li><li>If the answer is not approved, call it a non-standard value.</li><li>Ask whether to revisit later or submit a vocabulary proposal.</li></ol>
+<p>When no list is declared, ask openly and note that the workspace has not declared a governed vocabulary list for that answer yet.</p>
+        <div class="footer">Generated from Markdown by framework/tools/generate_browser.py.</div>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

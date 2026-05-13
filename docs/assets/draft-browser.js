@@ -4293,6 +4293,7 @@ const SIDEBAR_NAV_ITEMS = [
   { id: 'acceptable-use', label: 'Acceptable Use',  icon: '✓' },
   { id: 'object-types',   label: 'Object Types',    icon: '⬡' },
   { id: 'onboarding',     label: 'Onboarding',      icon: '◉' },
+  { id: 'vocabulary',     label: 'Vocabulary',      icon: '≡', href: 'company-vocabulary.html' },
   { id: 'manual',         label: 'User Manual',     icon: '?', href: 'user-manual.html' },
 ];
 
@@ -4340,6 +4341,7 @@ const PALETTE_VIEWS = [
   { id: 'acceptable-use', label: 'Go to Acceptable Use',  icon: '✓' },
   { id: 'object-types',   label: 'Go to Object Types',    icon: '⬡' },
   { id: 'onboarding',     label: 'Go to Onboarding',      icon: '◉' },
+  { id: 'vocabulary',     label: 'Open Vocabulary Guide', icon: '≡', href: 'company-vocabulary.html' },
   { id: 'manual',         label: 'Open User Manual',      icon: '?', href: 'user-manual.html' },
 ];
 

@@ -33,6 +33,8 @@ SCHEMA_ROOT = FRAMEWORK_ROOT / "schemas"
 BASE_CONFIGURATION_ROOT = FRAMEWORK_ROOT / "configurations"
 USER_MANUAL_SOURCE_PATH = FRAMEWORK_ROOT / "docs" / "user-manual.md"
 USER_MANUAL_OUTPUT_NAME = "user-manual.html"
+COMPANY_VOCABULARY_SOURCE_PATH = FRAMEWORK_ROOT / "docs" / "company-vocabulary.md"
+COMPANY_VOCABULARY_OUTPUT_NAME = "company-vocabulary.html"
 DEFAULT_WORKSPACE_ROOT = REPO_ROOT / "examples"
 LOGO_PATH = REPO_ROOT / "draft-logo.png"
 LEGACY_LOGO_PATH = REPO_ROOT / "draftlogo.png"
@@ -1079,19 +1081,19 @@ def render_markdown_document(markdown_text: str) -> tuple[str, list[dict[str, st
     return "\n".join(rendered), headings
 
 
-def manual_title(markdown_text: str) -> str:
+def markdown_document_title(markdown_text: str, fallback: str) -> str:
     for line in markdown_text.splitlines():
         match = re.match(r"^#\s+(.+?)\s*$", line.strip())
         if match:
             return re.sub(r"`([^`]+)`", r"\1", match.group(1).strip())
-    return "DRAFT User Manual"
+    return fallback
 
 
-def write_user_manual(source_path: Path, output_path: Path) -> bool:
+def write_markdown_page(source_path: Path, output_path: Path, fallback_title: str) -> bool:
     if not source_path.exists():
         return False
     markdown_text = source_path.read_text(encoding="utf-8")
-    title = manual_title(markdown_text)
+    title = markdown_document_title(markdown_text, fallback_title)
     content, headings = render_markdown_document(markdown_text)
     toc = "\n".join(
         f'<a class="level-{heading["level"]}" href="#{heading["id"]}">{render_inline_markdown(heading["text"])}</a>'
@@ -1108,21 +1110,34 @@ def write_user_manual(source_path: Path, output_path: Path) -> bool:
     return True
 
 
+def write_user_manual(source_path: Path, output_path: Path) -> bool:
+    return write_markdown_page(source_path, output_path, "DRAFT User Manual")
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
     output_path = args.output.resolve()
     manual_output_path = (args.manual_output.resolve() if args.manual_output else output_path.parent / USER_MANUAL_OUTPUT_NAME)
+    vocabulary_output_path = output_path.parent / COMPANY_VOCABULARY_OUTPUT_NAME
     registry = load_objects(args.workspace.resolve())
     payload = build_browser_payload(registry, args.workspace.resolve())
     write_browser(payload, output_path, args.workspace.resolve())
     manual_generated = False
+    vocabulary_generated = False
     if not args.skip_user_manual:
         manual_generated = write_user_manual(USER_MANUAL_SOURCE_PATH, manual_output_path)
+        vocabulary_generated = write_markdown_page(
+            COMPANY_VOCABULARY_SOURCE_PATH,
+            vocabulary_output_path,
+            "Company Vocabulary",
+        )
     for warning in payload.get("warnings", []):
         print(warning, file=sys.stderr)
     print(f"Generated {display_path(output_path)} with {len(payload['objects'])} objects.")
     if manual_generated:
         print(f"Generated {display_path(manual_output_path)} from {display_path(USER_MANUAL_SOURCE_PATH)}.")
+    if vocabulary_generated:
+        print(f"Generated {display_path(vocabulary_output_path)} from {display_path(COMPANY_VOCABULARY_SOURCE_PATH)}.")
     return 0
 
 

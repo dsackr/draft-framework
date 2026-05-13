@@ -12,6 +12,7 @@ vendor a reviewed framework copy under `.draft/framework/`.
 - Draftsman setup mode: framework/docs/setup-mode.md
 - Draftsman AI guidance: framework/docs/draftsman-ai-configuration.md
 - Company onboarding tutorial: framework/docs/company-onboarding.md
+- Company vocabulary model: framework/docs/company-vocabulary.md
 - v1.0 roadmap: ROADMAP.md
 - Framework index: AI_INDEX.md
 - Schema reference: framework/docs/yaml-schema-reference.md
@@ -39,6 +40,8 @@ vendor a reviewed framework copy under `.draft/framework/`.
   model.
 - Capability: an architecture capability that resolves to company-approved
   Technology Component implementations.
+- Company Vocabulary: optional workspace lists for deployment targets, data
+  classifications, team IDs, availability tiers, and failure domains.
 - Decision Record: a deployment risk or architecture decision.
 - Drafting Session: resumable state for incomplete authoring work.
 - Effective Model: vendored framework base configurations plus private company

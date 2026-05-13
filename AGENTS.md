@@ -32,6 +32,9 @@ Do not ask what "draftsman" means. In this repo, it means:
 - interview the user only for missing architecture facts, asking at most three
   focused questions at a time
 - create or update valid YAML in the appropriate framework or workspace path
+- use declared company vocabulary lists for governed choices and call answers
+  outside approved choices non-standard values that can be revisited or
+  proposed for review
 - preserve unresolved uncertainty in a Drafting Session when needed
 - keep the user aware of the current step, next step, remaining work, and
   revisit-later items
@@ -47,7 +50,8 @@ Company-specific artifacts belong in a private DRAFT repository:
 
 - `.draft/framework/` for the vendored framework copy used during normal drafting
 - `catalog/` for architecture content
-- `configurations/` for capability mappings, Requirement Groups, domains, and object-patch overlays
+- `configurations/` for capability mappings, Requirement Groups, domains,
+  vocabulary sources, vocabulary proposals, and object-patch overlays
 - `.draft/workspace.yaml` and `.draft/framework.lock` for tracked workspace metadata and framework sync state
 
 Use `examples/catalog/` only as sample content for validating and demonstrating
@@ -103,6 +107,9 @@ AI agents should treat DRAFT as a deterministic authoring system:
 - For Software Deployment Patterns, resolve workspace business taxonomy from
   `.draft/workspace.yaml` before setting `businessContext.pillar`; do not
   invent company pillar values in tags or architecture domains.
+- Resolve declared company vocabulary lists from `.draft/workspace.yaml` and
+  `configurations/vocabulary/` before setting deployment target, data
+  classification, owner team, availability tier, or failure domain.
 - Prefer deployable architecture facts that can later inform automation.
 
 ## Compliance Claims

@@ -69,6 +69,37 @@ STANDARD_TYPES = {
 SERVICE_TYPES = {"runtime_service", "data_at_rest_service", "edge_gateway_service"}
 BUSINESS_PILLAR_ID_PATTERN = re.compile(r"^business-pillar\.[a-z0-9-]+$")
 UID_PATTERN = re.compile(UID_PATTERN_TEXT)
+WORKSPACE_DOCUMENT_TYPES = {"vocabulary", "vocabulary_proposal"}
+VALID_VOCABULARY_MODES = {"advisory", "gated"}
+VALID_VOCABULARY_VALUE_STATUSES = {"approved", "proposed", "deprecated", "retired"}
+DRAFTING_INTERVIEW_REQUIRED = "drafting-interview-required"
+VOCABULARY_DEFINITIONS = {
+    "deploymentTargets": {
+        "label": "deployment target",
+        "default_file": "deployment-targets.yaml",
+        "sentinels": {"owner-interview-required", DRAFTING_INTERVIEW_REQUIRED},
+    },
+    "dataClassificationLevels": {
+        "label": "data classification",
+        "default_file": "data-classification-levels.yaml",
+        "sentinels": {DRAFTING_INTERVIEW_REQUIRED},
+    },
+    "teams": {
+        "label": "team",
+        "default_file": "teams.yaml",
+        "sentinels": {DRAFTING_INTERVIEW_REQUIRED},
+    },
+    "availabilityTiers": {
+        "label": "availability tier",
+        "default_file": "availability-tiers.yaml",
+        "sentinels": {DRAFTING_INTERVIEW_REQUIRED},
+    },
+    "failureDomains": {
+        "label": "failure domain",
+        "default_file": "failure-domains.yaml",
+        "sentinels": {DRAFTING_INTERVIEW_REQUIRED},
+    },
+}
 
 
 def discover_yaml_files(root: Path) -> list[Path]:
@@ -212,6 +243,163 @@ def load_workspace_business_taxonomy(workspace_root: Path, failures: list[str]) 
         "pillars": pillar_by_id,
         "require_sdp_pillar": taxonomy.get("requireSoftwareDeploymentPatternPillar") is True,
     }
+
+
+def load_workspace_config(workspace_root: Path, failures: list[str]) -> dict[str, Any]:
+    config_path = workspace_root / ".draft" / "workspace.yaml"
+    if not config_path.exists():
+        return {}
+    try:
+        data = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    except Exception as exc:  # noqa: BLE001
+        failures.append(f"{config_path}: Fix workspace configuration YAML; parser reported {exc}")
+        return {}
+    if not isinstance(data, dict):
+        failures.append(f"{config_path}: Make workspace configuration a mapping at the top level")
+        return {}
+    return data
+
+
+def vocabulary_source_paths(workspace_root: Path, config: dict[str, Any], definition: dict[str, Any]) -> list[Path]:
+    sources: list[Path] = []
+    raw_sources = config.get("sources")
+    raw_source = config.get("source")
+    if is_non_empty(raw_source):
+        raw_sources = [raw_source, *(raw_sources if isinstance(raw_sources, list) else [])]
+    if isinstance(raw_sources, list):
+        for source in raw_sources:
+            if not is_non_empty(source):
+                continue
+            path = Path(str(source))
+            sources.append(path if path.is_absolute() else workspace_root / path)
+
+    default_path = workspace_root / "configurations" / "vocabulary" / str(definition["default_file"])
+    if default_path.exists() and default_path not in sources:
+        sources.append(default_path)
+    return sources
+
+
+def collect_vocabulary_values(
+    values: Any,
+    context: str,
+    vocabulary_key: str,
+    values_by_id: dict[str, dict[str, Any]],
+    failures: list[str],
+    warnings: list[str],
+) -> None:
+    if values is None:
+        return
+    if not isinstance(values, list):
+        failures.append(f"{context}: Change values to a list of {vocabulary_key} mappings")
+        return
+
+    for index, entry in enumerate(values):
+        entry_context = f"{context}.values[{index}]"
+        if not isinstance(entry, dict):
+            failures.append(f"{entry_context}: Change vocabulary entry to a mapping")
+            continue
+        entry_id = str(entry.get("id") or "").strip()
+        if not entry_id:
+            failures.append(f"{entry_context}: Add id for this vocabulary value")
+            continue
+        if entry_id in values_by_id:
+            failures.append(f"{entry_context}: Remove duplicate vocabulary id '{entry_id}'")
+            continue
+        if not is_non_empty(entry.get("name")):
+            warnings.append(f"{entry_context}: Add name so the vocabulary value is clear in interviews and browser views")
+        status = str(entry.get("status") or "approved").strip()
+        if status not in VALID_VOCABULARY_VALUE_STATUSES:
+            failures.append(
+                f"{entry_context}: Set status to one of {sorted(VALID_VOCABULARY_VALUE_STATUSES)}; '{status}' is not valid"
+            )
+        values_by_id[entry_id] = {**entry, "id": entry_id, "status": status}
+
+
+def load_vocabulary_source(
+    path: Path,
+    vocabulary_key: str,
+    values_by_id: dict[str, dict[str, Any]],
+    failures: list[str],
+    warnings: list[str],
+) -> None:
+    if not path.exists():
+        failures.append(f"{path}: Vocabulary source file does not exist")
+        return
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except Exception as exc:  # noqa: BLE001
+        failures.append(f"{path}: Fix vocabulary source YAML; parser reported {exc}")
+        return
+    if not isinstance(data, dict):
+        failures.append(f"{path}: Make vocabulary source a mapping at the top level")
+        return
+    declared_key = data.get("vocabulary")
+    if is_non_empty(declared_key) and str(declared_key) != vocabulary_key:
+        failures.append(f"{path}: Set vocabulary to '{vocabulary_key}' or remove this source from workspace.yaml")
+    collect_vocabulary_values(data.get("values"), f"{path}", vocabulary_key, values_by_id, failures, warnings)
+
+
+def load_workspace_vocabulary(
+    workspace_root: Path,
+    failures: list[str],
+    warnings: list[str],
+) -> dict[str, dict[str, Any]]:
+    workspace_config = load_workspace_config(workspace_root, failures)
+    raw_vocabulary = workspace_config.get("vocabulary")
+    if raw_vocabulary is None:
+        return {}
+    config_path = workspace_root / ".draft" / "workspace.yaml"
+    if not isinstance(raw_vocabulary, dict):
+        failures.append(f"{config_path}: Change vocabulary to a mapping of declared company vocabulary lists")
+        return {}
+    if not raw_vocabulary:
+        return {}
+
+    loaded: dict[str, dict[str, Any]] = {}
+    for vocabulary_key, definition in VOCABULARY_DEFINITIONS.items():
+        raw_config = raw_vocabulary.get(vocabulary_key)
+        if raw_config is None:
+            continue
+        context = f"{config_path}: vocabulary.{vocabulary_key}"
+        if isinstance(raw_config, list):
+            config = {"values": raw_config}
+        elif isinstance(raw_config, dict):
+            config = raw_config
+        else:
+            failures.append(f"{context}: Change vocabulary list declaration to a mapping with mode, source, and values")
+            continue
+
+        mode = str(config.get("mode") or "advisory").strip()
+        if mode not in VALID_VOCABULARY_MODES:
+            failures.append(f"{context}: Set mode to advisory or gated; '{mode}' is not valid")
+            mode = "advisory"
+
+        review_by = config.get("reviewBy")
+        review_date = parse_lifecycle_date(review_by) if review_by else None
+        if review_date and review_date < validation_date():
+            warnings.append(
+                f"{context}: reviewBy {review_date.isoformat()} has passed; review advisory vocabulary before it becomes permanent"
+            )
+
+        values_by_id: dict[str, dict[str, Any]] = {}
+        collect_vocabulary_values(config.get("values"), context, vocabulary_key, values_by_id, failures, warnings)
+        for source_path in vocabulary_source_paths(workspace_root, config, definition):
+            load_vocabulary_source(source_path, vocabulary_key, values_by_id, failures, warnings)
+
+        approved_ids = {
+            value_id
+            for value_id, value in values_by_id.items()
+            if str(value.get("status") or "approved") == "approved"
+        }
+        loaded[vocabulary_key] = {
+            "key": vocabulary_key,
+            "label": definition["label"],
+            "mode": mode,
+            "values": values_by_id,
+            "approved_ids": approved_ids,
+            "sentinels": set(definition.get("sentinels", set())),
+        }
+    return loaded
 
 
 def validate_workspace_requirements(
@@ -427,6 +615,8 @@ def validate_object_uids(
     }
     for path, obj in objects.items():
         if not isinstance(obj, dict) or not is_non_empty(obj.get("type")):
+            continue
+        if obj.get("type") in WORKSPACE_DOCUMENT_TYPES:
             continue
         if "id" in obj:
             suggested = generate_uid(existing)
@@ -1289,6 +1479,209 @@ def record_requirement_gap(
         failures.append(entry)
     else:
         warnings.append(entry)
+
+
+def approved_or_preferred_object(obj: dict[str, Any]) -> bool:
+    return obj.get("catalogStatus") == "approved" or obj.get("lifecycleStatus") == "preferred"
+
+
+def valid_values_text(vocabulary: dict[str, Any]) -> str:
+    approved_ids = sorted(vocabulary.get("approved_ids") or [])
+    if not approved_ids:
+        return "no approved values are declared"
+    return ", ".join(approved_ids)
+
+
+def record_vocabulary_issue(
+    vocabulary: dict[str, Any],
+    obj: dict[str, Any],
+    path: Path,
+    field_path: str,
+    value: str,
+    message: str,
+    failures: list[str],
+    warnings: list[str],
+    fail_when_gated: bool = True,
+) -> None:
+    entry = f"{path}: [{object_label(obj)}] {field_path} {message}; found '{value}'. Approved values: {valid_values_text(vocabulary)}"
+    if vocabulary.get("mode") == "gated" and fail_when_gated:
+        failures.append(entry)
+    else:
+        warnings.append(entry)
+
+
+def validate_vocabulary_value(
+    obj: dict[str, Any],
+    path: Path,
+    field_path: str,
+    raw_value: Any,
+    vocabulary: dict[str, Any] | None,
+    failures: list[str],
+    warnings: list[str],
+) -> None:
+    if not vocabulary or raw_value is None:
+        return
+    value = str(raw_value).strip()
+    if not value:
+        return
+    if value in vocabulary.get("sentinels", set()):
+        record_vocabulary_issue(
+            vocabulary,
+            obj,
+            path,
+            field_path,
+            value,
+            "is an interview-required value that must be revisited before approval",
+            failures,
+            warnings,
+            fail_when_gated=approved_or_preferred_object(obj),
+        )
+        return
+
+    values = vocabulary.get("values") or {}
+    if value in vocabulary.get("approved_ids", set()):
+        return
+    if value in values:
+        status = str(values[value].get("status") or "approved")
+        record_vocabulary_issue(
+            vocabulary,
+            obj,
+            path,
+            field_path,
+            value,
+            f"uses a {status} standard value, not an approved standard value",
+            failures,
+            warnings,
+        )
+        return
+
+    record_vocabulary_issue(
+        vocabulary,
+        obj,
+        path,
+        field_path,
+        value,
+        "uses a non-standard value",
+        failures,
+        warnings,
+    )
+
+
+def validate_workspace_vocabulary_references(
+    objects: dict[Path, dict[str, Any]],
+    workspace_vocabulary: dict[str, dict[str, Any]],
+    failures: list[str],
+    warnings: list[str],
+) -> None:
+    team_vocabulary = workspace_vocabulary.get("teams")
+    deployment_vocabulary = workspace_vocabulary.get("deploymentTargets")
+    data_vocabulary = workspace_vocabulary.get("dataClassificationLevels")
+    availability_vocabulary = workspace_vocabulary.get("availabilityTiers")
+    failure_vocabulary = workspace_vocabulary.get("failureDomains")
+    deployable_or_pattern_types = STANDARD_TYPES | {"software_deployment_pattern"}
+
+    for path, obj in objects.items():
+        if not isinstance(obj, dict) or obj.get("type") in WORKSPACE_DOCUMENT_TYPES:
+            continue
+
+        owner = obj.get("owner")
+        if isinstance(owner, dict):
+            validate_vocabulary_value(
+                obj,
+                path,
+                "owner.team",
+                owner.get("team"),
+                team_vocabulary,
+                failures,
+                warnings,
+            )
+
+        if obj.get("type") == "software_deployment_pattern":
+            service_groups = obj.get("serviceGroups") or []
+            if isinstance(service_groups, list):
+                for index, service_group in enumerate(service_groups):
+                    if not isinstance(service_group, dict):
+                        continue
+                    validate_vocabulary_value(
+                        obj,
+                        path,
+                        f"serviceGroups[{index}].deploymentTarget",
+                        service_group.get("deploymentTarget"),
+                        deployment_vocabulary,
+                        failures,
+                        warnings,
+                    )
+
+        if obj.get("type") not in deployable_or_pattern_types:
+            continue
+        decisions = obj.get("architecturalDecisions") or {}
+        if not isinstance(decisions, dict):
+            continue
+        validate_vocabulary_value(
+            obj,
+            path,
+            "architecturalDecisions.dataClassification",
+            decisions.get("dataClassification"),
+            data_vocabulary,
+            failures,
+            warnings,
+        )
+        validate_vocabulary_value(
+            obj,
+            path,
+            "architecturalDecisions.availabilityRequirement",
+            decisions.get("availabilityRequirement"),
+            availability_vocabulary,
+            failures,
+            warnings,
+        )
+        validate_vocabulary_value(
+            obj,
+            path,
+            "architecturalDecisions.failureDomain",
+            decisions.get("failureDomain"),
+            failure_vocabulary,
+            failures,
+            warnings,
+        )
+
+
+def validate_vocabulary_document(obj: dict[str, Any], path: Path, failures: list[str], warnings: list[str]) -> None:
+    vocabulary_key = str(obj.get("vocabulary") or "").strip()
+    if vocabulary_key not in VOCABULARY_DEFINITIONS:
+        failures.append(f"{path}: Set vocabulary to one of {sorted(VOCABULARY_DEFINITIONS)}")
+        return
+    values_by_id: dict[str, dict[str, Any]] = {}
+    collect_vocabulary_values(obj.get("values"), f"{path}", vocabulary_key, values_by_id, failures, warnings)
+
+
+def validate_vocabulary_proposal(
+    obj: dict[str, Any],
+    path: Path,
+    workspace_vocabulary: dict[str, dict[str, Any]],
+    failures: list[str],
+    warnings: list[str],
+) -> None:
+    vocabulary_key = str(obj.get("vocabulary") or "").strip()
+    if vocabulary_key not in VOCABULARY_DEFINITIONS:
+        failures.append(f"{path}: Set vocabulary to one of {sorted(VOCABULARY_DEFINITIONS)}")
+        return
+    proposed_id = str(obj.get("proposedId") or "").strip()
+    if not proposed_id:
+        failures.append(f"{path}: Add proposedId for the proposed standard value")
+    if not is_non_empty(obj.get("proposedName")):
+        failures.append(f"{path}: Add proposedName for the proposed standard value")
+    status = str(obj.get("status") or "proposed").strip()
+    if status not in {"draft", "proposed", "submitted", "accepted", "rejected"}:
+        failures.append(f"{path}: Set status to draft, proposed, submitted, accepted, or rejected")
+    field_refs = obj.get("fieldRefs") or []
+    if field_refs and not isinstance(field_refs, list):
+        failures.append(f"{path}: Change fieldRefs to a list")
+    if proposed_id:
+        vocabulary = workspace_vocabulary.get(vocabulary_key)
+        values = vocabulary.get("values", {}) if vocabulary else {}
+        if proposed_id in values and str(values[proposed_id].get("status") or "approved") == "approved":
+            warnings.append(f"{path}: proposedId '{proposed_id}' is already an approved {vocabulary_key} value")
 
 
 def validate_architectural_decisions(obj: dict[str, Any], path: Path, failures: list[str]) -> None:
@@ -2531,6 +2924,7 @@ def main(argv: list[str] | None = None) -> int:
     warnings: list[str] = []
     workspace_requirements = load_workspace_requirements(workspace_root, failures)
     business_taxonomy = load_workspace_business_taxonomy(workspace_root, failures)
+    workspace_vocabulary = load_workspace_vocabulary(workspace_root, failures, warnings)
 
     for path in files:
         try:
@@ -2557,8 +2951,15 @@ def main(argv: list[str] | None = None) -> int:
     active_group_ids = workspace_requirements["active_groups"]
     require_active_group_disposition = workspace_requirements["require_active_group_disposition"]
     validate_workspace_requirements(workspace_root, active_group_ids, catalog_by_id, failures)
+    validate_workspace_vocabulary_references(objects, workspace_vocabulary, failures, warnings)
 
     for path, obj in objects.items():
+        if obj.get("type") == "vocabulary":
+            validate_vocabulary_document(obj, path, failures, warnings)
+            continue
+        if obj.get("type") == "vocabulary_proposal":
+            validate_vocabulary_proposal(obj, path, workspace_vocabulary, failures, warnings)
+            continue
         validate_against_schema(obj, path, schemas, failures)
         validate_external_interaction_refs(obj, path, catalog_by_id, failures)
         validate_internal_component_configuration_refs(obj, path, catalog_by_id, failures)

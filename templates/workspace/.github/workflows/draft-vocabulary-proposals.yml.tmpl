@@ -1,0 +1,49 @@
+# DRAFT Vocabulary Proposal PRs
+#
+# When the Draftsman captures a non-standard value as a vocabulary_proposal,
+# this workflow materializes that proposal into the official vocabulary file and
+# opens a pull request for architecture/governance review.
+name: DRAFT vocabulary proposals
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.draft/workspace.yaml'
+      - 'configurations/vocabulary-proposals/**/*.yaml'
+      - 'catalog/vocabulary-proposals/**/*.yaml'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  propose-vocabulary-values:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out workspace
+        uses: actions/checkout@v4
+
+      - name: Apply vocabulary proposals
+        run: python .draft/framework/tools/apply_vocabulary_proposals.py --workspace .
+
+      - name: Validate workspace
+        continue-on-error: true
+        run: python .draft/framework/tools/validate.py --workspace .
+
+      - name: Open vocabulary review pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: draft/vocabulary-proposals
+          delete-branch: true
+          title: Review DRAFT vocabulary proposals
+          commit-message: Add proposed DRAFT vocabulary values
+          body: |
+            This pull request was generated from DRAFT `vocabulary_proposal` files.
+
+            Review each proposed standard value, refine names or metadata as needed,
+            and change `status: proposed` to `status: approved` only when the
+            company accepts the value as part of the official vocabulary. Validation
+            can remain blocked in gated mode until accepted values are approved.

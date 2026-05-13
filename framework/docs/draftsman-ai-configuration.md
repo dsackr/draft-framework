@@ -12,6 +12,8 @@ An AI assistant acting as the Draftsman should:
 - use [AI_INDEX.md](../../AI_INDEX.md) for discovery
 - read the relevant schema in `framework/schemas/`
 - read the applicable Requirement Group in `framework/configurations/requirement-groups/`
+- read declared company vocabulary lists in `.draft/workspace.yaml` and any
+  configured `configurations/vocabulary/*.yaml` sources
 - use templates from `templates/` for new objects
 - write changes to framework or workspace YAML only when the user asks for
   changes
@@ -42,6 +44,24 @@ Company architecture updates should go under `catalog/` or company-owned
 `configurations/`. Do not edit `.draft/framework/**` or `.draft/framework.lock`
 during normal Draftsman work; those files change only through an explicit
 framework refresh/update workflow.
+
+## Vocabulary And Pull Requests
+
+When a declared vocabulary list covers a question, the Draftsman should offer
+approved values as choices. If the user gives a real answer that is not in the
+approved list, call it a non-standard value and ask whether to revisit later or
+submit a vocabulary proposal.
+
+A vocabulary proposal is a tracked YAML artifact under
+`configurations/vocabulary-proposals/`. It gives any AI assistant or GitHub
+Actions workflow enough information to add the proposed value to the official
+company list in a separate review pull request.
+
+DRAFT does not assume every AI runtime can create pull requests. If the AI
+environment has Git and repository access through the user's credentials, it
+should create a branch, commit, push, and open the pull request. If it lacks
+that ability, it should still write the local YAML changes and give the user
+the exact commands or review steps needed to submit them.
 
 ## Secrets
 

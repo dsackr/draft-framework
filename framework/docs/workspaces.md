@@ -106,6 +106,70 @@ Software Deployment Patterns reference those values through
 pattern materially spans more than one business pillar; the primary `pillar`
 drives browser grouping.
 
+## Company Vocabulary
+
+Companies can declare optional governed vocabulary lists in
+`.draft/workspace.yaml`. These lists give the Draftsman multiple-choice answers
+for common architecture questions and give validation a controlled way to catch
+typos, drift, and values that have not been accepted as standards.
+
+Supported lists are:
+
+- `deploymentTargets`
+- `dataClassificationLevels`
+- `teams`
+- `availabilityTiers`
+- `failureDomains`
+
+Each declared list has a `mode`:
+
+- `advisory` reports non-standard values as warnings.
+- `gated` reports non-standard values as failures.
+
+Undeclared lists preserve existing free-text behavior. This lets a company
+start with the highest-value list, usually `teams` or `deploymentTargets`, and
+add the rest gradually.
+
+Example:
+
+```yaml
+vocabulary:
+  deploymentTargets:
+    mode: advisory
+    source: configurations/vocabulary/deployment-targets.yaml
+  teams:
+    mode: advisory
+    values:
+      - id: platform-engineering
+        name: Platform Engineering
+        contact: platform-engineering@example.com
+```
+
+Small lists can live inline under `values`. Larger lists can live in
+`configurations/vocabulary/*.yaml` source files:
+
+```yaml
+schemaVersion: "1.0"
+type: vocabulary
+vocabulary: deploymentTargets
+name: Deployment Targets
+values:
+  - id: aws-us-east-2
+    name: AWS US East 2
+    type: cloud-region
+    provider: aws
+    status: approved
+```
+
+Validation only enforces lists that are declared in `.draft/workspace.yaml`.
+For declared lists, validation checks the relevant fields and reports the field
+path, found value, and approved values. A real answer that is not approved is a
+non-standard value. The Draftsman should ask whether to revisit it later or
+submit a `vocabulary_proposal` for review.
+
+See [Company Vocabulary](company-vocabulary.md) for the complete model,
+proposal file shape, and Draftsman interview behavior.
+
 ## Authoring Workflow
 
 The default workspace workflow is source based:

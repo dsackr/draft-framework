@@ -12,7 +12,7 @@ answering architecture catalog authoring requests.
    approved framework version's schemas, templates, base configurations, and
    tools.
 4. Read [.draft/workspace.yaml](.draft/workspace.yaml) for workspace metadata,
-   active Requirement Groups, and business taxonomy.
+   active Requirement Groups, business taxonomy, and company vocabulary lists.
 5. Use [.draft/framework/schemas/](.draft/framework/schemas/) as the
    authoritative schema contract.
 6. Use [.draft/framework/configurations/](.draft/framework/configurations/),
@@ -36,6 +36,8 @@ Do not ask what "draftsman" means. In this repo, it means:
 - interview the user only for missing architecture facts, asking at most three
   focused questions at a time
 - create or update valid YAML in the appropriate company workspace path
+- offer declared vocabulary choices and call answers outside approved choices
+  non-standard values that can be revisited or proposed for review
 - preserve unresolved uncertainty in a Drafting Session when needed
 - keep the user aware of the current step, next step, remaining work, and
   revisit-later items
@@ -46,7 +48,7 @@ Company architecture content belongs in:
 
 - `catalog/` for architecture inventory
 - `configurations/` for company-owned capabilities, Requirement Groups,
-  domains, and object-patch overlays
+  domains, vocabulary source files, vocabulary proposals, and object-patch overlays
 - `.draft/workspace.yaml` for workspace metadata when explicitly requested
 
 Do not edit `.draft/framework/**` or `.draft/framework.lock` during normal
