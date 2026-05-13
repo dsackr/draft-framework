@@ -11,6 +11,7 @@ vendor a reviewed framework copy under `.draft/framework/`.
 - Draftsman role: framework/docs/draftsman.md
 - Draftsman AI guidance: framework/docs/draftsman-ai-configuration.md
 - Company onboarding tutorial: framework/docs/company-onboarding.md
+- v1.0 roadmap: ROADMAP.md
 - Framework index: AI_INDEX.md
 - Schema reference: framework/docs/yaml-schema-reference.md
 - Requirement Groups: framework/docs/requirement-groups.md
@@ -47,6 +48,7 @@ vendor a reviewed framework copy under `.draft/framework/`.
 - README.md
 - AGENTS.md
 - AI_INDEX.md
+- ROADMAP.md
 - framework/docs/
 - framework/schemas/
 - framework/configurations/

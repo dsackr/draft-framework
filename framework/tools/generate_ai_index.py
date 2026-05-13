@@ -14,6 +14,7 @@ OUTPUT_PATH = REPO_ROOT / "AI_INDEX.md"
 FRAMEWORK_ENTRYPOINTS = [
     ("AGENTS.md", "Canonical AI bootstrap instructions for this repository."),
     ("draft-framework.yaml", "Machine-readable DRAFT Framework version and compatibility manifest."),
+    ("ROADMAP.md", "v1.0 readiness roadmap and canonical MVP work items."),
     ("VERSIONING.md", "Framework semantic versioning and compatibility policy."),
     ("CHANGELOG.md", "Required release notes for every framework release."),
     ("RELEASE.md", "Release checklist for version, changelog, validation, and publishing steps."),

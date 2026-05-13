@@ -3,6 +3,34 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.12.6 - 2026-05-13
+
+### Compatibility Impact
+
+No workspace migration is required. This patch adds roadmap documentation and
+AI discovery metadata without changing schemas, validation contracts, or stored
+object formats.
+
+### Added
+
+- Added `ROADMAP.md` as the stable v1.0 readiness narrative for the executable
+  deployment contract, golden reference workspace, and deterministic Draftsman
+  workflow.
+
+### Changed
+
+- Updated AI discovery metadata so assistants can find the v1.0 roadmap from
+  `AI_INDEX.md` and `llms.txt`.
+
+### Fixed
+
+- Fixed the missing repository-level roadmap for the existing v1.0 milestone
+  and tracking issues.
+
+### Migration Notes
+
+- No migration is required.
+
 ## 0.12.5 - 2026-05-13
 
 ### Compatibility Impact
