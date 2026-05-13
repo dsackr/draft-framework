@@ -119,7 +119,8 @@ def cmd_chat(args: argparse.Namespace) -> int:
     engine = DraftsmanEngine()
     session_id = None
     print("DRAFT Table Draftsman")
-    print("Type /exit to leave. Use draft-table serve for the full web drafting table.")
+    print("Type 'start setup mode' for guided first-run setup, or /exit to leave.")
+    print("Use draft-table serve for the full web drafting table.")
     while True:
         try:
             message = input("\nYou: ").strip()

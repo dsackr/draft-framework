@@ -32,6 +32,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | framework/browser | Static browser shell, CSS, JavaScript, and default theme assets copied by generate_browser.py. |
 | security.md | DRAFT Table credential and local security boundary. |
 | framework/docs/draftsman.md | Draftsman role, intent routing, and authoring rules. |
+| framework/docs/setup-mode.md | Draftsman first-run setup mode and guided interview cadence. |
 | framework/docs/company-onboarding.md | Company onboarding tutorial for implementing DRAFT in a private workspace. |
 | framework/docs/overview.md | Framework concepts and object family overview. |
 | framework/docs/object-types.md | User-facing DRAFT object type taxonomy and deployable/non-deployable distinction. |
@@ -52,7 +53,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | Path | Title | Summary |
 |---|---|---|
 | framework/docs/capabilities.md | Capabilities | A Capability is a first-class framework object that names an architecture |
-| framework/docs/company-onboarding.md | Company Onboarding Tutorial | This tutorial describes how a company adopts DRAFT from an empty private repo |
+| framework/docs/company-onboarding.md | Company Onboarding | This guide is the clean first-run path for a company adopting DRAFT. It keeps |
 | framework/docs/decision-records.md | Decision Records | Decision Records are first-class records for known risks, |
 | framework/docs/delivery-models.md | Delivery Models | Delivery models explain how a deployable service is operated. They apply to |
 | framework/docs/drafting-sessions.md | Drafting Sessions | A Drafting Session is a machine-readable record of partial architecture work. |
@@ -66,6 +67,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | framework/docs/reference-architectures.md | Reference Architectures | A Reference Architecture is a deployment pattern. It tells application |
 | framework/docs/requirement-groups.md | Requirement Groups | A Requirement Group is the unified DRAFT requirement model. It replaces the old |
 | framework/docs/security-and-compliance-controls.md | Security And Compliance Requirement Groups | DRAFT treats compliance as an explicitly activated authoring and validation layer. |
+| framework/docs/setup-mode.md | Draftsman Setup Mode | Setup mode is the first-run Draftsman conversation for a company DRAFT |
 | framework/docs/software-deployment-patterns.md | Software Deployment Patterns | A Software Deployment Pattern is a declaration that a specific product is intended |
 | framework/docs/standards.md | Deployable Objects | DRAFT previously used the word "Standard" for reusable deployable building |
 | framework/docs/technology-components.md | Technology Components | A Technology Component is a discrete vendor product object. It records one |

@@ -1654,10 +1654,10 @@ function companyOnboardingSidebarMarkup() {
   return `
     <div class="sidebar-block">
       <div class="legend-title">Onboarding Path</div>
-      <div class="current-filter"><span class="dot" style="background:#22c55e"></span><span>Install and create workspace</span></div>
-      <div class="current-filter"><span class="dot" style="background:#7c3a6b"></span><span>Activate requirements</span></div>
-      <div class="current-filter"><span class="dot" style="background:#8b5cf6"></span><span>Map acceptable-use technology</span></div>
-      <div class="current-filter"><span class="dot" style="background:#f59e0b"></span><span>Draft deployable architecture</span></div>
+      <div class="current-filter"><span class="dot" style="background:#22c55e"></span><span>Run draft-table onboard</span></div>
+      <div class="current-filter"><span class="dot" style="background:#7c3a6b"></span><span>Start setup mode</span></div>
+      <div class="current-filter"><span class="dot" style="background:#8b5cf6"></span><span>Seed minimum baseline</span></div>
+      <div class="current-filter"><span class="dot" style="background:#f59e0b"></span><span>Draft one real system</span></div>
     </div>
   `;
 }
@@ -1682,19 +1682,19 @@ function renderCompanyOnboardingView() {
   syncHashForOnboardingView();
   renderSidebarContent(companyOnboardingSidebarMarkup());
   const steps = [
-    ['Install', 'Install DRAFT Table and select or create a private company DRAFT repo.', ['Run draft-table onboard', 'Vendor the selected framework copy into .draft/framework/', 'Commit workspace bootstrap files']],
-    ['Decide Governance', 'Make build-time workspace decisions before drafting product architecture.', ['Define business taxonomy in .draft/workspace.yaml', 'Activate Requirement Groups explicitly', 'Choose whether strict active-group disposition is enabled']],
-    ['Assign Capability Owners', 'Name the company decision authority for each mapped capability.', ['Authentication, operating systems, compute, logging, monitoring, patching, and security monitoring need clear owners', 'Owners approve acceptable-use lifecycle changes']],
-    ['Map Acceptable Use', 'Connect capabilities to approved Technology Components and lifecycle states.', ['Use preferred, candidate, existing-only, deprecated, and retired deliberately', 'Technology Components carry vendor lifecycle; capability mappings carry company lifecycle']],
-    ['Draft Deployable Objects', 'Create reusable deployable architecture from behavior first, delivery model second.', ['Host', 'Runtime Service', 'Data-at-Rest Service', 'Edge/Gateway Service', 'Product Service', 'Software Deployment Pattern']],
-    ['Validate And Publish', 'Run validation, regenerate the browser, review the Git diff, and commit source plus generated output.', ['draft-table validate', 'generate_browser.py --workspace . --output docs/index.html', 'Review warnings as implementation gaps']]
+    ['Install', 'Install DRAFT Table and select or create a private company DRAFT repo.', ['Run draft-table onboard', 'Vendor the selected framework copy into .draft/framework/', 'Confirm draft-table doctor, framework status, and validation']],
+    ['Start Setup Mode', 'Ask the Draftsman to guide the first-run setup conversation.', ['Open DRAFT Table', 'Ask: start setup mode', 'Track current step, next step, remaining work, and revisit-later items']],
+    ['Define Minimum Governance', 'Make only the workspace decisions needed for useful first drafting.', ['Define business taxonomy in .draft/workspace.yaml', 'Activate the initial Requirement Groups', 'Keep strict active-group disposition off while migrating inventory']],
+    ['Seed Acceptable Use', 'Connect the first capabilities to approved Technology Components and owners.', ['Start with identity, logging, monitoring, patching, backup, compute, operating systems, database, and edge', 'Use preferred, existing-only, candidate, deprecated, and retired deliberately']],
+    ['Draft Baseline Standards', 'Create reusable deployable architecture from behavior first, delivery model second.', ['Host', 'Runtime Service', 'Data-at-Rest Service', 'Edge/Gateway Service', 'Product Service', 'Software Deployment Pattern']],
+    ['Draft One Real System', 'Use one product, system, repository, diagram, or document to prove the workflow.', ['Capture unresolved facts in a Drafting Session', 'Run validation', 'Regenerate the browser and review the Git diff']]
   ];
   const gapSignals = [
-    'Requirement Groups are unclear as object definitions, delivery overlays, or workspace governance.',
+    'Users cannot tell whether they are installing tooling or making catalog governance decisions.',
+    'Setup asks too many open-ended questions before showing what is next.',
     'The Draftsman asks open-ended capability questions when approved implementations exist.',
     'Technology Components appear to have company lifecycle outside capability mappings.',
     'Approved capabilities have no requirement trace.',
-    'PaaS, SaaS, or appliance language sounds like object types instead of delivery models.',
     'Validation failures do not tell the Draftsman exactly what to add or where to look next.'
   ];
   pageRoot.innerHTML = `
@@ -1704,10 +1704,10 @@ function renderCompanyOnboardingView() {
         <div class="header-top">
           <div class="header-title">
             <h2>Company Onboarding Tutorial</h2>
-            <div class="object-id">From empty private repo to governed DRAFT catalog</div>
+            <div class="object-id">From empty private repo to the first useful drafting session</div>
           </div>
         </div>
-        <div class="header-description">A company implements DRAFT by vendoring the framework into a private repo, activating the Requirement Groups it architects against, assigning capability owners, mapping acceptable-use Technology Components, and drafting deployable architecture through validation.</div>
+        <div class="header-description">A company implements DRAFT in two parts: local tooling onboarding, then Draftsman setup mode. Setup mode keeps the team aware of the current step, next step, remaining work, and revisit-later decisions while building the minimum useful catalog baseline.</div>
       </section>
       <section class="section-card">
         <h3>Operating Model</h3>

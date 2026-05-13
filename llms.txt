@@ -9,6 +9,7 @@ vendor a reviewed framework copy under `.draft/framework/`.
 
 - Canonical AI instructions: AGENTS.md
 - Draftsman role: framework/docs/draftsman.md
+- Draftsman setup mode: framework/docs/setup-mode.md
 - Draftsman AI guidance: framework/docs/draftsman-ai-configuration.md
 - Company onboarding tutorial: framework/docs/company-onboarding.md
 - v1.0 roadmap: ROADMAP.md

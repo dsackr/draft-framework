@@ -837,6 +837,10 @@ INDEX_HTML = """<!doctype html>
       return `
         <div class="sidebar-block">
           <h2>Draftsman Conversation</h2>
+          <div class="quick-actions">
+            <button class="action-button" data-draftsman-prompt="start setup mode">Start Setup Mode</button>
+            <button class="action-button" data-draftsman-prompt="Start a guided drafting session for one product or system.">Start Drafting Session</button>
+          </div>
           <div class="messages" id="messages">${messageMarkup}</div>
           <label for="upload">Source Material</label>
           <input id="upload" type="file">
@@ -860,6 +864,7 @@ INDEX_HTML = """<!doctype html>
           <h3>Good First Questions</h3>
           <ul class="guide-list">
             <li>What is a Technology Component?</li>
+            <li>Start setup mode.</li>
             <li>What deployable objects already exist for this product?</li>
             <li>Where is the Falcon agent used?</li>
             <li>Start a drafting session for my new service.</li>
@@ -898,6 +903,16 @@ INDEX_HTML = """<!doctype html>
         });
       }
       document.getElementById('send-message')?.addEventListener('click', sendMessage);
+      document.querySelectorAll('[data-draftsman-prompt]').forEach(button => {
+        button.addEventListener('click', () => {
+          const prompt = button.dataset.draftsmanPrompt || '';
+          const messageInput = document.getElementById('draftsman-message');
+          if (messageInput) {
+            messageInput.value = prompt;
+          }
+          sendMessage();
+        });
+      });
       document.getElementById('upload-button')?.addEventListener('click', uploadSource);
       document.getElementById('apply-proposals')?.addEventListener('click', applyProposals);
     }
@@ -1025,6 +1040,7 @@ INDEX_HTML = """<!doctype html>
             <h3>How To Navigate</h3>
             <ul class="guide-list">
               <li><strong>Draftsman</strong> is the conversation workspace. Ask questions, attach source material, and review proposed artifacts.</li>
+              <li><strong>Setup Mode</strong> is the first-run guided path. It shows the current step, next step, remaining setup work, and revisit-later choices.</li>
               <li><strong>Guide</strong> explains the working model and the common object types.</li>
               <li><strong>Catalog</strong> browses the loaded artifacts from the framework and company workspace.</li>
               <li><strong>Configuration</strong> shows the selected company repo, AI provider, framework copy, validation status, and repair commands.</li>
@@ -1061,6 +1077,7 @@ INDEX_HTML = """<!doctype html>
             <h3>How Content Gets Updated</h3>
             <ul class="guide-list">
               <li>Start in the Draftsman tab and describe what you are building, changing, or trying to understand.</li>
+              <li>For a new workspace, start setup mode before drafting product architecture.</li>
               <li>Attach source material when useful: diagrams, documents, notes, inventories, or screenshots.</li>
               <li>The Draftsman searches the current catalog first, reuses existing artifacts when possible, and asks focused follow-up questions for gaps.</li>
               <li>Proposed artifacts appear as plain-language review cards. Applying them updates the company repo internally and runs validation.</li>

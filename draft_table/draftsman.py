@@ -154,6 +154,8 @@ class LocalAnswer:
 
 def answer_locally(message: str, workspace: Path | None, framework_root: Path) -> LocalAnswer | None:
     lowered = message.lower()
+    if is_setup_mode_request(lowered):
+        return setup_mode_response(workspace, framework_root)
     if is_framework_definition_question(lowered, "technology component"):
         return LocalAnswer(read_doc_section(framework_root / "docs" / "technology-components.md", "What A Technology Component Is"), [], [])
     if any(
@@ -176,6 +178,179 @@ def answer_locally(message: str, workspace: Path | None, framework_root: Path) -
     if "where" in lowered and any(term in lowered for term in ("used", "referenced", "use")):
         return answer_usage_question(message, workspace, framework_root)
     return None
+
+
+def is_setup_mode_request(lowered: str) -> bool:
+    setup_phrases = (
+        "setup mode",
+        "set up draft",
+        "setup draft",
+        "start setup",
+        "company setup",
+        "draft setup",
+        "get started",
+        "getting started",
+        "onboard us",
+        "onboarding",
+    )
+    return any(phrase in lowered for phrase in setup_phrases)
+
+
+def setup_mode_response(workspace: Path | None, framework_root: Path) -> LocalAnswer:
+    if workspace is None:
+        answer = "\n".join(
+            [
+                "Setup mode is the Draftsman first-run path for making a company DRAFT workspace useful.",
+                "",
+                "Current step: select or create the private company DRAFT repo.",
+                "Next: run `draft-table onboard`, or tell me the local path or Git URL for the company DRAFT repo.",
+                "Left after that: business taxonomy, active Requirement Groups, capability owners, acceptable-use technology, baseline deployable standards, and the first real drafting session.",
+                "Can revisit later: every governance choice. We only need enough to make the first catalog review useful.",
+            ]
+        )
+        return LocalAnswer(answer, ["What local path or Git URL should be used for the company DRAFT workspace?"], [])
+
+    workspace_root = workspace.expanduser().resolve()
+    if is_upstream_framework_repo(workspace_root, framework_root):
+        answer = "\n".join(
+            [
+                "Setup mode should run against a private company DRAFT workspace, not the upstream framework repo.",
+                "",
+                "Current step: choose the company workspace.",
+                "Next: give me the local path to the company-specific repo, or run `draft-table onboard` to create/select one.",
+                "Left after that: vendor the framework, confirm workspace taxonomy and governance, seed the acceptable-use baseline, then draft one real product or system.",
+            ]
+        )
+        return LocalAnswer(answer, ["What is the local path to the company DRAFT workspace?"], [])
+
+    status = workspace_setup_status(workspace_root, framework_root)
+    next_step = setup_next_step(status)
+    answer = "\n".join(
+        [
+            "Setup mode is active.",
+            "",
+            "Current state:",
+            f"- Workspace: {workspace_root}",
+            f"- Framework copy: {status['frameworkCopy']}",
+            f"- Business taxonomy: {status['businessTaxonomy']}",
+            f"- Active Requirement Groups: {status['activeRequirementGroups']}",
+            f"- Capability ownership: {status['capabilityOwnership']}",
+            f"- Company catalog baseline: {status['catalogBaseline']}",
+            "",
+            f"Next: {next_step}",
+            "",
+            "Left after that: finish the acceptable-use technology baseline, draft common Host/Runtime/Data-at-Rest/Edge standards, pick one real product or system, and validate the generated catalog.",
+            "Can revisit later: taxonomy names, active governance groups, lifecycle choices, and incomplete object details. We will capture uncertainty instead of forcing perfect answers up front.",
+        ]
+    )
+    return LocalAnswer(answer, setup_questions_for_status(status), [])
+
+
+def workspace_setup_status(workspace: Path, framework_root: Path) -> dict[str, str | int | dict[str, int]]:
+    workspace_yaml = read_workspace_yaml(workspace / ".draft" / "workspace.yaml")
+    pillars = workspace_yaml.get("businessTaxonomy", {}).get("pillars", [])
+    if not isinstance(pillars, list):
+        pillars = []
+    requirements = workspace_yaml.get("requirements", {})
+    active_groups = requirements.get("activeRequirementGroups", []) if isinstance(requirements, dict) else []
+    if not isinstance(active_groups, list):
+        active_groups = []
+    catalog_counts = workspace_catalog_counts(workspace)
+    capabilities = [
+        obj
+        for obj in load_effective_catalog(workspace, framework_root).values()
+        if obj.get("type") == "capability" and obj.get("implementations")
+    ]
+    owned_capabilities = [obj for obj in capabilities if obj.get("owner")]
+    deployable_count = sum(
+        catalog_counts.get(object_type, 0)
+        for object_type in (
+            "host",
+            "runtime_service",
+            "data_at_rest_service",
+            "edge_gateway_service",
+            "product_service",
+            "software_deployment_pattern",
+        )
+    )
+    return {
+        "frameworkCopy": "present" if (workspace / ".draft" / "framework").exists() else "missing",
+        "businessTaxonomy": f"{len(pillars)} pillar{'s' if len(pillars) != 1 else ''}",
+        "businessPillarCount": len(pillars),
+        "activeRequirementGroups": f"{len(active_groups)} active group{'s' if len(active_groups) != 1 else ''}",
+        "activeRequirementGroupCount": len(active_groups),
+        "capabilityOwnership": (
+            f"{len(owned_capabilities)} of {len(capabilities)} mapped capabilities have owners"
+            if capabilities
+            else "no mapped capabilities yet"
+        ),
+        "mappedCapabilityCount": len(capabilities),
+        "ownedCapabilityCount": len(owned_capabilities),
+        "catalogBaseline": (
+            f"{catalog_counts.get('technology_component', 0)} Technology Components, "
+            f"{deployable_count} deployable standards or patterns"
+        ),
+        "technologyComponentCount": catalog_counts.get("technology_component", 0),
+        "deployableCount": deployable_count,
+    }
+
+
+def read_workspace_yaml(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        loaded = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError:
+        return {}
+    return loaded if isinstance(loaded, dict) else {}
+
+
+def workspace_catalog_counts(workspace: Path) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    catalog_root = workspace / "catalog"
+    if not catalog_root.exists():
+        return counts
+    for path in catalog_root.rglob("*.yaml"):
+        try:
+            loaded = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        except yaml.YAMLError:
+            continue
+        if not isinstance(loaded, dict):
+            continue
+        object_type = str(loaded.get("type") or "").strip()
+        if object_type:
+            counts[object_type] = counts.get(object_type, 0) + 1
+    return counts
+
+
+def setup_next_step(status: dict[str, Any]) -> str:
+    if status.get("frameworkCopy") != "present":
+        return "run `draft-table onboard` or refresh the workspace so `.draft/framework/` is present."
+    if int(status.get("businessPillarCount") or 0) == 0:
+        return "define the initial business taxonomy in `.draft/workspace.yaml`."
+    if int(status.get("activeRequirementGroupCount") or 0) == 0:
+        return "choose the first active Requirement Groups for new drafting work."
+    if int(status.get("mappedCapabilityCount") or 0) == 0:
+        return "seed the first acceptable-use capability mappings and owners."
+    if int(status.get("technologyComponentCount") or 0) == 0:
+        return "add the first standard Technology Components the company already uses."
+    if int(status.get("deployableCount") or 0) == 0:
+        return "draft the first reusable deployable standards before modeling a full product pattern."
+    return "pick one real product, diagram, repository, or source document and start the first focused Drafting Session."
+
+
+def setup_questions_for_status(status: dict[str, Any]) -> list[str]:
+    if status.get("frameworkCopy") != "present":
+        return ["Should I help you select an existing company repo path or create a new DRAFT workspace?"]
+    if int(status.get("businessPillarCount") or 0) == 0:
+        return ["What are the first 3-7 business pillars or product groupings people should use to browse architecture?"]
+    if int(status.get("activeRequirementGroupCount") or 0) == 0:
+        return ["Which governance baseline should new objects address first: DRAFT-only, SOC 2, TX-RAMP, NIST CSF, or a company-specific group?"]
+    if int(status.get("mappedCapabilityCount") or 0) == 0:
+        return ["Which few enterprise standards should we seed first, such as identity, logging, monitoring, patching, backup, compute, and operating systems?"]
+    if int(status.get("deployableCount") or 0) == 0:
+        return ["Which common deployable standard should we draft first: Host, Runtime Service, Data-at-Rest Service, or Edge/Gateway Service?"]
+    return ["Which real product, system, diagram, or repository should we use for the first guided Drafting Session?"]
 
 
 def is_framework_definition_question(lowered: str, term: str) -> bool:
@@ -259,6 +434,18 @@ Rules:
 - Reuse existing artifacts when possible.
 - Separate observed facts from assumptions.
 - Ask focused follow-up questions for missing Requirement Group facts.
+- When the user asks to set up DRAFT, start setup mode: explain the current step,
+  the next step, what remains, and what can be revisited later before asking questions.
+- In setup mode, optimize for the minimum useful catalog: workspace repo, business
+  taxonomy, active Requirement Groups, capability owners, acceptable-use technology,
+  baseline deployable standards, and one real first Drafting Session.
+- Keep every interview lightweight. Ask no more than three questions at a time,
+  prefer one question when possible, explain why each question matters, and keep
+  a visible backlog of unanswered or revisit-later items instead of forcing closure.
+- Adapt wording to the audience. Architects can discuss governance and patterns;
+  engineers can answer concrete runtime, dependency, and operational questions;
+  product teams can identify product ownership, user-facing capabilities, and
+  system boundaries without needing YAML or framework terminology.
 - Use requirements.activeRequirementGroups in .draft/workspace.yaml as the source for
   which workspace-activated requirement groups to push during interviews. Do not enforce an
   available workspace-mode group just because its YAML exists.

@@ -20,15 +20,21 @@ authoring requests.
 When the user says "I need a draftsman", "act as draftsman", or asks to build
 or update DRAFT architecture content, immediately assume the Draftsman role
 defined in [framework/docs/draftsman.md](framework/docs/draftsman.md).
+When the user asks to set up DRAFT, start onboarding, or make the Drafting
+Table useful, enter Draftsman setup mode from
+[framework/docs/setup-mode.md](framework/docs/setup-mode.md).
 
 Do not ask what "draftsman" means. In this repo, it means:
 
 - resolve the user's intent
 - search the effective catalog inventory first
 - read the matching schema and Requirement Group
-- interview the user only for missing architecture facts
+- interview the user only for missing architecture facts, asking at most three
+  focused questions at a time
 - create or update valid YAML in the appropriate framework or workspace path
 - preserve unresolved uncertainty in a Drafting Session when needed
+- keep the user aware of the current step, next step, remaining work, and
+  revisit-later items
 
 ## Repository Mode
 

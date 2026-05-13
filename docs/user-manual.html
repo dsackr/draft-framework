@@ -200,6 +200,7 @@
       <p>Generated 2026-05-13 from the framework-owned Markdown source.</p>
       <nav class="toc" aria-label="Table of contents">
         <a class="level-2" href="#start-here">Start Here</a>
+<a class="level-2" href="#setup-mode">Setup Mode</a>
 <a class="level-2" href="#the-mental-model">The Mental Model</a>
 <a class="level-2" href="#object-types">Object Types</a>
 <a class="level-3" href="#architecture-objects">Architecture Objects</a>
@@ -227,7 +228,9 @@
 <p>This manual explains how to use a DRAFT workspace day to day. It is written for engineers who author architecture, architects who review it, and AI assistants acting as the Draftsman.</p>
 <h2 id="start-here">Start Here</h2>
 <p>Use this path when you are new to a workspace:</p>
-<ol><li>Read the workspace root <code>README.md</code>.</li><li>Read the workspace root <code>AGENTS.md</code> if you are an AI assistant or are using one.</li><li>Run validation before changing content.</li><li>Use the catalog browser to find existing objects before creating new ones.</li><li>Add or update YAML under company-owned <code>catalog/</code> or <code>configurations/</code>.</li><li>Regenerate derived docs after source changes.</li><li>Review the YAML diff and generated browser diff together.</li></ol>
+<ol><li>Read the workspace root <code>README.md</code>.</li><li>Read the workspace root <code>AGENTS.md</code> if you are an AI assistant or are using one.</li><li>Run <code>draft-table onboard</code> if a company repo or provider is not selected.</li><li>Ask the Draftsman to <code>start setup mode</code>.</li><li>Run validation before changing content.</li><li>Use the catalog browser to find existing objects before creating new ones.</li><li>Add or update content through the Draftsman, or under company-owned</li></ol>
+<p><code>catalog/</code> and <code>configurations/</code> when working directly.</p>
+<ol><li>Regenerate derived docs after source changes.</li><li>Review the YAML diff and generated browser diff together.</li></ol>
 <p>In a company workspace, the normal commands are:</p>
 <pre><code class="language-bash">python .draft/framework/tools/validate.py --workspace .
 python .draft/framework/tools/generate_browser.py --workspace . --output docs/index.html</code></pre>
@@ -236,6 +239,16 @@ python .draft/framework/tools/generate_browser.py --workspace . --output docs/in
 python framework/tools/generate_browser.py
 python framework/tools/generate_ai_index.py</code></pre>
 <p>The browser generator writes <code>docs/index.html</code> and, by default, writes this manual to <code>docs/user-manual.html</code>.</p>
+<h2 id="setup-mode">Setup Mode</h2>
+<p>Setup mode is the Draftsman first-run path for making a company workspace useful without overwhelming architects, engineers, or product teams.</p>
+<p>Start it from DRAFT Table or terminal chat:</p>
+<pre><code class="language-text">start setup mode</code></pre>
+<p>Setup mode keeps the conversation oriented around:</p>
+<ul><li>current step</li><li>next step</li><li>remaining setup work</li><li>revisit-later decisions</li><li>one focused question, or at most three questions when choices are needed</li></ul>
+<p>The minimum useful setup is:</p>
+<ol><li>private company repo selected and <code>.draft/framework/</code> present</li><li>business taxonomy defined enough for navigation</li><li>initial active Requirement Groups selected</li><li>capability owners identified for mapped capabilities</li><li>acceptable-use Technology Components seeded for common standards</li><li>baseline deployable standards started</li><li>one real product, system, repository, diagram, or document selected for the</li></ol>
+<p>first Drafting Session</p>
+<p>The Draftsman should record uncertainty as assumptions, unresolved questions, or Drafting Session next steps instead of forcing complete answers during setup.</p>
 <h2 id="the-mental-model">The Mental Model</h2>
 <p>DRAFT separates four concerns:</p>
 <table><thead><tr><th>Concern</th><th>Where It Lives</th><th>Purpose</th></tr></thead><tbody><tr><td>Framework rules</td><td><code>.draft/framework/</code> in company workspaces, <code>framework/</code> upstream</td><td>Schemas, base capabilities, Requirement Groups, docs, and tools.</td></tr><tr><td>Company architecture</td><td><code>catalog/</code></td><td>Hosts, services, Product Services, Software Deployment Patterns, and other architecture inventory.</td></tr><tr><td>Company extensions</td><td><code>configurations/</code></td><td>Capability mappings, object patches, company Requirement Groups, and local domains.</td></tr><tr><td>Generated views</td><td><code>docs/</code></td><td>Static HTML, browser assets, and browser data generated from YAML and Markdown source.</td></tr></tbody></table>

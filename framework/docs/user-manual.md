@@ -10,11 +10,14 @@ Use this path when you are new to a workspace:
 
 1. Read the workspace root `README.md`.
 2. Read the workspace root `AGENTS.md` if you are an AI assistant or are using one.
-3. Run validation before changing content.
-4. Use the catalog browser to find existing objects before creating new ones.
-5. Add or update YAML under company-owned `catalog/` or `configurations/`.
-6. Regenerate derived docs after source changes.
-7. Review the YAML diff and generated browser diff together.
+3. Run `draft-table onboard` if a company repo or provider is not selected.
+4. Ask the Draftsman to `start setup mode`.
+5. Run validation before changing content.
+6. Use the catalog browser to find existing objects before creating new ones.
+7. Add or update content through the Draftsman, or under company-owned
+   `catalog/` and `configurations/` when working directly.
+8. Regenerate derived docs after source changes.
+9. Review the YAML diff and generated browser diff together.
 
 In a company workspace, the normal commands are:
 
@@ -32,6 +35,40 @@ python framework/tools/generate_ai_index.py
 ```
 
 The browser generator writes `docs/index.html` and, by default, writes this manual to `docs/user-manual.html`.
+
+## Setup Mode
+
+Setup mode is the Draftsman first-run path for making a company workspace
+useful without overwhelming architects, engineers, or product teams.
+
+Start it from DRAFT Table or terminal chat:
+
+```text
+start setup mode
+```
+
+Setup mode keeps the conversation oriented around:
+
+- current step
+- next step
+- remaining setup work
+- revisit-later decisions
+- one focused question, or at most three questions when choices are needed
+
+The minimum useful setup is:
+
+1. private company repo selected and `.draft/framework/` present
+2. business taxonomy defined enough for navigation
+3. initial active Requirement Groups selected
+4. capability owners identified for mapped capabilities
+5. acceptable-use Technology Components seeded for common standards
+6. baseline deployable standards started
+7. one real product, system, repository, diagram, or document selected for the
+   first Drafting Session
+
+The Draftsman should record uncertainty as assumptions, unresolved questions,
+or Drafting Session next steps instead of forcing complete answers during
+setup.
 
 ## The Mental Model
 

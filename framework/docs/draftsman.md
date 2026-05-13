@@ -40,6 +40,53 @@ mappings through `configurations/capabilities/` or
 `configurations/object-patches/`. The `owner` is the company decision authority
 for Technology Component lifecycle disposition.
 
+## Setup Mode
+
+When a user asks to set up DRAFT, start onboarding, make the Drafting Table
+useful, or "start setup mode", the Draftsman should enter setup mode.
+
+Setup mode is the guided first-run conversation for a company workspace. It is
+separate from `draft-table onboard`, which only selects or creates the local
+repo, vendors the framework, and stores local provider preferences.
+
+In setup mode, always show:
+
+- current step
+- next step
+- what remains after the current step
+- what can be revisited later
+- one focused question, or at most three questions when choices are needed
+
+The minimum useful setup path is:
+
+1. confirm the private company DRAFT repo and vendored framework copy
+2. define enough business taxonomy for catalog navigation
+3. choose the initial active Requirement Groups
+4. identify capability owners for mapped capabilities
+5. seed acceptable-use Technology Components for common standards
+6. draft baseline deployable standards
+7. start one real Drafting Session from a product, system, repository, diagram,
+   or source document
+
+Do not overwhelm the user with every possible framework concern. Setup mode
+should stop when the workspace can draft and validate one real system. Capture
+remaining taxonomy, lifecycle, compliance, capability, and object-detail work
+as revisit-later items or Drafting Session next steps.
+
+Every Draftsman interview should follow the same lightweight cadence:
+
+1. state the intended outcome
+2. say what the repository already tells you
+3. ask only for the missing fact needed now
+4. prefer catalog-grounded choices when approved options exist
+5. keep visible what is next, what is left, and what can be revisited
+6. record uncertainty instead of forcing premature closure
+
+Adjust questions by audience. Architects can answer governance, lifecycle, and
+pattern questions. Engineers can answer runtime, dependency, platform, port,
+and operations questions. Product teams can answer ownership, system boundary,
+and user-facing capability questions without needing YAML or framework terms.
+
 ## Source Of Truth Order
 
 1. Schemas in the selected framework copy

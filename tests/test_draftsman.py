@@ -47,6 +47,21 @@ class DraftsmanTests(unittest.TestCase):
         self.assertIn("CrowdStrike Falcon Agent", response.answer)
         self.assertNotIn("```", response.answer)
 
+    def test_setup_mode_without_workspace_guides_first_step(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            config_path = Path(directory) / "config.yaml"
+            save_config({"framework_repo_path": str(REPO_ROOT)}, config_path)
+            engine = DraftsmanEngine(config_path, DraftsmanSessionStore(Path(directory) / "sessions"))
+
+            response = engine.chat("start setup mode")
+
+        self.assertFalse(response.provider_used)
+        self.assertIn("Setup mode", response.answer)
+        self.assertIn("Current step", response.answer)
+        self.assertIn("Left after that", response.answer)
+        self.assertEqual(len(response.questions), 1)
+        self.assertIn("company DRAFT workspace", response.questions[0])
+
     def test_public_proposal_hides_backend_content(self) -> None:
         public = public_proposal(
             {
@@ -97,6 +112,14 @@ class DraftsmanTests(unittest.TestCase):
         self.assertIn("patch platform, installed component", prompt)
         self.assertIn("do not ask which", prompt)
         self.assertIn("team owns patching", prompt)
+
+    def test_prompt_includes_setup_mode_and_guided_cadence(self) -> None:
+        prompt = build_draftsman_prompt(REPO_ROOT, None, "Help us get started.", {"uploads": []})
+
+        self.assertIn("start setup mode", prompt)
+        self.assertIn("current step", prompt)
+        self.assertIn("what remains", prompt)
+        self.assertIn("Ask no more than three questions", prompt)
 
     def test_prompt_explains_appliance_delivery_service_like_capability_answers(self) -> None:
         prompt = build_draftsman_prompt(REPO_ROOT, None, "Build an appliance-delivered Edge/Gateway Service.", {"uploads": []})

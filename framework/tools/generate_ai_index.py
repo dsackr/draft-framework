@@ -23,6 +23,7 @@ FRAMEWORK_ENTRYPOINTS = [
     ("framework/browser", "Static browser shell, CSS, JavaScript, and default theme assets copied by generate_browser.py."),
     ("security.md", "DRAFT Table credential and local security boundary."),
     ("framework/docs/draftsman.md", "Draftsman role, intent routing, and authoring rules."),
+    ("framework/docs/setup-mode.md", "Draftsman first-run setup mode and guided interview cadence."),
     ("framework/docs/company-onboarding.md", "Company onboarding tutorial for implementing DRAFT in a private workspace."),
     ("framework/docs/overview.md", "Framework concepts and object family overview."),
     ("framework/docs/object-types.md", "User-facing DRAFT object type taxonomy and deployable/non-deployable distinction."),

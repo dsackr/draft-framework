@@ -1,40 +1,46 @@
-# Company Onboarding Tutorial
+# Company Onboarding
 
-## Purpose
+This guide is the clean first-run path for a company adopting DRAFT. It keeps
+setup small enough for an enterprise architecture team to finish the first
+useful pass, then lets the Draftsman capture the rest as follow-up work.
 
-This tutorial describes how a company adopts DRAFT from an empty private repo
-to a working architecture catalog. It is written to expose implementation gaps
-before DRAFT 1.0 by making every setup decision explicit.
+The goal is not to complete every architecture standard on day one. The goal is
+to create a governed workspace where the Draftsman can interview users, reuse
+approved choices, write valid DRAFT objects behind the scenes, and keep the
+team aware of what is next.
 
-The goal is not to fill in forms. The goal is to create a governed drafting
-environment where the Draftsman can interview users, read source material,
-reuse approved standards, and produce deployable architecture objects that pass
-validation.
+## What Good Looks Like
 
-## Starting Model
+After initial onboarding, the company should have:
 
-A company uses two repositories:
+- a private company DRAFT repo
+- a vendored framework copy under `.draft/framework/`
+- tracked workspace metadata in `.draft/workspace.yaml`
+- a small business taxonomy for catalog navigation
+- one or more active Requirement Groups for new drafting work
+- owners for the first mapped capabilities
+- a starter acceptable-use technology baseline
+- a few reusable deployable standards
+- one real Drafting Session started from a product, system, repository,
+  document, or diagram
+- validation passing, or clear Drafting Session gaps for remaining work
 
-- the upstream DRAFT Framework repo as the update source
-- a private company DRAFT repo as the working architecture catalog
+## Two Setup Flows
 
-The company repo vendors the selected framework copy under `.draft/framework/`.
-Normal Draftsman work reads that vendored copy. The public framework repo is
-not a runtime dependency.
+There are two setup flows, and they solve different problems.
 
-The company repo owns:
+| Flow | What It Does | When To Use It |
+|---|---|---|
+| `draft-table onboard` | Selects or creates the company repo, vendors the framework, and records local provider preferences. | First install or when changing local repo/provider setup. |
+| Draftsman setup mode | Walks the architecture team through the minimum catalog and governance decisions needed for useful drafting. | First team setup session or whenever a workspace feels incomplete. |
 
-- `.draft/workspace.yaml` for workspace activation and business taxonomy
-- `.draft/framework/` for the reviewed framework copy
-- `.draft/framework.lock` for the framework source, version, and commit
-- `configurations/` for company capability mappings, Requirement Groups,
-  object patches, domains, and business-specific configuration
-- `catalog/` for deployable architecture content, Technology Components,
-  Reference Architectures, Software Deployment Patterns, decisions, and
-  Drafting Sessions
-- `docs/index.html` for the generated read-only browser
+Start with `draft-table onboard`. Then open DRAFT Table and ask:
 
-## Phase 1: Install And Create The Workspace
+```text
+start setup mode
+```
+
+## Step 1: Install And Select The Company Repo
 
 Install DRAFT Table from an interactive terminal:
 
@@ -42,17 +48,17 @@ Install DRAFT Table from an interactive terminal:
 curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install-draft-table.sh | bash
 ```
 
-Run onboarding:
+Run onboarding if the installer did not already do it:
 
 ```bash
 draft-table onboard
 ```
 
-During onboarding, select or create the private company DRAFT repo. The repo
-should be treated as source code: changes are reviewed, validated, committed,
-and pushed through normal Git workflow.
+During onboarding, select or create the private company DRAFT repo. Treat that
+repo as source code: changes are reviewed, validated, committed, and pushed
+through normal Git workflow.
 
-After onboarding, confirm the workspace:
+Confirm local setup:
 
 ```bash
 draft-table doctor
@@ -60,90 +66,100 @@ draft-table framework status
 draft-table validate
 ```
 
-## Phase 2: Make Workspace Decisions
+## Step 2: Start Setup Mode
 
-Before drafting product architecture, decide the company-level controls that
-shape every object.
+Start the local UI:
 
-### Business Taxonomy
+```bash
+draft-table serve
+```
 
-Define the business pillars or product groupings in `.draft/workspace.yaml`.
-Software Deployment Patterns use this taxonomy so executives can navigate
-architecture by business ownership.
+Open the printed URL. In the Draftsman tab, ask:
 
-Example decisions:
+```text
+start setup mode
+```
 
-- What are the company's business pillars?
-- Is every Software Deployment Pattern required to choose a pillar?
-- Who owns each pillar?
+The Draftsman should respond with:
 
-### Active Requirement Groups
+- current workspace state
+- the next setup step
+- what remains after that step
+- what can be revisited later
+- one focused question
 
-Activate the Requirement Groups the company architects against:
+If the selected repo is the upstream framework repo instead of a company
+workspace, the Draftsman must stop and ask for the company-specific repo path
+before writing architecture content.
+
+## Step 3: Define Business Navigation
+
+Add enough business taxonomy to `.draft/workspace.yaml` for users to browse the
+catalog by product area or business pillar.
+
+Good first question:
+
+```text
+What are the first 3-7 business pillars or product groupings people should use
+to find architecture?
+```
+
+Do not spend weeks perfecting taxonomy. Setup mode only needs the first useful
+shape. Names can be revisited later.
+
+## Step 4: Pick The Initial Governance Baseline
+
+Activate the Requirement Groups that should guide new drafting work:
 
 ```yaml
 requirements:
   activeRequirementGroups:
-    - <soc2-requirement-group-uid>
-    - <company-requirement-group-uid>
+    - <requirement-group-uid>
   requireActiveRequirementGroupDisposition: false
 ```
 
-The presence of a Requirement Group YAML file does not activate it. Activation
-is a build-time workspace decision.
-
 Use `requireActiveRequirementGroupDisposition: false` while migrating existing
-inventory. Set it to `true` when the company is ready for validation to require
-every in-scope object to record disposition against every active group.
+inventory. Set it to `true` only when the company is ready for validation to
+require every in-scope object to record disposition against every active group.
 
-### Capability Owners
+Good first question:
 
-Every capability with implementation mappings needs a company owner. The owner
-is the decision authority for acceptable-use lifecycle entries such as
-`candidate`, `preferred`, `existing-only`, `deprecated`, and `retired`.
+```text
+Which governance baseline should new objects address first: DRAFT-only,
+SOC 2, TX-RAMP, NIST CSF, or a company-specific group?
+```
 
-Example decisions:
+## Step 5: Seed Acceptable-Use Technology
 
-- Who owns authentication?
-- Who owns operating systems?
-- Who owns compute platforms?
-- Who owns log management, monitoring, patching, and security monitoring?
-- Who can approve a new Technology Component for a capability?
+Technology Components are vendor products, platforms, tools, runtimes, agents,
+operating systems, and product versions. Capabilities describe reusable needs
+such as authentication, logging, monitoring, patching, backup, compute, and
+database.
 
-## Phase 3: Build The Acceptable Use Technology Baseline
+The first useful baseline should map common capabilities to the Technology
+Components the company already uses. Each mapped capability needs a company
+owner who can approve lifecycle choices such as `preferred`, `existing-only`,
+`candidate`, `deprecated`, and `retired`.
 
-Technology Components are discrete vendor products and versions. Capabilities
-are company-governed abilities. Capability implementation mappings connect the
-two.
+Good first question:
 
-For each required capability:
+```text
+Which enterprise standards should we seed first for identity, logging,
+monitoring, patching, backup, compute, operating systems, database, and edge?
+```
 
-1. Confirm the capability exists.
-2. Identify the company owner.
-3. Add Technology Components that can satisfy the capability.
-4. Assign acceptable-use lifecycle status.
-5. Record configuration names when only a specific Technology Component
-   configuration satisfies the capability.
+## Step 6: Draft Baseline Deployable Standards
 
-The generated browser's Acceptable Use Technology view should become the
-company-readable technology lifecycle list.
+Draft reusable deployable objects in this order when possible:
 
-Do not approve a Capability until at least one Requirement Group requirement
-references it. Requirements create demand; capabilities provide reusable
-answers.
-
-## Phase 4: Draft The First Deployable Standards
-
-Draft reusable deployable objects in this order:
-
-1. Technology Components for the products and versions in use
+1. Technology Components for known products and versions
 2. Hosts for operating system plus compute platform combinations
 3. Runtime Services for web, app, worker, messaging, cache, or runtime behavior
 4. Data-at-Rest Services for database, file, object, analytics, and storage
 5. Edge/Gateway Services for WAF, firewall, load balancer, ingress, proxy, or
    API gateway behavior
-6. Product Services for first-party custom binaries or black-box services
-7. Software Deployment Patterns for complete intended product deployment shapes
+6. Product Services for first-party runtime behavior
+7. Software Deployment Patterns for complete product deployment shapes
 
 Choose object type by behavior first. Then choose delivery model:
 
@@ -152,31 +168,44 @@ Choose object type by behavior first. Then choose delivery model:
 - `saas`
 - `appliance`
 
-PaaS, SaaS, and appliance are not object types. They are delivery-model overlays
-that add requirements to Runtime Service, Data-at-Rest Service, and
-Edge/Gateway Service objects.
+PaaS, SaaS, and appliance are delivery models, not object types.
 
-## Phase 5: Conduct The First Drafting Session
+Good first question:
 
-The first drafting session should be an interview, not a YAML editing exercise.
+```text
+Which common deployable standard should we draft first: Host, Runtime Service,
+Data-at-Rest Service, or Edge/Gateway Service?
+```
 
-Start with a real product, diagram, repository, or source document. The
-Draftsman should:
+## Step 7: Start The First Real Drafting Session
+
+The first drafting session should be a guided conversation, not a YAML editing
+exercise. Start with a real product, system, diagram, repository, or source
+document.
+
+The Draftsman should:
 
 1. identify the product or system being described
 2. extract observed components and deployment facts
 3. separate observations from assumptions
-4. resolve existing Technology Components and deployable objects before making
+4. search existing Technology Components and deployable objects before creating
    new ones
 5. identify applicable Requirement Groups from object type, delivery model, and
-   active workspace governance
+   workspace governance
 6. ask focused follow-up questions for missing required facts
 7. create or update DRAFT objects behind the scenes
 8. run validation before presenting completed work
 
 Unresolved facts should be stored in a Drafting Session, not hidden in prose.
 
-## Phase 6: Validate, Review, And Publish
+Good first question:
+
+```text
+Which product, system, diagram, repository, or source document should we use
+for the first guided Drafting Session?
+```
+
+## Step 8: Validate, Review, And Publish
 
 Validation is the contract between conversation and source.
 
@@ -198,13 +227,32 @@ Regenerate the browser:
 python3 .draft/framework/tools/generate_browser.py --workspace . --output docs/index.html
 ```
 
-Review the Git diff. Commit the source YAML and generated browser together
-when the browser is used for GitHub Pages.
+Review the Git diff. Commit source YAML and generated browser output together
+when the browser is published from the repo.
 
-## Phase 7: Keep The Framework Current
+## Guided Conversation Rules
 
-Framework updates are explicit. A company refreshes `.draft/framework/`, reviews
-the diff, validates, and commits the update in the private repo.
+Every setup or drafting session should keep users oriented:
+
+- state the intended outcome
+- say what the repo already tells the Draftsman
+- ask only for missing facts needed for the current step
+- prefer multiple-choice questions when approved catalog options exist
+- ask at most three questions at a time
+- keep a visible list of what is next, what is left, and what can be revisited
+- record uncertainty as assumptions, unresolved questions, or Drafting Session
+  next steps
+- validate before claiming work is complete
+
+Architects, engineers, and product teams should not receive the same interview.
+Architects can handle governance and patterns. Engineers can answer concrete
+runtime, dependency, platform, and operational questions. Product teams can
+answer ownership, system boundaries, and user-facing capability questions.
+
+## Keep The Framework Current
+
+Framework updates are explicit. A company refreshes `.draft/framework/`,
+reviews the diff, validates, and commits the update in the private repo.
 
 Manual update:
 
@@ -216,38 +264,3 @@ draft-table validate
 
 Optional GitHub Actions can automate update branches and pull requests, but the
 company still reviews the result before merging.
-
-## Readiness Checklist
-
-A company is ready for serious drafting when:
-
-- the private DRAFT repo has `.draft/framework/` and `.draft/framework.lock`
-- `.draft/workspace.yaml` declares business taxonomy and active Requirement
-  Groups
-- capability owners are identified for mapped capabilities
-- approved capabilities are referenced by Requirement Group requirements
-- acceptable-use Technology Components are mapped by capability
-- baseline Hosts, Runtime Services, Data-at-Rest Services, and Edge/Gateway
-  Services exist for common deployment patterns
-- the Draftsman can answer framework questions from the vendored docs
-- validation passes
-- GitHub Pages or DRAFT Table browser shows the generated catalog
-
-## Gap Signals Before 1.0
-
-During onboarding, treat these as framework gaps worth addressing before 1.0:
-
-- a company cannot tell which Requirement Groups are object definitions,
-  delivery overlays, or workspace governance
-- capability-backed questions do not resolve to the company's approved
-  multiple-choice options when approved implementations exist
-- Technology Components appear to have company lifecycle outside capability
-  mappings
-- a company cannot identify the owner for a capability decision
-- approved capabilities have no requirement trace
-- delivery model language makes PaaS, SaaS, or appliance sound like object
-  types
-- validation failures do not tell the Draftsman exactly what to add or where to
-  look next
-- the generated UI shows runtime filters instead of build-time governance
-  decisions

@@ -107,4 +107,5 @@ def run_onboarding(config_path: Path | None = None) -> int:
     }
     save_config(config, config_path)
     print("Onboarding complete.")
+    print("Next: run draft-table serve, open the Draftsman tab, and ask to start setup mode.")
     return 0

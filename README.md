@@ -83,6 +83,14 @@ summaries, validation results, and commit controls. DRAFT Table may write DRAFT
 YAML files internally because that is the framework storage format, but it
 should not show users raw YAML code.
 
+For a new company workspace, use Draftsman setup mode after `draft-table
+onboard`. Setup mode walks the enterprise architecture team through the minimum
+steps needed to make the Drafting Table useful: repo readiness, business
+taxonomy, active Requirement Groups, capability owners, acceptable-use
+technology, baseline deployable standards, and one real first Drafting Session.
+It keeps the user aware of the current step, next step, remaining work, and
+revisit-later items.
+
 Install and onboard:
 
 ```bash
@@ -186,6 +194,7 @@ See [security.md](security.md) for the threat model and credential boundary.
 - [AI framework index](AI_INDEX.md)
 - [User manual](framework/docs/user-manual.md)
 - [Draftsman instructions for AI](framework/docs/draftsman.md)
+- [Draftsman setup mode](framework/docs/setup-mode.md)
 - [Draftsman AI guidance](framework/docs/draftsman-ai-configuration.md)
 - [Company onboarding tutorial](framework/docs/company-onboarding.md)
 - [DRAFT object types](framework/docs/object-types.md)
