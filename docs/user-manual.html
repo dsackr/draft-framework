@@ -228,7 +228,11 @@
 <p>This manual explains how to use a DRAFT workspace day to day. It is written for engineers who author architecture, architects who review it, and AI assistants acting as the Draftsman.</p>
 <h2 id="start-here">Start Here</h2>
 <p>Use this path when you are new to a workspace:</p>
-<ol><li>Read the workspace root <code>README.md</code>.</li><li>Read the workspace root <code>AGENTS.md</code> if you are an AI assistant or are using one.</li><li>Run <code>draft-table onboard</code> if a company repo or provider is not selected.</li><li>Ask the Draftsman to <code>start setup mode</code>.</li><li>Run validation before changing content.</li><li>Use the catalog browser to find existing objects before creating new ones.</li><li>Add or update content through the Draftsman, or under company-owned</li></ol>
+<ol><li>Read the workspace root <code>README.md</code>.</li><li>Read the workspace root <code>AGENTS.md</code> if you are an AI assistant or are using one.</li><li>Confirm the repo has <code>.draft/framework/</code>, <code>.draft/workspace.yaml</code>,</li></ol>
+<p><code>catalog/</code>, and <code>configurations/</code>.</p>
+<ol><li>Connect the AI tool you already use to the repo and ask it to act as the</li></ol>
+<p>Draftsman.</p>
+<ol><li>Ask the Draftsman to <code>start setup mode</code>.</li><li>Run validation before changing content.</li><li>Use the catalog browser to find existing objects before creating new ones.</li><li>Add or update content through the Draftsman, or under company-owned</li></ol>
 <p><code>catalog/</code> and <code>configurations/</code> when working directly.</p>
 <ol><li>Regenerate derived docs after source changes.</li><li>Review the YAML diff and generated browser diff together.</li></ol>
 <p>In a company workspace, the normal commands are:</p>
@@ -241,12 +245,12 @@ python framework/tools/generate_ai_index.py</code></pre>
 <p>The browser generator writes <code>docs/index.html</code> and, by default, writes this manual to <code>docs/user-manual.html</code>.</p>
 <h2 id="setup-mode">Setup Mode</h2>
 <p>Setup mode is the Draftsman first-run path for making a company workspace useful without overwhelming architects, engineers, or product teams.</p>
-<p>Start it from DRAFT Table or terminal chat:</p>
+<p>Start it by asking the AI assistant connected to the company repo:</p>
 <pre><code class="language-text">start setup mode</code></pre>
 <p>Setup mode keeps the conversation oriented around:</p>
 <ul><li>current step</li><li>next step</li><li>remaining setup work</li><li>revisit-later decisions</li><li>one focused question, or at most three questions when choices are needed</li></ul>
 <p>The minimum useful setup is:</p>
-<ol><li>private company repo selected and <code>.draft/framework/</code> present</li><li>business taxonomy defined enough for navigation</li><li>initial active Requirement Groups selected</li><li>capability owners identified for mapped capabilities</li><li>acceptable-use Technology Components seeded for common standards</li><li>baseline deployable standards started</li><li>one real product, system, repository, diagram, or document selected for the</li></ol>
+<ol><li>private company repo selected and <code>.draft/framework/</code> present</li><li>business taxonomy defined enough for navigation</li><li>first company vocabulary lists declared in advisory mode, or queued for later</li><li>initial active Requirement Groups selected</li><li>capability owners identified for mapped capabilities</li><li>acceptable-use Technology Components seeded for common standards</li><li>baseline deployable standards started</li><li>one real product, system, repository, diagram, or document selected for the</li></ol>
 <p>first Drafting Session</p>
 <p>The Draftsman should record uncertainty as assumptions, unresolved questions, or Drafting Session next steps instead of forcing complete answers during setup.</p>
 <h2 id="the-mental-model">The Mental Model</h2>

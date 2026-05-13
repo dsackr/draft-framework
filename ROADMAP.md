@@ -8,6 +8,11 @@ The v1.0 goal is narrow and concrete: a Draftsman conversation should produce a
 complete, compliant, reviewable architecture graph that can be translated into a
 deployment plan without hiding operational or security gaps.
 
+v1.0 is repo-first. It will not launch with a required DRAFT app, hosted
+service, or DRAFT-specific CLI. A company should be able to connect its
+preferred AI tool to a company DRAFT repo and have that AI become the
+Draftsman by reading the repo bootstrap files and vendored framework copy.
+
 ## Tracking Model
 
 Track execution in GitHub with:
@@ -84,27 +89,47 @@ Recommended labels: `v1.0`, `mvp`, `catalog`, `compliance`
 
 Problem:
 
-DRAFT Table has the first Draftsman loop, but production authoring still depends
-too much on provider-generated YAML and post-write validation.
+Production authoring depends on general-purpose AI tools connected to a repo.
+The framework needs enough bootstrap instructions, templates, examples,
+validation, and PR workflow guidance for those tools to behave as a deterministic
+Draftsman without a DRAFT-specific app.
 
 MVP outcome:
 
 Make Draftsman output structured, reviewable, repairable, and safe enough for
-governed company workspaces.
+governed company workspaces using ordinary AI coding tools and Git pull
+requests.
 
 Acceptance criteria:
 
 - Replace opaque YAML proposal content with a structured proposal model that can
   be validated before writing files.
-- Show schema-aware review cards and diffs before apply.
+- Require schema-aware summaries and diffs before applying proposed changes.
 - Map validation failures to actionable repair steps that the Draftsman can
   propose or perform.
 - Record source provenance on every generated or materially updated artifact.
 - Preserve Drafting Session state so interrupted work can resume without relying
   on chat history.
-- Add branch, commit, and pull request workflow from DRAFT Table or document the
-  minimum supported CLI path.
+- Document the minimum supported Git branch, commit, push, and pull request
+  path for connected AI tools using the user's credentials.
 - Add tests that cover proposal validation, failed validation recovery,
   provenance capture, and resumable sessions.
 
 Recommended labels: `v1.0`, `mvp`, `draftsman`, `compliance`
+
+## Future Enhancements: DRAFT Table And CLI
+
+The local DRAFT Table app and `draft-table` CLI are useful prototypes, but they
+are not part of the v1.0 launch promise. Keep them available for experiments,
+but do not make onboarding, authoring, or validation depend on them.
+
+Future work may revive the app as optional convenience tooling for:
+
+- guided source upload and document extraction
+- visual proposal review cards
+- local validation repair loops
+- local provider configuration and diagnostics
+- commit and pull request helpers
+- framework refresh helpers
+
+Until then, the canonical workflow is the repo plus the user's chosen AI tool.

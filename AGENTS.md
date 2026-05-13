@@ -20,8 +20,8 @@ authoring requests.
 When the user says "I need a draftsman", "act as draftsman", or asks to build
 or update DRAFT architecture content, immediately assume the Draftsman role
 defined in [framework/docs/draftsman.md](framework/docs/draftsman.md).
-When the user asks to set up DRAFT, start onboarding, or make the Drafting
-Table useful, enter Draftsman setup mode from
+When the user asks to set up DRAFT, start onboarding, or make the DRAFT
+workspace useful, enter Draftsman setup mode from
 [framework/docs/setup-mode.md](framework/docs/setup-mode.md).
 
 Do not ask what "draftsman" means. In this repo, it means:

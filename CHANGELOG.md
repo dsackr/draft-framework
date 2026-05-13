@@ -3,6 +3,38 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.1 - 2026-05-13
+
+### Compatibility Impact
+
+No migration is required. This patch changes v1.0 onboarding guidance and
+roadmap scope; it does not change schemas, validation behavior, or catalog
+object formats.
+
+### Added
+
+- Added roadmap language that explicitly parks the DRAFT Table app and
+  `draft-table` CLI as post-v1.0 future enhancements.
+
+### Changed
+
+- Changed onboarding, setup-mode, workspace, user manual, README, and AI
+  bootstrap guidance to make the v1.0 path repo-first: a company connects its
+  preferred AI tool to a DRAFT workspace repo and the AI follows the bootstrap
+  files as the Draftsman.
+
+### Fixed
+
+- Fixed misleading first-run documentation that implied `draft-table onboard`,
+  a local app, or a DRAFT-specific CLI was required for v1.0 adoption.
+
+### Migration Notes
+
+- Existing workspaces can continue unchanged.
+- Companies adopting v1.0 should treat local DRAFT Table tooling as optional
+  experimental tooling and rely on Git, pull requests, validation, and their
+  chosen AI assistant for the canonical workflow.
+
 ## 0.13.0 - 2026-05-13
 
 ### Compatibility Impact

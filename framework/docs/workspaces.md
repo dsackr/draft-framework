@@ -36,10 +36,10 @@ The effective model is resolved in this order:
 4. workspace catalog content
 
 The public `dsackr/draft-framework` repository is an update source, not a
-runtime dependency for company drafting. DRAFT Table reads the vendored copy in
-`.draft/framework/` during normal use. A company chooses when to refresh that
-copy, reviews the resulting Git diff, validates the workspace, and commits the
-framework refresh in its private repo.
+runtime dependency for company drafting. The connected AI reads the vendored
+copy in `.draft/framework/` during normal Draftsman work. A company chooses
+when to refresh that copy, reviews the resulting Git diff, validates the
+workspace, and commits the framework refresh in its private repo.
 
 Company overrides should be represented as `object_patch` YAML when the goal is
 to alter a base framework object without editing the vendored framework copy.
@@ -215,11 +215,13 @@ under `.draft/framework/`.
 
 The normal refresh flow is:
 
-1. Update the installed framework checkout or choose a reviewed internal mirror.
-2. Run `draft-table framework status` to see the currently vendored commit.
-3. Run `draft-table framework refresh` to replace `.draft/framework/` from the selected source.
-4. Validate the workspace against the refreshed framework.
-5. Review and commit the `.draft/framework/` and `.draft/framework.lock` changes.
+1. Choose a reviewed upstream tag, commit, or internal framework mirror.
+2. Open a branch in the company repo.
+3. Replace `.draft/framework/` with that reviewed framework version.
+4. Update `.draft/framework.lock` with the synced source, commit, and version.
+5. Validate the workspace against the refreshed framework.
+6. Review and commit the `.draft/framework/` and `.draft/framework.lock`
+   changes through a normal pull request.
 
 Company-specific changes should remain in top-level `configurations/` as
 overlays or object patches. Avoid editing `.draft/framework/` directly unless

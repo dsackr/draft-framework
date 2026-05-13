@@ -10,14 +10,17 @@ Use this path when you are new to a workspace:
 
 1. Read the workspace root `README.md`.
 2. Read the workspace root `AGENTS.md` if you are an AI assistant or are using one.
-3. Run `draft-table onboard` if a company repo or provider is not selected.
-4. Ask the Draftsman to `start setup mode`.
-5. Run validation before changing content.
-6. Use the catalog browser to find existing objects before creating new ones.
-7. Add or update content through the Draftsman, or under company-owned
+3. Confirm the repo has `.draft/framework/`, `.draft/workspace.yaml`,
+   `catalog/`, and `configurations/`.
+4. Connect the AI tool you already use to the repo and ask it to act as the
+   Draftsman.
+5. Ask the Draftsman to `start setup mode`.
+6. Run validation before changing content.
+7. Use the catalog browser to find existing objects before creating new ones.
+8. Add or update content through the Draftsman, or under company-owned
    `catalog/` and `configurations/` when working directly.
-8. Regenerate derived docs after source changes.
-9. Review the YAML diff and generated browser diff together.
+9. Regenerate derived docs after source changes.
+10. Review the YAML diff and generated browser diff together.
 
 In a company workspace, the normal commands are:
 
@@ -41,7 +44,7 @@ The browser generator writes `docs/index.html` and, by default, writes this manu
 Setup mode is the Draftsman first-run path for making a company workspace
 useful without overwhelming architects, engineers, or product teams.
 
-Start it from DRAFT Table or terminal chat:
+Start it by asking the AI assistant connected to the company repo:
 
 ```text
 start setup mode
@@ -59,11 +62,12 @@ The minimum useful setup is:
 
 1. private company repo selected and `.draft/framework/` present
 2. business taxonomy defined enough for navigation
-3. initial active Requirement Groups selected
-4. capability owners identified for mapped capabilities
-5. acceptable-use Technology Components seeded for common standards
-6. baseline deployable standards started
-7. one real product, system, repository, diagram, or document selected for the
+3. first company vocabulary lists declared in advisory mode, or queued for later
+4. initial active Requirement Groups selected
+5. capability owners identified for mapped capabilities
+6. acceptable-use Technology Components seeded for common standards
+7. baseline deployable standards started
+8. one real product, system, repository, diagram, or document selected for the
    first Drafting Session
 
 The Draftsman should record uncertainty as assumptions, unresolved questions,

@@ -52,7 +52,7 @@ docs/assets/            # Generated browser data plus copied browser assets
 docs/user-manual.html   # Generated DRAFT user manual
 docs/company-vocabulary.html
                         # Generated company vocabulary guide
-draft_table/            # Local-first DRAFT Table CLI and web shell
+draft_table/            # Experimental local app prototype; post-v1.0
 ```
 
 A company private DRAFT repo should use this shape:
@@ -77,83 +77,37 @@ first, then optional `.draft/providers/*/configurations/`, then workspace
 configuration overlays, then workspace catalog content. The public repo is an
 update source, not a runtime dependency for a company's Draftsman.
 
-## DRAFT Table
+## Repo-First v1.0 Operating Model
 
-DRAFT Table is the local-first companion UI for working with a private company
-DRAFT repo. It is intentionally not an AI credential store and not a hosted
-service. The source of truth remains the local filesystem and Git.
+DRAFT v1.0 is repo-first. It does not require a DRAFT application, hosted
+service, local daemon, or DRAFT-specific CLI. The user experience is:
 
-DRAFT Table is not a YAML editor. The user experience is the Draftsman
-conversation: questions, document intake, architecture interviews, artifact
-summaries, validation results, and commit controls. DRAFT Table may write DRAFT
-YAML files internally because that is the framework storage format, but it
-should not show users raw YAML code.
+1. Create a private company DRAFT repo.
+2. Vendor a reviewed framework copy under `.draft/framework/`.
+3. Add the root AI bootstrap files from `templates/workspace/`.
+4. Connect the AI tool the company already uses, such as ChatGPT, Claude,
+   Gemini, Copilot, Codex, or another code-capable assistant.
+5. Ask the AI to act as the Draftsman and follow `AGENTS.md`.
+6. Review all changes as ordinary Git diffs and pull requests.
 
-For a new company workspace, use Draftsman setup mode after `draft-table
-onboard`. Setup mode walks the enterprise architecture team through the minimum
-steps needed to make the Drafting Table useful: repo readiness, business
-taxonomy, active Requirement Groups, capability owners, acceptable-use
-technology, company vocabulary lists, baseline deployable standards, and one
-real first Drafting Session.
+The Draftsman conversation is still the intended authoring experience, but it
+happens through the AI tool connected to the repo. The framework supplies the
+prompts, schemas, templates, docs, validation tools, generated browser, and
+GitHub Actions workflows that make that AI behavior deterministic and
+reviewable.
+
+For a new company workspace, ask the connected AI to start setup mode. Setup
+mode walks the enterprise architecture team through the minimum steps needed to
+make the repo useful: workspace readiness, business taxonomy, company
+vocabulary lists, active Requirement Groups, capability owners, acceptable-use
+technology, baseline deployable standards, and one real first Drafting Session.
 It keeps the user aware of the current step, next step, remaining work, and
 revisit-later items.
 
-Install and onboard:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install-draft-table.sh | bash
-```
-
-The installer clones or updates the framework repo, installs DRAFT Table, runs
-onboarding, bootstraps `.draft/framework/` into the selected company repo, and
-then starts the local web UI. The web UI is the preferred Draftsman experience.
-Run it from an interactive terminal so onboarding can prompt for your company
-DRAFT repo and provider preference.
-
-Local development install from this checkout:
-
-```bash
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install -e .
-draft-table onboard
-draft-table serve
-```
-
-The web UI binds to `0.0.0.0` by default so another device on the same LAN can
-reach it. Startup output prints both the LAN URL and the local URL. Use
-`draft-table serve --host 127.0.0.1` for local-only access.
-
-### DRAFT Table CLI
-
-```bash
-draft-table onboard
-draft-table serve
-draft-table chat
-draft-table validate
-draft-table ai doctor
-draft-table repo status
-draft-table framework status
-draft-table framework refresh
-draft-table commit -m "Update DRAFT catalog"
-draft-table doctor
-```
-
-DRAFT Table now includes the first Draftsman loop. The web UI is the preferred
-experience because it supports source uploads and artifact proposal review. The
-`draft-table chat` command is a terminal fallback for a conversational
-Draftsman session.
-
-- conversational framework and catalog questions
-- local catalog reference lookup, such as "where is this object used?"
-- source material upload into a local Draftsman session
-- provider-backed architecture interview prompts through the selected CLI
-- artifact proposal cards without raw YAML display
-- apply-proposal flow that writes DRAFT YAML internally and then validates
-- explicit framework refresh into `.draft/framework/` for review and commit
-
-Later phases should deepen document/image extraction, add richer validation
-repair loops, and add push and PR workflow.
+The local DRAFT Table app and `draft-table` CLI are retained in the repository
+as an experimental prototype, but they are not part of the v1.0 launch path.
+Future releases may revive them as optional convenience tooling after the
+repo-first workflow is stable.
 
 ### Framework Update Workflow
 
@@ -175,25 +129,12 @@ a real answer that is not an approved vocabulary value, it can write a
 `vocabulary_proposal` file; the workflow can turn that into a review pull
 request against the official company vocabulary list.
 
-### Supported AI Providers
+### AI Tool Boundary
 
-DRAFT Table stores only provider type, executable path, optional model name,
-local endpoint, company DRAFT repo path, and non-secret preferences in
-`~/.draft-table/config.yaml`.
-
-Supported provider selections:
-
-- `codex`
-- `claude-code`
-- `gemini-cli`
-- `local-llm`
-- `custom-command`
-
-Provider CLIs own their own authentication. For example, use `codex --login`,
-the Claude Code login flow, or the Gemini CLI Google login outside DRAFT Table.
-For local models, Phase 1 records an Ollama-compatible localhost endpoint.
-
-See [security.md](security.md) for the threat model and credential boundary.
+DRAFT does not store AI credentials. The connected AI tool and Git provider own
+authentication. If the AI environment has Git and GitHub access through the
+user's credentials, it may branch, commit, push, and open pull requests. If it
+does not, it should prepare local changes and give exact review steps.
 
 ## Start Here
 
@@ -272,7 +213,7 @@ python3 framework/tools/generate_browser.py
 python3 framework/tools/generate_ai_index.py
 ```
 
-Run the DRAFT Table unit tests:
+Run the framework unit tests:
 
 ```bash
 python3 -m unittest discover -s tests

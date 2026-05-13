@@ -2,14 +2,12 @@
 
 Setup mode is the first-run Draftsman conversation for a company DRAFT
 workspace. It exists so enterprise architecture teams can make the Drafting
-Table useful without turning onboarding into a long form-filling exercise.
+workspace useful without turning onboarding into a long form-filling exercise.
 
-Setup mode is not the same as `draft-table onboard`.
-
-| Flow | Purpose |
-|---|---|
-| `draft-table onboard` | Selects or creates the company repo, vendors the framework, and stores local provider preferences. |
-| Draftsman setup mode | Guides the architecture team through the minimum workspace and catalog decisions needed for useful drafting. |
+Setup mode is repo-first. The company connects its preferred AI tool to a
+private DRAFT workspace repo, and that AI acts as the Draftsman by reading the
+root bootstrap files and the vendored framework copy. No DRAFT app or
+DRAFT-specific CLI is required for the v1.0 path.
 
 ## Setup Mode Contract
 

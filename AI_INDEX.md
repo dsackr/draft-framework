@@ -27,10 +27,10 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | VERSIONING.md | Framework semantic versioning and compatibility policy. |
 | CHANGELOG.md | Required release notes for every framework release. |
 | RELEASE.md | Release checklist for version, changelog, validation, and publishing steps. |
-| pyproject.toml | Python packaging and draft-table CLI entry point. |
-| draft_table | Local-first DRAFT Table CLI and web shell. |
+| pyproject.toml | Python packaging metadata for experimental post-v1.0 local tooling. |
+| draft_table | Experimental local DRAFT Table app prototype; not required for the v1.0 repo-first workflow. |
 | framework/browser | Static browser shell, CSS, JavaScript, and default theme assets copied by generate_browser.py. |
-| security.md | DRAFT Table credential and local security boundary. |
+| security.md | Credential and local security boundary notes for optional local tooling. |
 | framework/docs/draftsman.md | Draftsman role, intent routing, and authoring rules. |
 | framework/docs/setup-mode.md | Draftsman first-run setup mode and guided interview cadence. |
 | framework/docs/company-onboarding.md | Company onboarding tutorial for implementing DRAFT in a private workspace. |
@@ -48,7 +48,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | framework/tools/apply_vocabulary_proposals.py | Materializes Draftsman vocabulary_proposal files into reviewable company vocabulary entries. |
 | framework/tools/repair_uids.py | Explicit repair utility that adds or replaces generated object UIDs and rewrites object references. |
 | framework/tools/generate_browser.py | Static GitHub Pages browser generator. |
-| install-draft-table.sh | Local DRAFT Table installer and onboarding launcher. |
+| install-draft-table.sh | Experimental local tooling installer retained for post-v1.0 work. |
 
 ## Framework Docs
 

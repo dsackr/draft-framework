@@ -26,56 +26,46 @@ After initial onboarding, the company should have:
   document, or diagram
 - validation passing, or clear Drafting Session gaps for remaining work
 
-## Two Setup Flows
+## Repo-First Setup
 
-There are two setup flows, and they solve different problems.
+DRAFT v1.0 does not require a DRAFT application or DRAFT-specific CLI. A
+company starts by creating a private repo, vendoring the reviewed framework copy
+under `.draft/framework/`, adding the root AI bootstrap files, and connecting
+the AI tool the team already uses.
 
-| Flow | What It Does | When To Use It |
-|---|---|---|
-| `draft-table onboard` | Selects or creates the company repo, vendors the framework, and records local provider preferences. | First install or when changing local repo/provider setup. |
-| Draftsman setup mode | Walks the architecture team through the minimum catalog and governance decisions needed for useful drafting. | First team setup session or whenever a workspace feels incomplete. |
-
-Start with `draft-table onboard`. Then open DRAFT Table and ask:
+Once the AI is connected to the company repo, ask:
 
 ```text
 start setup mode
 ```
 
-## Step 1: Install And Select The Company Repo
+The Draftsman should read `AGENTS.md`, `.draft/workspace.yaml`, the vendored
+framework docs, schemas, and configuration before asking setup questions.
 
-Install DRAFT Table from an interactive terminal:
+## Step 1: Create The Company Repo
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/dsackr/draft-framework/main/install-draft-table.sh | bash
-```
+Create a private company DRAFT repo. Treat it as source code: changes are
+reviewed, validated, committed, and pushed through normal Git workflow.
 
-Run onboarding if the installer did not already do it:
+At minimum, the repo should contain:
 
-```bash
-draft-table onboard
-```
+- `.draft/framework/` with the reviewed framework copy
+- `.draft/workspace.yaml`
+- `.draft/framework.lock`
+- root AI bootstrap files such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`,
+  `llms.txt`, and `.github/copilot-instructions.md`
+- `catalog/`
+- `configurations/`
+- `docs/` for generated browser output
 
-During onboarding, select or create the private company DRAFT repo. Treat that
-repo as source code: changes are reviewed, validated, committed, and pushed
-through normal Git workflow.
-
-Confirm local setup:
-
-```bash
-draft-table doctor
-draft-table framework status
-draft-table validate
-```
+Use `templates/workspace/` from the framework as the source for the root AI
+bootstrap and workflow files. The connected AI can help copy the templates,
+remove `.tmpl` suffixes, fill in company placeholders, and open the initial
+workspace setup pull request.
 
 ## Step 2: Start Setup Mode
 
-Start the local UI:
-
-```bash
-draft-table serve
-```
-
-Open the printed URL. In the Draftsman tab, ask:
+In the connected AI tool, ask:
 
 ```text
 start setup mode
@@ -236,12 +226,6 @@ Validation is the contract between conversation and source.
 Run:
 
 ```bash
-draft-table validate
-```
-
-or from the company repo:
-
-```bash
 python3 .draft/framework/tools/validate.py --workspace .
 ```
 
@@ -281,9 +265,9 @@ reviews the diff, validates, and commits the update in the private repo.
 Manual update:
 
 ```bash
-draft-table framework status
-draft-table framework refresh
-draft-table validate
+git checkout -b draft/framework-refresh
+# Replace .draft/framework/ with the reviewed framework version.
+python3 .draft/framework/tools/validate.py --workspace .
 ```
 
 Optional GitHub Actions can automate update branches and pull requests, but the

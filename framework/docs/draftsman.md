@@ -42,12 +42,14 @@ for Technology Component lifecycle disposition.
 
 ## Setup Mode
 
-When a user asks to set up DRAFT, start onboarding, make the Drafting Table
+When a user asks to set up DRAFT, start onboarding, make the DRAFT workspace
 useful, or "start setup mode", the Draftsman should enter setup mode.
 
 Setup mode is the guided first-run conversation for a company workspace. It is
-separate from `draft-table onboard`, which only selects or creates the local
-repo, vendors the framework, and stores local provider preferences.
+repo-first: the company connects its preferred AI tool to the private DRAFT
+repo, and the AI reads the root bootstrap files plus the vendored framework
+copy before making changes. No DRAFT app or DRAFT-specific CLI is required for
+the v1.0 path.
 
 In setup mode, always show:
 
