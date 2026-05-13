@@ -43,10 +43,11 @@ framework has been vendored there.
 ```text
 framework/              # Core schemas, tools, docs, and base configurations
 framework/configurations/
-                        # Base Requirement Groups, Requirement Groups, Requirement Groups, domains
+                        # Base capabilities, Requirement Groups, and domains
 examples/catalog/       # Sample content used to validate and demo the framework
 templates/              # Object and company repo templates
 docs/index.html         # Generated static browser for the example workspace
+docs/user-manual.html   # Generated DRAFT user manual
 draft_table/            # Local-first DRAFT Table CLI and web shell
 ```
 
@@ -181,6 +182,7 @@ See [security.md](security.md) for the threat model and credential boundary.
 - [Changelog](CHANGELOG.md)
 - [AI agent bootstrap](AGENTS.md)
 - [AI framework index](AI_INDEX.md)
+- [User manual](framework/docs/user-manual.md)
 - [Draftsman instructions for AI](framework/docs/draftsman.md)
 - [Draftsman AI guidance](framework/docs/draftsman-ai-configuration.md)
 - [Company onboarding tutorial](framework/docs/company-onboarding.md)
@@ -237,8 +239,8 @@ Inside a company repo, validate against the vendored framework copy:
 python3 .draft/framework/tools/validate.py --workspace .
 ```
 
-Regenerate the static browser and AI index after YAML, docs, schema, or template
-changes:
+Regenerate the static browser, user manual, and AI index after YAML, docs,
+schema, or template changes:
 
 ```bash
 python3 framework/tools/generate_browser.py
@@ -281,5 +283,7 @@ The generated static browser is published at:
 
 [https://dsackr.github.io/draft-framework/](https://dsackr.github.io/draft-framework/)
 
-GitHub Pages is read-only. It is generated from `framework/configurations/` and
-`examples/catalog/` by `framework/tools/generate_browser.py`.
+GitHub Pages is read-only. `docs/index.html` is generated from
+`framework/configurations/` and `examples/catalog/` by
+`framework/tools/generate_browser.py`. The same generator renders
+`framework/docs/user-manual.md` to `docs/user-manual.html`.

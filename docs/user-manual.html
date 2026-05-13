@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DRAFT User Manual</title>
+  <style>
+    :root {
+      --bg: #f7f4ef;
+      --surface: #ffffff;
+      --surface-soft: #f1ece4;
+      --surface-strong: #e6ded2;
+      --text: #2d2721;
+      --subtle: #5f564b;
+      --muted: #7a6e60;
+      --border: rgba(122, 110, 96, 0.24);
+      --accent: #7c3a6b;
+      --accent-strong: #5d2950;
+      --accent-soft: rgba(124, 58, 107, 0.10);
+      --blue: #2a6fdb;
+      --green: #1f8a5b;
+      --code: #241f1a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 22px 18px;
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .sidebar h1 {
+      margin: 0 0 4px;
+      font-size: 17px;
+      line-height: 1.25;
+    }
+    .sidebar p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .toc {
+      display: grid;
+      gap: 2px;
+    }
+    .toc a {
+      display: block;
+      border-radius: 7px;
+      padding: 6px 8px;
+      color: var(--subtle);
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .toc a:hover {
+      background: var(--surface-soft);
+      color: var(--text);
+    }
+    .toc .level-3 {
+      padding-left: 22px;
+      font-size: 12px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      margin-bottom: 18px;
+      color: var(--accent-strong);
+      background: var(--accent-soft);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    main {
+      min-width: 0;
+      padding: 42px 56px 72px;
+    }
+    .content {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    h1, h2, h3, h4 {
+      color: var(--text);
+      line-height: 1.25;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(32px, 5vw, 52px);
+      letter-spacing: 0;
+    }
+    h2 {
+      margin-top: 44px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      font-size: 28px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin-top: 28px;
+      font-size: 20px;
+      letter-spacing: 0;
+    }
+    h4 {
+      margin-top: 22px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+    p { margin: 12px 0; }
+    ul, ol { padding-left: 24px; }
+    li { margin: 6px 0; }
+    code {
+      border-radius: 5px;
+      padding: 2px 5px;
+      background: var(--surface-strong);
+      color: var(--code);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+    pre {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      background: #241f1a;
+      color: #f8f1e8;
+    }
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+    }
+    table {
+      width: 100%;
+      margin: 18px 0;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--surface-soft);
+      color: var(--accent-strong);
+      font-size: 13px;
+    }
+    tr:last-child td { border-bottom: 0; }
+    blockquote {
+      margin: 16px 0;
+      padding: 12px 16px;
+      border-left: 4px solid var(--green);
+      background: rgba(31, 138, 91, 0.08);
+      color: var(--subtle);
+    }
+    .footer {
+      margin-top: 54px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .toc { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+      .toc .level-3 { padding-left: 8px; }
+      main { padding: 28px 20px 52px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="back-link" href="index.html">Back to catalog</a>
+      <h1>DRAFT User Manual</h1>
+      <p>Generated 2026-05-13 from the framework-owned Markdown source.</p>
+      <nav class="toc" aria-label="Table of contents">
+        <a class="level-2" href="#start-here">Start Here</a>
+<a class="level-2" href="#the-mental-model">The Mental Model</a>
+<a class="level-2" href="#object-types">Object Types</a>
+<a class="level-3" href="#architecture-objects">Architecture Objects</a>
+<a class="level-3" href="#governance-objects">Governance Objects</a>
+<a class="level-2" href="#repository-ownership">Repository Ownership</a>
+<a class="level-2" href="#requirements-and-capabilities">Requirements And Capabilities</a>
+<a class="level-2" href="#authoring-workflow">Authoring Workflow</a>
+<a class="level-2" href="#modeling-technology-components">Modeling Technology Components</a>
+<a class="level-3" href="#network-bindings">Network Bindings</a>
+<a class="level-2" href="#modeling-hosts-and-services">Modeling Hosts And Services</a>
+<a class="level-2" href="#modeling-product-services">Modeling Product Services</a>
+<a class="level-2" href="#modeling-software-deployment-patterns">Modeling Software Deployment Patterns</a>
+<a class="level-2" href="#dependency-rationale-rule">Dependency Rationale Rule</a>
+<a class="level-2" href="#validation">Validation</a>
+<a class="level-2" href="#browser-and-generated-docs">Browser And Generated Docs</a>
+<a class="level-2" href="#ai-assistant-usage">AI Assistant Usage</a>
+<a class="level-2" href="#review-checklist">Review Checklist</a>
+<a class="level-2" href="#troubleshooting">Troubleshooting</a>
+      </nav>
+    </aside>
+    <main>
+      <article class="content">
+        <h1 id="draft-user-manual">DRAFT User Manual</h1>
+<p>DRAFT is an AI-first, YAML-first framework for documenting governed architecture. It is designed to help teams describe architecture as structured objects that can be validated, reviewed, searched, and eventually used as automation input.</p>
+<p>This manual explains how to use a DRAFT workspace day to day. It is written for engineers who author architecture, architects who review it, and AI assistants acting as the Draftsman.</p>
+<h2 id="start-here">Start Here</h2>
+<p>Use this path when you are new to a workspace:</p>
+<ol><li>Read the workspace root <code>README.md</code>.</li><li>Read the workspace root <code>AGENTS.md</code> if you are an AI assistant or are using one.</li><li>Run validation before changing content.</li><li>Use the catalog browser to find existing objects before creating new ones.</li><li>Add or update YAML under company-owned <code>catalog/</code> or <code>configurations/</code>.</li><li>Regenerate derived docs after source changes.</li><li>Review the YAML diff and generated browser diff together.</li></ol>
+<p>In a company workspace, the normal commands are:</p>
+<pre><code class="language-bash">python .draft/framework/tools/validate.py --workspace .
+python .draft/framework/tools/generate_browser.py --workspace . --output docs/index.html</code></pre>
+<p>In the upstream framework repository, the normal commands are:</p>
+<pre><code class="language-bash">python framework/tools/validate.py
+python framework/tools/generate_browser.py
+python framework/tools/generate_ai_index.py</code></pre>
+<p>The browser generator writes <code>docs/index.html</code> and, by default, writes this manual to <code>docs/user-manual.html</code>.</p>
+<h2 id="the-mental-model">The Mental Model</h2>
+<p>DRAFT separates four concerns:</p>
+<table><thead><tr><th>Concern</th><th>Where It Lives</th><th>Purpose</th></tr></thead><tbody><tr><td>Framework rules</td><td><code>.draft/framework/</code> in company workspaces, <code>framework/</code> upstream</td><td>Schemas, base capabilities, Requirement Groups, docs, and tools.</td></tr><tr><td>Company architecture</td><td><code>catalog/</code></td><td>Hosts, services, Product Services, Software Deployment Patterns, and other architecture inventory.</td></tr><tr><td>Company extensions</td><td><code>configurations/</code></td><td>Capability mappings, object patches, company Requirement Groups, and local domains.</td></tr><tr><td>Generated views</td><td><code>docs/</code></td><td>Static HTML generated from YAML and Markdown source.</td></tr></tbody></table>
+<p>Framework files are not normal authoring targets inside a company workspace. Update them only through an explicit framework refresh or framework change. Architecture content belongs in the company workspace.</p>
+<p>If an AI assistant is connected only to the upstream framework repo and the user asks to create company architecture content, the assistant should ask for the company-specific DRAFT workspace before writing content.</p>
+<h2 id="object-types">Object Types</h2>
+<p>DRAFT objects are YAML documents with generated opaque UIDs. Do not ask humans to create semantic IDs. Use human-readable <code>name</code>, <code>aliases</code>, and file paths for conversation, and use the repair tool when validation reports missing or malformed UIDs.</p>
+<pre><code class="language-bash">python .draft/framework/tools/repair_uids.py --workspace .</code></pre>
+<h3 id="architecture-objects">Architecture Objects</h3>
+<table><thead><tr><th>Object Type</th><th>Use It For</th></tr></thead><tbody><tr><td>Technology Component</td><td>A governed vendor product, operating system, compute platform, agent, appliance product, software package, or product/version building block.</td></tr><tr><td>Host</td><td>An operational platform that combines compute, operating system, and required host capabilities.</td></tr><tr><td>Runtime Service</td><td>Reusable runtime behavior such as web, app, cache, worker, messaging, or serverless runtime.</td></tr><tr><td>Data-at-Rest Service</td><td>Durable data behavior such as database, file, object, search, analytics, or storage.</td></tr><tr><td>Edge/Gateway Service</td><td>Boundary behavior such as WAF, firewall, API gateway, load balancer, ingress, proxy, or traffic inspection.</td></tr><tr><td>Product Service</td><td>First-party deployable runtime behavior that runs on a selected Host, Runtime Service, Data-at-Rest Service, Edge/Gateway Service, or equivalent deployable object.</td></tr><tr><td>Software Deployment Pattern</td><td>The intended assembly of deployable objects for a product or product capability.</td></tr><tr><td>Reference Architecture</td><td>A reusable deployment approach that Software Deployment Patterns may follow.</td></tr></tbody></table>
+<p>Technology Components are governed building blocks. They are deployed as ingredients inside hosts and services, but they are not usually the service boundary you review on their own.</p>
+<h3 id="governance-objects">Governance Objects</h3>
+<table><thead><tr><th>Object Type</th><th>Use It For</th></tr></thead><tbody><tr><td>Capability</td><td>A reusable architecture need such as authentication, backup strategy, log management, operating system, or patch management.</td></tr><tr><td>Requirement Group</td><td>A requirement set that asks questions, defines acceptable evidence, and validates object completeness.</td></tr><tr><td>Domain</td><td>A strategy grouping for related capabilities.</td></tr><tr><td>Decision Record</td><td>A record of a known risk, accepted decision, mitigation, or follow-up.</td></tr><tr><td>Drafting Session</td><td>A machine-readable work-in-progress record for partial authoring sessions.</td></tr><tr><td>Object Patch</td><td>A workspace overlay that deep-merges selected company fields into a framework-owned object.</td></tr></tbody></table>
+<h2 id="repository-ownership">Repository Ownership</h2>
+<p>Use this decision table before editing:</p>
+<table><thead><tr><th>Need</th><th>Edit</th></tr></thead><tbody><tr><td>Add or update company architecture inventory</td><td><code>catalog/</code></td></tr><tr><td>Map a framework capability to company-approved Technology Components</td><td><code>configurations/object-patches/</code> or company-owned <code>configurations/capabilities/</code></td></tr><tr><td>Add a company Requirement Group</td><td><code>configurations/requirement-groups/</code></td></tr><tr><td>Adjust selected fields on a framework object without copying it</td><td><code>configurations/object-patches/</code></td></tr><tr><td>Change schema, validation, tools, or framework documentation</td><td>upstream framework repo</td></tr><tr><td>Change the static browser output</td><td>source YAML, Markdown, or generator code, then regenerate</td></tr></tbody></table>
+<p>Do not hand-edit <code>docs/index.html</code> or <code>docs/user-manual.html</code>. They are generated outputs. Regenerate and commit them with the source changes when the repo expects generated docs to be committed.</p>
+<h2 id="requirements-and-capabilities">Requirements And Capabilities</h2>
+<p>Capabilities describe what an architecture must be able to do. Requirement Groups describe which questions must be answered and which mechanisms can satisfy them.</p>
+<p>Requirement Groups can be:</p>
+<ul><li>always-on for matching object types</li><li>workspace-mode groups activated in <code>.draft/workspace.yaml</code></li><li>company or compliance groups declared by specific objects in <code>requirementGroups</code></li></ul>
+<p>An object that declares a Requirement Group must provide valid <code>requirementImplementations</code> for the applicable requirements before it can be treated as approved for that group.</p>
+<p>Requirements can be satisfied by mechanisms such as:</p>
+<ul><li>a Technology Component</li><li>a named Technology Component configuration</li><li>an internal component</li><li>an external interaction</li><li>a deployment configuration</li><li>a field value</li><li>an architectural decision</li></ul>
+<p>When validation says a requirement is missing, either add the evidence that directly satisfies it or record an explicit disposition such as <code>not-applicable</code> or <code>not-compliant</code> when the schema and Requirement Group allow it.</p>
+<h2 id="authoring-workflow">Authoring Workflow</h2>
+<p>Follow this loop for most changes:</p>
+<ol><li>Search the browser and YAML for an existing object.</li><li>Choose the correct object type before writing fields.</li><li>Start from the closest template or nearby approved object.</li><li>Fill in required schema fields.</li><li>Add relationships to existing objects by UID.</li><li>Add Requirement Group evidence or architectural decisions.</li><li>Run validation.</li><li>Regenerate the browser and manual.</li><li>Review source and generated diffs.</li></ol>
+<p>Use <code>rg</code> or the browser search before adding new objects. Duplicate objects make impact analysis and requirement validation harder.</p>
+<h2 id="modeling-technology-components">Modeling Technology Components</h2>
+<p>Create a Technology Component when you need to govern a specific product, product family, product version, operating system, compute platform, agent, appliance, or software package.</p>
+<p>A Technology Component should usually include:</p>
+<ul><li><code>vendor</code></li><li><code>productName</code></li><li><code>productVersion</code></li><li><code>classification</code></li><li>lifecycle facts about the vendor product</li><li>capabilities the component can satisfy</li><li>named <code>configurations</code> when different approved variants matter</li></ul>
+<p>Use top-level <code>capabilities</code> when the product generally satisfies a capability. Use configuration-level capabilities when only a named variant satisfies the capability.</p>
+<h3 id="network-bindings">Network Bindings</h3>
+<p>Technology Component configurations can include <code>networkBindings</code> for known ports, protocols, and traffic direction. Use this for component-level facts such as a database engine listening on TCP 1433 or a message broker listening on AMQP 5672.</p>
+<pre><code class="language-yaml">configurations:
+  - id: default-listener
+    name: Default listener
+    networkBindings:
+      - port: 1433
+        protocol: TCP
+        direction: inbound
+        description: Default SQL Server listener.</code></pre>
+<p>When a host or service consumes a specific configuration, reference it from the internal component entry:</p>
+<pre><code class="language-yaml">internalComponents:
+  - ref: 01ABCDEFGH-1234
+    role: database engine
+    configuration: default-listener</code></pre>
+<h2 id="modeling-hosts-and-services">Modeling Hosts And Services</h2>
+<p>Hosts describe operational platforms. A useful Host normally references operating system and compute Technology Components, then documents required host capabilities such as monitoring, logging, patching, identity integration, backup, and security tooling.</p>
+<p>Runtime Service, Data-at-Rest Service, and Edge/Gateway Service objects describe reusable behavior delivered through a delivery model:</p>
+<ul><li><code>self-managed</code></li><li><code>paas</code></li><li><code>saas</code></li><li><code>appliance</code></li></ul>
+<p>For Runtime, Data-at-Rest, and Edge/Gateway Services, the primary Technology Component is the main functional component. Do not add a separate dependency rationale for the primary component when it is the object core.</p>
+<p>Data-at-Rest Services should document backup strategy, backup platform, RTO, and RPO. Use an external interaction for a separate backup platform, or use <code>architecturalDecisions.backup.platform</code> when the backup capability is provider-managed inside the service.</p>
+<h2 id="modeling-product-services">Modeling Product Services</h2>
+<p>A Product Service represents first-party runtime behavior. It is the place to document company-authored application code or black-box first-party components.</p>
+<p>At minimum, a Product Service needs:</p>
+<ul><li><code>schemaVersion</code></li><li><code>uid</code></li><li><code>type: product_service</code></li><li><code>name</code></li><li><code>product</code></li><li><code>runsOn</code></li><li><code>catalogStatus</code></li><li><code>lifecycleStatus</code></li></ul>
+<p>Use Product Service fields to document:</p>
+<ul><li>internal processes such as API, worker, scheduler, conductor, or queue processor</li><li>API or protocol endpoints exposed by those processes</li><li>internal components consumed by the product</li><li>external interactions the product depends on</li><li>deployment configurations such as single-tenant, multi-tenant, embedded, or standalone variants</li><li>architectural decisions that explain requirements or non-obvious dependencies</li></ul>
+<p>Do not elevate static assets, database schemas, build scripts, or simple product configuration to Product Service just because they are deployable by CI/CD. The boundary is first-party runtime behavior that a Software Deployment Pattern needs to communicate.</p>
+<h2 id="modeling-software-deployment-patterns">Modeling Software Deployment Patterns</h2>
+<p>A Software Deployment Pattern is the product-level assembly. It answers what a product deploys and how those objects relate.</p>
+<p>A good Software Deployment Pattern includes:</p>
+<ul><li>product or capability name</li><li>service groups</li><li>deployment targets</li><li>deployable object references</li><li><code>diagramTier</code> values for presentation, application, data, or utility placement</li><li>source repository provenance when the pattern is generated from repository discovery</li><li>decisions or assumptions that explain uncertain boundaries</li></ul>
+<p>Do not stop when the Software Deployment Pattern validates. Walk the full object graph and make sure every referenced Host, Service, Product Service, Technology Component, and dependency is valid enough for review.</p>
+<h2 id="dependency-rationale-rule">Dependency Rationale Rule</h2>
+<p>Every <code>internalComponents</code> entry and <code>externalInteractions</code> entry must either directly satisfy an applicable requirement or have an architectural decision explaining why it is modeled.</p>
+<p>Use these machine-readable buckets:</p>
+<ul><li><code>architecturalDecisions.externalInteractionRationales</code></li><li><code>architecturalDecisions.internalComponentRationales</code></li><li><code>architecturalDecisions.dependencyRationales</code></li></ul>
+<p>Use stable keys such as the interaction name, component <code>ref</code>, <code>enabledBy</code>, role, or capability ID.</p>
+<p>Example:</p>
+<pre><code class="language-yaml">architecturalDecisions:
+  externalInteractionRationales:
+    Dynatrace Platform: Dynatrace is modeled because the local agent sends telemetry to the platform; it does not satisfy the host health monitoring requirement by itself.</code></pre>
+<p>If the dependency is intended to satisfy a requirement, add the matching capability or <code>requirementImplementations</code> evidence instead of adding rationale.</p>
+<p>Agent Technology Components have an additional rule: any deployable object that includes an agent must document the corresponding external interaction for the agent's platform or record an exception under <code>architecturalDecisions.agentInteractionExceptions</code>.</p>
+<h2 id="validation">Validation</h2>
+<p>Run validation before treating a change as ready:</p>
+<pre><code class="language-bash">python .draft/framework/tools/validate.py --workspace .</code></pre>
+<p>Common failure categories:</p>
+<table><thead><tr><th>Failure</th><th>Usual Fix</th></tr></thead><tbody><tr><td>Missing required field</td><td>Add the field required by the object schema.</td></tr><tr><td>Unknown reference</td><td>Use an existing UID or add the referenced object.</td></tr><tr><td>Invalid lifecycle or status</td><td>Use the enum values from the schema.</td></tr><tr><td>Missing requirement evidence</td><td>Add valid <code>requirementImplementations</code> or a supported disposition.</td></tr><tr><td>Unexplained dependency</td><td>Add requirement evidence or a dependency rationale.</td></tr><tr><td>Agent without platform interaction</td><td>Add the external interaction or an agent interaction exception.</td></tr><tr><td>UID issue</td><td>Run <code>repair_uids.py</code> and review the diff.</td></tr></tbody></table>
+<p>Warnings are still useful. A warning usually means the object can be parsed but is incomplete, ambiguous, or not ready for review.</p>
+<h2 id="browser-and-generated-docs">Browser And Generated Docs</h2>
+<p>The static browser is generated from YAML source and framework metadata.</p>
+<p>In a company workspace:</p>
+<pre><code class="language-bash">python .draft/framework/tools/generate_browser.py --workspace . --output docs/index.html</code></pre>
+<p>In the framework repo:</p>
+<pre><code class="language-bash">python framework/tools/generate_browser.py</code></pre>
+<p>By default, the browser generator also renders the framework-owned <code>docs/user-manual.md</code> source to <code>docs/user-manual.html</code> beside the browser output. Use <code>--skip-user-manual</code> only when you intentionally want to regenerate the browser without touching the manual.</p>
+<p>GitHub Actions workflows typically regenerate derived docs on pushes that change YAML, framework docs, templates, the browser generator, AI bootstrap files, or README content. Check the local <code>.github/workflows/</code> files for the exact path filters in a given repo.</p>
+<h2 id="ai-assistant-usage">AI Assistant Usage</h2>
+<p>DRAFT is AI-first, but AI behavior depends on the tool being used. An AI assistant can act as the Draftsman only when it has repository access, can read the bootstrap files, and has permission to write changes.</p>
+<p>The bootstrap chain is:</p>
+<ol><li>root <code>AGENTS.md</code></li><li>framework <code>AGENTS.md</code></li><li><code>framework/docs/draftsman.md</code></li><li><code>AI_INDEX.md</code></li><li>schemas, templates, capabilities, Requirement Groups, and nearby catalog examples</li></ol>
+<p>AI assistants should:</p>
+<ul><li>read the bootstrap before authoring</li><li>ask for a company workspace before creating company content when connected only to the upstream framework repo</li><li>avoid editing vendored <code>.draft/framework/**</code> files during normal company authoring</li><li>use generated UIDs instead of inventing semantic IDs</li><li>prefer existing approved capability mappings before proposing new components</li><li>run validation and regenerate docs when changing source content</li></ul>
+<h2 id="review-checklist">Review Checklist</h2>
+<p>Before merging a DRAFT change, check:</p>
+<ul><li>the object type is correct</li><li>no duplicate object already exists</li><li>required schema fields are present</li><li>references point to real objects</li><li>Technology Components are specific enough to govern</li><li>Product Services represent first-party runtime behavior</li><li>Requirement Groups and implementations are coherent</li><li>internal components and external interactions either satisfy requirements or have rationale</li><li>generated docs were regenerated from source</li><li>framework files were changed only when the change is intentionally a framework change</li></ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>If the browser does not show a new object, verify the file is under a discovered folder such as <code>catalog/hosts/</code>, <code>catalog/runtime-services/</code>, or <code>configurations/capabilities/</code>, and confirm the YAML has a valid <code>uid</code>.</p>
+<p>If validation cannot find framework objects in a company workspace, confirm the vendored framework exists at <code>.draft/framework/</code> and run validation with <code>--workspace .</code>.</p>
+<p>If an AI assistant starts editing framework files in a company repo, stop and redirect it to the company-owned <code>catalog/</code> or <code>configurations/</code> paths unless the task is explicitly a framework refresh.</p>
+<p>If a generated file looks stale, rerun the generator locally and check whether the repo's workflow also stages that generated file.</p>
+        <div class="footer">Generated from Markdown by framework/tools/generate_browser.py.</div>
+      </article>
+    </main>
+  </div>
+</body>
+</html>

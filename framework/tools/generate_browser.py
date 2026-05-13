@@ -13,6 +13,8 @@ from __future__ import annotations
 import argparse
 import base64
 import copy
+from datetime import date
+import html
 import json
 import re
 import subprocess
@@ -28,6 +30,8 @@ REPO_ROOT = FRAMEWORK_ROOT.parent
 OUTPUT_PATH = REPO_ROOT / "docs" / "index.html"
 SCHEMA_ROOT = FRAMEWORK_ROOT / "schemas"
 BASE_CONFIGURATION_ROOT = FRAMEWORK_ROOT / "configurations"
+USER_MANUAL_SOURCE_PATH = FRAMEWORK_ROOT / "docs" / "user-manual.md"
+USER_MANUAL_OUTPUT_NAME = "user-manual.html"
 DEFAULT_WORKSPACE_ROOT = REPO_ROOT / "examples"
 LOGO_PATH = REPO_ROOT / "draft-logo.png"
 LEGACY_LOGO_PATH = REPO_ROOT / "draftlogo.png"
@@ -195,6 +199,17 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         type=Path,
         default=OUTPUT_PATH,
         help="HTML output path. Defaults to docs/index.html.",
+    )
+    parser.add_argument(
+        "--manual-output",
+        type=Path,
+        default=None,
+        help="User manual HTML output path. Defaults to user-manual.html beside --output.",
+    )
+    parser.add_argument(
+        "--skip-user-manual",
+        action="store_true",
+        help="Do not generate the user manual HTML from framework/docs/user-manual.md.",
     )
     return parser.parse_args(argv)
 
@@ -2812,6 +2827,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       font-size: 14px;
       cursor: pointer;
       text-align: left;
+      text-decoration: none;
       transition: background 100ms, color 100ms;
     }
     .sidebar-nav-btn:hover {
@@ -7343,6 +7359,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       { id: 'acceptable-use', label: 'Acceptable Use',  icon: '✓' },
       { id: 'object-types',   label: 'Object Types',    icon: '⬡' },
       { id: 'onboarding',     label: 'Onboarding',      icon: '◉' },
+      { id: 'manual',         label: 'User Manual',     icon: '?', href: 'user-manual.html' },
     ];
 
     function updateSidebarNav() {
@@ -7358,6 +7375,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       SIDEBAR_NAV_ITEMS.forEach(item => {
         if (item.section) {
           html += `<div class="sidebar-nav-section"><div class="sidebar-nav-label">${escapeHtml(item.label)}</div></div>`;
+        } else if (item.href) {
+          html += `<a class="sidebar-nav-btn" href="${escapeHtml(item.href)}"><span class="sidebar-nav-icon">${item.icon}</span><span>${escapeHtml(item.label)}</span></a>`;
         } else {
           html += `<button class="sidebar-nav-btn" data-nav="${escapeHtml(item.id)}"><span class="sidebar-nav-icon">${item.icon}</span><span>${escapeHtml(item.label)}</span></button>`;
         }
@@ -7387,6 +7406,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       { id: 'acceptable-use', label: 'Go to Acceptable Use',  icon: '✓' },
       { id: 'object-types',   label: 'Go to Object Types',    icon: '⬡' },
       { id: 'onboarding',     label: 'Go to Onboarding',      icon: '◉' },
+      { id: 'manual',         label: 'Open User Manual',      icon: '?', href: 'user-manual.html' },
     ];
 
     const PALETTE_TYPE_ICONS = {
@@ -7432,7 +7452,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         if (!q) html += '<div class="cmd-section-label">Views</div>';
         matchingViews.forEach(view => {
           const idx = paletteItems.length;
-          paletteItems.push({ type: 'view', id: view.id });
+          paletteItems.push(view.href ? { type: 'link', href: view.href } : { type: 'view', id: view.id });
           html += `<button class="cmd-item" data-palette-idx="${idx}"><span class="cmd-item-icon">${view.icon}</span><div class="cmd-item-body"><div class="cmd-item-name">${escapeHtml(view.label)}</div></div><span class="cmd-item-enter">↵</span></button>`;
         });
       }
@@ -7492,6 +7512,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       if (item.type === 'view') {
         const btn = document.querySelector(`#sidebar-nav .sidebar-nav-btn[data-nav="${item.id}"]`);
         if (btn) btn.click();
+      } else if (item.type === 'link') {
+        window.location.href = item.href;
       } else if (item.type === 'object') {
         showDetailView(item.id);
       }
@@ -7581,15 +7603,393 @@ def write_browser(payload: dict[str, Any], output_path: Path) -> None:
     output_path.write_text(html, encoding="utf-8")
 
 
+USER_MANUAL_HTML_TEMPLATE = """<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{title}</title>
+  <style>
+    :root {{
+      --bg: #f7f4ef;
+      --surface: #ffffff;
+      --surface-soft: #f1ece4;
+      --surface-strong: #e6ded2;
+      --text: #2d2721;
+      --subtle: #5f564b;
+      --muted: #7a6e60;
+      --border: rgba(122, 110, 96, 0.24);
+      --accent: #7c3a6b;
+      --accent-strong: #5d2950;
+      --accent-soft: rgba(124, 58, 107, 0.10);
+      --blue: #2a6fdb;
+      --green: #1f8a5b;
+      --code: #241f1a;
+    }}
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }}
+    a {{ color: var(--blue); text-decoration: none; }}
+    a:hover {{ text-decoration: underline; }}
+    .layout {{
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
+    }}
+    .sidebar {{
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 22px 18px;
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+    }}
+    .sidebar h1 {{
+      margin: 0 0 4px;
+      font-size: 17px;
+      line-height: 1.25;
+    }}
+    .sidebar p {{
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 12px;
+    }}
+    .toc {{
+      display: grid;
+      gap: 2px;
+    }}
+    .toc a {{
+      display: block;
+      border-radius: 7px;
+      padding: 6px 8px;
+      color: var(--subtle);
+      font-size: 13px;
+      text-decoration: none;
+    }}
+    .toc a:hover {{
+      background: var(--surface-soft);
+      color: var(--text);
+    }}
+    .toc .level-3 {{
+      padding-left: 22px;
+      font-size: 12px;
+    }}
+    .back-link {{
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      margin-bottom: 18px;
+      color: var(--accent-strong);
+      background: var(--accent-soft);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }}
+    main {{
+      min-width: 0;
+      padding: 42px 56px 72px;
+    }}
+    .content {{
+      max-width: 980px;
+      margin: 0 auto;
+    }}
+    h1, h2, h3, h4 {{
+      color: var(--text);
+      line-height: 1.25;
+    }}
+    h1 {{
+      margin: 0 0 12px;
+      font-size: clamp(32px, 5vw, 52px);
+      letter-spacing: 0;
+    }}
+    h2 {{
+      margin-top: 44px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+      font-size: 28px;
+      letter-spacing: 0;
+    }}
+    h3 {{
+      margin-top: 28px;
+      font-size: 20px;
+      letter-spacing: 0;
+    }}
+    h4 {{
+      margin-top: 22px;
+      font-size: 16px;
+      letter-spacing: 0;
+    }}
+    p {{ margin: 12px 0; }}
+    ul, ol {{ padding-left: 24px; }}
+    li {{ margin: 6px 0; }}
+    code {{
+      border-radius: 5px;
+      padding: 2px 5px;
+      background: var(--surface-strong);
+      color: var(--code);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }}
+    pre {{
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      background: #241f1a;
+      color: #f8f1e8;
+    }}
+    pre code {{
+      padding: 0;
+      background: transparent;
+      color: inherit;
+    }}
+    table {{
+      width: 100%;
+      margin: 18px 0;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }}
+    th, td {{
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      text-align: left;
+    }}
+    th {{
+      background: var(--surface-soft);
+      color: var(--accent-strong);
+      font-size: 13px;
+    }}
+    tr:last-child td {{ border-bottom: 0; }}
+    blockquote {{
+      margin: 16px 0;
+      padding: 12px 16px;
+      border-left: 4px solid var(--green);
+      background: rgba(31, 138, 91, 0.08);
+      color: var(--subtle);
+    }}
+    .footer {{
+      margin-top: 54px;
+      color: var(--muted);
+      font-size: 12px;
+    }}
+    @media (max-width: 900px) {{
+      .layout {{ grid-template-columns: 1fr; }}
+      .sidebar {{
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }}
+      .toc {{ grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }}
+      .toc .level-3 {{ padding-left: 8px; }}
+      main {{ padding: 28px 20px 52px; }}
+    }}
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="back-link" href="index.html">Back to catalog</a>
+      <h1>{title}</h1>
+      <p>Generated {generated_date} from the framework-owned Markdown source.</p>
+      <nav class="toc" aria-label="Table of contents">
+        {toc}
+      </nav>
+    </aside>
+    <main>
+      <article class="content">
+        {content}
+        <div class="footer">Generated from Markdown by framework/tools/generate_browser.py.</div>
+      </article>
+    </main>
+  </div>
+</body>
+</html>
+"""
+
+
+def slugify_heading(text: str, existing: dict[str, int]) -> str:
+    plain = re.sub(r"`([^`]+)`", r"\1", text)
+    plain = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", plain)
+    base = re.sub(r"[^a-z0-9]+", "-", plain.lower()).strip("-") or "section"
+    count = existing.get(base, 0)
+    existing[base] = count + 1
+    return base if count == 0 else f"{base}-{count + 1}"
+
+
+def render_inline_markdown(text: str) -> str:
+    rendered = html.escape(text, quote=False)
+    rendered = re.sub(r"`([^`]+)`", r"<code>\1</code>", rendered)
+    rendered = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", rendered)
+    rendered = re.sub(
+        r"\[([^\]]+)\]\(([^)]+)\)",
+        lambda match: f'<a href="{html.escape(match.group(2), quote=True)}">{match.group(1)}</a>',
+        rendered,
+    )
+    return rendered
+
+
+def split_table_row(line: str) -> list[str]:
+    return [cell.strip() for cell in line.strip().strip("|").split("|")]
+
+
+def is_table_delimiter(line: str) -> bool:
+    cells = split_table_row(line)
+    return bool(cells) and all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells)
+
+
+def render_markdown_document(markdown_text: str) -> tuple[str, list[dict[str, str]]]:
+    lines = markdown_text.splitlines()
+    rendered: list[str] = []
+    headings: list[dict[str, str]] = []
+    heading_ids: dict[str, int] = {}
+    i = 0
+
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+        if not stripped:
+            i += 1
+            continue
+
+        if stripped.startswith("```"):
+            language = stripped.removeprefix("```").strip()
+            code_lines: list[str] = []
+            i += 1
+            while i < len(lines) and not lines[i].strip().startswith("```"):
+                code_lines.append(lines[i])
+                i += 1
+            if i < len(lines):
+                i += 1
+            class_attr = f' class="language-{html.escape(language, quote=True)}"' if language else ""
+            rendered.append(f"<pre><code{class_attr}>{html.escape(chr(10).join(code_lines))}</code></pre>")
+            continue
+
+        heading_match = re.match(r"^(#{1,6})\s+(.+?)\s*$", stripped)
+        if heading_match:
+            level = len(heading_match.group(1))
+            text = heading_match.group(2).strip()
+            heading_id = slugify_heading(text, heading_ids)
+            if level in {2, 3}:
+                headings.append({"level": str(level), "text": text, "id": heading_id})
+            rendered.append(f'<h{level} id="{heading_id}">{render_inline_markdown(text)}</h{level}>')
+            i += 1
+            continue
+
+        if stripped.startswith("> "):
+            quote_lines: list[str] = []
+            while i < len(lines) and lines[i].strip().startswith("> "):
+                quote_lines.append(lines[i].strip()[2:].strip())
+                i += 1
+            rendered.append(f"<blockquote>{render_inline_markdown(' '.join(quote_lines))}</blockquote>")
+            continue
+
+        if stripped.startswith("|") and i + 1 < len(lines) and is_table_delimiter(lines[i + 1].strip()):
+            headers = split_table_row(stripped)
+            i += 2
+            rows: list[list[str]] = []
+            while i < len(lines) and lines[i].strip().startswith("|"):
+                rows.append(split_table_row(lines[i].strip()))
+                i += 1
+            head_markup = "".join(f"<th>{render_inline_markdown(cell)}</th>" for cell in headers)
+            body_markup = ""
+            for row in rows:
+                body_markup += "<tr>" + "".join(f"<td>{render_inline_markdown(cell)}</td>" for cell in row) + "</tr>"
+            rendered.append(f"<table><thead><tr>{head_markup}</tr></thead><tbody>{body_markup}</tbody></table>")
+            continue
+
+        if re.match(r"^[-*]\s+", stripped):
+            items: list[str] = []
+            while i < len(lines) and re.match(r"^[-*]\s+", lines[i].strip()):
+                items.append(re.sub(r"^[-*]\s+", "", lines[i].strip()))
+                i += 1
+            rendered.append("<ul>" + "".join(f"<li>{render_inline_markdown(item)}</li>" for item in items) + "</ul>")
+            continue
+
+        if re.match(r"^\d+\.\s+", stripped):
+            items = []
+            while i < len(lines) and re.match(r"^\d+\.\s+", lines[i].strip()):
+                items.append(re.sub(r"^\d+\.\s+", "", lines[i].strip()))
+                i += 1
+            rendered.append("<ol>" + "".join(f"<li>{render_inline_markdown(item)}</li>" for item in items) + "</ol>")
+            continue
+
+        paragraph_lines = [stripped]
+        i += 1
+        while i < len(lines):
+            next_line = lines[i].strip()
+            if (
+                not next_line
+                or next_line.startswith("```")
+                or re.match(r"^(#{1,6})\s+", next_line)
+                or next_line.startswith("> ")
+                or re.match(r"^[-*]\s+", next_line)
+                or re.match(r"^\d+\.\s+", next_line)
+                or (next_line.startswith("|") and i + 1 < len(lines) and is_table_delimiter(lines[i + 1].strip()))
+            ):
+                break
+            paragraph_lines.append(next_line)
+            i += 1
+        rendered.append(f"<p>{render_inline_markdown(' '.join(paragraph_lines))}</p>")
+
+    return "\n".join(rendered), headings
+
+
+def manual_title(markdown_text: str) -> str:
+    for line in markdown_text.splitlines():
+        match = re.match(r"^#\s+(.+?)\s*$", line.strip())
+        if match:
+            return re.sub(r"`([^`]+)`", r"\1", match.group(1).strip())
+    return "DRAFT User Manual"
+
+
+def write_user_manual(source_path: Path, output_path: Path) -> bool:
+    if not source_path.exists():
+        return False
+    markdown_text = source_path.read_text(encoding="utf-8")
+    title = manual_title(markdown_text)
+    content, headings = render_markdown_document(markdown_text)
+    toc = "\n".join(
+        f'<a class="level-{heading["level"]}" href="#{heading["id"]}">{render_inline_markdown(heading["text"])}</a>'
+        for heading in headings
+    )
+    rendered = USER_MANUAL_HTML_TEMPLATE.format(
+        title=html.escape(title, quote=False),
+        generated_date=date.today().isoformat(),
+        toc=toc,
+        content=content,
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(rendered, encoding="utf-8")
+    return True
+
+
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv or sys.argv[1:])
     output_path = args.output.resolve()
+    manual_output_path = (args.manual_output.resolve() if args.manual_output else output_path.parent / USER_MANUAL_OUTPUT_NAME)
     registry = load_objects(args.workspace.resolve())
     payload = build_browser_payload(registry, args.workspace.resolve())
     write_browser(payload, output_path)
+    manual_generated = False
+    if not args.skip_user_manual:
+        manual_generated = write_user_manual(USER_MANUAL_SOURCE_PATH, manual_output_path)
     for warning in payload.get("warnings", []):
         print(warning, file=sys.stderr)
     print(f"Generated {display_path(output_path)} with {len(payload['objects'])} objects.")
+    if manual_generated:
+        print(f"Generated {display_path(manual_output_path)} from {display_path(USER_MANUAL_SOURCE_PATH)}.")
     return 0
 
 

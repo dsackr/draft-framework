@@ -2147,6 +2147,7 @@
       font-size: 14px;
       cursor: pointer;
       text-align: left;
+      text-decoration: none;
       transition: background 100ms, color 100ms;
     }
     .sidebar-nav-btn:hover {
@@ -6678,6 +6679,7 @@
       { id: 'acceptable-use', label: 'Acceptable Use',  icon: '✓' },
       { id: 'object-types',   label: 'Object Types',    icon: '⬡' },
       { id: 'onboarding',     label: 'Onboarding',      icon: '◉' },
+      { id: 'manual',         label: 'User Manual',     icon: '?', href: 'user-manual.html' },
     ];
 
     function updateSidebarNav() {
@@ -6693,6 +6695,8 @@
       SIDEBAR_NAV_ITEMS.forEach(item => {
         if (item.section) {
           html += `<div class="sidebar-nav-section"><div class="sidebar-nav-label">${escapeHtml(item.label)}</div></div>`;
+        } else if (item.href) {
+          html += `<a class="sidebar-nav-btn" href="${escapeHtml(item.href)}"><span class="sidebar-nav-icon">${item.icon}</span><span>${escapeHtml(item.label)}</span></a>`;
         } else {
           html += `<button class="sidebar-nav-btn" data-nav="${escapeHtml(item.id)}"><span class="sidebar-nav-icon">${item.icon}</span><span>${escapeHtml(item.label)}</span></button>`;
         }
@@ -6722,6 +6726,7 @@
       { id: 'acceptable-use', label: 'Go to Acceptable Use',  icon: '✓' },
       { id: 'object-types',   label: 'Go to Object Types',    icon: '⬡' },
       { id: 'onboarding',     label: 'Go to Onboarding',      icon: '◉' },
+      { id: 'manual',         label: 'Open User Manual',      icon: '?', href: 'user-manual.html' },
     ];
 
     const PALETTE_TYPE_ICONS = {
@@ -6767,7 +6772,7 @@
         if (!q) html += '<div class="cmd-section-label">Views</div>';
         matchingViews.forEach(view => {
           const idx = paletteItems.length;
-          paletteItems.push({ type: 'view', id: view.id });
+          paletteItems.push(view.href ? { type: 'link', href: view.href } : { type: 'view', id: view.id });
           html += `<button class="cmd-item" data-palette-idx="${idx}"><span class="cmd-item-icon">${view.icon}</span><div class="cmd-item-body"><div class="cmd-item-name">${escapeHtml(view.label)}</div></div><span class="cmd-item-enter">↵</span></button>`;
         });
       }
@@ -6827,6 +6832,8 @@
       if (item.type === 'view') {
         const btn = document.querySelector(`#sidebar-nav .sidebar-nav-btn[data-nav="${item.id}"]`);
         if (btn) btn.click();
+      } else if (item.type === 'link') {
+        window.location.href = item.href;
       } else if (item.type === 'object') {
         showDetailView(item.id);
       }
