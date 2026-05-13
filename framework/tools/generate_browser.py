@@ -458,7 +458,14 @@ def internal_component_refs(obj: dict[str, Any]) -> list[dict[str, str]]:
     for component in obj.get("internalComponents", []):
         ref = component.get("ref")
         if ref and ref not in seen:
-            refs.append({"ref": ref, "role": component.get("role", "component")})
+            refs.append(
+                {
+                    "ref": ref,
+                    "role": component.get("role", "component"),
+                    "configuration": component.get("configuration", ""),
+                    "notes": component.get("notes", ""),
+                }
+            )
             seen.add(ref)
 
     for field_name, role in (
@@ -469,7 +476,7 @@ def internal_component_refs(obj: dict[str, Any]) -> list[dict[str, str]]:
     ):
         ref = obj.get(field_name)
         if ref and ref not in seen:
-            refs.append({"ref": ref, "role": role})
+            refs.append({"ref": ref, "role": role, "configuration": "", "notes": ""})
             seen.add(ref)
 
     return refs
@@ -1742,6 +1749,61 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .section-stack {
       display: grid;
       gap: 12px;
+    }
+    .network-binding-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .network-binding-groups {
+      display: grid;
+      gap: 8px;
+    }
+    .network-binding-group {
+      display: grid;
+      gap: 6px;
+    }
+    .network-binding-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(42,111,219,0.38);
+      background: rgba(42,111,219,0.10);
+      color: #1d4f9e;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .network-binding-direction {
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .network-binding-table {
+      min-width: 620px;
+    }
+    .network-binding-table th:nth-child(1) { width: 20%; }
+    .network-binding-table th:nth-child(2) { width: 13%; }
+    .network-binding-table th:nth-child(3) { width: 12%; }
+    .network-binding-table th:nth-child(4) { width: 18%; }
+    .component-network-table {
+      min-width: 860px;
+    }
+    .component-network-table th:nth-child(1) { width: 25%; }
+    .component-network-table th:nth-child(2) { width: 12%; }
+    .component-network-table th:nth-child(3) { width: 24%; }
+    .component-network-table th:nth-child(4) { width: 24%; }
+    .component-network-section {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .component-network-section h3 {
+      margin: 0;
     }
     .topology-layout {
       display: grid;
@@ -3496,7 +3558,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         object.deliveryModel,
         object.owner?.team,
         object.owner?.contact,
-        aliases
+        aliases,
+        objectNetworkBindingSearchText(object),
+        componentNetworkBindingSearchText(object)
       ];
       return values.filter(Boolean).join(' ').toLowerCase();
     }
@@ -3664,6 +3728,254 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
     function abbClassificationLabel(value) {
       return formatTitleCase(String(value || 'unknown').replace(/-/g, ' '));
+    }
+
+    function networkBindingsForConfiguration(configuration) {
+      return Array.isArray(configuration?.networkBindings) ? configuration.networkBindings : [];
+    }
+
+    function configurationsWithNetworkBindings(technology) {
+      return (technology?.configurations || []).filter(configuration => networkBindingsForConfiguration(configuration).length);
+    }
+
+    function configurationById(technology, configurationId) {
+      if (!configurationId) return null;
+      return (technology?.configurations || []).find(configuration => configuration?.id === configurationId) || null;
+    }
+
+    function configurationDisplayName(configuration) {
+      if (!configuration) return 'Not selected';
+      const name = configuration.name || configuration.id || 'Configuration';
+      return configuration.id && configuration.name ? `${name} (${configuration.id})` : name;
+    }
+
+    function networkBindingChipsMarkup(bindings) {
+      if (!bindings.length) {
+        return '<span class="interaction-notes">No network bindings documented.</span>';
+      }
+      return `
+        <div class="network-binding-summary">
+          ${bindings.map(binding => `
+            <span class="network-binding-chip">
+              <span class="network-binding-direction">${escapeHtml(binding.direction || 'network')}</span>
+              ${escapeHtml(binding.port ?? 'unknown')}/${escapeHtml(binding.protocol || 'protocol')}
+            </span>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function networkBindingsTableMarkup(bindings, includeConfiguration = false) {
+      if (!bindings.length) {
+        return '<div class="interaction-notes">No network bindings documented.</div>';
+      }
+      return `
+        <div class="table-scroll">
+          <table class="data-table network-binding-table">
+            <thead>
+              <tr>
+                ${includeConfiguration ? '<th>Configuration</th>' : ''}
+                <th>Direction</th>
+                <th>Port</th>
+                <th>Protocol</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${bindings.map(row => {
+                const binding = row.binding || row;
+                return `
+                  <tr>
+                    ${includeConfiguration ? `<td>${escapeHtml(configurationDisplayName(row.configuration))}</td>` : ''}
+                    <td>${escapeHtml(binding.direction || '')}</td>
+                    <td>${escapeHtml(binding.port ?? '')}</td>
+                    <td>${escapeHtml(binding.protocol || '')}</td>
+                    <td>${escapeHtml(binding.description || '')}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function technologyNetworkBindingRows(technology) {
+      return configurationsWithNetworkBindings(technology).flatMap(configuration =>
+        networkBindingsForConfiguration(configuration).map(binding => ({ configuration, binding }))
+      );
+    }
+
+    function groupedNetworkBindingChipsMarkup(rows) {
+      if (!rows.length) {
+        return '<span class="interaction-notes">No network bindings documented.</span>';
+      }
+      const groups = new Map();
+      rows.forEach(row => {
+        const key = row.configuration?.id || row.configuration?.name || 'configuration';
+        if (!groups.has(key)) {
+          groups.set(key, { configuration: row.configuration, bindings: [] });
+        }
+        groups.get(key).bindings.push(row.binding);
+      });
+      return `
+        <div class="network-binding-groups">
+          ${Array.from(groups.values()).map(group => `
+            <div class="network-binding-group">
+              <div class="interaction-notes"><strong>${escapeHtml(configurationDisplayName(group.configuration))}</strong></div>
+              ${networkBindingChipsMarkup(group.bindings)}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function componentNetworkBindingResolution(component) {
+      const target = objectLookup[component?.ref];
+      if (!target || target.type !== 'technology_component') {
+        return {
+          target,
+          configuration: null,
+          bindings: [],
+          availableRows: [],
+          status: target ? 'not-technology' : 'missing'
+        };
+      }
+      const availableRows = technologyNetworkBindingRows(target);
+      const requestedConfiguration = component?.configuration || '';
+      const configuration = configurationById(target, requestedConfiguration);
+      if (requestedConfiguration && configuration) {
+        return {
+          target,
+          configuration,
+          bindings: networkBindingsForConfiguration(configuration),
+          availableRows,
+          status: 'selected'
+        };
+      }
+      if (requestedConfiguration && !configuration) {
+        return {
+          target,
+          configuration: null,
+          bindings: [],
+          availableRows,
+          status: 'unknown-configuration'
+        };
+      }
+      return {
+        target,
+        configuration: null,
+        bindings: [],
+        availableRows,
+        status: availableRows.length ? 'available-unselected' : 'none'
+      };
+    }
+
+    function componentNetworkBindingSearchText(object) {
+      return (object.internalComponents || []).flatMap(component => {
+        const resolution = componentNetworkBindingResolution(component);
+        const parts = [component.ref, component.role, component.configuration, component.notes];
+        if (resolution.target) {
+          parts.push(resolution.target.name, resolution.target.vendor, resolution.target.productName, resolution.target.productVersion);
+        }
+        resolution.availableRows.forEach(row => {
+          parts.push(
+            row.configuration?.id,
+            row.configuration?.name,
+            row.binding?.direction,
+            row.binding?.port,
+            row.binding?.protocol,
+            row.binding?.description
+          );
+        });
+        return parts;
+      }).filter(Boolean).join(' ');
+    }
+
+    function internalComponentNetworkMarkup(object) {
+      const components = object?.internalComponents || [];
+      const rows = components
+        .map(component => ({ component, resolution: componentNetworkBindingResolution(component) }))
+        .filter(row => {
+          const resolution = row.resolution;
+          return resolution.target?.type === 'technology_component'
+            && (row.component.configuration || resolution.availableRows.length);
+        });
+      if (!rows.length) {
+        return '';
+      }
+      return `
+        <div class="component-network-section">
+          <h3>Component Network Bindings</h3>
+          <div class="table-scroll">
+            <table class="data-table component-network-table">
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Role</th>
+                  <th>Configuration</th>
+                  <th>Network Binding</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(row => {
+                  const component = row.component;
+                  const resolution = row.resolution;
+                  const target = resolution.target;
+                  let configurationCell = '';
+                  let bindingCell = '';
+                  let notesCell = component.notes || '';
+
+                  if (resolution.status === 'selected') {
+                    configurationCell = configurationDisplayName(resolution.configuration);
+                    bindingCell = networkBindingChipsMarkup(resolution.bindings);
+                    if (!resolution.bindings.length) {
+                      notesCell = notesCell || 'Selected configuration has no network bindings documented.';
+                    }
+                  } else if (resolution.status === 'unknown-configuration') {
+                    configurationCell = `Unknown configuration: ${component.configuration}`;
+                    bindingCell = groupedNetworkBindingChipsMarkup(resolution.availableRows);
+                    notesCell = notesCell || 'The referenced configuration does not exist on the Technology Component.';
+                  } else if (resolution.status === 'available-unselected') {
+                    configurationCell = 'No configuration selected';
+                    bindingCell = groupedNetworkBindingChipsMarkup(resolution.availableRows);
+                    notesCell = notesCell || 'Available on the referenced Technology Component; not asserted as the selected service configuration.';
+                  }
+
+                  return `
+                    <tr>
+                      <td>
+                        <span class="ard-link" data-object-link="${escapeHtml(target.id)}">${escapeHtml(target.name)}</span>
+                        <div class="object-id">${escapeHtml(target.id)}</div>
+                      </td>
+                      <td>${escapeHtml(component.role || 'component')}</td>
+                      <td>${escapeHtml(configurationCell || 'Not applicable')}</td>
+                      <td>${bindingCell}</td>
+                      <td>${escapeHtml(notesCell)}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function objectNetworkBindingSearchText(object) {
+      return (object.configurations || []).flatMap(configuration => {
+        const parts = [
+          configuration.id,
+          configuration.name,
+          configuration.description,
+          ...(configuration.capabilities || [])
+        ];
+        networkBindingsForConfiguration(configuration).forEach(binding => {
+          parts.push(binding.direction, binding.port, binding.protocol, binding.description);
+        });
+        return parts;
+      }).filter(Boolean).join(' ');
     }
 
     function lifecycleSortRank(status) {
@@ -5158,6 +5470,14 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       return fallbackObject;
     }
 
+    function preferredComponentSource(object, fallbackObject) {
+      const ownComponents = object?.internalComponents || [];
+      if (ownComponents.length) {
+        return object;
+      }
+      return fallbackObject;
+    }
+
     function preferredDecisionSource(object, fallbackObject) {
       const ownDecisions = object?.architecturalDecisions || {};
       if (Object.keys(ownDecisions).length) {
@@ -5194,6 +5514,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     <div class="odc-name">${escapeHtml(configuration.name || configuration.id || 'Configuration')}</div>
                     <div class="interaction-notes">${escapeHtml(configuration.description || '')}</div>
                     <div class="object-id">${escapeHtml((configuration.capabilities || []).map(abbClassificationLabel).join(', '))}</div>
+                    ${networkBindingsTableMarkup(networkBindingsForConfiguration(configuration))}
                   </article>
                 `).join('')}
               </div>
@@ -5868,12 +6189,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       ]);
     }
 
-    function architectureDetailMarkup(interactionSource, decisionSource, emptyInteractionText, emptyDecisionText) {
+    function architectureDetailMarkup(componentSource, interactionSource, decisionSource, emptyInteractionText, emptyDecisionText) {
       return `
         <section class="middle-grid">
           <div class="section-card">
             <h3>Internal Components</h3>
             <div id="detail-cy"></div>
+            ${componentSource ? internalComponentNetworkMarkup(componentSource) : ''}
           </div>
           <div class="section-card">
             <h3>External Interactions</h3>
@@ -6118,7 +6440,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       syncHashForDetailView(object.id);
       renderSidebarContent(sidebarMarkup());
       const softwareServiceRunsOn = object.type === 'product_service' && object.runsOn ? objectLookup[object.runsOn] : null;
-      const detailDiagramSource = softwareServiceRunsOn && DEPLOYABLE_STANDARD_TYPES.includes(softwareServiceRunsOn.type) ? softwareServiceRunsOn : object;
+      const componentSource = object.type === 'product_service' ? preferredComponentSource(object, softwareServiceRunsOn) : object;
+      const detailDiagramSource = componentSource && DEPLOYABLE_STANDARD_TYPES.includes(componentSource.type) ? componentSource : object;
       const headerMarkup = `
         <section class="header-card">
           <div class="header-top">
@@ -6178,11 +6501,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           ${referencesMarkup(object)}
         `;
       } else if (object.type === 'product_service') {
+        const productComponentSource = preferredComponentSource(object, softwareServiceRunsOn);
         const interactionSource = preferredInteractionSource(object, softwareServiceRunsOn);
         const decisionSource = preferredDecisionSource(object, softwareServiceRunsOn);
         detailBody = `
           ${headerMarkup}
           ${architectureDetailMarkup(
+            productComponentSource,
             interactionSource,
             decisionSource,
             'The underlying deployable object is not available for this Product Service.',
@@ -6260,7 +6585,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       } else if (DEPLOYABLE_STANDARD_TYPES.includes(object.type)) {
         detailBody = `
           ${headerMarkup}
-          ${architectureDetailMarkup(object, object)}
+          ${architectureDetailMarkup(object, object, object)}
           ${secondaryDetailMarkup([
             { title: 'Delivery Details', body: deliveryModelDetailMarkup(object) },
             { title: 'Requirement Evidence', body: requirementEvidenceMarkup(object) },
@@ -6420,7 +6745,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             id: `${object.id}-${refObject.id}-${index}`,
             source: object.id,
             target: refObject.id,
-            label: component.role || 'component'
+            label: component.configuration
+              ? `${component.role || 'component'} / ${component.configuration}`
+              : (component.role || 'component')
           }
         });
       });
@@ -6483,11 +6810,18 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           {
             selector: 'edge',
             style: {
+              'label': 'data(label)',
               'curve-style': 'bezier',
               'width': 2,
               'line-color': '#a89784',
               'target-arrow-color': '#a89784',
-              'target-arrow-shape': 'triangle'
+              'target-arrow-shape': 'triangle',
+              'font-size': 10,
+              'color': '#5d5145',
+              'text-background-color': '#fbf8f3',
+              'text-background-opacity': 0.88,
+              'text-background-padding': 3,
+              'text-rotation': 'autorotate'
             }
           }
         ]
