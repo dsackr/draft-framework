@@ -1124,35 +1124,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       display: grid;
       gap: 14px;
     }
-    .top-nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .nav-button {
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      background: #ffffff;
-      color: var(--text);
-      padding: 10px 16px;
-      font: inherit;
-      cursor: pointer;
-      transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
-    }
-    .nav-button:hover {
-      border-color: rgba(124, 58, 107, 0.65);
-      transform: translateY(-1px);
-    }
-    .nav-button.active {
-      background: rgba(124, 58, 107, 0.18);
-      border-color: rgba(124, 58, 107, 0.7);
-      color: #5d2950;
-    }
-    .nav-button:disabled {
-      cursor: default;
-      opacity: 0.45;
-      transform: none;
-    }
     .tab-row,
     .filter-row {
       display: flex;
@@ -1160,8 +1131,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       gap: 10px;
     }
     .tab-button,
-    .filter-button,
-    .back-button {
+    .filter-button {
       border: 1px solid var(--border);
       border-radius: 999px;
       background: #ffffff;
@@ -1177,8 +1147,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       font-weight: 600;
     }
     .tab-button:hover,
-    .filter-button:hover,
-    .back-button:hover {
+    .filter-button:hover {
       border-color: rgba(124, 58, 107, 0.65);
       transform: translateY(-1px);
     }
@@ -2707,9 +2676,238 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         grid-column: span 6;
       }
     }
+    /* ── Sidebar sticky scroll ── */
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    /* ── Sidebar search button ── */
+    .sidebar-search-btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 16px;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--muted);
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 120ms, background 120ms, color 120ms;
+    }
+    .sidebar-search-btn:hover {
+      border-color: rgba(124,58,107,0.6);
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+    }
+    .sidebar-search-kbd {
+      font-size: 11px;
+      font-family: inherit;
+      padding: 2px 5px;
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      background: #fff;
+      color: var(--muted);
+      flex: 0 0 auto;
+    }
+    /* ── Sidebar navigation ── */
+    .sidebar-nav {
+      margin-top: 16px;
+      display: grid;
+      gap: 2px;
+    }
+    .sidebar-nav-section {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .sidebar-nav-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0 8px;
+      margin-bottom: 4px;
+    }
+    .sidebar-nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 8px 10px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--subtle);
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: left;
+      transition: background 100ms, color 100ms;
+    }
+    .sidebar-nav-btn:hover {
+      background: var(--surface-soft);
+      color: var(--text);
+    }
+    .sidebar-nav-btn.active {
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-weight: 600;
+    }
+    .sidebar-nav-icon {
+      font-size: 15px;
+      flex: 0 0 auto;
+      width: 20px;
+      text-align: center;
+    }
+    /* ── Command palette ── */
+    .cmd-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(31,26,20,0.45);
+      backdrop-filter: blur(2px);
+      z-index: 9000;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 12vh;
+    }
+    .cmd-overlay[hidden] { display: none !important; }
+    .cmd-dialog {
+      width: min(640px, 92vw);
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--border-strong);
+      box-shadow: 0 24px 64px rgba(31,26,20,0.18);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .cmd-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .cmd-search-icon { color: var(--muted); font-size: 17px; flex: 0 0 auto; }
+    .cmd-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font: inherit;
+      font-size: 16px;
+      color: var(--text);
+      background: transparent;
+    }
+    .cmd-input::placeholder { color: var(--muted); }
+    .cmd-esc-hint {
+      font-size: 11px;
+      padding: 2px 6px;
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--muted);
+      flex: 0 0 auto;
+    }
+    .cmd-results { max-height: 400px; overflow-y: auto; padding: 6px; }
+    .cmd-section-label {
+      padding: 6px 10px 2px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+    .cmd-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      font: inherit;
+      color: var(--text);
+      transition: background 80ms;
+    }
+    .cmd-item:hover, .cmd-item.cmd-focused { background: var(--accent-soft); }
+    .cmd-item-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--surface-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex: 0 0 auto;
+    }
+    .cmd-item-body { flex: 1; min-width: 0; }
+    .cmd-item-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cmd-item-meta { font-size: 12px; color: var(--muted); display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+    .cmd-item-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+    }
+    .cmd-item-enter { font-size: 11px; color: var(--muted); opacity: 0; flex: 0 0 auto; transition: opacity 80ms; }
+    .cmd-item:hover .cmd-item-enter, .cmd-item.cmd-focused .cmd-item-enter { opacity: 1; }
+    .cmd-empty { padding: 32px 16px; text-align: center; color: var(--muted); font-size: 14px; }
+    .cmd-footer {
+      padding: 8px 14px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 14px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .cmd-footer kbd {
+      font-family: inherit;
+      padding: 1px 4px;
+      border: 1px solid var(--border-strong);
+      border-radius: 3px;
+      background: var(--surface);
+    }
+    /* ── Breadcrumb ── */
+    .view-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .view-breadcrumb-link {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      color: var(--accent);
+      font: inherit;
+      font-size: 13px;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .view-breadcrumb-link:hover { color: var(--accent-strong); }
+    .view-breadcrumb-sep { color: var(--border-strong); }
     @media (max-width: 980px) {
       .page-shell { grid-template-columns: 1fr; }
-      .sidebar { border-right: 0; border-bottom: 1px solid #e7e1d6; }
+      .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid #e7e1d6; }
       .main { padding: 20px; }
       .decisions-grid { grid-template-columns: 1fr; }
       .definition-list { grid-template-columns: 1fr; }
@@ -2754,7 +2952,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
           <div class="mode-badge" id="browser-mode"></div>
         </div>
       </div>
-      <p>Review architecture inventory, deployable objects, requirements, relationships, and decisions.</p>
+      <button id="open-palette" class="sidebar-search-btn">
+        <span>Search catalog…</span>
+        <kbd class="sidebar-search-kbd">⌘K</kbd>
+      </button>
+      <nav id="sidebar-nav" class="sidebar-nav"></nav>
       <div class="sidebar-stack">
         <div id="sidebar-content"></div>
         <div class="legend-block">
@@ -2768,6 +2970,21 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </main>
   </div>
   <div id="editor-overlay" class="editor-overlay"></div>
+  <div id="cmd-overlay" class="cmd-overlay" hidden>
+    <div class="cmd-dialog" role="dialog" aria-modal="true" aria-label="Search catalog">
+      <div class="cmd-input-row">
+        <span class="cmd-search-icon">⌕</span>
+        <input id="cmd-input" class="cmd-input" type="search" autocomplete="off" placeholder="Search objects, go to view…">
+        <span class="cmd-esc-hint">Esc</span>
+      </div>
+      <div id="cmd-results" class="cmd-results"></div>
+      <div class="cmd-footer">
+        <span><kbd>↑↓</kbd> navigate</span>
+        <span><kbd>↵</kbd> open</span>
+        <span><kbd>Esc</kbd> close</span>
+      </div>
+    </div>
+  </div>
   <script>
     const browserData = __BROWSER_DATA__;
     const lifecycleColors = browserData.lifecycleColors;
@@ -3151,21 +3368,12 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     }
 
     function topNavMarkup() {
-      return `
-        <div class="top-nav">
-          <button class="nav-button ${currentMode === 'executive' ? 'active' : ''}" data-nav="executive">DRAFT Overview</button>
-          <button class="nav-button ${currentMode === 'onboarding' ? 'active' : ''}" data-nav="onboarding">Onboarding</button>
-          <button class="nav-button ${currentMode === 'object-types' ? 'active' : ''}" data-nav="object-types">Object Types</button>
-          <button class="nav-button ${currentMode === 'list' ? 'active' : ''}" data-nav="list">Drafting Table</button>
-          <button class="nav-button ${currentMode === 'detail' ? 'active' : ''}" data-nav="detail" ${currentDetailId ? '' : 'disabled'}>Detail View</button>
-          <button class="nav-button ${currentMode === 'acceptable-use' ? 'active' : ''}" data-nav="acceptable-use">Acceptable Use</button>
-          <button class="nav-button ${currentMode === 'impact' ? 'active' : ''}" data-nav="impact">Impact Analysis</button>
-        </div>
-      `;
+      return '';
     }
 
     function renderSidebarContent(contentHtml) {
       sidebarContent.innerHTML = contentHtml;
+      updateSidebarNav();
     }
 
     function currentFilterMarkup() {
@@ -6068,10 +6276,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         `;
       }
 
+      const backLabel = navHistory.length
+        ? (objectLookup[navHistory[navHistory.length - 1]]?.name || 'Previous')
+        : 'Drafting Table';
       pageRoot.innerHTML = `
         <div class="detail-layout">
-          ${topNavMarkup()}
-          <button class="back-button" id="back-button">Back</button>
+          <div class="view-breadcrumb">
+            <button class="view-breadcrumb-link" id="back-button">← ${escapeHtml(backLabel)}</button>
+            <span class="view-breadcrumb-sep">/</span>
+            <span>${escapeHtml(object.name)}</span>
+          </div>
           ${detailBody}
         </div>
       `;
@@ -6786,6 +7000,224 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       attachSidebarHandlers();
     }
 
+    // ── Sidebar navigation ──────────────────────────────────────────────────
+    const SIDEBAR_NAV_ITEMS = [
+      { id: 'executive',      label: 'Overview',        icon: '⊞' },
+      { id: 'list',           label: 'Drafting Table',  icon: '▤' },
+      { id: 'impact',         label: 'Impact Analysis', icon: '◎' },
+      { section: true,        label: 'Tools' },
+      { id: 'acceptable-use', label: 'Acceptable Use',  icon: '✓' },
+      { id: 'object-types',   label: 'Object Types',    icon: '⬡' },
+      { id: 'onboarding',     label: 'Onboarding',      icon: '◉' },
+    ];
+
+    function updateSidebarNav() {
+      document.querySelectorAll('#sidebar-nav .sidebar-nav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.nav === currentMode);
+      });
+    }
+
+    function initSidebarNav() {
+      const nav = document.getElementById('sidebar-nav');
+      if (!nav) return;
+      let html = '';
+      SIDEBAR_NAV_ITEMS.forEach(item => {
+        if (item.section) {
+          html += `<div class="sidebar-nav-section"><div class="sidebar-nav-label">${escapeHtml(item.label)}</div></div>`;
+        } else {
+          html += `<button class="sidebar-nav-btn" data-nav="${escapeHtml(item.id)}"><span class="sidebar-nav-icon">${item.icon}</span><span>${escapeHtml(item.label)}</span></button>`;
+        }
+      });
+      nav.innerHTML = html;
+      nav.querySelectorAll('.sidebar-nav-btn[data-nav]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const navId = btn.dataset.nav;
+          if (navId === 'executive') { destroyImpactCy(); executiveDrilldown = null; renderExecutiveView(); }
+          else if (navId === 'list') { destroyImpactCy(); renderListView(); }
+          else if (navId === 'object-types') { destroyImpactCy(); renderObjectTypesView(); }
+          else if (navId === 'onboarding') { destroyImpactCy(); renderCompanyOnboardingView(); }
+          else if (navId === 'impact') { renderImpactView(); }
+          else if (navId === 'acceptable-use') { destroyImpactCy(); renderAcceptableUseView(); }
+        });
+      });
+    }
+
+    // ── Command palette ─────────────────────────────────────────────────────
+    let paletteFocusIndex = -1;
+    let paletteItems = [];
+
+    const PALETTE_VIEWS = [
+      { id: 'executive',      label: 'Go to Overview',        icon: '⊞' },
+      { id: 'list',           label: 'Go to Drafting Table',  icon: '▤' },
+      { id: 'impact',         label: 'Go to Impact Analysis', icon: '◎' },
+      { id: 'acceptable-use', label: 'Go to Acceptable Use',  icon: '✓' },
+      { id: 'object-types',   label: 'Go to Object Types',    icon: '⬡' },
+      { id: 'onboarding',     label: 'Go to Onboarding',      icon: '◉' },
+    ];
+
+    const PALETTE_TYPE_ICONS = {
+      technology_component: '⬡',
+      host: '⬛',
+      runtime_service: '▶',
+      data_at_rest_service: '◼',
+      edge_gateway_service: '◈',
+      product_service: '◉',
+      software_deployment_pattern: '⊞',
+      reference_architecture: '▤',
+      capability: '✓',
+      requirement_group: '≡',
+      decision_record: '⊙',
+      domain: '◎',
+    };
+
+    function openPalette() {
+      const overlay = document.getElementById('cmd-overlay');
+      const input = document.getElementById('cmd-input');
+      if (!overlay || !input) return;
+      overlay.hidden = false;
+      paletteFocusIndex = -1;
+      input.value = '';
+      updatePaletteResults('');
+      requestAnimationFrame(() => input.focus());
+    }
+
+    function closePalette() {
+      const overlay = document.getElementById('cmd-overlay');
+      if (overlay) overlay.hidden = true;
+    }
+
+    function updatePaletteResults(query) {
+      const resultsEl = document.getElementById('cmd-results');
+      if (!resultsEl) return;
+      const q = query.trim().toLowerCase();
+      paletteItems = [];
+      let html = '';
+
+      const matchingViews = PALETTE_VIEWS.filter(v => !q || v.label.toLowerCase().includes(q));
+      if (matchingViews.length) {
+        if (!q) html += '<div class="cmd-section-label">Views</div>';
+        matchingViews.forEach(view => {
+          const idx = paletteItems.length;
+          paletteItems.push({ type: 'view', id: view.id });
+          html += `<button class="cmd-item" data-palette-idx="${idx}"><span class="cmd-item-icon">${view.icon}</span><div class="cmd-item-body"><div class="cmd-item-name">${escapeHtml(view.label)}</div></div><span class="cmd-item-enter">↵</span></button>`;
+        });
+      }
+
+      const matchingObjects = q
+        ? allObjects.filter(obj => objectMatchesSearch(obj, q)).slice(0, 20)
+        : allObjects.slice(0, 10);
+
+      if (matchingObjects.length) {
+        html += `<div class="cmd-section-label">${q ? 'Objects' : 'All Objects'}</div>`;
+        matchingObjects.forEach(obj => {
+          const idx = paletteItems.length;
+          paletteItems.push({ type: 'object', id: obj.id });
+          const icon = PALETTE_TYPE_ICONS[obj.type] || '○';
+          const lcColor = obj.lifecycleStatus ? ('#' + (lifecycleColors[obj.lifecycleStatus] || '7a6e60')) : null;
+          html += `<button class="cmd-item" data-palette-idx="${idx}">
+            <span class="cmd-item-icon">${icon}</span>
+            <div class="cmd-item-body">
+              <div class="cmd-item-name">${escapeHtml(obj.name)}</div>
+              <div class="cmd-item-meta">
+                <span class="cmd-item-badge">${escapeHtml(obj.typeLabel)}</span>
+                ${lcColor ? `<span class="cmd-item-badge" style="color:${lcColor};border-color:${lcColor}20">${escapeHtml(obj.lifecycleStatus)}</span>` : ''}
+              </div>
+            </div>
+            <span class="cmd-item-enter">↵</span>
+          </button>`;
+        });
+      }
+
+      if (!paletteItems.length) {
+        html = `<div class="cmd-empty">No results for "${escapeHtml(query)}"</div>`;
+      }
+
+      resultsEl.innerHTML = html;
+      paletteFocusIndex = paletteItems.length > 0 ? 0 : -1;
+
+      resultsEl.querySelectorAll('.cmd-item').forEach(item => {
+        item.addEventListener('click', () => selectPaletteItem(parseInt(item.dataset.paletteIdx)));
+        item.addEventListener('mouseenter', () => {
+          paletteFocusIndex = parseInt(item.dataset.paletteIdx);
+          updatePaletteFocus();
+        });
+      });
+      updatePaletteFocus();
+    }
+
+    function updatePaletteFocus() {
+      document.querySelectorAll('#cmd-results .cmd-item').forEach(item => {
+        item.classList.toggle('cmd-focused', parseInt(item.dataset.paletteIdx) === paletteFocusIndex);
+      });
+    }
+
+    function selectPaletteItem(idx) {
+      const item = paletteItems[idx];
+      if (!item) return;
+      closePalette();
+      if (item.type === 'view') {
+        const btn = document.querySelector(`#sidebar-nav .sidebar-nav-btn[data-nav="${item.id}"]`);
+        if (btn) btn.click();
+      } else if (item.type === 'object') {
+        showDetailView(item.id);
+      }
+    }
+
+    function initPalette() {
+      const input = document.getElementById('cmd-input');
+      const overlay = document.getElementById('cmd-overlay');
+      if (!input || !overlay) return;
+
+      input.addEventListener('input', e => updatePaletteResults(e.target.value));
+      input.addEventListener('keydown', e => {
+        const count = paletteItems.length;
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          paletteFocusIndex = Math.min(paletteFocusIndex + 1, count - 1);
+          updatePaletteFocus();
+          document.querySelector('#cmd-results .cmd-item.cmd-focused')?.scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          paletteFocusIndex = Math.max(paletteFocusIndex - 1, 0);
+          updatePaletteFocus();
+          document.querySelector('#cmd-results .cmd-item.cmd-focused')?.scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          selectPaletteItem(paletteFocusIndex >= 0 ? paletteFocusIndex : 0);
+        } else if (e.key === 'Escape') {
+          closePalette();
+        }
+      });
+      overlay.addEventListener('click', e => { if (e.target === overlay) closePalette(); });
+      document.getElementById('open-palette')?.addEventListener('click', openPalette);
+    }
+
+    // ── Global keyboard shortcuts ────────────────────────────────────────────
+    document.addEventListener('keydown', e => {
+      // ⌘K / Ctrl+K → open palette
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openPalette();
+        return;
+      }
+      // Escape → close palette
+      if (e.key === 'Escape') {
+        closePalette();
+        return;
+      }
+      // / → focus list search (when not already typing)
+      const activeEl = document.activeElement;
+      const isTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+      if (e.key === '/' && !isTyping && !e.metaKey && !e.ctrlKey) {
+        const searchInput = document.getElementById('catalog-search');
+        if (searchInput) {
+          e.preventDefault();
+          searchInput.focus();
+          searchInput.select();
+        }
+      }
+    });
+
     window.addEventListener('resize', () => {
       if (detailCy) {
         detailCy.resize();
@@ -6800,6 +7232,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
       applyRouteFromHash();
     });
 
+    initSidebarNav();
+    initPalette();
     applyRouteFromHash();
   </script>
 </body>
