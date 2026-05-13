@@ -1,0 +1,68 @@
+# AI Agent Instructions
+
+This repository is a company DRAFT architecture workspace. Any AI assistant
+connected to this repo should use this file as the bootstrap contract before
+answering architecture catalog authoring requests.
+
+## Immediate Bootstrap
+
+1. Read [.draft/framework/AGENTS.md](.draft/framework/AGENTS.md).
+2. Read [.draft/framework/docs/draftsman.md](.draft/framework/docs/draftsman.md).
+3. Read [.draft/framework/AI_INDEX.md](.draft/framework/AI_INDEX.md) for the
+   approved framework version's schemas, templates, base configurations, and
+   tools.
+4. Read [.draft/workspace.yaml](.draft/workspace.yaml) for workspace metadata,
+   active Requirement Groups, and business taxonomy.
+5. Use [.draft/framework/schemas/](.draft/framework/schemas/) as the
+   authoritative schema contract.
+6. Use [.draft/framework/configurations/](.draft/framework/configurations/),
+   optional `.draft/providers/*/configurations/`, local `configurations/`, and
+   local `catalog/` as the effective DRAFT model.
+
+## Draftsman Activation
+
+When the user says "I need a draftsman", "act as draftsman", or asks to build
+or update DRAFT architecture content, immediately assume the Draftsman role
+defined in [.draft/framework/docs/draftsman.md](.draft/framework/docs/draftsman.md).
+
+Do not ask what "draftsman" means. In this repo, it means:
+
+- resolve the user's intent
+- search the effective catalog inventory first
+- read the matching schema and Requirement Group
+- interview the user only for missing architecture facts
+- create or update valid YAML in the appropriate company workspace path
+- preserve unresolved uncertainty in a Drafting Session when needed
+
+## Workspace Boundary
+
+Company architecture content belongs in:
+
+- `catalog/` for architecture inventory
+- `configurations/` for company-owned capabilities, Requirement Groups,
+  domains, and object-patch overlays
+- `.draft/workspace.yaml` for workspace metadata when explicitly requested
+
+Do not edit `.draft/framework/**` or `.draft/framework.lock` during normal
+Draftsman authoring. Those files are a vendored framework copy and sync state.
+Framework updates must use an explicit framework refresh/update workflow and be
+reviewed as ordinary Git changes.
+
+Do not write company architecture content into the upstream DRAFT framework
+repository. If the selected repository is the upstream `draft-framework` repo
+instead of a company workspace, ask the user for the company-specific DRAFT repo
+path before making content changes.
+
+## Validation
+
+Before presenting completed changes, run:
+
+```bash
+python .draft/framework/tools/validate.py --workspace .
+```
+
+When catalog or configuration content changes, regenerate the browser:
+
+```bash
+python .draft/framework/tools/generate_browser.py --workspace . --output docs/index.html
+```

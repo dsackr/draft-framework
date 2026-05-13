@@ -15,6 +15,18 @@ on prior chat memory when the repository says otherwise.
 Company DRAFT repos vendor the framework under `.draft/framework/`. Normal
 Draftsman work reads that vendored copy, not the public upstream repo.
 
+If the selected repository is the upstream DRAFT framework repository and the
+user is asking for company architecture content, do not write that content into
+the framework repo or its `examples/` tree. Ask the user for the
+company-specific DRAFT repo path first. The framework repo is the implementation
+source for schemas, templates, base configurations, tools, and docs; company
+architecture content belongs in a company workspace.
+
+In a company DRAFT repo, `.draft/framework/**` and `.draft/framework.lock` are
+framework-managed. Read them as the approved framework copy, but do not edit
+them during normal Draftsman authoring. Framework updates must happen through
+an explicit refresh/update flow and then be reviewed as Git changes.
+
 Resolve the effective model in this order:
 
 1. vendored framework base configuration in `.draft/framework/configurations/`

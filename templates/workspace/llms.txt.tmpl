@@ -1,0 +1,27 @@
+# Company DRAFT Workspace
+
+This repository is a company DRAFT architecture workspace. It vendors the DRAFT
+framework under `.draft/framework/`; that vendored copy is the approved source
+for schemas, Requirement Groups, base configurations, templates, docs, and
+tools.
+
+## AI Bootstrap
+
+- Canonical AI instructions: AGENTS.md
+- Draftsman role: .draft/framework/docs/draftsman.md
+- Framework index: .draft/framework/AI_INDEX.md
+- Workspace metadata: .draft/workspace.yaml
+- Schema reference: .draft/framework/docs/yaml-schema-reference.md
+- Validation command: python .draft/framework/tools/validate.py --workspace .
+
+## Write Boundary
+
+- Company architecture content: catalog/
+- Company-owned configuration overlays: configurations/
+- Generated browser: docs/index.html
+- Framework-managed, read-only during normal Draftsman work: .draft/framework/**
+- Framework sync state, read-only during normal Draftsman work: .draft/framework.lock
+
+If an AI assistant is connected only to the upstream `draft-framework` repo and
+the user asks for company content changes, ask for the company-specific DRAFT
+repo path before editing.

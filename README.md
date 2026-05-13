@@ -32,6 +32,12 @@ When a user connected to this repo says "I need a draftsman", the AI should
 immediately assume the Draftsman role and guide the user through creating,
 updating, or validating DRAFT artifacts.
 
+If the user is asking for company architecture content while connected only to
+this upstream framework repo, the AI should not write that content into
+`examples/` or framework-owned paths. It should ask for the company-specific
+DRAFT repo path first, then make content changes in that workspace after the
+framework has been vendored there.
+
 ## Repository Layout
 
 ```text

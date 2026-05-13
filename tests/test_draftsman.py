@@ -11,6 +11,7 @@ from draft_table.config import save_config
 from draft_table.draftsman import (
     DraftsmanEngine,
     build_draftsman_prompt,
+    draftsman_workspace_context,
     invoke_provider,
     parse_provider_response,
     provider_timeout_seconds,
@@ -104,10 +105,30 @@ class DraftsmanTests(unittest.TestCase):
         self.assertIn("vendor-product", prompt)
         self.assertIn("no Host wrapper", prompt)
 
+    def test_prompt_requires_company_workspace_before_content_updates(self) -> None:
+        prompt = build_draftsman_prompt(REPO_ROOT, REPO_ROOT, "Create a Frontline host.", {"uploads": []})
+
+        self.assertIn("upstream draft-framework", prompt)
+        self.assertIn("company-specific DRAFT repo path", prompt)
+        self.assertIn("do not propose catalog/configuration content changes", prompt)
+
+    def test_workspace_context_identifies_missing_company_workspace(self) -> None:
+        context = draftsman_workspace_context(REPO_ROOT, None)
+
+        self.assertIn("No company DRAFT workspace is selected", context)
+        self.assertIn("company-specific DRAFT repo path", context)
+
     def test_safe_workspace_path_rejects_escape(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaises(ValueError):
                 safe_workspace_path(Path(directory), "../outside.yaml")
+
+    def test_safe_workspace_path_rejects_vendored_framework_edits(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            with self.assertRaisesRegex(ValueError, "must not edit"):
+                safe_workspace_path(Path(directory), ".draft/framework/schemas/host.schema.yaml")
+            with self.assertRaisesRegex(ValueError, "must not edit"):
+                safe_workspace_path(Path(directory), ".draft/framework.lock")
 
     def test_provider_response_creates_public_artifact_proposal_without_yaml(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

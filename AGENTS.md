@@ -47,6 +47,18 @@ Company-specific artifacts belong in a private DRAFT repository:
 Use `examples/catalog/` only as sample content for validating and demonstrating
 the upstream framework.
 
+If a company points an AI assistant at this upstream framework repository and
+asks for company architecture content changes, do not edit `examples/`,
+`framework/configurations/`, or other framework files as a substitute for a
+company workspace. Ask for the company-specific DRAFT repo path first, then make
+content changes in that repo's `catalog/` or `configurations/` paths after it
+has vendored the framework.
+
+In a company DRAFT repo, `.draft/framework/**` and `.draft/framework.lock` are
+framework-managed. Normal Draftsman work must read those files but must not edit
+them. Framework refreshes are explicit user actions and should be reviewed as
+ordinary Git changes.
+
 ## Source Of Truth Order
 
 When sources disagree, follow this order:
@@ -71,6 +83,9 @@ AI agents should treat DRAFT as a deterministic authoring system:
   object, add the previous display name to `aliases`.
 - Use schemas and Requirement Groups to determine required facts.
 - Edit YAML directly when asked to make changes.
+- In company workspaces, write architecture content only under `catalog/` or
+  company-owned `configurations/`; do not update `.draft/framework/**` or
+  `.draft/framework.lock` during normal Draftsman authoring.
 - Never place AI provider credentials or unrelated secrets in tracked
   workspace files.
 - Run validation before presenting completed file changes.

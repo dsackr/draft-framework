@@ -38,6 +38,11 @@ class RepoTests(unittest.TestCase):
             self.assertTrue((workspace / "configurations" / "capabilities").exists())
             self.assertTrue((workspace / "configurations" / "requirement-groups").exists())
             self.assertTrue((workspace / ".github" / "workflows" / "draft-framework-update.yml").exists())
+            self.assertTrue((workspace / ".github" / "copilot-instructions.md").exists())
+            self.assertTrue((workspace / "AGENTS.md").exists())
+            self.assertTrue((workspace / "CLAUDE.md").exists())
+            self.assertTrue((workspace / "GEMINI.md").exists())
+            self.assertTrue((workspace / "llms.txt").exists())
             self.assertTrue((workspace / ".draft" / "providers").exists())
             self.assertTrue((workspace / ".draft" / "workspace.yaml").exists())
             self.assertTrue((workspace / ".draft" / "framework.lock").exists())
@@ -46,6 +51,9 @@ class RepoTests(unittest.TestCase):
             agents = workspace / ".draft" / "framework" / "AGENTS.md"
             self.assertTrue(agents.exists())
             self.assertIn("docs/draftsman.md", agents.read_text(encoding="utf-8"))
+            workspace_agents = workspace / "AGENTS.md"
+            self.assertIn(".draft/framework/docs/draftsman.md", workspace_agents.read_text(encoding="utf-8"))
+            self.assertIn("Do not edit `.draft/framework/**`", workspace_agents.read_text(encoding="utf-8"))
             self.assertTrue((workspace / ".draft" / "framework" / "draft-framework.yaml").exists())
             self.assertTrue((workspace / ".draft" / "framework" / "VERSIONING.md").exists())
             workspace_config = (workspace / ".draft" / "workspace.yaml").read_text(encoding="utf-8")

@@ -3,6 +3,41 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.12.5 - 2026-05-13
+
+### Compatibility Impact
+
+No workspace migration is required. This patch strengthens AI bootstrap and
+Draftsman write-boundary guidance without changing DRAFT object schemas.
+
+### Added
+
+- Added company workspace AI bootstrap templates for `AGENTS.md`, `CLAUDE.md`,
+  `GEMINI.md`, `llms.txt`, and `.github/copilot-instructions.md`.
+- Added backend Draftsman proposal protection that rejects writes to
+  `.draft/framework/**` and `.draft/framework.lock`.
+
+### Changed
+
+- Updated Draftsman guidance so company architecture content is not written
+  into the upstream framework repo when no company workspace is selected.
+- Updated the DRAFT Table Draftsman prompt to ask for a company-specific DRAFT
+  repo before proposing content changes against the upstream framework repo.
+
+### Fixed
+
+- Fixed an AI-first gap where company repos could rely only on nested vendored
+  framework instructions, which some AI tools do not load automatically from
+  the repository root.
+
+### Migration Notes
+
+- Refresh the framework in company workspaces to pick up the new Draftsman
+  guardrails and workspace bootstrap templates.
+- Existing company repos can add root AI bootstrap files that point agents at
+  `.draft/framework/` and prohibit normal Draftsman edits to vendored framework
+  files.
+
 ## 0.12.4 - 2026-05-04
 
 ### Compatibility Impact

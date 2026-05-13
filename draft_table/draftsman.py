@@ -20,6 +20,10 @@ from .validation import selected_framework_root, validate_workspace
 
 
 DEFAULT_PROVIDER_TIMEOUT_SECONDS = 180
+FRAMEWORK_MANAGED_PATH_ERROR = (
+    "Draftsman proposals must not edit .draft/framework/** or .draft/framework.lock. "
+    "Use an explicit framework refresh/update flow for framework changes."
+)
 
 
 @dataclass
@@ -245,6 +249,7 @@ def build_draftsman_prompt(framework_root: Path, workspace: Path | None, message
         f"- {item.get('name')} ({item.get('contentType', 'unknown')}): {item.get('path')}\n{item.get('text', '')[:3000]}"
         for item in uploads
     )
+    workspace_context = draftsman_workspace_context(framework_root, workspace)
     return f"""
 You are the DRAFT Draftsman. You conduct architecture interviews and produce DRAFT artifacts.
 
@@ -292,9 +297,18 @@ Rules:
   is no Host wrapper to inherit host requirements.
 - If you propose artifacts, return them as JSON proposals with YAML content for the backend only.
 - The visible answer must summarize artifacts in plain language.
+- If no company DRAFT repo is selected, or if the selected repo is the upstream draft-framework
+  implementation repo, do not propose catalog/configuration content changes. Ask the user for the
+  company-specific DRAFT repo path first.
+- In a company DRAFT repo, never propose changes under .draft/framework/** or to
+  .draft/framework.lock. Those files are framework-managed and change only through an explicit
+  framework refresh/update flow.
 
 User request:
 {message}
+
+Selected workspace:
+{workspace_context}
 
 Relevant existing objects:
 {json.dumps(matches, indent=2)}
@@ -322,6 +336,34 @@ Return JSON only with this shape:
   ]
 }}
 """
+
+
+def draftsman_workspace_context(framework_root: Path, workspace: Path | None) -> str:
+    if workspace is None:
+        return (
+            "No company DRAFT workspace is selected. For company architecture content changes, "
+            "ask the user for the company-specific DRAFT repo path before proposing files."
+        )
+    workspace_root = workspace.expanduser().resolve()
+    if is_upstream_framework_repo(workspace_root, framework_root):
+        return (
+            f"{workspace_root} appears to be the upstream DRAFT framework repository, not a company "
+            "workspace. Use it for schemas, templates, base configurations, tools, and docs only; "
+            "ask for the company-specific DRAFT repo path before proposing company content changes."
+        )
+    return (
+        f"{workspace_root} is the selected company DRAFT workspace. Content proposals may target "
+        "catalog/ and company-owned configurations/, but must not target .draft/framework/** or "
+        ".draft/framework.lock."
+    )
+
+
+def is_upstream_framework_repo(workspace: Path, framework_root: Path) -> bool:
+    framework_root = framework_root.expanduser().resolve()
+    framework_repo = framework_root.parent if (framework_root.parent / "draft-framework.yaml").exists() else framework_root
+    if workspace in {framework_root, framework_repo.resolve()}:
+        return True
+    return (workspace / "draft-framework.yaml").exists() and (workspace / "framework" / "tools" / "validate.py").exists()
 
 
 def invoke_provider(provider: dict[str, Any], prompt: str) -> str:
@@ -466,6 +508,15 @@ def merge_proposals(existing: list[dict[str, Any]], incoming: list[dict[str, Any
 def safe_workspace_path(workspace: Path, relative_path: str) -> Path:
     target = (workspace / relative_path).resolve()
     root = workspace.resolve()
-    if root not in target.parents and target != root:
+    try:
+        relative = target.relative_to(root)
+    except ValueError:
         raise ValueError("Proposal path escapes the company DRAFT repo.")
+    if is_framework_managed_path(relative):
+        raise ValueError(FRAMEWORK_MANAGED_PATH_ERROR)
     return target
+
+
+def is_framework_managed_path(relative: Path) -> bool:
+    parts = relative.parts
+    return parts[:2] == (".draft", "framework") or parts == (".draft", "framework.lock")

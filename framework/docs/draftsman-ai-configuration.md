@@ -17,6 +17,12 @@ An AI assistant acting as the Draftsman should:
   changes
 - run `python3 framework/tools/validate.py` before considering edits complete
 
+If the assistant is connected only to the upstream framework repository and the
+user asks for company architecture content changes, it should ask for the
+company-specific DRAFT repo path before editing. The upstream repo is the
+framework implementation source; it is not the place to record a company's
+architecture catalog.
+
 ## Workspace Context
 
 For private company workspaces, the effective model is:
@@ -31,6 +37,11 @@ company repo, prefer `.draft/framework/docs/`, `.draft/framework/schemas/`, and
 those files represent the framework version the company has approved. Reuse a
 matching existing object when one is already present, and create a Drafting
 Session when important architecture facts are missing.
+
+Company architecture updates should go under `catalog/` or company-owned
+`configurations/`. Do not edit `.draft/framework/**` or `.draft/framework.lock`
+during normal Draftsman work; those files change only through an explicit
+framework refresh/update workflow.
 
 ## Secrets
 

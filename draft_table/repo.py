@@ -64,6 +64,11 @@ FRAMEWORK_VENDOR_FILES = (
 DEFAULT_FRAMEWORK_SOURCE = "https://github.com/dsackr/draft-framework.git"
 COPY_IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", ".git", ".pytest_cache")
 WORKSPACE_TEMPLATE_FILES = (
+    ("templates/workspace/AGENTS.md.tmpl", "AGENTS.md"),
+    ("templates/workspace/CLAUDE.md.tmpl", "CLAUDE.md"),
+    ("templates/workspace/GEMINI.md.tmpl", "GEMINI.md"),
+    ("templates/workspace/llms.txt.tmpl", "llms.txt"),
+    ("templates/workspace/.github/copilot-instructions.md.tmpl", ".github/copilot-instructions.md"),
     ("templates/workspace/.github/workflows/draft-framework-update.yml.tmpl", ".github/workflows/draft-framework-update.yml"),
 )
 

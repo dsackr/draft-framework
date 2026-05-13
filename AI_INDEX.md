@@ -180,8 +180,13 @@ These are sample catalog objects used to validate and demonstrate the framework.
 | templates/technology-component.yaml.tmpl | Reusable YAML authoring template. |
 | templates/workspace/.draft/framework.lock.tmpl | Reusable YAML authoring template. |
 | templates/workspace/.draft/workspace.yaml.tmpl | Reusable YAML authoring template. |
+| templates/workspace/.github/copilot-instructions.md.tmpl | Copilot Instructions |
 | templates/workspace/.github/workflows/draft-framework-update.yml.tmpl | Reusable YAML authoring template. |
 | templates/workspace/.gitignore.tmpl | Reusable YAML authoring template. |
+| templates/workspace/AGENTS.md.tmpl | AI Agent Instructions |
+| templates/workspace/CLAUDE.md.tmpl | Claude Instructions |
+| templates/workspace/GEMINI.md.tmpl | Gemini Instructions |
+| templates/workspace/llms.txt.tmpl | Company DRAFT Workspace |
 
 ## Validation
 
