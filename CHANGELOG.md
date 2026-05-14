@@ -3,6 +3,34 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.4 - 2026-05-14
+
+### Compatibility Impact
+
+No migration is required. This patch clarifies the first-run workspace prompt
+only; it does not change schemas, validation behavior, or catalog object
+formats.
+
+### Added
+
+- Added prompt language telling a connected AI assistant to treat the current
+  repository as the selected workspace and only ask for a repo path when it is
+  not actually connected to that workspace.
+
+### Changed
+
+- Updated the company workspace README template so the first-run Draftsman
+  prompt is explicit about using the currently connected repo.
+
+### Fixed
+
+- Fixed the easy-button onboarding prompt ambiguity where an engineer could be
+  connected to the correct repo but still get asked to supply the repo path.
+
+### Migration Notes
+
+- Existing workspaces can continue unchanged.
+
 ## 0.13.3 - 2026-05-14
 
 ### Compatibility Impact
