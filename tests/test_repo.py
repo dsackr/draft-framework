@@ -39,6 +39,7 @@ class RepoTests(unittest.TestCase):
             self.assertTrue((workspace / "configurations" / "requirement-groups").exists())
             self.assertTrue((workspace / ".github" / "workflows" / "draft-framework-update.yml").exists())
             self.assertTrue((workspace / ".github" / "copilot-instructions.md").exists())
+            self.assertTrue((workspace / "README.md").exists())
             self.assertTrue((workspace / "AGENTS.md").exists())
             self.assertTrue((workspace / "CLAUDE.md").exists())
             self.assertTrue((workspace / "GEMINI.md").exists())
@@ -54,10 +55,14 @@ class RepoTests(unittest.TestCase):
             workspace_agents = workspace / "AGENTS.md"
             self.assertIn(".draft/framework/docs/draftsman.md", workspace_agents.read_text(encoding="utf-8"))
             self.assertIn("Do not edit `.draft/framework/**`", workspace_agents.read_text(encoding="utf-8"))
+            workspace_readme = workspace / "README.md"
+            self.assertIn("Start With This Prompt", workspace_readme.read_text(encoding="utf-8"))
+            self.assertIn("I want a Draftsman session", workspace_readme.read_text(encoding="utf-8"))
             self.assertTrue((workspace / ".draft" / "framework" / "draft-framework.yaml").exists())
             self.assertTrue((workspace / ".draft" / "framework" / "VERSIONING.md").exists())
             workspace_config = (workspace / ".draft" / "workspace.yaml").read_text(encoding="utf-8")
             self.assertIn("activeRequirementGroups", workspace_config)
+            self.assertIn("displayName: Company DRAFT", workspace_config)
             self.assertIn("updateWorkflow: enabled", workspace_config)
             lock = yaml.safe_load((workspace / ".draft" / "framework.lock").read_text(encoding="utf-8"))
             manifest = yaml.safe_load(Path("draft-framework.yaml").read_text(encoding="utf-8"))
@@ -70,14 +75,49 @@ class RepoTests(unittest.TestCase):
             workspace = Path(directory) / "company-draft"
             workspace.mkdir()
             ensure_workspace_layout(workspace)
+            (workspace / "README.md").unlink()
 
             refreshed = refresh_vendored_framework(workspace)
             status = framework_status(workspace)
 
             self.assertTrue((workspace / ".draft" / "framework" / "configurations").exists())
             self.assertTrue((workspace / ".draft" / "framework" / "templates").exists())
+            self.assertTrue((workspace / "README.md").exists())
             self.assertTrue(any(path.name == "framework.lock" for path in refreshed))
+            self.assertTrue(any(path.name == "README.md" for path in refreshed))
             self.assertTrue(status["vendored"])
+
+    def test_workspace_templates_render_existing_workspace_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory) / "frontline-drafting-table"
+            workspace.mkdir()
+            (workspace / ".draft").mkdir()
+            (workspace / ".draft" / "workspace.yaml").write_text(
+                yaml.safe_dump(
+                    {
+                        "schemaVersion": "1.0",
+                        "workspace": {
+                            "name": "frontline-drafting-table",
+                            "displayName": "Frontline Education DRAFT Workspace",
+                            "companyName": "Frontline Education",
+                        },
+                    },
+                    sort_keys=False,
+                ),
+                encoding="utf-8",
+            )
+
+            ensure_workspace_layout(workspace)
+
+            readme = (workspace / "README.md").read_text(encoding="utf-8")
+            agents = (workspace / "AGENTS.md").read_text(encoding="utf-8")
+            llms = (workspace / "llms.txt").read_text(encoding="utf-8")
+            self.assertIn("# Frontline Education DRAFT Workspace", readme)
+            self.assertIn("I want a Draftsman session for Frontline Education DRAFT Workspace.", readme)
+            self.assertIn("architecture content already exists", readme)
+            self.assertIn("catalog authoring requests for Frontline Education", agents)
+            self.assertIn("# Frontline Education DRAFT Workspace", llms)
+            self.assertNotIn("{{workspace_label}}", readme)
 
     def test_ensure_git_repo_creates_missing_directory(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

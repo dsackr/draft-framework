@@ -68,6 +68,7 @@ FRAMEWORK_VENDOR_FILES = (
 DEFAULT_FRAMEWORK_SOURCE = "https://github.com/dsackr/draft-framework.git"
 COPY_IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", ".git", ".pytest_cache")
 WORKSPACE_TEMPLATE_FILES = (
+    ("templates/workspace/README.md.tmpl", "README.md"),
     ("templates/workspace/AGENTS.md.tmpl", "AGENTS.md"),
     ("templates/workspace/CLAUDE.md.tmpl", "CLAUDE.md"),
     ("templates/workspace/GEMINI.md.tmpl", "GEMINI.md"),
@@ -76,6 +77,16 @@ WORKSPACE_TEMPLATE_FILES = (
     ("templates/workspace/.github/workflows/draft-framework-update.yml.tmpl", ".github/workflows/draft-framework-update.yml"),
     ("templates/workspace/.github/workflows/draft-vocabulary-proposals.yml.tmpl", ".github/workflows/draft-vocabulary-proposals.yml"),
 )
+
+TEMPLATE_ACRONYMS = {
+    "ai": "AI",
+    "api": "API",
+    "ci": "CI",
+    "cd": "CD",
+    "draft": "DRAFT",
+    "github": "GitHub",
+    "yaml": "YAML",
+}
 
 
 def repo_name_from_url(url: str) -> str:
@@ -219,11 +230,72 @@ def template_destination_name(template: str) -> str:
     return relative.removesuffix(".tmpl")
 
 
+def humanize_workspace_name(value: str) -> str:
+    words = re.split(r"[^A-Za-z0-9]+", value.strip())
+    rendered: list[str] = []
+    for word in words:
+        if not word:
+            continue
+        lower = word.lower()
+        rendered.append(TEMPLATE_ACRONYMS.get(lower, lower.capitalize()))
+    return " ".join(rendered) or "Company DRAFT Workspace"
+
+
+def workspace_metadata(workspace: Path) -> dict[str, Any]:
+    config_path = workspace / ".draft" / "workspace.yaml"
+    if not config_path.exists():
+        return {}
+    try:
+        loaded = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError:
+        return {}
+    return loaded if isinstance(loaded, dict) else {}
+
+
+def named_value(value: Any) -> str:
+    if isinstance(value, dict):
+        for key in ("name", "displayName", "id"):
+            if value.get(key):
+                return str(value[key]).strip()
+        return ""
+    if isinstance(value, str):
+        return value.strip()
+    return ""
+
+
+def workspace_template_context(workspace: Path) -> dict[str, str]:
+    metadata = workspace_metadata(workspace)
+    workspace_data = metadata.get("workspace") if isinstance(metadata.get("workspace"), dict) else {}
+    repository_data = metadata.get("repository") if isinstance(metadata.get("repository"), dict) else {}
+
+    workspace_name = str(workspace_data.get("name") or repository_data.get("name") or workspace.name).strip()
+    workspace_label = str(workspace_data.get("displayName") or "").strip() or humanize_workspace_name(workspace_name)
+    company_name = (
+        str(workspace_data.get("companyName") or "").strip()
+        or named_value(workspace_data.get("organization"))
+        or named_value(metadata.get("company"))
+        or named_value(metadata.get("organization"))
+        or workspace_label
+    )
+    return {
+        "workspace_name": workspace_name,
+        "workspace_label": workspace_label,
+        "company_name": company_name,
+    }
+
+
+def render_workspace_template(text: str, context: dict[str, str]) -> str:
+    for key, value in context.items():
+        text = text.replace(f"{{{{{key}}}}}", value)
+    return text
+
+
 def copy_workspace_template_file(
     source_root: Path,
     source_repo: Path,
     template: str,
     destination: Path,
+    context: dict[str, str],
     overwrite: bool = False,
 ) -> bool:
     for source in (source_repo / template, source_root / template):
@@ -233,7 +305,7 @@ def copy_workspace_template_file(
         if target.exists() and not overwrite:
             return False
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+        target.write_text(render_workspace_template(source.read_text(encoding="utf-8"), context), encoding="utf-8")
         return True
     return False
 
@@ -242,10 +314,11 @@ def copy_workspace_templates(workspace: Path, framework_repo: Path = REPO_ROOT, 
     workspace = workspace.expanduser()
     source_root = resolve_framework_root(framework_repo)
     source_repo = source_root.parent
+    context = workspace_template_context(workspace)
     copied: list[Path] = []
     for template, destination in WORKSPACE_TEMPLATE_FILES:
         target = workspace / destination
-        if copy_workspace_template_file(source_root, source_repo, template, workspace, overwrite=overwrite):
+        if copy_workspace_template_file(source_root, source_repo, template, workspace, context, overwrite=overwrite):
             copied.append(target)
     return copied
 
@@ -304,6 +377,7 @@ def refresh_vendored_framework(
 ) -> list[Path]:
     workspace = workspace.expanduser()
     copied = vendor_framework(workspace, framework_repo, overwrite=True)
+    copied.extend(copy_workspace_templates(workspace, framework_repo, overwrite=False))
     lock_path = workspace / ".draft" / "framework.lock"
     lock_path.parent.mkdir(parents=True, exist_ok=True)
     lock_path.write_text(
@@ -354,7 +428,7 @@ def ensure_workspace_layout(workspace: Path, framework_repo: Path = REPO_ROOT) -
             yaml.safe_dump(
                 {
                     "schemaVersion": "1.0",
-                    "workspace": {"name": workspace.name},
+                    "workspace": {"name": workspace.name, "displayName": humanize_workspace_name(workspace.name)},
                     "framework": {
                         "source": DEFAULT_FRAMEWORK_SOURCE,
                         "vendoredPath": ".draft/framework",

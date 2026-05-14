@@ -85,6 +85,14 @@ def truncate(text: str, limit: int = 120) -> str:
     return text if len(text) <= limit else text[: limit - 3].rstrip() + "..."
 
 
+def display_template_text(text: str) -> str:
+    return (
+        text.replace("{{workspace_label}}", "Company DRAFT Workspace")
+        .replace("{{company_name}}", "Company")
+        .replace("{{workspace_name}}", "company-draft")
+    )
+
+
 def yaml_row(path: Path) -> tuple[str, str, str, str, str, str]:
     data = read_yaml(path)
     tags = data.get("tags", [])
@@ -238,7 +246,7 @@ def first_comment(path: Path) -> str:
         for line in handle:
             stripped = line.strip()
             if stripped.startswith("#"):
-                return stripped.lstrip("#").strip()
+                return display_template_text(stripped.lstrip("#").strip())
             if stripped:
                 return ""
     return ""
@@ -249,7 +257,7 @@ def markdown_title(path: Path) -> str:
         for line in handle:
             stripped = line.strip()
             if stripped.startswith("# "):
-                return stripped.lstrip("#").strip()
+                return display_template_text(stripped.lstrip("#").strip())
     return path.stem.replace("-", " ").title()
 
 
@@ -259,7 +267,7 @@ def markdown_summary(path: Path) -> str:
             stripped = line.strip()
             if not stripped or stripped.startswith("#"):
                 continue
-            return truncate(stripped, 120)
+            return truncate(display_template_text(stripped), 120)
     return ""
 
 

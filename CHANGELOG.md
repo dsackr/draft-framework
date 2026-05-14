@@ -3,6 +3,46 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.3 - 2026-05-14
+
+### Compatibility Impact
+
+No migration is required. This patch adds a workspace README template and
+refresh behavior for missing bootstrap files; it does not change schemas,
+validation behavior, or catalog object formats.
+
+### Added
+
+- Added `templates/workspace/README.md.tmpl` with a copy/paste Draftsman
+  session prompt for adopting company workspaces.
+- Added workspace template substitutions for `workspace_name`,
+  `workspace_label`, and `company_name` so first-time onboarding files can use
+  the adopting company's name.
+
+### Changed
+
+- Updated workspace scaffolding and framework refresh helpers to create missing
+  root workspace bootstrap files, including the README prompt, without
+  overwriting existing company-owned files.
+- Updated workspace templates to render company-specific README and AI
+  bootstrap language from `.draft/workspace.yaml` or a readable repo-name
+  fallback.
+- Updated onboarding and workspace documentation to call out the README
+  Draftsman start prompt.
+
+### Fixed
+
+- Fixed the adoption gap where a newly created company workspace could include
+  AI bootstrap files but no obvious human-facing prompt for starting a
+  Draftsman session.
+
+### Migration Notes
+
+- Existing workspaces can continue unchanged.
+- To adopt the prompt in an existing workspace, copy
+  `templates/workspace/README.md.tmpl` to the workspace root as `README.md` or
+  merge the prompt into the existing workspace README.
+
 ## 0.13.2 - 2026-05-13
 
 ### Compatibility Impact

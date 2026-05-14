@@ -38,6 +38,12 @@ DRAFT repo path or GitHub repo where my workspace should live. If this is
 already a company DRAFT workspace, inspect .draft/workspace.yaml,
 .draft/framework/, catalog/, and configurations/.
 
+If this is first-time company onboarding, collect the company name, workspace
+display name, and private repo path or GitHub repo before rendering workspace
+templates. Populate .draft/workspace.yaml with workspace.name,
+workspace.displayName, and workspace.companyName so generated README and AI
+bootstrap files are specific to the adopting company.
+
 Then start setup mode. Keep the conversation short and guided. Tell me:
 1. what repo/workspace you are using,
 2. what is already present,

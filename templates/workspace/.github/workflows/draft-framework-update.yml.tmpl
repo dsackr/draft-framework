@@ -125,6 +125,54 @@ jobs:
                   text = text.replace(old, new)
               return text
 
+          def humanize_workspace_name(value: str) -> str:
+              acronyms = {
+                  "ai": "AI",
+                  "api": "API",
+                  "ci": "CI",
+                  "cd": "CD",
+                  "draft": "DRAFT",
+                  "github": "GitHub",
+                  "yaml": "YAML",
+              }
+              words = re.split(r"[^A-Za-z0-9]+", value.strip())
+              rendered = [acronyms.get(word.lower(), word.lower().capitalize()) for word in words if word]
+              return " ".join(rendered) or "Company DRAFT Workspace"
+
+          def named_value(value: Any) -> str:
+              if isinstance(value, dict):
+                  for key in ("name", "displayName", "id"):
+                      if value.get(key):
+                          return str(value[key]).strip()
+                  return ""
+              if isinstance(value, str):
+                  return value.strip()
+              return ""
+
+          def workspace_template_context() -> dict[str, str]:
+              metadata = read_yaml(workspace / ".draft" / "workspace.yaml")
+              workspace_data = metadata.get("workspace") if isinstance(metadata.get("workspace"), dict) else {}
+              repository_data = metadata.get("repository") if isinstance(metadata.get("repository"), dict) else {}
+              workspace_name = str(workspace_data.get("name") or repository_data.get("name") or workspace.name).strip()
+              workspace_label = str(workspace_data.get("displayName") or "").strip() or humanize_workspace_name(workspace_name)
+              company_name = (
+                  str(workspace_data.get("companyName") or "").strip()
+                  or named_value(workspace_data.get("organization"))
+                  or named_value(metadata.get("company"))
+                  or named_value(metadata.get("organization"))
+                  or workspace_label
+              )
+              return {
+                  "workspace_name": workspace_name,
+                  "workspace_label": workspace_label,
+                  "company_name": company_name,
+              }
+
+          def render_workspace_template(text: str, context: dict[str, str]) -> str:
+              for key, value in context.items():
+                  text = text.replace(f"{{{{{key}}}}}", value)
+              return text
+
           def release_url_for(source_url: str, version: str) -> str:
               cleaned = source_url.strip().removesuffix(".git")
               if cleaned.startswith("git@github.com:"):
@@ -168,6 +216,28 @@ jobs:
                   else:
                       shutil.copy2(source_file, target_file)
 
+          def copy_workspace_templates(source_repo: Path) -> None:
+              context = workspace_template_context()
+              for template, target in (
+                  ("templates/workspace/README.md.tmpl", "README.md"),
+                  ("templates/workspace/AGENTS.md.tmpl", "AGENTS.md"),
+                  ("templates/workspace/CLAUDE.md.tmpl", "CLAUDE.md"),
+                  ("templates/workspace/GEMINI.md.tmpl", "GEMINI.md"),
+                  ("templates/workspace/llms.txt.tmpl", "llms.txt"),
+                  ("templates/workspace/.github/copilot-instructions.md.tmpl", ".github/copilot-instructions.md"),
+                  ("templates/workspace/.github/workflows/draft-framework-update.yml.tmpl", ".github/workflows/draft-framework-update.yml"),
+                  ("templates/workspace/.github/workflows/draft-vocabulary-proposals.yml.tmpl", ".github/workflows/draft-vocabulary-proposals.yml"),
+              ):
+                  source_file = source_repo / template
+                  target_file = workspace / target
+                  if not source_file.exists() or target_file.exists():
+                      continue
+                  target_file.parent.mkdir(parents=True, exist_ok=True)
+                  target_file.write_text(
+                      render_workspace_template(source_file.read_text(encoding="utf-8"), context),
+                      encoding="utf-8",
+                  )
+
           lock = read_yaml(lock_path)
           framework_lock = lock.get("framework") if isinstance(lock.get("framework"), dict) else {}
           if framework_lock.get("source"):
@@ -209,6 +279,7 @@ jobs:
               run(["git", "checkout", "-B", branch_name])
 
           copy_framework(source_repo)
+          copy_workspace_templates(source_repo)
           lock_path.parent.mkdir(parents=True, exist_ok=True)
           lock_data: dict[str, Any] = {
               "schemaVersion": "1.0",

@@ -62,13 +62,16 @@ In setup mode, always show:
 The minimum useful setup path is:
 
 1. confirm the private company DRAFT repo and vendored framework copy
-2. define enough business taxonomy for catalog navigation
-3. declare first company vocabulary lists in advisory mode
-4. choose the initial active Requirement Groups
-5. identify capability owners for mapped capabilities
-6. seed acceptable-use Technology Components for common standards
-7. draft baseline deployable standards
-8. start one real Drafting Session from a product, system, repository, diagram,
+2. capture workspace identity in `.draft/workspace.yaml`, including
+   `workspace.name`, `workspace.displayName`, and `workspace.companyName`
+3. render or refresh root workspace bootstrap files from those identity values
+4. define enough business taxonomy for catalog navigation
+5. declare first company vocabulary lists in advisory mode
+6. choose the initial active Requirement Groups
+7. identify capability owners for mapped capabilities
+8. seed acceptable-use Technology Components for common standards
+9. draft baseline deployable standards
+10. start one real Drafting Session from a product, system, repository, diagram,
    or source document
 
 Do not overwhelm the user with every possible framework concern. Setup mode
@@ -89,6 +92,16 @@ Adjust questions by audience. Architects can answer governance, lifecycle, and
 pattern questions. Engineers can answer runtime, dependency, platform, port,
 and operations questions. Product teams can answer ownership, system boundary,
 and user-facing capability questions without needing YAML or framework terms.
+
+Before rendering workspace templates during first-time onboarding, ask for the
+minimum identity facts needed to make the generated files company-specific:
+
+- company name
+- workspace display name
+- private repo path or GitHub repo
+
+Then write or update `.draft/workspace.yaml` and render the root workspace
+bootstrap files from those values.
 
 ## Source Of Truth Order
 

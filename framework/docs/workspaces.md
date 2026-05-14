@@ -25,8 +25,23 @@ A company private DRAFT repo owns:
 - `.draft/providers/` for optional third-party DRAFT requirement packs
 - `.draft/workspace.yaml` for tracked workspace metadata
 - `.draft/framework.lock` for the reviewed upstream framework source and synced commit
+- `README.md` with a copy/paste Draftsman start prompt for connected AI tools
 - `catalog/` for architecture content
 - `configurations/` for company capability mappings, Requirement Groups, and object patches
+
+The workspace metadata should include a stable machine name and a human-readable
+label. Workspace templates use these values to make first-run README and AI
+bootstrap files specific to the adopting company:
+
+```yaml
+workspace:
+  name: acme-draft
+  displayName: Acme DRAFT Workspace
+  companyName: Acme
+```
+
+If `displayName` is not present during first-time scaffolding, the framework
+uses a readable version of the repo or workspace directory name.
 
 The effective model is resolved in this order:
 

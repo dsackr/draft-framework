@@ -195,6 +195,7 @@ These are sample catalog objects used to validate and demonstrate the framework.
 | templates/workspace/AGENTS.md.tmpl | AI Agent Instructions |
 | templates/workspace/CLAUDE.md.tmpl | Claude Instructions |
 | templates/workspace/GEMINI.md.tmpl | Gemini Instructions |
+| templates/workspace/README.md.tmpl | Company DRAFT Workspace |
 | templates/workspace/llms.txt.tmpl | Company DRAFT Workspace |
 
 ## Validation

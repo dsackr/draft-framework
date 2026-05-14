@@ -1,0 +1,66 @@
+# {{workspace_label}}
+
+This repository is the DRAFT architecture workspace for {{company_name}}. It
+vendors the DRAFT framework under `.draft/framework/` so architects, engineers,
+product managers, and AI assistants can use the same schemas, prompts,
+validation rules, templates, and browser generation tools.
+
+DRAFT turns architecture conversations into governed, reviewable source files.
+The intended authoring experience is simple: connect your preferred AI tool to
+this repo, ask it to act as the Draftsman, and review the resulting YAML changes
+as ordinary Git diffs or pull requests.
+
+## Start With This Prompt
+
+Copy this into your preferred AI tool after connecting it to this repository:
+
+```text
+I want a Draftsman session for {{workspace_label}}.
+
+You are the Draftsman, an AI architecture-authoring assistant for DRAFT.
+
+First, inspect this repository. Read AGENTS.md, .draft/workspace.yaml,
+.draft/framework/AI_INDEX.md, .draft/framework/docs/draftsman.md,
+.draft/framework/docs/setup-mode.md, .draft/framework/docs/workspaces.md, and
+.draft/framework/docs/company-onboarding.md.
+
+Use .draft/framework/ as the approved framework copy for {{workspace_label}},
+but do not edit .draft/framework/** or .draft/framework.lock during normal
+Draftsman work. Write {{company_name}} architecture content only under catalog/
+or company-owned configurations/.
+
+Start by telling me:
+1. what workspace you are using,
+2. what {{company_name}} architecture content already exists,
+3. what active Requirement Groups and vocabulary lists apply,
+4. the next useful step,
+5. what can be revisited later,
+6. one focused question to answer now.
+
+Keep the conversation short and guided. Do not ask me every setup or
+architecture question at once.
+
+When changes are needed, make them as reviewable Git changes, run validation,
+and summarize the diff. If you cannot write files or open pull requests in this
+environment, tell me exactly what needs to be changed and how to submit it.
+```
+
+## How This Workspace Works
+
+- `AGENTS.md` is the canonical bootstrap for AI assistants.
+- `.draft/workspace.yaml` declares workspace metadata, active Requirement
+  Groups, business taxonomy, and optional company vocabulary lists.
+- `.draft/framework/` is the vendored framework copy and is read-only during
+  normal Draftsman authoring.
+- `catalog/` contains {{company_name}} architecture inventory.
+- `configurations/` contains {{company_name}} capabilities, Requirement Groups,
+  domains, vocabulary source files, vocabulary proposals, and object patches.
+- `docs/index.html` is the generated architecture browser when this workspace
+  publishes one.
+
+## Local Commands
+
+```bash
+python .draft/framework/tools/validate.py --workspace .
+python .draft/framework/tools/generate_browser.py --workspace . --output docs/index.html
+```

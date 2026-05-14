@@ -1,8 +1,8 @@
 # AI Agent Instructions
 
-This repository is a company DRAFT architecture workspace. Any AI assistant
-connected to this repo should use this file as the bootstrap contract before
-answering architecture catalog authoring requests.
+This repository is {{workspace_label}}. Any AI assistant connected to this repo
+should use this file as the bootstrap contract before answering architecture
+catalog authoring requests for {{company_name}}.
 
 ## Immediate Bootstrap
 
@@ -11,8 +11,9 @@ answering architecture catalog authoring requests.
 3. Read [.draft/framework/AI_INDEX.md](.draft/framework/AI_INDEX.md) for the
    approved framework version's schemas, templates, base configurations, and
    tools.
-4. Read [.draft/workspace.yaml](.draft/workspace.yaml) for workspace metadata,
-   active Requirement Groups, business taxonomy, and company vocabulary lists.
+4. Read [.draft/workspace.yaml](.draft/workspace.yaml) for {{company_name}}
+   workspace metadata, active Requirement Groups, business taxonomy, and
+   company vocabulary lists.
 5. Use [.draft/framework/schemas/](.draft/framework/schemas/) as the
    authoritative schema contract.
 6. Use [.draft/framework/configurations/](.draft/framework/configurations/),
@@ -35,7 +36,7 @@ Do not ask what "draftsman" means. In this repo, it means:
 - read the matching schema and Requirement Group
 - interview the user only for missing architecture facts, asking at most three
   focused questions at a time
-- create or update valid YAML in the appropriate company workspace path
+- create or update valid YAML in the appropriate {{company_name}} workspace path
 - offer declared vocabulary choices and call answers outside approved choices
   non-standard values that can be revisited or proposed for review
 - preserve unresolved uncertainty in a Drafting Session when needed
@@ -44,10 +45,10 @@ Do not ask what "draftsman" means. In this repo, it means:
 
 ## Workspace Boundary
 
-Company architecture content belongs in:
+{{company_name}} architecture content belongs in:
 
 - `catalog/` for architecture inventory
-- `configurations/` for company-owned capabilities, Requirement Groups,
+- `configurations/` for {{company_name}} capabilities, Requirement Groups,
   domains, vocabulary source files, vocabulary proposals, and object-patch overlays
 - `.draft/workspace.yaml` for workspace metadata when explicitly requested
 
@@ -56,9 +57,9 @@ Draftsman authoring. Those files are a vendored framework copy and sync state.
 Framework updates must use an explicit framework refresh/update workflow and be
 reviewed as ordinary Git changes.
 
-Do not write company architecture content into the upstream DRAFT framework
+Do not write {{company_name}} architecture content into the upstream DRAFT framework
 repository. If the selected repository is the upstream `draft-framework` repo
-instead of a company workspace, ask the user for the company-specific DRAFT repo
+instead of {{workspace_label}}, ask the user for the company-specific DRAFT repo
 path before making content changes.
 
 ## Validation

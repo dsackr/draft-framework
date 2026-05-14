@@ -15,6 +15,7 @@ After initial onboarding, the company should have:
 
 - a private company DRAFT repo
 - a vendored framework copy under `.draft/framework/`
+- a root `README.md` with a copy/paste Draftsman start prompt
 - tracked workspace metadata in `.draft/workspace.yaml`
 - a small business taxonomy for catalog navigation
 - advisory company vocabulary lists for the first governed choices
@@ -33,10 +34,11 @@ company starts by creating a private repo, vendoring the reviewed framework copy
 under `.draft/framework/`, adding the root AI bootstrap files, and connecting
 the AI tool the team already uses.
 
-Once the AI is connected to the company repo, ask:
+Once the AI is connected to the company repo, copy the prompt from the
+workspace `README.md` or ask:
 
 ```text
-start setup mode
+I want a Draftsman session for this company DRAFT workspace.
 ```
 
 The Draftsman should read `AGENTS.md`, `.draft/workspace.yaml`, the vendored
@@ -52,23 +54,35 @@ At minimum, the repo should contain:
 - `.draft/framework/` with the reviewed framework copy
 - `.draft/workspace.yaml`
 - `.draft/framework.lock`
+- `README.md` with the first-run Draftsman prompt
 - root AI bootstrap files such as `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`,
   `llms.txt`, and `.github/copilot-instructions.md`
 - `catalog/`
 - `configurations/`
 - `docs/` for generated browser output
 
-Use `templates/workspace/` from the framework as the source for the root AI
-bootstrap and workflow files. The connected AI can help copy the templates,
-remove `.tmpl` suffixes, fill in company placeholders, and open the initial
-workspace setup pull request.
+Use `templates/workspace/` from the framework as the source for the root
+`README.md`, AI bootstrap, and workflow files. The connected AI can help copy
+the templates, remove `.tmpl` suffixes, fill in company placeholders, and open
+the initial workspace setup pull request.
+
+Set `workspace.displayName` and `workspace.companyName` in
+`.draft/workspace.yaml` before rendering templates when the company wants the
+README and AI bootstrap files to use a friendly name instead of the repo name:
+
+```yaml
+workspace:
+  name: acme-draft
+  displayName: Acme DRAFT Workspace
+  companyName: Acme
+```
 
 ## Step 2: Start Setup Mode
 
 In the connected AI tool, ask:
 
 ```text
-start setup mode
+I want a Draftsman session for this company DRAFT workspace.
 ```
 
 The Draftsman should respond with:

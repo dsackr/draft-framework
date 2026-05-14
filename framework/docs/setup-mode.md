@@ -30,15 +30,17 @@ deliberately queued:
 
 1. Private company DRAFT repo selected and framework vendored under
    `.draft/framework/`.
-2. Business taxonomy defined well enough for catalog navigation.
-3. First company vocabulary lists declared in advisory mode, or deliberately
+2. Workspace identity populated in `.draft/workspace.yaml`, including
+   `workspace.name`, `workspace.displayName`, and `workspace.companyName`.
+3. Business taxonomy defined well enough for catalog navigation.
+4. First company vocabulary lists declared in advisory mode, or deliberately
    queued for later.
-4. Initial active Requirement Groups selected.
-5. Capability owners identified for the first mapped capabilities.
-6. Acceptable-use Technology Components seeded for the most common standards.
-7. Baseline deployable objects started for common Host, Runtime Service,
+5. Initial active Requirement Groups selected.
+6. Capability owners identified for the first mapped capabilities.
+7. Acceptable-use Technology Components seeded for the most common standards.
+8. Baseline deployable objects started for common Host, Runtime Service,
    Data-at-Rest Service, and Edge/Gateway patterns.
-8. One real product, system, diagram, repository, or source document selected
+9. One real product, system, diagram, repository, or source document selected
    for the first guided Drafting Session.
 
 Setup mode should stop once the team can draft and validate one real system. It
@@ -66,11 +68,18 @@ boundaries, customer-facing capability, and release-context questions.
 
 ### 1. Workspace Readiness
 
-Confirm the company repo, framework copy, provider, and validation command.
+Confirm the company repo, workspace identity, framework copy, provider, and
+validation command. Before rendering workspace templates, capture the identity
+values that make the generated README and AI bootstrap files company-specific.
 
-Question:
+Questions:
 
 > Which private company DRAFT repo should we use for architecture content?
+
+> What company name should DRAFT use in generated prompts and bootstrap files?
+
+> What should the workspace display name be, for example "Acme DRAFT
+> Workspace"?
 
 ### 2. Business Navigation
 
