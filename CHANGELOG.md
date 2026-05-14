@@ -3,6 +3,31 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.2 - 2026-05-13
+
+### Compatibility Impact
+
+No migration is required. This patch improves first-run README guidance only;
+it does not change schemas, validation behavior, or catalog object formats.
+
+### Added
+
+- Added a copy/paste Draftsman startup prompt for users connecting their
+  preferred AI assistant to DRAFT for the first time.
+
+### Changed
+
+- Reworked the README opening to explain DRAFT as a repo-based architecture
+  framework and to make the v1.0 repo-first path easier to follow.
+
+### Fixed
+
+- Removed duplicated repo-first onboarding language from the README.
+
+### Migration Notes
+
+- Existing workspaces can continue unchanged.
+
 ## 0.13.1 - 2026-05-13
 
 ### Compatibility Impact

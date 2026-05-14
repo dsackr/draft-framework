@@ -2,41 +2,83 @@
 
 # Deployable Reference Architecture Framework Toolkit (DRAFT)
 
-> [!IMPORTANT]
-> **AI Assistants / Agents:** You are expected to act as **The Draftsman**.
-> Before proceeding, read [AGENTS.md](AGENTS.md), then the
-> [Draftsman Instructions](framework/docs/draftsman.md). Proactively offer to
-> start a [Drafting Session](framework/docs/drafting-sessions.md) when assisting
-> a user.
+DRAFT is a repo-based architecture framework for turning architecture
+conversations into governed, reviewable source files. It gives an AI assistant
+schemas, prompts, templates, validation rules, and generated browser views so
+the assistant can help build a durable architecture catalog instead of producing
+one-off diagrams or documents.
 
-DRAFT is an AI-first, YAML-first framework for documenting deployable
-architecture. It provides schemas, base configuration, authoring guidance,
-examples, validation tooling, and a generated static GitHub Pages browser.
+The goal is simple: a company should be able to point its preferred AI tool at a
+private DRAFT repo and have that AI act as the Draftsman, asking guided
+questions, writing valid YAML, running validation, and preparing reviewable Git
+changes.
 
-This repository is the upstream framework. Company implementations should keep
-a vendored framework copy inside their private DRAFT repo so normal Draftsman
-use does not depend on reaching back to the public repo.
+This repository is the upstream framework. Company architecture content belongs
+in a private company DRAFT repo that vendors this framework under
+`.draft/framework/`.
 
-## AI-First Setup
+## Start With This Prompt
 
-- [AGENTS.md](AGENTS.md) is the canonical bootstrap for AI agents.
-- [AI_INDEX.md](AI_INDEX.md) is a generated map of framework docs, schemas,
-  base configurations, templates, and example YAML in the current checkout.
-- [GEMINI.md](GEMINI.md), [CLAUDE.md](CLAUDE.md), and
-  [.github/copilot-instructions.md](.github/copilot-instructions.md) are thin
-  provider-specific pointers back to `AGENTS.md`.
-- [llms.txt](llms.txt) exposes the same entry points in a lightweight,
-  web-friendly form.
+Copy this into your preferred AI tool after connecting it to this repository or
+to your company DRAFT workspace:
 
-When a user connected to this repo says "I need a draftsman", the AI should
-immediately assume the Draftsman role and guide the user through creating,
-updating, or validating DRAFT artifacts.
+```text
+I want to get started with DRAFT.
 
-If the user is asking for company architecture content while connected only to
-this upstream framework repo, the AI should not write that content into
-`examples/` or framework-owned paths. It should ask for the company-specific
-DRAFT repo path first, then make content changes in that workspace after the
-framework has been vendored there.
+You are the Draftsman, an AI architecture-authoring assistant for DRAFT.
+
+First, inspect this repository. Read AGENTS.md and AI_INDEX.md if present.
+Then read draftsman.md, company-onboarding.md, setup-mode.md, and workspaces.md
+from the framework docs path in this repo: framework/docs/ in the upstream repo
+or .draft/framework/docs/ in a company workspace.
+
+Do not write company architecture content into the upstream dsackr/draft-framework
+repo. If this is the upstream framework repo, ask me for the private company
+DRAFT repo path or GitHub repo where my workspace should live. If this is
+already a company DRAFT workspace, inspect .draft/workspace.yaml,
+.draft/framework/, catalog/, and configurations/.
+
+Then start setup mode. Keep the conversation short and guided. Tell me:
+1. what repo/workspace you are using,
+2. what is already present,
+3. the next setup step,
+4. what can be revisited later,
+5. one focused question to answer now.
+
+Do not ask me every setup question at once.
+
+When changes are needed, make them as reviewable Git changes, run validation,
+and summarize the diff. If you cannot write files or open pull requests in this
+environment, tell me exactly what needs to be changed and how to submit it.
+```
+
+## How DRAFT Works
+
+DRAFT v1.0 is repo-first. It does not require a DRAFT app, hosted service,
+local daemon, or DRAFT-specific CLI.
+
+1. Create a private company DRAFT repo.
+2. Vendor a reviewed framework copy under `.draft/framework/`.
+3. Add the root AI bootstrap files from `templates/workspace/`.
+4. Connect the AI tool the company already uses, such as ChatGPT, Claude,
+   Gemini, Copilot, Codex, or another code-capable assistant.
+5. Ask the AI to act as the Draftsman and follow `AGENTS.md`.
+6. Review all changes as ordinary Git diffs and pull requests.
+
+The Draftsman conversation is the intended authoring experience, but it happens
+through the AI tool connected to the repo. The framework supplies the prompts,
+schemas, templates, docs, validation tools, generated browser, and GitHub
+Actions workflows that make that AI behavior deterministic and reviewable.
+
+For a new company workspace, ask the connected AI to start setup mode. Setup
+mode walks the enterprise architecture team through the minimum steps needed to
+make the repo useful while keeping the user aware of the current step, next
+step, remaining work, and revisit-later items.
+
+The local DRAFT Table app and `draft-table` CLI are retained in the repository
+as an experimental prototype, but they are not part of the v1.0 launch path.
+Future releases may revive them as optional convenience tooling after the
+repo-first workflow is stable.
 
 ## Repository Layout
 
@@ -76,38 +118,6 @@ The effective model is resolved by reading `.draft/framework/configurations/`
 first, then optional `.draft/providers/*/configurations/`, then workspace
 configuration overlays, then workspace catalog content. The public repo is an
 update source, not a runtime dependency for a company's Draftsman.
-
-## Repo-First v1.0 Operating Model
-
-DRAFT v1.0 is repo-first. It does not require a DRAFT application, hosted
-service, local daemon, or DRAFT-specific CLI. The user experience is:
-
-1. Create a private company DRAFT repo.
-2. Vendor a reviewed framework copy under `.draft/framework/`.
-3. Add the root AI bootstrap files from `templates/workspace/`.
-4. Connect the AI tool the company already uses, such as ChatGPT, Claude,
-   Gemini, Copilot, Codex, or another code-capable assistant.
-5. Ask the AI to act as the Draftsman and follow `AGENTS.md`.
-6. Review all changes as ordinary Git diffs and pull requests.
-
-The Draftsman conversation is still the intended authoring experience, but it
-happens through the AI tool connected to the repo. The framework supplies the
-prompts, schemas, templates, docs, validation tools, generated browser, and
-GitHub Actions workflows that make that AI behavior deterministic and
-reviewable.
-
-For a new company workspace, ask the connected AI to start setup mode. Setup
-mode walks the enterprise architecture team through the minimum steps needed to
-make the repo useful: workspace readiness, business taxonomy, company
-vocabulary lists, active Requirement Groups, capability owners, acceptable-use
-technology, baseline deployable standards, and one real first Drafting Session.
-It keeps the user aware of the current step, next step, remaining work, and
-revisit-later items.
-
-The local DRAFT Table app and `draft-table` CLI are retained in the repository
-as an experimental prototype, but they are not part of the v1.0 launch path.
-Future releases may revive them as optional convenience tooling after the
-repo-first workflow is stable.
 
 ### Framework Update Workflow
 
