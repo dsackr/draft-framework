@@ -47,9 +47,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | framework/tools/validate.py | Executable validation for schemas, Requirement Groups, capabilities, and references. |
 | framework/tools/apply_vocabulary_proposals.py | Materializes Draftsman vocabulary_proposal files into reviewable company vocabulary entries. |
 | framework/tools/repair_uids.py | Explicit repair utility that adds or replaces generated object UIDs and rewrites object references. |
-| framework/tools/generate_browser.py | Static GitHub Pages browser generator. Emits `sdpConnections` and `networkZones` fields for SDP Service Graph rendering. Shell assets (CSS/JS/HTML) are install-once — only `browser-data.js` is overwritten on normal runs. Use `--refresh-shell` to pull framework design updates. |
-| framework/configurations/vocabulary/connection-protocols.yaml | Framework-default connection protocol vocabulary source. Covers REST, gRPC, AMQP, JDBC, SQL, WebSocket, HTTPS, GraphQL, other. |
-| framework/configurations/vocabulary/network-zone-patterns.yaml | Network zone pattern picker for Draftsman zone setup. Four patterns: public/private/management, tenant/platform/management, dmz/internal/data, custom. |
+| framework/tools/generate_browser.py | Static GitHub Pages browser generator. |
 | install-draft-table.sh | Experimental local tooling installer retained for post-v1.0 work. |
 
 ## Framework Docs
