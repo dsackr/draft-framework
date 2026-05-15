@@ -1,0 +1,30 @@
+schemaVersion: '1.0'
+uid: STCK000004-TC04
+type: technology_component
+name: OpenStack Neutron
+description: 'OpenStack Neutron is the networking service providing software-defined
+  networking capabilities to the OpenStack platform. It includes neutron-api, neutron-plugin,
+  and neutron-agents subcomponents. Neutron manages virtual networks, subnets, routers,
+  floating IPs, security groups, and load balancers, communicating with compute nodes
+  via RabbitMQ.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- openstack
+- networking
+- sdn
+- iaas
+vendor: OpenStack Foundation
+productName: OpenStack Neutron
+productVersion: '2024.1'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: TBD
+  notes: Neutron follows the OpenStack upstream release cadence. Extended support
+    available from downstream distributors.

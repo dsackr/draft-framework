@@ -1,0 +1,30 @@
+schemaVersion: '1.0'
+uid: STCK000002-TC02
+type: technology_component
+name: OpenStack Keystone
+description: 'OpenStack Keystone is the identity service providing authentication
+  and authorization for all OpenStack services. It issues tokens used by every other
+  service for request validation, manages projects and users, and supports optional
+  federation with external identity providers such as LDAP or SAML.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- openstack
+- identity
+- auth
+- iaas
+vendor: OpenStack Foundation
+productName: OpenStack Keystone
+productVersion: '2024.1'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: TBD
+  notes: Keystone follows the OpenStack upstream release cadence. Supported by downstream
+    distributors including Red Hat OpenStack Platform and Canonical OpenStack for
+    extended lifecycle windows.

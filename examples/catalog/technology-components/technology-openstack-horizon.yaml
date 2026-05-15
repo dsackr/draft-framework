@@ -1,0 +1,30 @@
+schemaVersion: '1.0'
+uid: STCK000007-TC07
+type: technology_component
+name: OpenStack Horizon
+description: 'OpenStack Horizon is the web-based dashboard for OpenStack services.
+  It provides a self-service portal for tenants and an administrative interface for
+  operators. Horizon is a Django-based web application served via nginx, and it consumes
+  the APIs of Nova, Keystone, Glance, Neutron, Cinder, and Heat to present a unified
+  management interface.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- openstack
+- dashboard
+- web-ui
+- iaas
+vendor: OpenStack Foundation
+productName: OpenStack Horizon
+productVersion: '2024.1'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: TBD
+  notes: Horizon follows the OpenStack upstream release cadence. Extended support
+    available from downstream distributors.

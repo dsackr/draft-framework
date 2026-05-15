@@ -1,0 +1,30 @@
+schemaVersion: '1.0'
+uid: STCK000008-TC08
+type: technology_component
+name: OpenStack Heat
+description: 'OpenStack Heat is the orchestration service for OpenStack. It implements
+  a heat-api, heat-api-cfn (CloudFormation-compatible), and heat-engine. Heat allows
+  operators and tenants to define infrastructure-as-code stacks using the Heat Orchestration
+  Template (HOT) format, automating the provisioning and lifecycle management of OpenStack
+  resources.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- openstack
+- orchestration
+- infrastructure-as-code
+- iaas
+vendor: OpenStack Foundation
+productName: OpenStack Heat
+productVersion: '2024.1'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: TBD
+  notes: Heat follows the OpenStack upstream release cadence. Extended support available
+    from downstream distributors.

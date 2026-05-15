@@ -1,0 +1,30 @@
+schemaVersion: '1.0'
+uid: STCK00000B-TC0B
+type: technology_component
+name: OpenStack Trove
+description: 'OpenStack Trove is the database-as-a-service component. It provides
+  trove-api, trove-conductor, and trove-taskmanager subcomponents. Trove automates
+  the provisioning, management, and scaling of relational and non-relational database
+  instances on top of Nova compute, providing a managed DBaaS experience within the
+  OpenStack platform.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- openstack
+- database-as-a-service
+- dbaas
+- iaas
+vendor: OpenStack Foundation
+productName: OpenStack Trove
+productVersion: '2024.1'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: TBD
+  notes: Trove follows the OpenStack upstream release cadence. Extended support available
+    from downstream distributors.

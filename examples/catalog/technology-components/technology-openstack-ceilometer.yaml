@@ -1,0 +1,33 @@
+schemaVersion: '1.0'
+uid: STCK000009-TC09
+type: technology_component
+name: OpenStack Ceilometer
+description: 'OpenStack Ceilometer is the telemetry service for OpenStack. It collects
+  metering and monitoring data from across the OpenStack platform including ceilometer-api,
+  ceilometer-collector, ceilometer-agent-notification, ceilometer-alarm-evaluator,
+  and ceilometer-alarm-notifier. Ceilometer consumes the RabbitMQ notification bus
+  to gather metrics from Nova, Neutron, Cinder, and other services.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- openstack
+- telemetry
+- monitoring
+- metering
+- iaas
+vendor: OpenStack Foundation
+productName: OpenStack Ceilometer
+productVersion: '2024.1'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: TBD
+  notes: Ceilometer follows the OpenStack upstream release cadence. Note that in newer
+    OpenStack releases, Ceilometer functionality has been partially superseded by
+    Aodh (alarming), Gnocchi (metrics), and Panko (events). Extended support available
+    from downstream distributors.

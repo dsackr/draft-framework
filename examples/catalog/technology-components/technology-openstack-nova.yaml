@@ -1,0 +1,31 @@
+schemaVersion: '1.0'
+uid: STCK000001-TC01
+type: technology_component
+name: OpenStack Nova
+description: 'OpenStack Nova is the compute service responsible for managing and provisioning
+  virtual machine instances. It includes nova-api, nova-scheduler, nova-conductor,
+  nova-compute, and nova-consoleauth subcomponents. Nova interacts with the hypervisor
+  layer (KVM/QEMU) and coordinates with Neutron, Cinder, and Glance to deliver full
+  instance lifecycle management.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- openstack
+- compute
+- iaas
+vendor: OpenStack Foundation
+productName: OpenStack Nova
+productVersion: '2024.1'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: TBD
+  notes: OpenStack Nova follows the OpenStack release cadence. The 2024.1 (Caracal)
+    release is supported by the upstream community under a rolling support model.
+    Long-term support variants are available from downstream distributors such as
+    Red Hat OpenStack Platform and Canonical OpenStack.

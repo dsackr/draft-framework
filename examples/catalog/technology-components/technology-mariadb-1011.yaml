@@ -1,0 +1,31 @@
+schemaVersion: '1.0'
+uid: STCK00000E-TC0E
+type: technology_component
+name: MariaDB 10.11
+description: 'MariaDB 10.11 is the long-term support relational database used as
+  the persistence backend for OpenStack services. Each OpenStack service maintains
+  its own database schema within the shared MariaDB cluster. In production deployments
+  MariaDB is deployed as a Galera cluster for synchronous multi-master replication
+  and high availability.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- database
+- relational
+- mariadb
+- iaas
+vendor: MariaDB Foundation
+productName: MariaDB Server
+productVersion: '10.11'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: '2028-02-16'
+  notes: MariaDB 10.11 is the current long-term support (LTS) release with mainstream
+    support through February 2028. It is the recommended MariaDB version for OpenStack
+    2024.1 (Caracal) deployments.

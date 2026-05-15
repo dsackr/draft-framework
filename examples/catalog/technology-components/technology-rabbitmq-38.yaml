@@ -1,0 +1,32 @@
+schemaVersion: '1.0'
+uid: STCK00000D-TC0D
+type: technology_component
+name: RabbitMQ 3.8
+description: 'RabbitMQ is a widely deployed open-source message broker implementing
+  AMQP. In OpenStack it serves as the shared message transport layer for Nova, Neutron,
+  Cinder, Heat, Ceilometer, Ironic, and Trove. Services publish work items and status
+  notifications to RabbitMQ exchanges, and subcomponents (schedulers, conductors,
+  agents) consume from queues to execute distributed tasks.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- messaging
+- amqp
+- rabbitmq
+- iaas
+vendor: Broadcom (VMware Tanzu)
+productName: RabbitMQ
+productVersion: '3.8'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: '2024-07-31'
+  notes: RabbitMQ 3.8 reached end of life in July 2024. Operators should plan migration
+    to RabbitMQ 3.12 or later. OpenStack deployments typically use RabbitMQ versions
+    bundled with their Linux distribution (e.g. RHEL 9 ships 3.11, Ubuntu 22.04 ships
+    3.9).

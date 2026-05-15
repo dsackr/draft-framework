@@ -1,0 +1,29 @@
+schemaVersion: '1.0'
+uid: STCK000006-TC06
+type: technology_component
+name: OpenStack Swift
+description: 'OpenStack Swift is the object storage service providing highly durable,
+  distributed storage for unstructured data. It includes swift-proxy-server for request
+  routing and swift-account, swift-container, and swift-object storage nodes. Swift
+  uses consistent hashing and replication for durability. Glance uses Swift as its
+  image binary storage backend.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- openstack
+- object-storage
+- iaas
+vendor: OpenStack Foundation
+productName: OpenStack Swift
+productVersion: '2024.1'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: TBD
+  notes: Swift follows the OpenStack upstream release cadence. Extended support available
+    from downstream distributors.

@@ -1,0 +1,69 @@
+schemaVersion: '1.0'
+uid: STCK000003-RS03
+type: runtime_service
+name: Glance Image Service
+description: 'Self-managed deployment of OpenStack Glance providing virtual machine
+  image storage and retrieval. Runs glance-api and glance-registry subcomponents.
+  Image metadata is stored in MariaDB and image binaries are stored in the Swift
+  object storage cluster. Nova retrieves images from Glance when provisioning compute
+  instances.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+lifecycleStatus: existing-only
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- runtime-service
+- openstack
+- image
+- glance
+- iaas
+deliveryModel: self-managed
+primaryTechnologyComponent: STCK000003-TC03
+architecturalDecisions:
+  serviceAuthentication: All Glance API requests are authenticated via Keystone token
+    validation. Glance service account is registered in the Keystone service catalog.
+  secretsManagement: Database credentials and Swift access credentials are stored
+    in glance-api.conf managed by configuration management tooling.
+  serviceLogging: Glance emits logs to /var/log/glance/. Logs are shipped to the
+    centralised log aggregation platform.
+  healthWelfareMonitoring: glance-api health is verified via HTTP endpoint polling.
+    Image upload/download rates and storage backend connectivity are monitored.
+  availabilityModel: glance-api runs active-active across multiple controller nodes
+    behind a load balancer. Image binaries in Swift are replicated across the storage
+    cluster for durability.
+  scalabilityModel: glance-api scales horizontally. Storage capacity scales by expanding
+    the Swift cluster.
+  recoverabilityModel: API processes recovered via systemd restart. Image metadata
+    recovered from MariaDB Galera. Image binaries are durable via Swift replication.
+  failureDomain: Failure of Glance prevents new instance provisioning and image management
+    operations. Running instances are not affected.
+  externalInteractionRationales:
+    Keystone Identity: All Glance API requests require Keystone token validation.
+      Modeled to show the authentication dependency.
+    Glance Database: Glance persists image metadata to MariaDB. Modeled as a critical
+      stateful dependency.
+    Swift Object Storage: Glance stores image binaries in Swift. Modeled to show
+      the storage backend dependency and the cross-service data flow.
+internalComponents:
+- ref: STCK000003-TC03
+  role: Core image service providing glance-api and glance-registry for image lifecycle
+    management.
+externalInteractions:
+- name: Keystone Identity
+  capabilities: []
+  notes: All Glance API requests are authenticated via Keystone token validation.
+    Glance service account is registered in the Keystone service catalog.
+- name: Glance Database
+  capabilities: []
+  notes: Glance persists image metadata including name, format, size, checksum, and
+    visibility to the Glance MariaDB schema.
+- name: Swift Object Storage
+  capabilities: []
+  notes: Glance stores raw image binary data in Swift. Swift provides durable, replicated
+    storage for all registered images.
+requirementGroups: []
+requirementImplementations: []

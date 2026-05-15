@@ -1,0 +1,28 @@
+schemaVersion: '1.0'
+uid: STCK000003-TC03
+type: technology_component
+name: OpenStack Glance
+description: 'OpenStack Glance is the image service that stores and retrieves virtual
+  machine disk images. It provides glance-api and glance-registry subcomponents and
+  supports multiple storage backends including Swift, Ceph, and local filesystem.
+  Nova queries Glance to retrieve bootable images when provisioning new instances.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- openstack
+- image
+- iaas
+vendor: OpenStack Foundation
+productName: OpenStack Glance
+productVersion: '2024.1'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: TBD
+  notes: Glance follows the OpenStack upstream release cadence. Downstream distributors
+    such as Red Hat and Canonical provide extended support windows.

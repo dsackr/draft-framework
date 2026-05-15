@@ -1,0 +1,29 @@
+schemaVersion: '1.0'
+uid: STCK000005-TC05
+type: technology_component
+name: OpenStack Cinder
+description: 'OpenStack Cinder is the block storage service that provides persistent
+  block volumes to Nova compute instances. It includes cinder-api, cinder-scheduler,
+  and cinder-volume subcomponents. Cinder supports multiple storage backends including
+  iSCSI, Fibre Channel, Ceph RBD, and vendor-specific drivers, and uses RabbitMQ
+  for internal messaging.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- openstack
+- block-storage
+- iaas
+vendor: OpenStack Foundation
+productName: OpenStack Cinder
+productVersion: '2024.1'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: TBD
+  notes: Cinder follows the OpenStack upstream release cadence. Extended support available
+    from downstream distributors including Red Hat OpenStack Platform.

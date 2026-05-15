@@ -1,0 +1,30 @@
+schemaVersion: '1.0'
+uid: STCK00000A-TC0A
+type: technology_component
+name: OpenStack Ironic
+description: 'OpenStack Ironic is the bare metal provisioning service. It exposes
+  ironic-api and uses ironic-conductor to manage physical hardware through IPMI, Redfish,
+  iLO, and DRAC driver interfaces. Ironic integrates with Nova to allow bare metal
+  machines to be enrolled in the compute scheduling pool and provisioned using standard
+  OpenStack workflows.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- openstack
+- bare-metal
+- ironic
+- iaas
+vendor: OpenStack Foundation
+productName: OpenStack Ironic
+productVersion: '2024.1'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: TBD
+  notes: Ironic follows the OpenStack upstream release cadence. Extended support available
+    from downstream distributors.

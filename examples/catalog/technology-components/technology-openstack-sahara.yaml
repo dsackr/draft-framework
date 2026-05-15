@@ -1,0 +1,30 @@
+schemaVersion: '1.0'
+uid: STCK00000C-TC0C
+type: technology_component
+name: OpenStack Sahara
+description: 'OpenStack Sahara is the data processing service that automates provisioning
+  of Apache Hadoop and Spark clusters on OpenStack. It provides sahara-api and sahara-all
+  subcomponents. Sahara enables tenants to define cluster templates and launch big
+  data processing workloads without manually managing cluster lifecycle.
+
+  '
+version: 1.0.0
+catalogStatus: draft
+owner:
+  team: platform-engineering
+  contact: platform-engineering@example.com
+tags:
+- technology-component
+- openstack
+- data-processing
+- hadoop
+- iaas
+vendor: OpenStack Foundation
+productName: OpenStack Sahara
+productVersion: '2024.1'
+classification: software
+vendorLifecycle:
+  mainstreamSupportEnd: TBD
+  notes: Sahara follows the OpenStack upstream release cadence. Note that Sahara is
+    a less actively developed component and operators should evaluate its maturity
+    and community support before adopting in production environments.
