@@ -3,6 +3,35 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.9 - 2026-05-15
+
+### Compatibility Impact
+
+No migration is required. This patch updates the vendored framework refresh
+workflow template to point at the new upstream repository location; it does not
+change schemas, validation behavior, or catalog object formats.
+
+### Added
+
+- Added the `getdraft/draftsman` repository URL to the workspace framework
+  refresh workflow template.
+
+### Changed
+
+- Updated the generated `draft-framework-update.yml` workflow to use
+  `https://github.com/getdraft/draftsman.git` as its default framework source.
+
+### Fixed
+
+- Fixed the stale framework refresh workflow default that still targeted the
+  retired `dsackr/draft-framework` repository.
+
+### Migration Notes
+
+- Existing workspaces can update their checked-in
+  `.github/workflows/draft-framework-update.yml` to pick up this fix before the
+  next framework refresh.
+
 ## 0.13.8 - 2026-05-15
 
 ### Compatibility Impact

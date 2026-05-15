@@ -16,7 +16,7 @@ permissions:
   statuses: write
 
 env:
-  DRAFT_FRAMEWORK_SOURCE: https://github.com/dsackr/draft-framework.git
+  DRAFT_FRAMEWORK_SOURCE: https://github.com/getdraft/draftsman.git
 
 jobs:
   update:
@@ -62,7 +62,7 @@ jobs:
 
           workspace = Path.cwd()
           lock_path = workspace / ".draft" / "framework.lock"
-          source = os.environ.get("DRAFT_FRAMEWORK_SOURCE", "https://github.com/dsackr/draft-framework.git")
+          source = os.environ.get("DRAFT_FRAMEWORK_SOURCE", "https://github.com/getdraft/draftsman.git")
           target_ref_input = os.environ.get("TARGET_REF", "").strip()
           output_path = Path(os.environ["GITHUB_OUTPUT"])
 
