@@ -979,9 +979,32 @@ html, body {
   align-items: flex-start;
   gap: 12px;
 }
+.interaction-heading {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
 .interaction-name {
   font-weight: 600;
   line-height: 1.4;
+}
+.dependency-capabilities {
+  gap: 6px;
+}
+.capability-label {
+  background: rgba(42,111,219,0.10);
+  border-color: rgba(42,111,219,0.28);
+  color: #1d4f9e;
+}
+.dependency-justification {
+  display: grid;
+  gap: 6px;
+}
+.justification-label {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 .interaction-notes {
   color: var(--muted);
@@ -1130,6 +1153,19 @@ html, body {
 }
 .component-network-section h3 {
   margin: 0;
+}
+.component-summary-list {
+  margin-top: 16px;
+}
+.component-summary-card {
+  gap: 12px;
+}
+.component-summary-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: space-between;
 }
 .topology-layout {
   display: grid;

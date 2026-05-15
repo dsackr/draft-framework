@@ -3,6 +3,42 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.10 - 2026-05-15
+
+### Compatibility Impact
+
+No migration is required. This patch improves browser detail-view rendering for
+ service and host dependencies; it does not change schemas, validation
+ behavior, or catalog object formats.
+
+### Added
+
+- Added dependency justification rendering in the browser detail view so
+  internal components and external interactions show the requirement they
+  satisfy, or the architectural decision rationale when they do not satisfy a
+  requirement directly.
+
+### Changed
+
+- Changed external interaction cards to show human-readable capability labels
+  under the interaction title instead of raw capability IDs.
+- Added an internal component summary list beneath the detail-view component
+  diagram so dependency purpose is readable without inspecting the raw YAML.
+
+### Fixed
+
+- Fixed service and host detail views that previously exposed dependency UIDs
+  and unstated purpose without showing the requirement or architectural
+  decision that justified modeling the dependency.
+
+### Migration Notes
+
+- Existing workspaces can continue unchanged.
+- Workspaces that already document
+  `architecturalDecisions.externalInteractionRationales`,
+  `internalComponentRationales`, or `dependencyRationales` will now see those
+  rationales surfaced directly in the browser.
+
 ## 0.13.9 - 2026-05-15
 
 ### Compatibility Impact

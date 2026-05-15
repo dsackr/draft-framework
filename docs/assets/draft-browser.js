@@ -947,6 +947,463 @@ function implementationConfigurationLabel(technology, implementation) {
   return `${configuration.name || configuration.id} (${configurationId})`;
 }
 
+const activeRequirementGroupIds = new Set(browserData.requirements?.activeRequirementGroups || []);
+const requireActiveRequirementGroupDisposition = Boolean(browserData.requirements?.requireActiveRequirementGroupDisposition);
+const requirementGroups = allObjects.filter(object => object.type === 'requirement_group');
+const rawDetailCache = new Map();
+
+function rawDetailObject(object) {
+  if (!object) return {};
+  if (!rawDetailCache.has(object.id)) {
+    try {
+      rawDetailCache.set(object.id, JSON.parse(object.detail || '{}'));
+    } catch (error) {
+      rawDetailCache.set(object.id, {});
+    }
+  }
+  return rawDetailCache.get(object.id) || {};
+}
+
+function getNestedValue(node, dottedKey) {
+  if (!node || typeof node !== 'object' || !dottedKey) return null;
+  return String(dottedKey).split('.').reduce((current, key) => {
+    if (!current || typeof current !== 'object' || !(key in current)) return null;
+    return current[key];
+  }, node);
+}
+
+function requirementFriendlyLabel(group, requirement) {
+  const requirementId = requirement?.externalControlId || requirement?.id || 'unknown';
+  const requirementName = String(requirement?.name || '').trim();
+  if (requirementName && requirementName !== requirementId) {
+    return `${requirementId} ${requirementName}`;
+  }
+  const prefix = requirementAuthorityPrefix(group);
+  return prefix ? `${prefix} ${requirementId}` : requirementDisplayLabel(group, requirement || { id: requirementId });
+}
+
+function capabilityDisplayName(capabilityId) {
+  const capability = objectLookup[capabilityId];
+  return capability?.name || capabilityId;
+}
+
+function capabilityLabelsMarkup(capabilities) {
+  const values = Array.isArray(capabilities) ? capabilities.filter(Boolean) : [];
+  if (!values.length) return '';
+  return `
+    <div class="requirement-badges dependency-capabilities">
+      ${values.map(capabilityId => `<span class="requirement-badge capability-label">${escapeHtml(capabilityDisplayName(capabilityId))}</span>`).join('')}
+    </div>
+  `;
+}
+
+function requirementGroupAppliesToObject(group, object) {
+  const raw = rawDetailObject(group);
+  const appliesTo = Array.isArray(raw.appliesTo) ? raw.appliesTo : [];
+  if (!appliesTo.includes(object.type)) {
+    return false;
+  }
+  const qualifiers = raw.appliesToQualifiers && typeof raw.appliesToQualifiers === 'object'
+    ? raw.appliesToQualifiers
+    : {};
+  for (const [key, expected] of Object.entries(qualifiers)) {
+    if (object[key] !== expected) {
+      return false;
+    }
+  }
+  if (object.type === 'host' && group.name === 'Host Requirement Group') {
+    const tags = Array.isArray(object.tags) ? object.tags : [];
+    if (tags.some(tag => tag === 'serverless' || tag === 'container')) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function applicabilityClauseMatches(object, clause) {
+  if (!clause || typeof clause !== 'object' || !clause.field) {
+    return false;
+  }
+  const value = getNestedValue(object, clause.field);
+  if (Object.prototype.hasOwnProperty.call(clause, 'equals')) {
+    return value === clause.equals;
+  }
+  if (Array.isArray(clause.in)) {
+    return clause.in.includes(value);
+  }
+  if (Object.prototype.hasOwnProperty.call(clause, 'contains')) {
+    return Array.isArray(value) && value.includes(clause.contains);
+  }
+  if (Object.prototype.hasOwnProperty.call(clause, 'truthy')) {
+    return Boolean(value) === Boolean(clause.truthy);
+  }
+  return false;
+}
+
+function requirementAppliesToObject(requirement, object) {
+  if (Array.isArray(requirement?.appliesTo) && requirement.appliesTo.length && !requirement.appliesTo.includes(object.type)) {
+    return false;
+  }
+  const applicability = requirement?.applicability;
+  if (applicability && typeof applicability === 'object') {
+    if (Array.isArray(applicability.allOf)) {
+      return applicability.allOf.every(clause => applicabilityClauseMatches(object, clause));
+    }
+    if (Array.isArray(applicability.anyOf)) {
+      return applicability.anyOf.some(clause => applicabilityClauseMatches(object, clause));
+    }
+  }
+  return true;
+}
+
+function resolvedRequirementsForGroup(groupId, stack = new Set()) {
+  if (!groupId || stack.has(groupId)) {
+    return [];
+  }
+  const group = objectLookup[groupId];
+  if (!group || group.type !== 'requirement_group') {
+    return [];
+  }
+  stack.add(groupId);
+  const raw = rawDetailObject(group);
+  const parentRequirements = raw.inherits ? resolvedRequirementsForGroup(raw.inherits, stack) : [];
+  const ownRequirements = Array.isArray(raw.requirements) ? raw.requirements : [];
+  stack.delete(groupId);
+  return [...parentRequirements, ...ownRequirements];
+}
+
+function applicableRequirementEntries(object) {
+  const declaredGroupIds = new Set(Array.isArray(object.requirementGroups) ? object.requirementGroups : []);
+  const entries = [];
+  requirementGroups.forEach(group => {
+    if (!requirementGroupAppliesToObject(group, object)) {
+      return;
+    }
+    const activation = rawDetailObject(group).activation || group.activation || '';
+    const included = activation === 'always'
+      || declaredGroupIds.has(group.id)
+      || (requireActiveRequirementGroupDisposition && activeRequirementGroupIds.has(group.id));
+    if (!included) {
+      return;
+    }
+    resolvedRequirementsForGroup(group.id).forEach(requirement => {
+      if (requirement && requirementAppliesToObject(requirement, object)) {
+        entries.push({ group, requirement });
+      }
+    });
+  });
+  return entries;
+}
+
+function interactionCapabilities(interaction) {
+  return Array.isArray(interaction?.capabilities) ? interaction.capabilities.filter(Boolean).map(String) : [];
+}
+
+function referencedTechnologyComponents(object) {
+  const refs = [];
+  ['operatingSystemComponent', 'computePlatformComponent', 'primaryTechnologyComponent'].forEach(field => {
+    if (object?.[field]) {
+      refs.push(object[field]);
+    }
+  });
+  (object?.internalComponents || []).forEach(component => {
+    if (component?.ref) {
+      refs.push(component.ref);
+    }
+  });
+  if (object?.type === 'technology_component' && object.id) {
+    refs.unshift(object.id);
+  }
+  return Array.from(new Set(refs))
+    .map(ref => objectLookup[ref])
+    .filter(target => target?.type === 'technology_component');
+}
+
+function technologyRefSatisfiesCriteria(ref, criteria) {
+  const target = objectLookup[ref];
+  if (!target || target.type !== 'technology_component') {
+    return false;
+  }
+  if (criteria?.classification && target.classification !== criteria.classification) {
+    return false;
+  }
+  const capability = criteria?.capability || criteria?.concern;
+  if (!capability) {
+    return true;
+  }
+  return Array.isArray(target.capabilities) && target.capabilities.includes(capability);
+}
+
+function technologyRefConfigurationSatisfiesCriteria(ref, criteria) {
+  const target = objectLookup[ref];
+  if (!target || target.type !== 'technology_component') {
+    return false;
+  }
+  if (criteria?.classification && target.classification !== criteria.classification) {
+    return false;
+  }
+  const capability = criteria?.capability || criteria?.concern;
+  return (target.configurations || []).some(configuration =>
+    configuration
+    && Array.isArray(configuration.capabilities)
+    && configuration.capabilities.includes(capability)
+  );
+}
+
+function externalInteractionSatisfiesMechanism(interaction, mechanism) {
+  if (mechanism?.mechanism !== 'externalInteraction') {
+    return false;
+  }
+  const capability = mechanism.criteria?.capability;
+  if (capability === 'any') {
+    return true;
+  }
+  return Boolean(capability && interactionCapabilities(interaction).includes(capability));
+}
+
+function externalInteractionSatisfiesImplementation(interaction, implementation) {
+  if (implementation?.status !== 'satisfied' || implementation?.mechanism !== 'externalInteraction') {
+    return false;
+  }
+  const ref = implementation.ref;
+  const capabilities = interactionCapabilities(interaction);
+  if (ref && [interaction.ref, interaction.name, ...capabilities].includes(ref)) {
+    return true;
+  }
+  const criteria = implementation.criteria && typeof implementation.criteria === 'object' ? implementation.criteria : {};
+  const expected = Array.isArray(criteria.capabilities)
+    ? criteria.capabilities
+    : criteria.capability ? [criteria.capability] : [];
+  return expected.some(capability => capabilities.includes(capability));
+}
+
+function internalComponentSatisfiesMechanism(object, component, mechanism) {
+  const ref = component?.ref;
+  if (!ref) {
+    return false;
+  }
+  if (mechanism?.mechanism === 'field') {
+    return Boolean(mechanism.key && object?.[mechanism.key] === ref);
+  }
+  if (mechanism?.mechanism === 'technologyComponent') {
+    if (mechanism.ref && mechanism.ref !== ref) {
+      return false;
+    }
+    return technologyRefSatisfiesCriteria(ref, mechanism.criteria || {});
+  }
+  if (mechanism?.mechanism === 'internalComponent') {
+    const criteria = mechanism.criteria || {};
+    if (criteria.role && component.role === criteria.role) {
+      return true;
+    }
+    return technologyRefSatisfiesCriteria(ref, criteria);
+  }
+  if (mechanism?.mechanism === 'technologyComponentConfiguration') {
+    return technologyRefConfigurationSatisfiesCriteria(ref, mechanism.criteria || {});
+  }
+  if (mechanism?.mechanism === 'externalInteraction') {
+    return (object?.externalInteractions || []).some(interaction =>
+      interaction
+      && interaction.enabledBy === ref
+      && externalInteractionSatisfiesMechanism(interaction, mechanism)
+    );
+  }
+  return false;
+}
+
+function internalComponentSatisfiesImplementation(object, component, implementation) {
+  if (implementation?.status !== 'satisfied' || !component?.ref) {
+    return false;
+  }
+  const ref = component.ref;
+  const mechanism = implementation.mechanism;
+  if (mechanism === 'field') {
+    return Boolean(implementation.key && object?.[implementation.key] === ref);
+  }
+  if (mechanism === 'technologyComponent' || mechanism === 'internalComponent') {
+    if (implementation.ref === ref) {
+      return true;
+    }
+    return technologyRefSatisfiesCriteria(ref, implementation.criteria || {});
+  }
+  if (mechanism === 'technologyComponentConfiguration') {
+    if (implementation.ref && implementation.ref !== ref) {
+      return false;
+    }
+    return technologyRefConfigurationSatisfiesCriteria(ref, implementation.criteria || {});
+  }
+  if (mechanism === 'externalInteraction') {
+    return (object?.externalInteractions || []).some(interaction =>
+      interaction
+      && interaction.enabledBy === ref
+      && externalInteractionSatisfiesImplementation(interaction, implementation)
+    );
+  }
+  return false;
+}
+
+function entryRationaleCandidates(entry, context, kind) {
+  const candidates = [context];
+  ['id', 'name', 'ref', 'enabledBy', 'role'].forEach(key => {
+    if (entry?.[key]) {
+      candidates.push(String(entry[key]));
+    }
+  });
+  if (kind === 'external') {
+    interactionCapabilities(entry).forEach(capability => candidates.push(capability));
+  }
+  return Array.from(new Set(candidates));
+}
+
+function rationaleEntriesForCandidates(bucketValue, candidates) {
+  const entries = [];
+  if (bucketValue && typeof bucketValue === 'object' && !Array.isArray(bucketValue)) {
+    candidates.forEach(candidate => {
+      if (!(candidate in bucketValue)) {
+        return;
+      }
+      const value = bucketValue[candidate];
+      if (value === true) {
+        entries.push('Modeled as documented architectural decision.');
+      } else if (value) {
+        entries.push(String(value));
+      }
+    });
+    return Array.from(new Set(entries));
+  }
+  if (Array.isArray(bucketValue)) {
+    bucketValue.forEach(item => {
+      if (!item || typeof item !== 'object') {
+        return;
+      }
+      const itemCandidates = new Set(
+        ['id', 'name', 'ref', 'enabledBy', 'role', 'capability']
+          .map(key => item[key])
+          .filter(Boolean)
+          .map(String)
+      );
+      if (Array.isArray(item.capabilities)) {
+        item.capabilities.filter(Boolean).forEach(capability => itemCandidates.add(String(capability)));
+      }
+      if (!candidates.some(candidate => itemCandidates.has(candidate))) {
+        return;
+      }
+      const reason = item.reason || item.rationale || item.decision || item.notes;
+      if (reason) {
+        entries.push(String(reason));
+      }
+    });
+  }
+  return Array.from(new Set(entries));
+}
+
+function dependencyRationales(object, kind, entry, context) {
+  const decisions = object?.architecturalDecisions;
+  if (!decisions || typeof decisions !== 'object') {
+    return [];
+  }
+  const candidates = entryRationaleCandidates(entry, context, kind);
+  const bucketNames = kind === 'external'
+    ? ['externalInteractionRationales', 'dependencyRationales']
+    : ['internalComponentRationales', 'dependencyRationales'];
+  return Array.from(new Set(
+    bucketNames.flatMap(bucketName => rationaleEntriesForCandidates(decisions[bucketName], candidates))
+  ));
+}
+
+function dependencyRequirementMatches(object, entry, kind, context) {
+  const matches = new Map();
+  applicableRequirementEntries(object).forEach(({ group, requirement }) => {
+    const mechanisms = Array.isArray(requirement?.canBeSatisfiedBy) ? requirement.canBeSatisfiedBy : [];
+    const satisfiedByMechanism = mechanisms.some(mechanism => {
+      if (!mechanism || typeof mechanism !== 'object') return false;
+      return kind === 'external'
+        ? externalInteractionSatisfiesMechanism(entry, mechanism)
+        : internalComponentSatisfiesMechanism(object, entry, mechanism);
+    });
+    if (satisfiedByMechanism) {
+      matches.set(`${group.id}:${requirement.id || requirement.externalControlId || requirement.name}`, {
+        group,
+        requirement
+      });
+    }
+  });
+
+  (object.requirementImplementations || []).forEach(implementation => {
+    if (!implementation || typeof implementation !== 'object') return;
+    const matchesImplementation = kind === 'external'
+      ? externalInteractionSatisfiesImplementation(entry, implementation)
+      : internalComponentSatisfiesImplementation(object, entry, implementation);
+    if (!matchesImplementation) {
+      return;
+    }
+    const group = objectLookup[implementation.requirementGroup] || null;
+    const requirement = findRequirementInGroup(group, implementation.requirementId) || {
+      id: implementation.requirementId || implementation.key || 'unknown'
+    };
+    matches.set(`${implementation.requirementGroup}:${implementation.requirementId}:${implementation.key || ''}:${context}`, {
+      group,
+      requirement
+    });
+  });
+
+  return Array.from(matches.values());
+}
+
+function dependencyJustificationMarkup(justification) {
+  if (!justification) return '';
+  if (justification.type === 'requirement') {
+    return `
+      <div class="dependency-justification">
+        <div class="justification-label">Required By</div>
+        <div class="requirement-badges">
+          ${justification.items.map(item => `<span class="requirement-badge">${escapeHtml(requirementFriendlyLabel(item.group, item.requirement))}</span>`).join('')}
+        </div>
+      </div>
+    `;
+  }
+  if (justification.type === 'decision') {
+    return `
+      <div class="dependency-justification">
+        <div class="justification-label">Architectural Decision</div>
+        <div class="interaction-notes">${escapeHtml(justification.items[0] || 'Modeled as documented architectural decision.')}</div>
+      </div>
+    `;
+  }
+  return `
+    <div class="dependency-justification">
+      <div class="justification-label">Justification Gap</div>
+      <div class="interaction-notes">No requirement evidence or architectural decision rationale is documented for this dependency.</div>
+    </div>
+  `;
+}
+
+function dependencyJustificationForExternalInteraction(object, interaction, index) {
+  const context = `externalInteractions[${index}]`;
+  const requirementMatches = dependencyRequirementMatches(object, interaction, 'external', context);
+  if (requirementMatches.length) {
+    return { type: 'requirement', items: requirementMatches };
+  }
+  const rationales = dependencyRationales(object, 'external', interaction, context);
+  if (rationales.length) {
+    return { type: 'decision', items: rationales };
+  }
+  return { type: 'gap', items: [] };
+}
+
+function dependencyJustificationForInternalComponent(object, component, index) {
+  const context = `internalComponents[${index}]`;
+  const requirementMatches = dependencyRequirementMatches(object, component, 'internal', context);
+  if (requirementMatches.length) {
+    return { type: 'requirement', items: requirementMatches };
+  }
+  const rationales = dependencyRationales(object, 'internal', component, context);
+  if (rationales.length) {
+    return { type: 'decision', items: rationales };
+  }
+  return { type: 'gap', items: [] };
+}
+
 function acceptableUseGroups() {
   const groups = new Map();
   allObjects
@@ -2211,16 +2668,60 @@ function interactionMarkup(object) {
   }
   return `
     <div class="interactions-list">
-      ${interactions.map(interaction => `
+      ${interactions.map((interaction, index) => {
+        const justification = dependencyJustificationForExternalInteraction(object, interaction, index);
+        return `
         <article class="interaction-card">
           <div class="interaction-top">
-            <div class="interaction-name">${escapeHtml(interaction.name || 'External Interaction')}</div>
-            ${(interaction.capabilities || []).map(cap => `<span class="badge ${capabilityClass(cap)}">${escapeHtml(cap)}</span>`).join(' ')}
+            <div class="interaction-heading">
+              <div class="interaction-name">${escapeHtml(interaction.name || 'External Interaction')}</div>
+              ${capabilityLabelsMarkup(interaction.capabilities)}
+            </div>
           </div>
+          ${dependencyJustificationMarkup(justification)}
           ${interaction.notes ? `<div class="interaction-notes">${escapeHtml(interaction.notes)}</div>` : ''}
           ${interaction.ref ? `<div class="interaction-ref">${escapeHtml(interaction.ref)}</div>` : ''}
         </article>
-      `).join('')}
+      `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function internalComponentSummaryMarkup(object) {
+  const components = object?.internalComponents || [];
+  if (!components.length) {
+    return '';
+  }
+  return `
+    <div class="section-stack component-summary-list">
+      ${components.map((component, index) => {
+        const target = objectLookup[component.ref] || null;
+        const justification = dependencyJustificationForInternalComponent(object, component, index);
+        const resolution = componentNetworkBindingResolution(component);
+        const configurationText = component.configuration
+          ? configurationDisplayName(configurationById(target, component.configuration) || { id: component.configuration })
+          : '';
+        return `
+          <article class="odc-card component-summary-card">
+            <div class="component-summary-header">
+              <div>
+                <div class="odc-name">
+                  ${target ? `<span class="ard-link" data-object-link="${escapeHtml(target.id)}">${escapeHtml(target.name)}</span>` : escapeHtml(component.ref || 'Unknown component')}
+                </div>
+                <div class="object-id">${escapeHtml(component.ref || '')}</div>
+              </div>
+              <div class="requirement-badges">
+                <span class="requirement-badge">${escapeHtml(component.role || 'component')}</span>
+                ${configurationText ? `<span class="requirement-badge capability-label">${escapeHtml(configurationText)}</span>` : ''}
+              </div>
+            </div>
+            ${dependencyJustificationMarkup(justification)}
+            ${component.notes ? `<div class="interaction-notes">${escapeHtml(component.notes)}</div>` : ''}
+            ${resolution.status === 'unknown-configuration' ? `<div class="interaction-notes">Referenced configuration is not defined on the Technology Component.</div>` : ''}
+          </article>
+        `;
+      }).join('')}
     </div>
   `;
 }
@@ -3405,6 +3906,7 @@ function architectureDetailMarkup(componentSource, interactionSource, decisionSo
         <h3>Internal Components</h3>
         <div id="detail-cy"></div>
         ${componentSource ? internalComponentNetworkMarkup(componentSource) : ''}
+        ${componentSource ? internalComponentSummaryMarkup(componentSource) : ''}
       </div>
       <div class="section-card">
         <h3>External Interactions</h3>
