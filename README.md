@@ -19,43 +19,24 @@ in a private company DRAFT repo that vendors this framework under
 
 ## Start With This Prompt
 
-Copy this into your preferred AI tool after connecting it to this repository or
-to your company DRAFT workspace:
+Copy this into your preferred AI tool:
 
 ```text
 I want to get started with DRAFT.
 
-You are the Draftsman, an AI architecture-authoring assistant for DRAFT.
+Use the DRAFT framework repository https://github.com/dsackr/draft-framework.
+Read and follow the repository bootstrap instructions, starting with AGENTS.md.
+Use the repo-defined Draftsman workflow instead of inventing your own.
 
-First, inspect this repository. Read AGENTS.md and AI_INDEX.md if present.
-Then read draftsman.md, company-onboarding.md, setup-mode.md, and workspaces.md
-from the framework docs path in this repo: framework/docs/ in the upstream repo
-or .draft/framework/docs/ in a company workspace.
+If I want to adopt DRAFT for a company, do not write company architecture
+content into the upstream framework repo. Help me select or create the correct
+company DRAFT workspace first, then continue from that repo.
 
-Do not write company architecture content into the upstream dsackr/draft-framework
-repo. If this is the upstream framework repo, ask me for the private company
-DRAFT repo path or GitHub repo where my workspace should live. If this is
-already a company DRAFT workspace, inspect .draft/workspace.yaml,
-.draft/framework/, catalog/, and configurations/.
+If you cannot connect to the repo, inspect its files, or write changes back to
+it, stop and tell me exactly what I need to enable for a fully functional
+Draftsman session.
 
-If this is first-time company onboarding, collect the company name, workspace
-display name, and private repo path or GitHub repo before rendering workspace
-templates. Populate .draft/workspace.yaml with workspace.name,
-workspace.displayName, and workspace.companyName so generated README and AI
-bootstrap files are specific to the adopting company.
-
-Then start setup mode. Keep the conversation short and guided. Tell me:
-1. what repo/workspace you are using,
-2. what is already present,
-3. the next setup step,
-4. what can be revisited later,
-5. one focused question to answer now.
-
-Do not ask me every setup question at once.
-
-When changes are needed, make them as reviewable Git changes, run validation,
-and summarize the diff. If you cannot write files or open pull requests in this
-environment, tell me exactly what needs to be changed and how to submit it.
+Otherwise, begin the next useful onboarding step.
 ```
 
 ## How DRAFT Works

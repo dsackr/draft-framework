@@ -3,6 +3,38 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.7 - 2026-05-15
+
+### Compatibility Impact
+
+No migration is required. This patch simplifies the upstream and workspace
+bootstrap prompts only; it does not change schemas, validation behavior, or
+catalog object formats.
+
+### Added
+
+- Added explicit upstream prompt language that tells the AI to help select or
+  create the correct company DRAFT workspace before attempting company content
+  authoring.
+
+### Changed
+
+- Simplified the upstream framework README prompt so it is a pure bootstrap
+  handoff to `AGENTS.md` instead of duplicating Draftsman behavior.
+- Updated the workspace README template to remove the assumption that the AI is
+  already connected before the pasted prompt runs.
+
+### Fixed
+
+- Fixed the first-use framework prompt so it no longer front-loads unwanted
+  repo status narration or canned session questions.
+
+### Migration Notes
+
+- Existing workspaces can continue unchanged.
+- Existing company READMEs can refresh from the workspace template or apply the
+  same wording locally.
+
 ## 0.13.6 - 2026-05-14
 
 ### Compatibility Impact
