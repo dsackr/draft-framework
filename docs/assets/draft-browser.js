@@ -359,6 +359,14 @@ function syncHashForTeamsView() {
   setHashState({ view: 'teams' });
 }
 
+function syncHashForSdpsByPillarView() {
+  setHashState({ view: 'sdps-by-pillar' });
+}
+
+function syncHashForPillarSdpsView(pillarId) {
+  setHashState({ view: 'pillar-sdps', id: pillarId });
+}
+
 function applyRouteFromHash() {
   if (suppressHashSync) return;
   const params = currentHashState();
@@ -433,6 +441,19 @@ function applyRouteFromHash() {
   }
   if (view === 'teams') {
     renderTeamsView();
+    return;
+  }
+  if (view === 'sdps-by-pillar') {
+    renderSdpsByPillarView();
+    return;
+  }
+  if (view === 'pillar-sdps') {
+    const pillarId = params.get('id');
+    if (pillarId) {
+      renderPillarSdpsView(pillarId);
+      return;
+    }
+    renderSdpsByPillarView();
     return;
   }
   executiveDrilldown = null;
@@ -2308,6 +2329,96 @@ function renderTeamsView() {
   attachObjectLinkHandlers(pageRoot);
 }
 
+// ── SDP by Business Pillar — top-level pillar tiles ─────────────────
+function renderSdpsByPillarView() {
+  currentMode = 'sdps-by-pillar';
+  currentDetailId = null;
+  destroyDetailCy();
+  destroySdpGraphCy();
+  destroyImpactCy();
+  syncHashForSdpsByPillarView();
+  renderSidebarContent('');
+
+  const sdps = (browserData.objects || []).filter(o => o.type === 'software_deployment_pattern');
+  const groups = groupSoftwareDeploymentPatternsByPillar(sdps);
+
+  const pillarTiles = groups.map(({ pillar, objects }) => {
+    const count = objects.length;
+    return `
+      <div class="home-tile sdp-pillar-tile" role="button" tabindex="0"
+           data-executive-target="pillar-sdps:${escapeHtml(pillar.id)}">
+        <span class="home-tile-icon">🏛</span>
+        <span class="home-tile-title">${escapeHtml(pillar.name || pillar.id)}</span>
+        <span class="home-tile-count">${count} pattern${count === 1 ? '' : 's'}</span>
+      </div>
+    `;
+  }).join('');
+
+  pageRoot.innerHTML = `
+    <div class="view-shell">
+      ${topNavMarkup()}
+      ${subviewHeaderMarkup('Home', 'home', 'Software Deployment Patterns', `Browse by Business Pillar · ${sdps.length} pattern${sdps.length === 1 ? '' : 's'}`)}
+      <div class="home-tiles sdp-pillar-grid">
+        ${pillarTiles || '<p class="empty-state">No software deployment patterns found.</p>'}
+      </div>
+    </div>
+  `;
+
+  attachExecutiveHandlers();
+  attachTopNavHandlers();
+  attachSidebarHandlers();
+}
+
+// ── SDP tiles for a single pillar ───────────────────────────────────
+function renderPillarSdpsView(pillarId) {
+  currentMode = 'pillar-sdps';
+  currentDetailId = null;
+  destroyDetailCy();
+  destroySdpGraphCy();
+  destroyImpactCy();
+  syncHashForPillarSdpsView(pillarId);
+  renderSidebarContent('');
+
+  const sdps = (browserData.objects || []).filter(o => o.type === 'software_deployment_pattern');
+  const groups = groupSoftwareDeploymentPatternsByPillar(sdps);
+  const group = groups.find(g => g.pillar.id === pillarId);
+  if (!group) {
+    renderSdpsByPillarView();
+    return;
+  }
+
+  const { pillar, objects } = group;
+  const sdpTiles = objects.map(sdp => {
+    const lifecycle = sdp.lifecycleStatus || 'unknown';
+    const lifecycleColors = { preferred: '2e7d32', 'existing-only': '1565c0', candidate: 'f57f17', deprecated: '6d4c41', retired: 'b71c1c', unknown: '7a6e60' };
+    const color = lifecycleColors[lifecycle] ? `#${lifecycleColors[lifecycle]}` : '#7a6e60';
+    return `
+      <div class="home-tile sdp-object-tile" role="button" tabindex="0"
+           data-object-link="${escapeHtml(sdp.uid || sdp.id || '')}">
+        <span class="home-tile-icon">🗺</span>
+        <span class="home-tile-title">${escapeHtml(sdp.name || sdp.uid || '')}</span>
+        ${sdp.description ? `<span class="home-tile-desc">${escapeHtml(sdp.description)}</span>` : ''}
+        <span class="badge" style="background:${color};color:#fff;margin-top:auto">${escapeHtml(lifecycle)}</span>
+      </div>
+    `;
+  }).join('');
+
+  pageRoot.innerHTML = `
+    <div class="view-shell">
+      ${topNavMarkup()}
+      ${subviewHeaderMarkup('Deployment Patterns', 'sdps-by-pillar', escapeHtml(pillar.name || pillar.id), `${objects.length} pattern${objects.length === 1 ? '' : 's'}`)}
+      <div class="home-tiles sdp-object-grid">
+        ${sdpTiles || '<p class="empty-state">No patterns in this pillar.</p>'}
+      </div>
+    </div>
+  `;
+
+  attachExecutiveHandlers();
+  attachTopNavHandlers();
+  attachSidebarHandlers();
+  attachObjectLinkHandlers(pageRoot);
+}
+
 function renderExecutiveView() {
   currentMode = 'executive';
   currentDetailId = null;
@@ -2695,12 +2806,12 @@ function navigateExecutiveTarget(target) {
     renderListView();
     return;
   }
-  if (target === 'deployments') {
-    activeCategory = 'architecture';
-    activeFilter = 'software_deployment_pattern';
-    listSearchTerm = '';
-    executiveDrilldown = null;
-    renderListView();
+  if (target === 'deployments' || target === 'sdps-by-pillar') {
+    renderSdpsByPillarView();
+    return;
+  }
+  if (target.startsWith('pillar-sdps:')) {
+    renderPillarSdpsView(target.slice('pillar-sdps:'.length));
     return;
   }
   if (target === 'requirements') {

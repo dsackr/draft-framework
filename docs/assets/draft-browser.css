@@ -2866,6 +2866,10 @@ html, body {
   flex-direction: column;
   gap: 3px;
 }
+/* ── SDP pillar + object tile grids ─────────────────────────────── */
+.sdp-pillar-grid .home-tile { min-height: 160px; }
+.sdp-object-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+.sdp-object-grid .home-tile { min-height: 180px; justify-content: flex-start; }
 /* ── Empty state shared ──────────────────────────────────────────── */
 .empty-state {
   font-size: 0.85rem;
