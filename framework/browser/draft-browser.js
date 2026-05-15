@@ -1183,7 +1183,11 @@ function internalComponentSatisfiesMechanism(object, component, mechanism) {
     return false;
   }
   if (mechanism?.mechanism === 'field') {
-    return Boolean(mechanism.key && object?.[mechanism.key] === ref);
+    const raw = rawDetailObject(object);
+    return Boolean(
+      mechanism.key
+      && (object?.[mechanism.key] === ref || raw?.[mechanism.key] === ref)
+    );
   }
   if (mechanism?.mechanism === 'technologyComponent') {
     if (mechanism.ref && mechanism.ref !== ref) {
@@ -1218,7 +1222,11 @@ function internalComponentSatisfiesImplementation(object, component, implementat
   const ref = component.ref;
   const mechanism = implementation.mechanism;
   if (mechanism === 'field') {
-    return Boolean(implementation.key && object?.[implementation.key] === ref);
+    const raw = rawDetailObject(object);
+    return Boolean(
+      implementation.key
+      && (object?.[implementation.key] === ref || raw?.[implementation.key] === ref)
+    );
   }
   if (mechanism === 'technologyComponent' || mechanism === 'internalComponent') {
     if (implementation.ref === ref) {

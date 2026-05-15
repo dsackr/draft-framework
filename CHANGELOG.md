@@ -3,6 +3,36 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.12 - 2026-05-15
+
+### Compatibility Impact
+
+No migration is required. This patch fixes browser requirement justification
+resolution for field-backed internal components; it does not change schemas,
+validation behavior, or catalog object formats.
+
+### Added
+
+- Added raw-detail fallback matching when browser dependency justification
+  resolves field-backed internal component requirements.
+
+### Changed
+
+- Changed internal component requirement matching to evaluate both the browser's
+  lightweight object record and the full parsed object detail payload.
+
+### Fixed
+
+- Fixed false `Justification Gap` messages for host operating system and
+  compute platform components when those dependencies are satisfied by base
+  framework field requirements.
+
+### Migration Notes
+
+- Existing workspaces can continue unchanged.
+- Regenerate browser assets to pick up the corrected dependency justification
+  rendering.
+
 ## 0.13.11 - 2026-05-15
 
 ### Compatibility Impact
