@@ -189,6 +189,45 @@ def load_workspace_business_taxonomy(workspace_root: Path) -> dict[str, Any]:
     }
 
 
+def load_workspace_vocabulary(workspace_root: Path) -> dict[str, Any]:
+    config_path = workspace_root / ".draft" / "workspace.yaml"
+    if not config_path.exists():
+        config_path = workspace_root / "workspace.yaml"
+    if not config_path.exists():
+        return {}
+    try:
+        data = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    except Exception:
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    vocabulary = data.get("vocabulary")
+    if not isinstance(vocabulary, dict):
+        return {}
+    result: dict[str, Any] = {}
+    for list_name, list_data in vocabulary.items():
+        if not isinstance(list_data, dict):
+            continue
+        entry: dict[str, Any] = {}
+        if "mode" in list_data:
+            entry["mode"] = list_data["mode"]
+        if "reviewBy" in list_data:
+            entry["reviewBy"] = list_data["reviewBy"]
+        source = list_data.get("source")
+        if source:
+            source_path = workspace_root / source
+            try:
+                source_data = yaml.safe_load(source_path.read_text(encoding="utf-8")) or {}
+                values = source_data.get("values", []) if isinstance(source_data, dict) else []
+            except Exception:
+                values = []
+        else:
+            values = list_data.get("values", [])
+        entry["values"] = values if isinstance(values, list) else []
+        result[list_name] = entry
+    return result
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate the static DRAFT browser for a workspace.")
     parser.add_argument(
@@ -713,6 +752,7 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
         "referencedBy": referenced_by,
         "warnings": warnings,
         "requirements": build_requirement_payload(registry, workspace_root),
+        "vocabulary": load_workspace_vocabulary(workspace_root),
         "businessTaxonomy": load_workspace_business_taxonomy(workspace_root),
         "repoUrl": repository_web_url(workspace_root) or repository_web_url(REPO_ROOT),
         "catalogName": workspace_repository_name(workspace_root),

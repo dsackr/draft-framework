@@ -2410,3 +2410,459 @@ html, body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Home / Executive redesign ─────────────────────────────────────── */
+.home-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 0 24px;
+}
+.home-header-logo {
+  height: 48px;
+  width: auto;
+  flex-shrink: 0;
+}
+.home-header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+.home-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+@media (max-width: 800px) {
+  .home-columns { grid-template-columns: 1fr; }
+}
+.home-column-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 12px;
+}
+.home-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.home-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+.home-tile:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.home-tile-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.home-tile-body { flex: 1; min-width: 0; }
+.home-tile-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.home-tile-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--surface-soft);
+  border-radius: 10px;
+  padding: 1px 7px;
+}
+.home-tile-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+/* ── Sub-view header ─────────────────────────────────────────────────── */
+.subview-header {
+  padding: 24px 0 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.subview-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 0 10px;
+  font-family: inherit;
+}
+.subview-back:hover { color: var(--accent); }
+.subview-header h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 6px;
+}
+.subview-header p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+.subview-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+/* ── Requirement Groups list view ───────────────────────────────────── */
+.rg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rg-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.rg-card:hover { border-color: var(--accent); box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+.rg-card.rg-inactive { opacity: 0.6; }
+.rg-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.rg-name {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text);
+  flex: 1;
+}
+.rg-card-counts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.rg-card-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 6px 0 0;
+  line-height: 1.45;
+}
+/* ── Badges shared ──────────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.badge-active    { background: #d1f5e4; color: #1a6b3c; }
+.badge-always-on { background: #cce4ff; color: #1a4a7a; }
+.badge-inactive  { background: var(--surface-soft); color: var(--text-muted); }
+.badge-required  { background: #fde8e8; color: #9b2222; }
+.badge-recommended { background: #fff4cc; color: #7a5a00; }
+.badge-informational { background: #eef3ff; color: #2a4a8a; }
+.badge-advisory  { background: #fff4cc; color: #7a5a00; }
+.badge-gated     { background: #fde8e8; color: #9b2222; }
+.badge-proposed  { background: #fef3e8; color: #8a4a00; }
+/* ── Requirement Group detail / walk view ────────────────────────────── */
+.req-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 40px;
+}
+.req-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid transparent;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.req-card.req-required     { border-left-color: #b93a3a; }
+.req-card.req-recommended  { border-left-color: #c47a14; }
+.req-card.req-informational { border-left-color: #2a6fdb; }
+.req-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.req-id {
+  font-size: 0.75rem;
+  font-family: monospace;
+  color: var(--text-muted);
+}
+.req-description {
+  font-size: 0.875rem;
+  color: var(--text);
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+.req-evidence {
+  background: var(--surface-soft);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+}
+.req-evidence-label {
+  font-weight: 600;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 6px;
+}
+.req-evidence-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.req-no-evidence {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+/* ── Vocabularies view ──────────────────────────────────────────────── */
+.vocab-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 40px;
+}
+.vocab-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.vocab-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.vocab-card-header:hover { background: var(--surface-soft); }
+.vocab-card-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+  flex: 1;
+}
+.vocab-card-values {
+  padding: 0 16px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.vocab-value-chip {
+  font-size: 0.78rem;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: var(--surface-soft);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.vocab-value-chip.status-proposed {
+  border-style: dashed;
+  color: var(--text-muted);
+}
+/* ── Taxonomy / Business Pillars view ─────────────────────────────── */
+.taxonomy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  padding-bottom: 40px;
+}
+.taxonomy-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.taxonomy-card-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text);
+  margin: 0 0 6px;
+}
+.taxonomy-card-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+/* ── Technology Lifecycle view ─────────────────────────────────────── */
+.tech-domain-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 40px;
+}
+.tech-domain-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.tech-domain-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--surface);
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+.tech-domain-header:hover { background: var(--surface-soft); }
+.tech-domain-body {
+  padding: 0 16px 12px;
+}
+.tech-capability-group {
+  margin-top: 12px;
+}
+.tech-capability-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 6px;
+}
+.tech-component-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.tech-component-row:last-child { border-bottom: none; }
+.tech-component-name { flex: 1; color: var(--text); }
+.tech-lifecycle-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+/* ── Deployment Targets view ─────────────────────────────────────── */
+.targets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 40px;
+}
+.target-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.target-card-header {
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--surface-soft);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.target-sdp-list {
+  padding: 8px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+/* ── Teams view ──────────────────────────────────────────────────── */
+.teams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 40px;
+}
+.team-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.team-card-header {
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--surface-soft);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.team-objects {
+  padding: 8px 16px 12px;
+}
+.team-object-group {
+  margin-top: 8px;
+}
+.team-object-group-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 0 0 4px;
+}
+.team-object-links {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+/* ── Empty state shared ──────────────────────────────────────────── */
+.empty-state {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 32px 0;
+  text-align: center;
+}
