@@ -65,7 +65,7 @@ FRAMEWORK_VENDOR_FILES = (
     "security.md",
 )
 
-DEFAULT_FRAMEWORK_SOURCE = "https://github.com/dsackr/draft-framework.git"
+DEFAULT_FRAMEWORK_SOURCE = "https://github.com/getdraft/draftsman.git"
 COPY_IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", ".git", ".pytest_cache")
 WORKSPACE_TEMPLATE_FILES = (
     ("templates/workspace/README.md.tmpl", "README.md"),

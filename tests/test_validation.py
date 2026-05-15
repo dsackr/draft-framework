@@ -116,7 +116,7 @@ class ValidationTests(unittest.TestCase):
                     workspace:
                       name: bad-compliance-config
                     framework:
-                      source: https://github.com/dsackr/draft-framework.git
+                      source: https://github.com/getdraft/draftsman.git
                       vendoredPath: .draft/framework
                       updatePolicy: explicit
                     paths:
@@ -329,7 +329,7 @@ class ValidationTests(unittest.TestCase):
                 workspace:
                   name: incremental-compliance-config
                 framework:
-                  source: https://github.com/dsackr/draft-framework.git
+                  source: https://github.com/getdraft/draftsman.git
                   vendoredPath: .draft/framework
                   updatePolicy: explicit
                 paths:
@@ -1449,7 +1449,7 @@ requirementGroups:
                 workspace:
                   name: vocabulary-test
                 framework:
-                  source: https://github.com/dsackr/draft-framework.git
+                  source: https://github.com/getdraft/draftsman.git
                   vendoredPath: .draft/framework
                   updatePolicy: explicit
                 paths:

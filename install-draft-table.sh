@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DRAFT_TABLE_REPO_URL="${DRAFT_TABLE_REPO_URL:-https://github.com/dsackr/draft-framework.git}"
+DRAFT_TABLE_REPO_URL="${DRAFT_TABLE_REPO_URL:-https://github.com/getdraft/draftsman.git}"
 DRAFT_TABLE_REF="${DRAFT_TABLE_REF:-main}"
 DRAFT_TABLE_INSTALL_DIR="${DRAFT_TABLE_INSTALL_DIR:-$HOME/draft-framework}"
 DRAFT_TABLE_VENV="${DRAFT_TABLE_VENV:-$DRAFT_TABLE_INSTALL_DIR/.venv}"

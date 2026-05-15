@@ -24,7 +24,7 @@ Copy this into your preferred AI tool:
 ```text
 I want to get started with DRAFT.
 
-Use the DRAFT framework repository https://github.com/dsackr/draft-framework.
+Use the DRAFT framework repository https://github.com/getdraft/draftsman.
 Read and follow the repository bootstrap instructions, starting with AGENTS.md.
 Use the repo-defined Draftsman workflow instead of inventing your own.
 

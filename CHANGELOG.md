@@ -3,6 +3,36 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.8 - 2026-05-15
+
+### Compatibility Impact
+
+No migration is required. This patch updates the canonical upstream framework
+repository location from `dsackr/draft-framework` to `getdraft/draftsman`; it
+does not change schemas, validation behavior, or catalog object formats.
+
+### Added
+
+- Added the new `getdraft/draftsman` upstream repository URL to framework
+  onboarding and workspace source references.
+
+### Changed
+
+- Updated the framework default source URL, installer defaults, workspace
+  documentation, generated browser output, and test fixtures to use the new
+  upstream repository location.
+
+### Fixed
+
+- Fixed stale upstream repository references that would otherwise point new or
+  refreshed workspaces at the retired `dsackr/draft-framework` location.
+
+### Migration Notes
+
+- Existing workspaces should update their `framework.source` to
+  `https://github.com/getdraft/draftsman.git` when they refresh framework
+  metadata.
+
 ## 0.13.7 - 2026-05-15
 
 ### Compatibility Impact

@@ -50,7 +50,7 @@ The effective model is resolved in this order:
 3. workspace configuration overlays
 4. workspace catalog content
 
-The public `dsackr/draft-framework` repository is an update source, not a
+The public `getdraft/draftsman` repository is an update source, not a
 runtime dependency for company drafting. The connected AI reads the vendored
 copy in `.draft/framework/` during normal Draftsman work. A company chooses
 when to refresh that copy, reviews the resulting Git diff, validates the
