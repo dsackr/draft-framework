@@ -22496,6 +22496,7 @@ window.DRAFT_BROWSER_DATA = {
     "activeRequirementGroups": [],
     "requireActiveRequirementGroupDisposition": false
   },
+  "vocabulary": {},
   "businessTaxonomy": {
     "pillars": [],
     "requireSoftwareDeploymentPatternPillar": false
