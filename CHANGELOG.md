@@ -3,6 +3,35 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.11 - 2026-05-15
+
+### Compatibility Impact
+
+No migration is required. This patch improves browser navigation and display
+labels for modeled service dependencies; it does not change schemas,
+validation behavior, or catalog object formats.
+
+### Added
+
+- Added clickable external interaction titles in the browser detail view when
+  the interaction references another catalog object.
+
+### Changed
+
+- Changed service-facing dependency rendering so runtime service objects can be
+  presented with cleaner human-readable names in adopting workspaces.
+
+### Fixed
+
+- Fixed detail views that showed referenced service dependencies as static text
+  even when the browser could resolve them to another object page.
+
+### Migration Notes
+
+- Existing workspaces can continue unchanged.
+- Workspaces can optionally regenerate their browser output to pick up the
+  clickable external interaction behavior.
+
 ## 0.13.10 - 2026-05-15
 
 ### Compatibility Impact

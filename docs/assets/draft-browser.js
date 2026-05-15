@@ -2670,11 +2670,15 @@ function interactionMarkup(object) {
     <div class="interactions-list">
       ${interactions.map((interaction, index) => {
         const justification = dependencyJustificationForExternalInteraction(object, interaction, index);
+        const target = interaction.ref && objectLookup[interaction.ref] ? objectLookup[interaction.ref] : null;
+        const interactionName = target
+          ? `<span class="ard-link" data-object-link="${escapeHtml(target.id)}">${escapeHtml(interaction.name || target.name || 'External Interaction')}</span>`
+          : escapeHtml(interaction.name || 'External Interaction');
         return `
         <article class="interaction-card">
           <div class="interaction-top">
             <div class="interaction-heading">
-              <div class="interaction-name">${escapeHtml(interaction.name || 'External Interaction')}</div>
+              <div class="interaction-name">${interactionName}</div>
               ${capabilityLabelsMarkup(interaction.capabilities)}
             </div>
           </div>

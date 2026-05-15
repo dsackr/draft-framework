@@ -207,6 +207,8 @@
 <a class="level-3" href="#teams">Teams</a>
 <a class="level-3" href="#availability-tiers">Availability Tiers</a>
 <a class="level-3" href="#failure-domains">Failure Domains</a>
+<a class="level-3" href="#connection-protocols">Connection Protocols</a>
+<a class="level-3" href="#network-zones">Network Zones</a>
 <a class="level-2" href="#source-files">Source Files</a>
 <a class="level-2" href="#non-standard-value-proposals">Non-Standard Value Proposals</a>
 <a class="level-2" href="#draftsman-interview-rules">Draftsman Interview Rules</a>
@@ -295,6 +297,45 @@
       - id: shared-platform
         name: Shared Platform</code></pre>
 <p>When declared, validation checks <code>architecturalDecisions.failureDomain</code> on Software Deployment Patterns and deployable service objects.</p>
+<h3 id="connection-protocols">Connection Protocols</h3>
+<pre><code class="language-yaml">vocabulary:
+  connectionProtocols:
+    mode: advisory
+    values:
+      - id: REST
+        name: REST
+      - id: gRPC
+        name: gRPC
+      - id: AMQP
+        name: AMQP
+      - id: JDBC
+        name: JDBC
+      - id: WebSocket
+        name: WebSocket</code></pre>
+<p>Or reference the framework source file:</p>
+<pre><code class="language-yaml">vocabulary:
+  connectionProtocols:
+    mode: advisory
+    source: .draft/framework/configurations/vocabulary/connection-protocols.yaml</code></pre>
+<p>When declared, validation checks <code>serviceGroups[].connections[].protocol</code> on Software Deployment Patterns. The Draftsman presents approved values as a multiple-choice list during connection elicitation. Values not in the list are recorded as non-standard and may be submitted as vocabulary proposals.</p>
+<p>The framework ships a default source file at <code>configurations/vocabulary/connection-protocols.yaml</code> covering REST, gRPC, AMQP, JDBC, SQL, WebSocket, HTTPS, GraphQL, and other. Companies may extend this list via vocabulary proposals without editing the framework source.</p>
+<h3 id="network-zones">Network Zones</h3>
+<pre><code class="language-yaml">vocabulary:
+  networkZones:
+    mode: advisory
+    values:
+      - id: public
+        name: Public
+        description: Internet-facing services and edge components.
+      - id: private
+        name: Private
+        description: Internal application and data services.
+      - id: management
+        name: Management
+        description: Operational and administrative services.</code></pre>
+<p>When declared, validation checks <code>networkZones[].id</code> and <code>serviceGroups[].deployableObjects[].networkZone</code> on Software Deployment Patterns. Zone IDs must be lowercase alphanumeric with hyphens.</p>
+<p>The Draftsman populates this list during the first SDP session that needs network zones. It asks one yes/no question ("does your deployment use distinct network zones?"), then presents the common zone patterns from <code>configurations/vocabulary/network-zone-patterns.yaml</code> as a multiple-choice list. The selected pattern expands into the SDP's <code>networkZones</code> list and establishes the zone-to-tier default mapping used for all subsequent zone assignment questions.</p>
+<p>Once zones are recorded in the workspace vocabulary, the Draftsman offers them as approved choices in all future SDP sessions without repeating the setup questions.</p>
 <h2 id="source-files">Source Files</h2>
 <p>Small lists can live inline in <code>.draft/workspace.yaml</code>. Larger lists can live in company-owned source files:</p>
 <pre><code class="language-yaml">vocabulary:
