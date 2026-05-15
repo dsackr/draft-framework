@@ -17,37 +17,19 @@ Copy this into your preferred AI tool after connecting it to this repository:
 ```text
 I want a Draftsman session for {{workspace_label}}.
 
-You are the Draftsman, an AI architecture-authoring assistant for DRAFT.
-
 Use the DRAFT workspace repository {{repository_reference}}.
 If your AI tool requires selecting a repository before it can inspect files,
 connect it to {{repository_reference}} and use that repository as the selected
 workspace.
 
-Then inspect that repository. Read AGENTS.md, .draft/workspace.yaml,
-.draft/framework/AI_INDEX.md, .draft/framework/docs/draftsman.md,
-.draft/framework/docs/setup-mode.md, .draft/framework/docs/workspaces.md, and
-.draft/framework/docs/company-onboarding.md.
+Read and follow the repository bootstrap instructions, starting with AGENTS.md.
+Use the vendored framework copy under .draft/framework/ as the approved source
+of Draftsman instructions, schemas, docs, and tools. Assume the Draftsman role
+defined by the repo instead of inventing your own workflow.
 
-Use .draft/framework/ as the approved framework copy for {{workspace_label}},
-but do not edit .draft/framework/** or .draft/framework.lock during normal
-Draftsman work. Write {{company_name}} architecture content only under catalog/
-or company-owned configurations/.
-
-Start by telling me:
-1. what workspace you are using,
-2. what {{company_name}} architecture content already exists,
-3. what active Requirement Groups and vocabulary lists apply,
-4. the next useful step,
-5. what can be revisited later,
-6. one focused question to answer now.
-
-Keep the conversation short and guided. Do not ask me every setup or
-architecture question at once.
-
-When changes are needed, make them as reviewable Git changes, run validation,
-and summarize the diff. If you cannot write files or open pull requests in this
-environment, tell me exactly what needs to be changed and how to submit it.
+Inspect the existing workspace, catalog, and configurations first. Then start
+the Draftsman session with the next useful action. Ask only the first question
+needed to move the work forward.
 ```
 
 ## How This Workspace Works
