@@ -1922,7 +1922,7 @@ function renderRequirementGroupDetailView(uid) {
           <div class="req-evidence">
             <span class="req-evidence-label">${evidence.length} catalog object${evidence.length === 1 ? '' : 's'} address this</span>
             <div class="req-evidence-links">
-              ${evidence.map(obj => `<a class="object-link" data-id="${escapeHtml(obj.uid || '')}">${escapeHtml(obj.name || obj.uid || '')}</a>`).join('')}
+              ${evidence.map(obj => `<span class="ard-link" data-object-link="${escapeHtml(obj.uid || '')}">${escapeHtml(obj.name || obj.uid || '')}</span>`).join('')}
             </div>
           </div>
         ` : `<span class="req-no-evidence">No catalog objects address this yet</span>`}
@@ -2088,7 +2088,7 @@ function renderTechnologiesView() {
         return `
           <div class="tech-component-row">
             <span class="tech-lifecycle-dot" style="background:${color}" title="${escapeHtml(status)}"></span>
-            ${tech ? `<a class="object-link tech-component-name" data-id="${escapeHtml(tech.uid || '')}">${escapeHtml(tech.name || tech.uid || '')}</a>`
+            ${tech ? `<span class="ard-link tech-component-name" data-object-link="${escapeHtml(tech.uid || '')}">${escapeHtml(tech.name || tech.uid || '')}</span>`
                    : `<span class="tech-component-name">${escapeHtml(row.implementation?.ref || '')}</span>`}
             <span class="badge badge-inactive" style="font-size:0.7rem">${escapeHtml(status)}</span>
           </div>
@@ -2185,7 +2185,7 @@ function renderDeploymentTargetsView() {
         </div>
         <div class="target-sdp-list">
           ${targetSdps.map(sdp => `
-            <a class="object-link" data-id="${escapeHtml(sdp.uid || '')}">${escapeHtml(sdp.name || sdp.uid || '')}</a>
+            <span class="ard-link" data-object-link="${escapeHtml(sdp.uid || '')}">${escapeHtml(sdp.name || sdp.uid || '')}</span>
           `).join('')}
         </div>
       </div>
@@ -2249,7 +2249,7 @@ function renderTeamsView() {
       <div class="team-object-group">
         <p class="team-object-group-label">${escapeHtml(TYPE_LABELS[type] || type)}</p>
         <div class="team-object-links">
-          ${objs.map(obj => `<a class="object-link" data-id="${escapeHtml(obj.uid || '')}">${escapeHtml(obj.name || obj.uid || '')}</a>`).join('')}
+          ${objs.map(obj => `<span class="ard-link" data-object-link="${escapeHtml(obj.uid || '')}">${escapeHtml(obj.name || obj.uid || '')}</span>`).join('')}
         </div>
       </div>
     `).join('');
