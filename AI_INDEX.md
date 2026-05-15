@@ -47,9 +47,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | framework/tools/validate.py | Executable validation for schemas, Requirement Groups, capabilities, and references. |
 | framework/tools/apply_vocabulary_proposals.py | Materializes Draftsman vocabulary_proposal files into reviewable company vocabulary entries. |
 | framework/tools/repair_uids.py | Explicit repair utility that adds or replaces generated object UIDs and rewrites object references. |
-| framework/tools/generate_browser.py | Static GitHub Pages browser generator. Emits `sdpConnections` and `networkZones` fields for SDP Service Graph rendering. |
-| framework/configurations/vocabulary/connection-protocols.yaml | Framework-default connection protocol vocabulary source. Covers REST, gRPC, AMQP, JDBC, SQL, WebSocket, HTTPS, GraphQL, other. |
-| framework/configurations/vocabulary/network-zone-patterns.yaml | Network zone pattern picker for Draftsman zone setup. Four patterns: public/private/management, tenant/platform/management, dmz/internal/data, custom. |
+| framework/tools/generate_browser.py | Static GitHub Pages browser generator. |
 | install-draft-table.sh | Experimental local tooling installer retained for post-v1.0 work. |
 
 ## Framework Docs
@@ -96,7 +94,7 @@ the selected framework schemas/configurations, provider packs, and workspace YAM
 | framework/schemas/reference-architecture.schema.yaml | reference_architecture | schemaVersion, uid, type, name, catalogStatus, lifecycleStatus |
 | framework/schemas/requirement-group.schema.yaml | requirement_group | schemaVersion, uid, type, name, description, catalogStatus, owner, activation, appliesTo, requirements |
 | framework/schemas/runtime-service.schema.yaml | runtime_service | schemaVersion, uid, type, name, deliveryModel, catalogStatus, lifecycleStatus |
-| framework/schemas/software-deployment-pattern.schema.yaml | software_deployment_pattern | schemaVersion, uid, type, name, catalogStatus, lifecycleStatus | Optional: networkZones (list of zone objects with id/name/description), serviceGroups[].connections (serviceConnection with from/to/protocol/direction/port/label), deployableObjectEntry.networkZone |
+| framework/schemas/software-deployment-pattern.schema.yaml | software_deployment_pattern | schemaVersion, uid, type, name, catalogStatus, lifecycleStatus |
 | framework/schemas/technology-component.schema.yaml | technology_component | schemaVersion, uid, type, name, vendor, productName, productVersion, classification, catalogStatus |
 
 ## Base Configurations
