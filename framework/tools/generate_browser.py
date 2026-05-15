@@ -214,6 +214,17 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         action="store_true",
         help="Do not generate the user manual HTML from framework/docs/user-manual.md.",
     )
+    parser.add_argument(
+        "--refresh-shell",
+        action="store_true",
+        help=(
+            "Overwrite the browser shell assets (draft-browser.css, draft-browser.js, "
+            "index.html) from the framework source even if they already exist in the "
+            "output directory. By default these files are only written on first install "
+            "so that design-layer edits made directly to docs/assets/ are preserved "
+            "across content regeneration runs."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -741,29 +752,51 @@ def write_browser_data(payload: dict[str, Any], asset_dir: Path) -> Path:
     return data_path
 
 
-def copy_browser_assets(workspace_root: Path, output_path: Path) -> list[Path]:
+def copy_browser_assets(workspace_root: Path, output_path: Path, *, refresh_shell: bool = False) -> list[Path]:
+    """Copy browser shell assets to the output asset directory.
+
+    By default (refresh_shell=False) each file is only written if it does not
+    already exist in the target directory.  This preserves edits made directly
+    to docs/assets/ by design tooling (e.g. claude.ai/design) without requiring
+    those changes to be reflected back into framework/browser/ first.
+
+    Pass refresh_shell=True (via --refresh-shell on the CLI) to force-overwrite
+    all shell assets from the framework source — use this when pulling a
+    framework design update.
+    """
     asset_dir = browser_asset_dir(output_path)
     asset_dir.mkdir(parents=True, exist_ok=True)
     copied: list[Path] = []
     for asset_name in BROWSER_STATIC_ASSET_NAMES:
         source = BROWSER_ASSET_ROOT / asset_name
         target = asset_dir / asset_name
-        shutil.copy2(source, target)
-        copied.append(target)
+        if refresh_shell or not target.exists():
+            shutil.copy2(source, target)
+            copied.append(target)
     theme_source = workspace_theme_source(workspace_root)
     theme_target = asset_dir / WORKSPACE_THEME_OUTPUT_NAME
-    shutil.copy2(theme_source, theme_target)
-    copied.append(theme_target)
+    if refresh_shell or not theme_target.exists():
+        shutil.copy2(theme_source, theme_target)
+        copied.append(theme_target)
     return copied
 
 
-def write_browser(payload: dict[str, Any], output_path: Path, workspace_root: Path) -> list[Path]:
+def write_browser(payload: dict[str, Any], output_path: Path, workspace_root: Path, *, refresh_shell: bool = False) -> list[Path]:
+    """Write the browser output directory.
+
+    The data layer (browser-data.js) is always regenerated from the current
+    catalog state.  The shell layer (draft-browser.css, draft-browser.js,
+    index.html) is treated as install-once: files are only written when they do
+    not already exist unless refresh_shell=True is passed.
+    """
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    copied = copy_browser_assets(workspace_root, output_path)
+    copied = copy_browser_assets(workspace_root, output_path, refresh_shell=refresh_shell)
     data_path = write_browser_data(payload, browser_asset_dir(output_path))
-    template = BROWSER_INDEX_TEMPLATE_PATH.read_text(encoding="utf-8")
-    output_path.write_text(template, encoding="utf-8")
-    return [output_path, data_path, *copied]
+    if refresh_shell or not output_path.exists():
+        template = BROWSER_INDEX_TEMPLATE_PATH.read_text(encoding="utf-8")
+        output_path.write_text(template, encoding="utf-8")
+        copied.append(output_path)
+    return [data_path, *copied]
 
 
 USER_MANUAL_HTML_TEMPLATE = """<!doctype html>
@@ -1149,7 +1182,7 @@ def main(argv: list[str] | None = None) -> int:
     vocabulary_output_path = output_path.parent / COMPANY_VOCABULARY_OUTPUT_NAME
     registry = load_objects(args.workspace.resolve())
     payload = build_browser_payload(registry, args.workspace.resolve())
-    write_browser(payload, output_path, args.workspace.resolve())
+    write_browser(payload, output_path, args.workspace.resolve(), refresh_shell=args.refresh_shell)
     manual_generated = False
     vocabulary_generated = False
     if not args.skip_user_manual:
