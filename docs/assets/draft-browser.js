@@ -100,6 +100,7 @@ let activeFilter = 'all';
 let currentDetailId = null;
 let currentMode = 'executive';
 let executiveDrilldown = null;
+let currentSubViewId = null;
 const navHistory = [];
 let listSearchTerm = '';
 let detailCy = null;
@@ -326,6 +327,34 @@ function syncHashForOnboardingView() {
   setHashState({ view: 'onboarding' });
 }
 
+function syncHashForRequirementGroupsView() {
+  setHashState({ view: 'requirement-groups' });
+}
+
+function syncHashForRequirementGroupDetailView(uid) {
+  setHashState({ view: 'requirement-group-detail', id: uid });
+}
+
+function syncHashForVocabulariesView() {
+  setHashState({ view: 'vocabularies' });
+}
+
+function syncHashForTaxonomiesView() {
+  setHashState({ view: 'taxonomies' });
+}
+
+function syncHashForTechnologiesView() {
+  setHashState({ view: 'technologies' });
+}
+
+function syncHashForDeploymentTargetsView() {
+  setHashState({ view: 'deployment-targets' });
+}
+
+function syncHashForTeamsView() {
+  setHashState({ view: 'teams' });
+}
+
 function applyRouteFromHash() {
   if (suppressHashSync) return;
   const params = currentHashState();
@@ -362,6 +391,39 @@ function applyRouteFromHash() {
   }
   if (view === 'onboarding') {
     renderCompanyOnboardingView();
+    return;
+  }
+  if (view === 'requirement-groups') {
+    renderRequirementGroupsView();
+    return;
+  }
+  if (view === 'requirement-group-detail') {
+    const uid = params.get('id');
+    if (uid && objectLookup[uid]) {
+      renderRequirementGroupDetailView(uid);
+      return;
+    }
+    renderRequirementGroupsView();
+    return;
+  }
+  if (view === 'vocabularies') {
+    renderVocabulariesView();
+    return;
+  }
+  if (view === 'taxonomies') {
+    renderTaxonomiesView();
+    return;
+  }
+  if (view === 'technologies') {
+    renderTechnologiesView();
+    return;
+  }
+  if (view === 'deployment-targets') {
+    renderDeploymentTargetsView();
+    return;
+  }
+  if (view === 'teams') {
+    renderTeamsView();
     return;
   }
   executiveDrilldown = null;
@@ -1743,23 +1805,501 @@ function executiveControlDrilldownMarkup(stats) {
   `;
 }
 
+// ── Helper: shared subview header with back button ──────────────────
+function subviewHeaderMarkup(backLabel, backTarget, title, subtitle, metaHtml = '') {
+  return `
+    <div class="subview-header">
+      <button class="subview-back" data-executive-target="${escapeHtml(backTarget)}">← ${escapeHtml(backLabel)}</button>
+      <h1>${escapeHtml(title)}</h1>
+      ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}
+      ${metaHtml ? `<div class="subview-meta">${metaHtml}</div>` : ''}
+    </div>
+  `;
+}
+
+// ── Requirement Groups list view ────────────────────────────────────
+function renderRequirementGroupsView() {
+  currentMode = 'requirement-groups';
+  currentDetailId = null;
+  destroyDetailCy();
+  destroySdpGraphCy();
+  destroyImpactCy();
+  syncHashForRequirementGroupsView();
+  renderSidebarContent('');
+
+  const groups = (browserData.requirements?.groups || []);
+  const activeCount = groups.filter(g => g.active || g.activation === 'always').length;
+
+  const groupCards = groups.map(group => {
+    const fullGroup = objectLookup[group.uid] || {};
+    const requirements = Array.isArray(fullGroup.requirements) ? fullGroup.requirements : [];
+    const requiredCount = requirements.filter(r => r.requirementMode === 'required').length;
+    const recommendedCount = requirements.filter(r => r.requirementMode === 'recommended').length;
+    const isAlwaysOn = group.activation === 'always';
+    const isActive = group.active || isAlwaysOn;
+    const badgeClass = isAlwaysOn ? 'badge-always-on' : (isActive ? 'badge-active' : 'badge-inactive');
+    const badgeLabel = isAlwaysOn ? 'Always On' : (isActive ? 'Active' : 'Inactive');
+    return `
+      <button class="rg-card ${isActive ? '' : 'rg-inactive'}" data-nav-rg="${escapeHtml(group.uid)}">
+        <div class="rg-card-header">
+          <span class="rg-name">${escapeHtml(group.name || group.uid)}</span>
+          <span class="badge ${badgeClass}">${badgeLabel}</span>
+        </div>
+        <div class="rg-card-counts">
+          <span class="badge badge-inactive">${group.requirementCount || requirements.length} requirements</span>
+          ${requiredCount ? `<span class="badge badge-required">${requiredCount} required</span>` : ''}
+          ${recommendedCount ? `<span class="badge badge-recommended">${recommendedCount} recommended</span>` : ''}
+        </div>
+        ${group.description ? `<p class="rg-card-desc">${escapeHtml(group.description)}</p>` : ''}
+      </button>
+    `;
+  }).join('');
+
+  pageRoot.innerHTML = `
+    <div class="view-shell">
+      ${topNavMarkup()}
+      ${subviewHeaderMarkup('Home', 'home', 'Requirement Groups', `${groups.length} groups · ${activeCount} active`)}
+      <div class="rg-list">
+        ${groupCards || '<p class="empty-state">No requirement groups in this workspace.</p>'}
+      </div>
+    </div>
+  `;
+
+  pageRoot.querySelectorAll('[data-nav-rg]').forEach(btn => {
+    btn.addEventListener('click', () => renderRequirementGroupDetailView(btn.dataset.navRg));
+  });
+  attachExecutiveHandlers();
+  attachTopNavHandlers();
+  attachSidebarHandlers();
+  attachObjectLinkHandlers(pageRoot);
+}
+
+// ── Requirement Group detail — walk the requirements ────────────────
+function renderRequirementGroupDetailView(uid) {
+  currentMode = 'requirement-group-detail';
+  currentSubViewId = uid;
+  destroyDetailCy();
+  destroySdpGraphCy();
+  destroyImpactCy();
+  syncHashForRequirementGroupDetailView(uid);
+  renderSidebarContent('');
+
+  const groupMeta = (browserData.requirements?.groups || []).find(g => g.uid === uid) || {};
+  const fullGroup = objectLookup[uid] || {};
+  const groupName = groupMeta.name || fullGroup.name || uid;
+  const requirements = Array.isArray(fullGroup.requirements) ? fullGroup.requirements : [];
+
+  // Index evidence by requirementId for this group
+  const evidenceByReqId = {};
+  (browserData.objects || []).forEach(obj => {
+    (obj.requirementImplementations || []).forEach(impl => {
+      if (impl.requirementGroup === uid) {
+        if (!evidenceByReqId[impl.requirementId]) evidenceByReqId[impl.requirementId] = [];
+        evidenceByReqId[impl.requirementId].push(obj);
+      }
+    });
+  });
+
+  const isAlwaysOn = groupMeta.activation === 'always';
+  const isActive = groupMeta.active || isAlwaysOn;
+  const badgeClass = isAlwaysOn ? 'badge-always-on' : (isActive ? 'badge-active' : 'badge-inactive');
+  const badgeLabel = isAlwaysOn ? 'Always On' : (isActive ? 'Active' : 'Inactive');
+  const metaHtml = `<span class="badge ${badgeClass}">${badgeLabel}</span><span style="font-size:0.82rem;color:var(--text-muted)">${requirements.length} requirement${requirements.length === 1 ? '' : 's'}</span>`;
+
+  const reqCards = requirements.map(req => {
+    const evidence = evidenceByReqId[req.id] || [];
+    const mode = req.requirementMode || 'informational';
+    const modeClass = mode === 'required' ? 'req-required' : mode === 'recommended' ? 'req-recommended' : 'req-informational';
+    return `
+      <div class="req-card ${modeClass}">
+        <div class="req-card-header">
+          <span class="badge badge-${mode}">${mode}</span>
+          ${req.id ? `<span class="req-id">${escapeHtml(req.id)}</span>` : ''}
+          ${req.naAllowed ? `<span class="badge badge-inactive">N/A allowed</span>` : ''}
+        </div>
+        <p class="req-description">${escapeHtml(req.description || '')}</p>
+        ${evidence.length ? `
+          <div class="req-evidence">
+            <span class="req-evidence-label">${evidence.length} catalog object${evidence.length === 1 ? '' : 's'} address this</span>
+            <div class="req-evidence-links">
+              ${evidence.map(obj => `<a class="object-link" data-id="${escapeHtml(obj.uid || '')}">${escapeHtml(obj.name || obj.uid || '')}</a>`).join('')}
+            </div>
+          </div>
+        ` : `<span class="req-no-evidence">No catalog objects address this yet</span>`}
+      </div>
+    `;
+  }).join('');
+
+  pageRoot.innerHTML = `
+    <div class="view-shell">
+      ${topNavMarkup()}
+      ${subviewHeaderMarkup('Requirement Groups', 'requirement-groups', groupName, groupMeta.description || fullGroup.description || '', metaHtml)}
+      <div class="req-list">
+        ${reqCards || '<p class="empty-state">No requirements defined in this group.</p>'}
+      </div>
+    </div>
+  `;
+
+  pageRoot.querySelectorAll('[data-nav-back="requirement-groups"]').forEach(btn => {
+    btn.addEventListener('click', () => renderRequirementGroupsView());
+  });
+  attachExecutiveHandlers();
+  attachTopNavHandlers();
+  attachSidebarHandlers();
+  attachObjectLinkHandlers(pageRoot);
+}
+
+// ── Vocabularies view ───────────────────────────────────────────────
+function renderVocabulariesView() {
+  currentMode = 'vocabularies';
+  currentDetailId = null;
+  destroyDetailCy();
+  destroySdpGraphCy();
+  destroyImpactCy();
+  syncHashForVocabulariesView();
+  renderSidebarContent('');
+
+  const vocabulary = browserData.vocabulary || {};
+  const listNames = Object.keys(vocabulary);
+  const VOCAB_LABELS = {
+    deploymentTargets: 'Deployment Targets',
+    connectionProtocols: 'Connection Protocols',
+    networkZones: 'Network Zones',
+    dataClassificationLevels: 'Data Classification Levels',
+    teams: 'Teams',
+    availabilityTiers: 'Availability Tiers',
+    failureDomains: 'Failure Domains',
+  };
+
+  const vocabCards = listNames.map(listName => {
+    const listData = vocabulary[listName] || {};
+    const mode = listData.mode || 'advisory';
+    const values = Array.isArray(listData.values) ? listData.values : [];
+    const label = VOCAB_LABELS[listName] || listName;
+    const approvedValues = values.filter(v => (v.status || 'approved') === 'approved');
+    const proposedValues = values.filter(v => v.status === 'proposed');
+    return `
+      <div class="vocab-card">
+        <div class="vocab-card-header">
+          <span class="vocab-card-name">${escapeHtml(label)}</span>
+          <span class="badge badge-${mode}">${mode}</span>
+          <span class="badge badge-inactive">${approvedValues.length} approved${proposedValues.length ? ` · ${proposedValues.length} proposed` : ''}</span>
+          ${listData.reviewBy ? `<span style="font-size:0.75rem;color:var(--text-muted)">Review by ${escapeHtml(listData.reviewBy)}</span>` : ''}
+        </div>
+        ${values.length ? `
+          <div class="vocab-card-values">
+            ${values.map(v => `
+              <span class="vocab-value-chip ${v.status === 'proposed' ? 'status-proposed' : ''}" title="${escapeHtml(v.description || v.notes || '')}">
+                ${escapeHtml(v.name || v.id || '')}
+              </span>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+
+  pageRoot.innerHTML = `
+    <div class="view-shell">
+      ${topNavMarkup()}
+      ${subviewHeaderMarkup('Home', 'home', 'Vocabulary Lists', `${listNames.length} governed list${listNames.length === 1 ? '' : 's'} configured`)}
+      <div class="vocab-list">
+        ${vocabCards || '<p class="empty-state">No vocabulary lists declared in workspace.yaml yet.</p>'}
+      </div>
+    </div>
+  `;
+
+  attachExecutiveHandlers();
+  attachTopNavHandlers();
+  attachSidebarHandlers();
+  attachObjectLinkHandlers(pageRoot);
+}
+
+// ── Taxonomies / Business Pillars view ──────────────────────────────
+function renderTaxonomiesView() {
+  currentMode = 'taxonomies';
+  currentDetailId = null;
+  destroyDetailCy();
+  destroySdpGraphCy();
+  destroyImpactCy();
+  syncHashForTaxonomiesView();
+  renderSidebarContent('');
+
+  const pillars = (browserData.businessTaxonomy?.pillars || []);
+
+  const pillarCards = pillars.map(pillar => `
+    <div class="taxonomy-card">
+      <p class="taxonomy-card-name">${escapeHtml(pillar.name || pillar.id || '')}</p>
+      ${pillar.description ? `<p class="taxonomy-card-desc">${escapeHtml(pillar.description)}</p>` : ''}
+    </div>
+  `).join('');
+
+  pageRoot.innerHTML = `
+    <div class="view-shell">
+      ${topNavMarkup()}
+      ${subviewHeaderMarkup('Home', 'home', 'Business Taxonomy', `${pillars.length} pillar${pillars.length === 1 ? '' : 's'} defined`)}
+      <div class="taxonomy-grid">
+        ${pillarCards || '<p class="empty-state">No business taxonomy pillars declared in workspace.yaml yet.</p>'}
+      </div>
+    </div>
+  `;
+
+  attachExecutiveHandlers();
+  attachTopNavHandlers();
+  attachSidebarHandlers();
+  attachObjectLinkHandlers(pageRoot);
+}
+
+// ── Technology Lifecycle view (domain → capability → tech) ──────────
+function renderTechnologiesView() {
+  currentMode = 'technologies';
+  currentDetailId = null;
+  destroyDetailCy();
+  destroySdpGraphCy();
+  destroyImpactCy();
+  syncHashForTechnologiesView();
+  renderSidebarContent('');
+
+  const groups = acceptableUseGroups(); // already groups by domain→capability
+  const lifecycleColors = browserData.lifecycleColors || {};
+
+  const domainSections = groups.map((group, gi) => {
+    const domainId = `tech-domain-${gi}`;
+    const capRows = [];
+    // Group rows by capability
+    const capMap = new Map();
+    group.rows.forEach(row => {
+      const capKey = row.capability?.uid || row.capability?.id || String(gi);
+      if (!capMap.has(capKey)) capMap.set(capKey, { capability: row.capability, techs: [] });
+      capMap.get(capKey).techs.push(row);
+    });
+    capMap.forEach(({ capability, techs }) => {
+      // Sort by lifecycle
+      const order = ['preferred','existing-only','candidate','deprecated','retired','unknown'];
+      techs.sort((a, b) => {
+        const ai = order.indexOf(a.implementation?.lifecycleStatus || 'unknown');
+        const bi = order.indexOf(b.implementation?.lifecycleStatus || 'unknown');
+        return ai - bi;
+      });
+      const techRows = techs.map(row => {
+        const tech = row.technology;
+        const status = row.implementation?.lifecycleStatus || tech?.lifecycleStatus || 'unknown';
+        const color = lifecycleColors[status] ? `#${lifecycleColors[status]}` : '#7a6e60';
+        return `
+          <div class="tech-component-row">
+            <span class="tech-lifecycle-dot" style="background:${color}" title="${escapeHtml(status)}"></span>
+            ${tech ? `<a class="object-link tech-component-name" data-id="${escapeHtml(tech.uid || '')}">${escapeHtml(tech.name || tech.uid || '')}</a>`
+                   : `<span class="tech-component-name">${escapeHtml(row.implementation?.ref || '')}</span>`}
+            <span class="badge badge-inactive" style="font-size:0.7rem">${escapeHtml(status)}</span>
+          </div>
+        `;
+      }).join('');
+      capRows.push(`
+        <div class="tech-capability-group">
+          <p class="tech-capability-label">${escapeHtml(capability?.name || 'Unassigned')}</p>
+          ${techRows}
+        </div>
+      `);
+    });
+
+    const totalTechs = group.rows.length;
+    return `
+      <div class="tech-domain-section">
+        <button class="tech-domain-header" data-domain-toggle="${domainId}">
+          <span>${escapeHtml(group.domain?.name || 'Unassigned Domain')}</span>
+          <span class="badge badge-inactive">${totalTechs} component${totalTechs === 1 ? '' : 's'}</span>
+        </button>
+        <div class="tech-domain-body" id="${domainId}" style="display:none">
+          ${capRows.join('') || '<p class="empty-state">No technology components mapped.</p>'}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  pageRoot.innerHTML = `
+    <div class="view-shell">
+      ${topNavMarkup()}
+      ${subviewHeaderMarkup('Home', 'home', 'Technology Lifecycle', 'Browse technology components by domain, capability, and lifecycle status')}
+      <div class="tech-domain-list">
+        ${domainSections || '<p class="empty-state">No technology components or domain mappings found.</p>'}
+      </div>
+    </div>
+  `;
+
+  pageRoot.querySelectorAll('[data-domain-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body = document.getElementById(btn.dataset.domainToggle);
+      if (body) body.style.display = body.style.display === 'none' ? '' : 'none';
+    });
+  });
+  attachExecutiveHandlers();
+  attachTopNavHandlers();
+  attachSidebarHandlers();
+  attachObjectLinkHandlers(pageRoot);
+}
+
+// ── Deployment Targets view — SDPs grouped by target ────────────────
+function renderDeploymentTargetsView() {
+  currentMode = 'deployment-targets';
+  currentDetailId = null;
+  destroyDetailCy();
+  destroySdpGraphCy();
+  destroyImpactCy();
+  syncHashForDeploymentTargetsView();
+  renderSidebarContent('');
+
+  const sdps = (browserData.objects || []).filter(o => o.type === 'software_deployment_pattern');
+  // Build target → SDPs map
+  const targetMap = new Map();
+  const unassigned = [];
+  sdps.forEach(sdp => {
+    const targets = new Set();
+    (sdp.serviceGroups || []).forEach(sg => {
+      if (sg.deploymentTarget) targets.add(sg.deploymentTarget);
+    });
+    if (targets.size === 0) {
+      unassigned.push(sdp);
+    } else {
+      targets.forEach(t => {
+        if (!targetMap.has(t)) targetMap.set(t, []);
+        targetMap.get(t).push(sdp);
+      });
+    }
+  });
+  if (unassigned.length) targetMap.set('(no deployment target)', unassigned);
+
+  // Enrich target names from vocabulary if available
+  const vocabTargets = (browserData.vocabulary?.deploymentTargets?.values || []);
+  const vocabTargetById = Object.fromEntries(vocabTargets.map(v => [v.id, v]));
+
+  const targetCards = [...targetMap.entries()].map(([targetId, targetSdps]) => {
+    const vocabEntry = vocabTargetById[targetId];
+    const targetLabel = vocabEntry?.name || targetId;
+    const targetMeta = vocabEntry ? `${vocabEntry.type || ''} ${vocabEntry.provider ? `(${vocabEntry.provider})` : ''}`.trim() : '';
+    return `
+      <div class="target-card">
+        <div class="target-card-header">
+          <span>${escapeHtml(targetLabel)}</span>
+          ${targetMeta ? `<span style="font-size:0.78rem;color:var(--text-muted)">${escapeHtml(targetMeta)}</span>` : ''}
+          <span class="badge badge-inactive">${targetSdps.length} SDP${targetSdps.length === 1 ? '' : 's'}</span>
+        </div>
+        <div class="target-sdp-list">
+          ${targetSdps.map(sdp => `
+            <a class="object-link" data-id="${escapeHtml(sdp.uid || '')}">${escapeHtml(sdp.name || sdp.uid || '')}</a>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  pageRoot.innerHTML = `
+    <div class="view-shell">
+      ${topNavMarkup()}
+      ${subviewHeaderMarkup('Home', 'home', 'Deployment Targets', `${targetMap.size} target${targetMap.size === 1 ? '' : 's'} · ${sdps.length} deployment pattern${sdps.length === 1 ? '' : 's'}`)}
+      <div class="targets-list">
+        ${targetCards || '<p class="empty-state">No software deployment patterns found.</p>'}
+      </div>
+    </div>
+  `;
+
+  attachExecutiveHandlers();
+  attachTopNavHandlers();
+  attachSidebarHandlers();
+  attachObjectLinkHandlers(pageRoot);
+}
+
+// ── Teams view — objects grouped by owner.team ──────────────────────
+function renderTeamsView() {
+  currentMode = 'teams';
+  currentDetailId = null;
+  destroyDetailCy();
+  destroySdpGraphCy();
+  destroyImpactCy();
+  syncHashForTeamsView();
+  renderSidebarContent('');
+
+  const TEAM_TYPES = new Set(['software_deployment_pattern','reference_architecture','runtime_service','data_at_rest_service','edge_gateway_service','product_service','host']);
+  const TYPE_LABELS = {
+    software_deployment_pattern: 'Deployment Patterns',
+    reference_architecture: 'Reference Architectures',
+    runtime_service: 'Runtime Services',
+    data_at_rest_service: 'Data-at-Rest Services',
+    edge_gateway_service: 'Edge / Gateway Services',
+    product_service: 'Product Services',
+    host: 'Hosts',
+  };
+  const teamMap = new Map();
+  const unassigned = [];
+  (browserData.objects || []).filter(o => TEAM_TYPES.has(o.type)).forEach(obj => {
+    const team = (obj.owner?.team) || (obj.definitionOwner?.team) || null;
+    if (!team) { unassigned.push(obj); return; }
+    if (!teamMap.has(team)) teamMap.set(team, []);
+    teamMap.get(team).push(obj);
+  });
+  if (unassigned.length) teamMap.set('(unassigned)', unassigned);
+
+  const teamCards = [...teamMap.entries()].map(([teamName, objects]) => {
+    // Group by type within team
+    const byType = {};
+    objects.forEach(obj => {
+      if (!byType[obj.type]) byType[obj.type] = [];
+      byType[obj.type].push(obj);
+    });
+    const typeGroups = Object.entries(byType).map(([type, objs]) => `
+      <div class="team-object-group">
+        <p class="team-object-group-label">${escapeHtml(TYPE_LABELS[type] || type)}</p>
+        <div class="team-object-links">
+          ${objs.map(obj => `<a class="object-link" data-id="${escapeHtml(obj.uid || '')}">${escapeHtml(obj.name || obj.uid || '')}</a>`).join('')}
+        </div>
+      </div>
+    `).join('');
+    return `
+      <div class="team-card">
+        <div class="team-card-header">
+          <span>${escapeHtml(teamName)}</span>
+          <span class="badge badge-inactive">${objects.length} object${objects.length === 1 ? '' : 's'}</span>
+        </div>
+        <div class="team-objects">${typeGroups}</div>
+      </div>
+    `;
+  }).join('');
+
+  pageRoot.innerHTML = `
+    <div class="view-shell">
+      ${topNavMarkup()}
+      ${subviewHeaderMarkup('Home', 'home', 'Teams', `${teamMap.size} team${teamMap.size === 1 ? '' : 's'} with owned objects`)}
+      <div class="teams-list">
+        ${teamCards || '<p class="empty-state">No team ownership assigned to any objects yet.</p>'}
+      </div>
+    </div>
+  `;
+
+  attachExecutiveHandlers();
+  attachTopNavHandlers();
+  attachSidebarHandlers();
+  attachObjectLinkHandlers(pageRoot);
+}
+
 function renderExecutiveView() {
   currentMode = 'executive';
   currentDetailId = null;
+  executiveDrilldown = null;
+  currentSubViewId = null;
   destroyDetailCy();
   destroySdpGraphCy();
   destroyImpactCy();
   syncHashForExecutiveView();
   const stats = executiveStats();
   renderSidebarContent(executiveSidebarMarkup(stats));
-  // --- v1 dashboard alert banner: derive from real catalog state ---
+
+  // Alert banners
   const _openRisks = (browserData.objects || []).filter(o => o.type === 'decision_record' && o.category === 'risk' && (o.status === 'open' || o.status === 'accepted'));
   const _retiredInUse = (browserData.objects || []).filter(o => o.lifecycleStatus === 'retired' && (o.referencedBy || []).length > 0);
   const _stubs = (browserData.objects || []).filter(o => o.catalogStatus === 'stub');
   const _alerts = [];
   if (_openRisks.length) _alerts.push({ severity: 'critical', label: `${_openRisks.length} open risk${_openRisks.length === 1 ? '' : 's'}`, detail: 'Decision records with open or accepted-but-unmitigated risk', target: 'risks' });
   if (_retiredInUse.length) _alerts.push({ severity: 'warning', label: `${_retiredInUse.length} retired component${_retiredInUse.length === 1 ? '' : 's'} still referenced`, detail: 'Lifecycle = retired but inbound references exist', target: 'retired' });
-  if (_stubs.length) _alerts.push({ severity: 'info', label: `${_stubs.length} stub${_stubs.length === 1 ? '' : 's'} in drafting table`, detail: 'Catalog status = stub; awaiting authoring', target: 'drafting-table' });
+  if (_stubs.length) _alerts.push({ severity: 'info', label: `${_stubs.length} stub${_stubs.length === 1 ? '' : 's'} awaiting authoring`, detail: 'Catalog status = stub', target: 'drafting-table' });
   const _alertSeverity = sev => ({ critical: '#b93a3a', warning: '#c47a14', info: '#2a6fdb' }[sev] || '#7a6e60');
   const _alertBanner = _alerts.length ? `
     <section class="dashboard-alerts" aria-label="Catalog posture alerts">
@@ -1772,218 +2312,74 @@ function renderExecutiveView() {
       `).join('')}
     </section>
   ` : '';
+
+  // Tile data
+  const vocab = browserData.vocabulary || {};
+  const vocabCount = Object.keys(vocab).length;
+  const pillarCount = (browserData.businessTaxonomy?.pillars || []).length;
+  const rgGroups = browserData.requirements?.groups || [];
+  const activeRgCount = rgGroups.filter(g => g.active || g.activation === 'always').length;
+  const sdps = (browserData.objects || []).filter(o => o.type === 'software_deployment_pattern');
+  const targetSet = new Set();
+  sdps.forEach(sdp => (sdp.serviceGroups || []).forEach(sg => { if (sg.deploymentTarget) targetSet.add(sg.deploymentTarget); }));
+  const teamSet = new Set();
+  const TEAM_TYPES_EXEC = new Set(['software_deployment_pattern','reference_architecture','runtime_service','data_at_rest_service','edge_gateway_service','product_service','host']);
+  (browserData.objects || []).filter(o => TEAM_TYPES_EXEC.has(o.type)).forEach(obj => {
+    const t = obj.owner?.team || obj.definitionOwner?.team;
+    if (t) teamSet.add(t);
+  });
+  const techCount = (browserData.objects || []).filter(o => o.type === 'technology_component').length;
+
+  const makeTile = (icon, title, desc, count, target) => `
+    <button class="home-tile" data-executive-target="${escapeHtml(target)}">
+      <span class="home-tile-icon">${icon}</span>
+      <div class="home-tile-body">
+        <div class="home-tile-title">
+          ${escapeHtml(title)}
+          ${count !== null ? `<span class="home-tile-count">${formatNumber(count)}</span>` : ''}
+        </div>
+        <p class="home-tile-desc">${escapeHtml(desc)}</p>
+      </div>
+    </button>
+  `;
+
+  const draftingTiles = [
+    makeTile('🗺', 'Software Deployment Patterns', 'Architecture patterns showing how software is deployed across targets', sdps.length, 'deployments'),
+    makeTile('🔬', 'Technology Lifecycle', 'Browse technology components by domain, capability, and lifecycle status', techCount, 'technologies'),
+    makeTile('📍', 'Deployment Targets', 'See deployment patterns grouped by their execution boundaries', targetSet.size, 'deployment-targets'),
+    makeTile('👥', 'Teams', 'View architecture objects grouped by owning team', teamSet.size, 'teams'),
+  ];
+
+  const configTiles = [
+    makeTile('✅', 'Requirement Groups', `${activeRgCount} of ${rgGroups.length} active — click to walk requirements`, rgGroups.length, 'requirement-groups'),
+    makeTile('📋', 'Vocabulary Lists', 'Governed choices for deployment targets, protocols, zones, and more', vocabCount, 'vocabularies'),
+    makeTile('🏛', 'Business Taxonomy', 'Business pillars and strategy domains', pillarCount, 'taxonomies'),
+  ];
+
   pageRoot.innerHTML = `
     <div class="view-shell">
       ${topNavMarkup()}
       ${_alertBanner}
-      <section class="executive-hero">
-        <div class="executive-hero-copy">
-          <img class="executive-hero-logo" src="${escapeHtml(browserData.logoDataUri || 'draft-logo.png')}" alt="DRAFT">
-          <div>
-            <h2>${escapeHtml(browserData.catalogName || 'DRAFT')} catalog overview</h2>
-            <p>${escapeHtml(browserData.catalogName || 'This catalog')} connects deployable architecture, technology lifecycle decisions, requirements, and deployment patterns so teams can draft systems from governed building blocks.</p>
-            <div class="executive-hero-actions">
-              <button class="action-button" data-executive-target="drafting-table">Open Drafting Table</button>
-              <button class="action-button secondary" data-executive-target="acceptable-use">Acceptable Use Technology</button>
-            </div>
-          </div>
-        </div>
-        <div class="executive-snapshot">
-          <div class="executive-snapshot-row"><span>Catalog Objects</span><strong>${formatNumber(stats.objectCount)}</strong></div>
-          <div class="executive-snapshot-row"><span>Active Requirement Groups</span><strong>${formatNumber(stats.activeRequirementGroupCount)}</strong></div>
-          <div class="executive-snapshot-row"><span>Mapped Technologies</span><strong>${formatNumber(stats.acceptableUseTechnologyCount)}</strong></div>
-        </div>
-      </section>
-      ${(() => {
-        // --- v1 dashboard: 5-up KPI strip ---
-        const _kpis = [
-          { target: 'technologies', value: stats.technologyCount, label: 'Technology Components', accent: 'plum' },
-          { target: 'capabilities', value: stats.capabilityCount, label: 'Capabilities', accent: 'teal' },
-          { target: 'deployments', value: stats.softwareDeploymentPatternCount, label: 'Deployment Patterns', accent: 'amber' },
-          { target: 'requirements', value: stats.requirementDefinitionCount, label: 'Requirement Definitions', accent: 'mint' },
-          { target: 'controls', value: stats.controlEvidenceCount, label: 'Controls Addressed', accent: 'rose' },
-        ];
-        return `
-          <section class="dashboard-kpi-strip" aria-label="Catalog metrics">
-            ${_kpis.map(k => `
-              <button class="dashboard-kpi dashboard-kpi-${k.accent}" data-executive-target="${escapeHtml(k.target)}">
-                <div class="dashboard-kpi-value">${formatNumber(k.value)}</div>
-                <div class="dashboard-kpi-label">${escapeHtml(k.label)}</div>
-              </button>
-            `).join('')}
-          </section>
-        `;
-      })()}
-      ${(() => {
-        // --- v1 dashboard: Lifecycle donut + Domain coverage side-by-side ---
-        const _impactTypes = new Set(['reference_architecture','software_deployment_pattern','host','runtime_service','data_at_rest_service','edge_gateway_service','product_service','technology_component']);
-        const _byStatus = {};
-        (browserData.objects || []).forEach(o => { if (_impactTypes.has(o.type)) { const s = o.lifecycleStatus || 'unknown'; _byStatus[s] = (_byStatus[s] || 0) + 1; } });
-        const _statusOrder = ['preferred','existing-only','candidate','deprecated','retired','unknown'];
-        const _statusColor = { preferred: '#1f8a5b', 'existing-only': '#2a6fdb', candidate: '#7c3a6b', deprecated: '#c47a14', retired: '#b93a3a', unknown: '#7a6e60' };
-        const _entries = _statusOrder.filter(s => _byStatus[s]).map(s => ({ status: s, count: _byStatus[s] }));
-        const _total = _entries.reduce((sum, e) => sum + e.count, 0);
-        // Donut SVG
-        const _R = 64, _C = 2 * Math.PI * _R;
-        let _offset = 0;
-        const _donutSlices = _entries.map(e => {
-          const frac = e.count / (_total || 1);
-          const dash = frac * _C;
-          const slice = `<circle r="${_R}" cx="80" cy="80" fill="transparent" stroke="${_statusColor[e.status]}" stroke-width="22" stroke-dasharray="${dash} ${_C - dash}" stroke-dashoffset="${-_offset}" transform="rotate(-90 80 80)"/>`;
-          _offset += dash;
-          return slice;
-        }).join('');
-        const _donutLegend = _entries.map(e => `
-          <li class="donut-legend-row">
-            <span class="donut-swatch" style="background:${_statusColor[e.status]};"></span>
-            <span class="donut-legend-label">${escapeHtml(e.status)}</span>
-            <span class="donut-legend-count">${e.count}</span>
-          </li>
-        `).join('');
-        // Domain coverage table
-        const _domainStats = (stats.domainStats || []).slice(0, 8);
-        const _maxDomain = Math.max(1, ..._domainStats.map(d => d.capabilityCount || 0));
-        const _coverageRows = _domainStats.map(d => `
-          <tr>
-            <td><strong>${escapeHtml(d.name)}</strong></td>
-            <td><div class="coverage-bar-track"><div class="coverage-bar-fill" style="width:${Math.round((d.capabilityCount || 0) / _maxDomain * 100)}%; background:var(--accent);"></div></div></td>
-            <td class="coverage-num">${d.capabilityCount || 0}</td>
-            <td class="coverage-num">${d.technologyCount || 0}</td>
-          </tr>
-        `).join('');
-        return `
-          <section class="dashboard-row-2">
-            <article class="section-card donut-card">
-              <div class="header-top">
-                <div class="header-title">
-                  <h3>Technology Lifecycle Mix</h3>
-                  <div class="object-id">${_total} components across reference architectures, deployments, and services</div>
-                </div>
-              </div>
-              <div class="donut-body">
-                ${_total ? `
-                  <svg class="donut-svg" viewBox="0 0 160 160" aria-hidden="true">
-                    ${_donutSlices}
-                    <text x="80" y="76" text-anchor="middle" class="donut-center-num">${_total}</text>
-                    <text x="80" y="96" text-anchor="middle" class="donut-center-label">total</text>
-                  </svg>
-                  <ul class="donut-legend">${_donutLegend}</ul>
-                ` : '<div class="empty-card">No lifecycle-tracked components yet.</div>'}
-              </div>
-            </article>
-            <article class="section-card coverage-card">
-              <div class="header-top">
-                <div class="header-title">
-                  <h3>Capability Domain Coverage</h3>
-                  <div class="object-id">Capabilities and technology components per strategic domain</div>
-                </div>
-              </div>
-              ${_domainStats.length ? `
-                <div class="table-wrap">
-                  <table class="data-table">
-                    <thead><tr><th>Domain</th><th>Coverage</th><th class="coverage-num">Capabilities</th><th class="coverage-num">Tech</th></tr></thead>
-                    <tbody>${_coverageRows}</tbody>
-                  </table>
-                </div>
-              ` : '<div class="empty-card">No mapped capability domains.</div>'}
-            </article>
-          </section>
-        `;
-      })()}
-      ${(() => {
-        const _stubObjects = (browserData.objects || []).filter(o => o.catalogStatus === 'stub');
-        if (!_stubObjects.length) return '';
-        const _statusFor = o => {
-          if (o.type === 'decision_record' && o.status === 'open') return { label: 'blocked', tone: 'warn' };
-          if ((o.unresolvedQuestions || []).length > 0) return { label: 'review', tone: 'info' };
-          return { label: 'drafting', tone: 'neutral' };
-        };
-        return `
-          <section class="section-card" id="drafting-table-section" aria-label="Drafting table queue">
-            <div class="header-top">
-              <div class="header-title">
-                <h3>Drafting Table</h3>
-                <div class="object-id">${pluralize(_stubObjects.length, 'stub')} awaiting authoring</div>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table class="data-table">
-                <thead><tr><th>Object</th><th>Type</th><th>Status</th><th>Owner</th></tr></thead>
-                <tbody>
-                  ${_stubObjects.map(o => {
-                    const s = _statusFor(o);
-                    const ownerName = (o.owner && (o.owner.name || o.owner.team)) || (o.definitionOwner && (o.definitionOwner.name || o.definitionOwner.team)) || '—';
-                    return `
-                      <tr>
-                        <td><a href="#" class="object-link" data-object-id="${escapeHtml(o.uid)}"><strong>${escapeHtml(o.name)}</strong></a><div class="object-id">${escapeHtml(o.uid)}</div></td>
-                        <td>${escapeHtml(o.typeLabel)}</td>
-                        <td><span class="badge tone-${s.tone}">${s.label}</span></td>
-                        <td>${escapeHtml(ownerName)}</td>
-                      </tr>
-                    `;
-                  }).join('')}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        `;
-      })()}
-      ${(() => {
-        const _today = Date.now();
-        const _DAY = 86400000;
-        const _parse = d => { if (!d) return null; const t = Date.parse(d); return isNaN(t) ? null : t; };
-        const _runwayItems = (browserData.objects || [])
-          .filter(o => o.type === 'technology_component')
-          .map(o => {
-            const vl = o.vendorLifecycle || {};
-            const eol = _parse(vl.endOfLifeDate) || _parse(vl.endOfSupportDate);
-            const mig = _parse(o.targetMigrationDate);
-            return { o, eol, mig };
-          })
-          .filter(r => r.eol || r.mig)
-          .sort((a, b) => (a.eol || a.mig || Infinity) - (b.eol || b.mig || Infinity));
-        if (!_runwayItems.length) return '';
-        const _fmtDays = ms => {
-          const days = Math.round(ms / _DAY);
-          if (Math.abs(days) < 60) return `${days >= 0 ? 'in ' : ''}${days} day${Math.abs(days) === 1 ? '' : 's'}${days < 0 ? ' ago' : ''}`;
-          const months = Math.round(days / 30);
-          return `${months >= 0 ? 'in ' : ''}${months} mo${Math.abs(months) === 1 ? '' : 's'}${months < 0 ? ' ago' : ''}`;
-        };
-        const _tone = ms => ms == null ? 'neutral' : ms < 0 ? 'warn' : ms < 90 * _DAY ? 'warn' : ms < 365 * _DAY ? 'info' : 'neutral';
-        return `
-          <section class="section-card" id="eol-runway-section" aria-label="EOL and migration runway">
-            <div class="header-top">
-              <div class="header-title">
-                <h3>EOL &amp; Migration Runway</h3>
-                <div class="object-id">${pluralize(_runwayItems.length, 'technology component')} with vendor end-of-life or planned migration dates</div>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table class="data-table">
-                <thead><tr><th>Component</th><th>Vendor EOL</th><th>Target Migration</th><th>Lifecycle</th></tr></thead>
-                <tbody>
-                  ${_runwayItems.map(r => {
-                    const eolDelta = r.eol == null ? null : r.eol - _today;
-                    const migDelta = r.mig == null ? null : r.mig - _today;
-                    return `
-                      <tr>
-                        <td><a href="#" class="object-link" data-object-id="${escapeHtml(r.o.uid)}"><strong>${escapeHtml(r.o.name)}</strong></a><div class="object-id">${escapeHtml(r.o.classification || r.o.subtype || '')}</div></td>
-                        <td>${r.eol ? `<span class="badge tone-${_tone(eolDelta)}">${_fmtDays(eolDelta)}</span>` : '<span class="object-id">—</span>'}</td>
-                        <td>${r.mig ? `<span class="badge tone-${_tone(migDelta)}">${_fmtDays(migDelta)}</span>` : '<span class="object-id">unset</span>'}</td>
-                        <td><span class="badge">${escapeHtml(r.o.lifecycleStatus || 'unknown')}</span></td>
-                      </tr>
-                    `;
-                  }).join('')}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        `;
-      })()}
+      <div class="home-header">
+        <img class="home-header-logo" src="${escapeHtml(browserData.logoDataUri || 'draft-logo.png')}" alt="${escapeHtml(browserData.catalogName || 'DRAFT')}">
+        <h1>Welcome to ${escapeHtml(browserData.catalogName || 'DRAFT')} Drafting Table</h1>
+      </div>
+      <div class="home-columns">
+        <section>
+          <p class="home-column-label">Drafting Table</p>
+          <div class="home-tiles">${draftingTiles.join('')}</div>
+        </section>
+        <section>
+          <p class="home-column-label">Company Configurations</p>
+          <div class="home-tiles">${configTiles.join('')}</div>
+        </section>
+      </div>
     </div>
   `;
-  attachTopNavHandlers();
+
   attachExecutiveHandlers();
+  attachTopNavHandlers();
+  attachSidebarHandlers();
   attachObjectLinkHandlers(pageRoot);
 }
 
@@ -2227,12 +2623,32 @@ function navigateExecutiveTarget(target) {
     renderListView();
     return;
   }
+  if (target === 'home') {
+    renderExecutiveView();
+    return;
+  }
+  if (target === 'requirement-groups') {
+    renderRequirementGroupsView();
+    return;
+  }
+  if (target === 'vocabularies') {
+    renderVocabulariesView();
+    return;
+  }
+  if (target === 'taxonomies') {
+    renderTaxonomiesView();
+    return;
+  }
   if (target === 'technologies') {
-    activeCategory = 'supporting';
-    activeFilter = 'technology_component';
-    listSearchTerm = '';
-    executiveDrilldown = null;
-    renderListView();
+    renderTechnologiesView();
+    return;
+  }
+  if (target === 'deployment-targets') {
+    renderDeploymentTargetsView();
+    return;
+  }
+  if (target === 'teams') {
+    renderTeamsView();
     return;
   }
   if (target === 'capabilities') {
