@@ -187,7 +187,7 @@ jobs:
                   shutil.rmtree(destination)
               destination.mkdir(parents=True, exist_ok=True)
               framework_root = source_repo / "framework"
-              for relative in ("configurations", "docs", "schemas", "tools"):
+              for relative in ("browser", "configurations", "docs", "schemas", "tools"):
                   source_dir = framework_root / relative
                   if source_dir.exists():
                       shutil.copytree(source_dir, destination / relative, dirs_exist_ok=True, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
@@ -323,10 +323,16 @@ jobs:
           echo "exit_code=$code" >> "$GITHUB_OUTPUT"
           exit 0
 
+      - name: Refresh browser shell assets
+        if: steps.refresh.outputs.update_needed == 'true'
+        run: |
+          python .draft/framework/tools/generate_browser.py --refresh-shell
+        continue-on-error: true
+
       - name: Commit refreshed framework
         if: steps.refresh.outputs.update_needed == 'true'
         run: |
-          git add .draft/framework .draft/framework.lock
+          git add .draft/framework .draft/framework.lock docs/assets/draft-browser.css docs/assets/draft-browser.js docs/index.html || true
           if git diff --cached --quiet; then
             echo "No framework changes to commit."
           else

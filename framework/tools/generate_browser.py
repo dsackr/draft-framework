@@ -752,6 +752,13 @@ def write_browser_data(payload: dict[str, Any], asset_dir: Path) -> Path:
     return data_path
 
 
+def shell_asset_has_drifted(source: Path, target: Path) -> bool:
+    """Return True if the framework source file differs from the installed target."""
+    if not target.exists():
+        return False
+    return source.read_bytes() != target.read_bytes()
+
+
 def copy_browser_assets(workspace_root: Path, output_path: Path, *, refresh_shell: bool = False) -> list[Path]:
     """Copy browser shell assets to the output asset directory.
 
@@ -763,6 +770,9 @@ def copy_browser_assets(workspace_root: Path, output_path: Path, *, refresh_shel
     Pass refresh_shell=True (via --refresh-shell on the CLI) to force-overwrite
     all shell assets from the framework source — use this when pulling a
     framework design update.
+
+    On a normal run, if any framework source file differs from the installed
+    target a warning is printed so engineers know --refresh-shell is available.
     """
     asset_dir = browser_asset_dir(output_path)
     asset_dir.mkdir(parents=True, exist_ok=True)
@@ -773,6 +783,12 @@ def copy_browser_assets(workspace_root: Path, output_path: Path, *, refresh_shel
         if refresh_shell or not target.exists():
             shutil.copy2(source, target)
             copied.append(target)
+        elif shell_asset_has_drifted(source, target):
+            print(
+                f"[browser] {asset_name} has been updated in the framework. "
+                "Run with --refresh-shell to apply the update.",
+                file=sys.stderr,
+            )
     theme_source = workspace_theme_source(workspace_root)
     theme_target = asset_dir / WORKSPACE_THEME_OUTPUT_NAME
     if refresh_shell or not theme_target.exists():

@@ -3,6 +3,41 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.13 - 2026-05-15
+
+### Compatibility Impact
+
+No migration is required. This patch improves framework refresh ergonomics for
+vendored workspaces; it does not change schemas, validation behavior, or
+catalog object formats.
+
+### Added
+
+- Added browser shell drift warnings during normal browser generation runs so
+  workspaces are told when `--refresh-shell` is available.
+- Added browser shell refresh as a post-update step in the generated framework
+  refresh workflow.
+
+### Changed
+
+- Changed the generated framework refresh workflow to vendor the
+  `framework/browser` directory in addition to framework configurations, docs,
+  schemas, and tools.
+- Changed the generated framework refresh workflow commit step to include
+  regenerated browser shell assets.
+
+### Fixed
+
+- Fixed generated framework refresh workflows that could update framework tools
+  without also refreshing the installed browser shell assets that depend on
+  them.
+
+### Migration Notes
+
+- Existing workspaces can continue unchanged.
+- Existing workspaces can update `.github/workflows/draft-framework-update.yml`
+  to pick up the new browser refresh behavior.
+
 ## 0.13.12 - 2026-05-15
 
 ### Compatibility Impact
