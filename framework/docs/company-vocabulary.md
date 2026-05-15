@@ -143,6 +143,78 @@ vocabulary:
 When declared, validation checks `architecturalDecisions.failureDomain` on
 Software Deployment Patterns and deployable service objects.
 
+### Connection Protocols
+
+```yaml
+vocabulary:
+  connectionProtocols:
+    mode: advisory
+    values:
+      - id: REST
+        name: REST
+      - id: gRPC
+        name: gRPC
+      - id: AMQP
+        name: AMQP
+      - id: JDBC
+        name: JDBC
+      - id: WebSocket
+        name: WebSocket
+```
+
+Or reference the framework source file:
+
+```yaml
+vocabulary:
+  connectionProtocols:
+    mode: advisory
+    source: .draft/framework/configurations/vocabulary/connection-protocols.yaml
+```
+
+When declared, validation checks `serviceGroups[].connections[].protocol` on
+Software Deployment Patterns. The Draftsman presents approved values as a
+multiple-choice list during connection elicitation. Values not in the list are
+recorded as non-standard and may be submitted as vocabulary proposals.
+
+The framework ships a default source file at
+`configurations/vocabulary/connection-protocols.yaml` covering REST, gRPC,
+AMQP, JDBC, SQL, WebSocket, HTTPS, GraphQL, and other. Companies may extend
+this list via vocabulary proposals without editing the framework source.
+
+### Network Zones
+
+```yaml
+vocabulary:
+  networkZones:
+    mode: advisory
+    values:
+      - id: public
+        name: Public
+        description: Internet-facing services and edge components.
+      - id: private
+        name: Private
+        description: Internal application and data services.
+      - id: management
+        name: Management
+        description: Operational and administrative services.
+```
+
+When declared, validation checks `networkZones[].id` and
+`serviceGroups[].deployableObjects[].networkZone` on Software Deployment
+Patterns. Zone IDs must be lowercase alphanumeric with hyphens.
+
+The Draftsman populates this list during the first SDP session that needs
+network zones. It asks one yes/no question ("does your deployment use distinct
+network zones?"), then presents the common zone patterns from
+`configurations/vocabulary/network-zone-patterns.yaml` as a multiple-choice
+list. The selected pattern expands into the SDP's `networkZones` list and
+establishes the zone-to-tier default mapping used for all subsequent zone
+assignment questions.
+
+Once zones are recorded in the workspace vocabulary, the Draftsman offers them
+as approved choices in all future SDP sessions without repeating the setup
+questions.
+
 ## Source Files
 
 Small lists can live inline in `.draft/workspace.yaml`. Larger lists can live in

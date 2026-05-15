@@ -528,6 +528,32 @@ def build_requirement_payload(registry: dict[str, dict[str, Any]], workspace_roo
     }
 
 
+def build_sdp_connections(obj: dict[str, Any]) -> list[dict[str, Any]]:
+    """Flatten inter-service connections from all serviceGroups into a single list."""
+    connections: list[dict[str, Any]] = []
+    for group in obj.get("serviceGroups", []):
+        if not isinstance(group, dict):
+            continue
+        group_name = str(group.get("name", ""))
+        for conn in group.get("connections", []):
+            if not isinstance(conn, dict):
+                continue
+            from_ref = str(conn.get("from", "")).strip()
+            to_ref = str(conn.get("to", "")).strip()
+            if not from_ref or not to_ref:
+                continue
+            connections.append({
+                "from": from_ref,
+                "to": to_ref,
+                "protocol": str(conn.get("protocol", "")).strip(),
+                "direction": str(conn.get("direction", "outbound")).strip(),
+                "port": str(conn.get("port", "")).strip(),
+                "label": str(conn.get("label", "")).strip(),
+                "serviceGroup": group_name,
+            })
+    return connections
+
+
 def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: Path) -> dict[str, Any]:
     objects = list(registry.values())
     schemas = load_schemas(SCHEMA_ROOT)
@@ -622,6 +648,8 @@ def build_browser_payload(registry: dict[str, dict[str, Any]], workspace_root: P
                 "appliesTo": obj.get("appliesTo", {}),
                 "inherits": obj.get("inherits", ""),
                 "scalingUnits": obj.get("scalingUnits", []),
+                "networkZones": obj.get("networkZones", []),
+                "sdpConnections": build_sdp_connections(obj) if obj.get("type") == "software_deployment_pattern" else [],
                 "serviceGroups": obj.get("serviceGroups", []),
                 "followsReferenceArchitecture": obj.get("followsReferenceArchitecture", ""),
                 "decisionRecords": obj.get("decisionRecords", []),

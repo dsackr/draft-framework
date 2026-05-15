@@ -1282,6 +1282,7 @@ function renderExecutiveView() {
   currentMode = 'executive';
   currentDetailId = null;
   destroyDetailCy();
+  destroySdpGraphCy();
   destroyImpactCy();
   syncHashForExecutiveView();
   const stats = executiveStats();
@@ -1608,6 +1609,7 @@ function renderObjectTypesView() {
   currentMode = 'object-types';
   currentDetailId = null;
   destroyDetailCy();
+  destroySdpGraphCy();
   destroyImpactCy();
   syncHashForObjectTypesView();
   renderSidebarContent(objectTypesSidebarMarkup());
@@ -1678,6 +1680,7 @@ function renderCompanyOnboardingView() {
   currentMode = 'onboarding';
   currentDetailId = null;
   destroyDetailCy();
+  destroySdpGraphCy();
   destroyImpactCy();
   syncHashForOnboardingView();
   renderSidebarContent(companyOnboardingSidebarMarkup());
@@ -1934,6 +1937,7 @@ function renderAcceptableUseView() {
   currentDetailId = null;
   executiveDrilldown = null;
   destroyDetailCy();
+  destroySdpGraphCy();
   destroyImpactCy();
   syncHashForAcceptableUseView();
   const groups = acceptableUseGroups();
@@ -1979,6 +1983,7 @@ function renderListView() {
   currentDetailId = null;
   executiveDrilldown = null;
   destroyDetailCy();
+  destroySdpGraphCy();
   destroyImpactCy();
   const category = categoryConfig();
   const baseObjects = filterObjects();
@@ -2900,6 +2905,260 @@ function tierColumnsMarkup(groups) {
   `;
 }
 
+const SDP_GRAPH_PROTOCOL_COLORS = {
+  REST:      '#2a6fdb',
+  gRPC:      '#7c3a6b',
+  AMQP:      '#c47a14',
+  JDBC:      '#1f8a5b',
+  SQL:       '#1f8a5b',
+  WebSocket: '#0e6b62',
+  HTTPS:     '#2a6fdb',
+  GraphQL:   '#b93a3a',
+  other:     '#7a6e60',
+};
+
+const SDP_GRAPH_TIER_COLORS = {
+  presentation: '#f97316',
+  application:  '#14b8a6',
+  data:         '#3b82f6',
+  utility:      '#a855f7',
+  unknown:      '#64748b',
+};
+
+function buildSdpGraphElements(object) {
+  const connections = object.sdpConnections || [];
+  const zones = object.networkZones || [];
+  const zoneIds = new Set(zones.map(z => z.id));
+
+  // Collect all UIDs that appear in connections
+  const referencedUids = new Set();
+  connections.forEach(conn => {
+    referencedUids.add(conn.from);
+    referencedUids.add(conn.to);
+  });
+
+  // Fall back to all deployable objects if no connections recorded
+  const allDeployableUids = new Set();
+  (object.serviceGroups || []).forEach(group => {
+    (group.deployableObjects || []).forEach(entry => {
+      if (entry.ref) allDeployableUids.add(entry.ref);
+    });
+  });
+  const nodeUids = referencedUids.size > 0 ? referencedUids : allDeployableUids;
+
+  // Build a zone membership map from deployableObjectEntry.networkZone
+  const uidToZone = {};
+  (object.serviceGroups || []).forEach(group => {
+    (group.deployableObjects || []).forEach(entry => {
+      if (entry.ref && entry.networkZone) {
+        uidToZone[entry.ref] = entry.networkZone;
+      }
+    });
+  });
+
+  // Build a tier map
+  const uidToTier = {};
+  (object.serviceGroups || []).forEach(group => {
+    (group.deployableObjects || []).forEach(entry => {
+      if (entry.ref && entry.diagramTier) {
+        uidToTier[entry.ref] = entry.diagramTier;
+      }
+    });
+  });
+
+  const elements = [];
+
+  // Compound zone parent nodes
+  if (zones.length) {
+    zones.forEach(zone => {
+      elements.push({
+        data: { id: `zone::${zone.id}`, label: zone.name || zone.id, isZone: true },
+        classes: 'zone-compound'
+      });
+    });
+  }
+
+  // Service nodes
+  nodeUids.forEach(uid => {
+    const obj = objectLookup[uid];
+    const tier = uidToTier[uid] || (obj ? (obj.diagramTier || 'unknown') : 'unknown');
+    const zoneMembership = uidToZone[uid];
+    const nodeData = {
+      id: uid,
+      label: obj ? obj.name : uid,
+      tier,
+      nodeColor: SDP_GRAPH_TIER_COLORS[tier] || SDP_GRAPH_TIER_COLORS.unknown,
+    };
+    if (zoneMembership && zoneIds.has(zoneMembership)) {
+      nodeData.parent = `zone::${zoneMembership}`;
+    }
+    elements.push({ data: nodeData, classes: `tier-${tier}` });
+  });
+
+  // Edge elements
+  connections.forEach((conn, index) => {
+    const edgeColor = SDP_GRAPH_PROTOCOL_COLORS[conn.protocol] || SDP_GRAPH_PROTOCOL_COLORS.other;
+    const edgeLabel = conn.protocol || '';
+    elements.push({
+      data: {
+        id: `edge-${index}-${conn.from}-${conn.to}`,
+        source: conn.from,
+        target: conn.to,
+        label: edgeLabel,
+        protocol: conn.protocol,
+        direction: conn.direction || 'outbound',
+        edgeColor,
+      },
+      classes: `protocol-${(conn.protocol || 'other').toLowerCase()}`
+    });
+  });
+
+  return elements;
+}
+
+let sdpGraphCy = null;
+
+function destroySdpGraphCy() {
+  if (sdpGraphCy) {
+    sdpGraphCy.destroy();
+    sdpGraphCy = null;
+  }
+}
+
+function renderSdpGraph(object) {
+  const container = document.getElementById('sdp-graph-cy');
+  if (!container || sdpGraphCy) return;
+
+  const elements = buildSdpGraphElements(object);
+  if (!elements.length) return;
+
+  const protocolsPresent = [...new Set(
+    (object.sdpConnections || []).map(c => c.protocol).filter(Boolean)
+  )];
+
+  // Build legend
+  const legendEl = document.getElementById('sdp-graph-legend');
+  if (legendEl) {
+    const tierItems = Object.entries(SDP_GRAPH_TIER_COLORS)
+      .filter(([tier]) => tier !== 'unknown')
+      .map(([tier, color]) => `
+        <span class="sdp-graph-legend-item">
+          <span class="sdp-graph-legend-swatch" style="background:${color}"></span>
+          ${escapeHtml(tier)}
+        </span>
+      `).join('');
+    const protocolItems = protocolsPresent.map(protocol => {
+      const color = SDP_GRAPH_PROTOCOL_COLORS[protocol] || SDP_GRAPH_PROTOCOL_COLORS.other;
+      return `
+        <span class="sdp-graph-legend-item">
+          <span class="sdp-graph-legend-swatch" style="background:${color}"></span>
+          ${escapeHtml(protocol)}
+        </span>
+      `;
+    }).join('');
+    legendEl.innerHTML = `<strong style="color:var(--subtle);margin-right:4px">Tiers:</strong>${tierItems}` +
+      (protocolItems ? `<strong style="color:var(--subtle);margin-left:12px;margin-right:4px">Protocols:</strong>${protocolItems}` : '');
+  }
+
+  sdpGraphCy = cytoscape({
+    container,
+    elements,
+    style: [
+      {
+        selector: 'node[!isZone]',
+        style: {
+          'background-color': 'data(nodeColor)',
+          'label': 'data(label)',
+          'color': '#1f1a14',
+          'text-valign': 'center',
+          'text-halign': 'center',
+          'font-size': '11px',
+          'font-family': '"SF Pro Display","Segoe UI",sans-serif',
+          'text-wrap': 'wrap',
+          'text-max-width': '110px',
+          'width': '120px',
+          'height': '44px',
+          'shape': 'round-rectangle',
+          'border-width': 1,
+          'border-color': 'rgba(31,26,20,0.18)',
+          'padding': '8px',
+        }
+      },
+      {
+        selector: 'node.zone-compound',
+        style: {
+          'background-color': 'rgba(231,225,214,0.35)',
+          'background-opacity': 1,
+          'border-style': 'dashed',
+          'border-width': 2,
+          'border-color': 'rgba(122,110,96,0.5)',
+          'label': 'data(label)',
+          'color': '#7a6e60',
+          'text-valign': 'top',
+          'text-halign': 'center',
+          'font-size': '12px',
+          'font-weight': '700',
+          'text-margin-y': '10px',
+          'padding': '24px',
+        }
+      },
+      {
+        selector: 'edge',
+        style: {
+          'width': 2,
+          'line-color': 'data(edgeColor)',
+          'target-arrow-color': 'data(edgeColor)',
+          'target-arrow-shape': 'triangle',
+          'curve-style': 'bezier',
+          'label': 'data(label)',
+          'font-size': '10px',
+          'color': '#7a6e60',
+          'text-background-color': '#ffffff',
+          'text-background-opacity': 0.85,
+          'text-background-padding': '2px',
+          'edge-text-rotation': 'autorotate',
+        }
+      },
+      {
+        selector: 'node:selected',
+        style: {
+          'border-width': 3,
+          'border-color': '#7c3a6b',
+        }
+      },
+      {
+        selector: 'edge:selected',
+        style: {
+          'width': 3,
+          'line-color': '#7c3a6b',
+          'target-arrow-color': '#7c3a6b',
+        }
+      }
+    ],
+    layout: {
+      name: 'cose',
+      animate: false,
+      randomize: false,
+      nodeRepulsion: () => 8000,
+      idealEdgeLength: () => 120,
+      edgeElasticity: () => 100,
+      gravity: 0.5,
+      numIter: 1000,
+      fit: true,
+      padding: 30,
+    }
+  });
+
+  // Click node to navigate to object detail
+  sdpGraphCy.on('tap', 'node[!isZone]', event => {
+    const uid = event.target.id();
+    if (objectLookup[uid]) {
+      destroySdpGraphCy();
+      showDetailView(uid);
+    }
+  });
+}
+
 function renderDeploymentTopology(object) {
   const serviceGroups = object.serviceGroups || [];
 
@@ -3470,16 +3729,34 @@ function renderDetailView() {
       ])}
     `;
   } else if (object.type === 'software_deployment_pattern') {
+    const hasConnections = (object.sdpConnections || []).length > 0;
     detailBody = `
       ${headerMarkup}
       <div class="detail-tabs">
         <button class="detail-tab active" data-sdm-tab="topology">Deployment Topology</button>
+        <button class="detail-tab" data-sdm-tab="graph">Service Graph</button>
         <button class="detail-tab" data-sdm-tab="details">Governance & Source</button>
       </div>
       <div class="detail-panel" data-sdm-panel="topology">
         <section class="section-card">
           <h3>Deployment Topology</h3>
           <div id="topology-canvas"></div>
+        </section>
+      </div>
+      <div class="detail-panel" data-sdm-panel="graph" hidden>
+        <section class="section-card">
+          <h3>Service Graph</h3>
+          ${hasConnections ? `
+            <div class="sdp-graph-toolbar">
+              <div class="sdp-graph-legend" id="sdp-graph-legend"></div>
+            </div>
+            <div id="sdp-graph-cy"></div>
+          ` : `
+            <div class="sdp-graph-empty">
+              No inter-service connections are documented for this pattern yet.<br>
+              Use a Draftsman session to capture primary service communication paths.
+            </div>
+          `}
         </section>
       </div>
       <div class="detail-panel" data-sdm-panel="details" hidden>
@@ -3567,6 +3844,7 @@ function renderDetailView() {
 
   document.getElementById('back-button').addEventListener('click', () => {
     destroyDetailCy();
+    destroySdpGraphCy();
     if (navHistory.length) {
       const previousId = navHistory.pop();
       showDetailView(previousId, false);
@@ -3630,7 +3908,12 @@ function renderDetailView() {
           panel.hidden = panel.dataset.sdmPanel !== nextTab;
         });
         if (nextTab === 'topology') {
+          destroySdpGraphCy();
           renderTopologyIntoCanvas();
+        } else if (nextTab === 'graph') {
+          renderSdpGraph(object);
+        } else {
+          destroySdpGraphCy();
         }
       });
     });
@@ -4113,6 +4396,7 @@ function applyImpactStyles(selection) {
 
 function renderImpactGraph(selection) {
   destroyDetailCy();
+  destroySdpGraphCy();
   destroyImpactCy();
   impactCy = cytoscape({
     container: document.getElementById('impact-cy'),

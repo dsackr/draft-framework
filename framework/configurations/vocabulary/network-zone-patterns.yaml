@@ -1,0 +1,86 @@
+schemaVersion: '1.0'
+type: vocabulary
+vocabulary: networkZonePatterns
+name: Network Zone Patterns
+description: >
+  Common named network zone patterns the Draftsman presents as multiple-choice
+  options when an engineer confirms that their deployment uses distinct network
+  zones. The engineer selects one pattern; the Draftsman expands it into the
+  SDP's networkZones list and uses it to infer zone assignment from diagramTier.
+  Companies that need custom zones can select the custom pattern and name their
+  zones directly, or submit a vocabulary proposal to add a new pattern.
+  This vocabulary is distinct from the per-workspace networkZones declared in
+  workspace.yaml; it is a catalogue of starting-point patterns only.
+values:
+  - id: pattern.public-private-management
+    name: Public / Private / Management
+    description: >
+      Three-zone web service pattern. Public zone faces the internet (presentation
+      tier, CDN, WAF, load balancer). Private zone holds application logic.
+      Management zone holds operational tooling, bastion access, and monitoring.
+    zones:
+      - id: public
+        name: Public
+        description: Internet-facing services and edge components.
+        defaultTiers: [presentation]
+      - id: private
+        name: Private
+        description: Internal application and data services.
+        defaultTiers: [application, data]
+      - id: management
+        name: Management
+        description: Operational, monitoring, and administrative services.
+        defaultTiers: [utility]
+    status: approved
+
+  - id: pattern.tenant-platform-management
+    name: Tenant / Platform / Management
+    description: >
+      Multi-tenant SaaS pattern. Tenant zone contains per-customer services.
+      Platform zone contains shared services used by all tenants.
+      Management zone contains control-plane and operational tooling.
+    zones:
+      - id: tenant
+        name: Tenant
+        description: Per-tenant runtime services.
+        defaultTiers: [presentation, application]
+      - id: platform
+        name: Platform
+        description: Shared platform services consumed by all tenants.
+        defaultTiers: [utility]
+      - id: management
+        name: Management
+        description: Control plane, monitoring, and administrative services.
+        defaultTiers: [utility]
+    status: approved
+
+  - id: pattern.dmz-internal-data
+    name: DMZ / Internal / Data
+    description: >
+      Perimeter security model. DMZ holds externally accessible services behind
+      a firewall. Internal zone holds application-tier services with no direct
+      internet access. Data zone is restricted to data stores and backup services.
+    zones:
+      - id: dmz
+        name: DMZ
+        description: Externally accessible services, reverse proxies, and API gateways.
+        defaultTiers: [presentation]
+      - id: internal
+        name: Internal
+        description: Application-tier services with no direct internet access.
+        defaultTiers: [application]
+      - id: data
+        name: Data
+        description: Data stores, caches, and backup services.
+        defaultTiers: [data, utility]
+    status: approved
+
+  - id: pattern.custom
+    name: Custom
+    description: >
+      The deployment uses zones that do not match a standard pattern. The Draftsman
+      will ask the engineer to name each zone. Zone IDs must be lowercase
+      alphanumeric with hyphens. After zones are named the Draftsman will ask
+      which diagramTier maps to each zone using a multiple-choice table.
+    zones: []
+    status: approved

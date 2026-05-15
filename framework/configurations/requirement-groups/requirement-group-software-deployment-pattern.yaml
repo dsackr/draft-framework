@@ -129,6 +129,40 @@ requirements:
   naAllowed: false
   validAnswerTypes:
   - architecturalDecision
+- id: inter-service-connections
+  description: >
+    Primary inter-service communication paths that cross a tier boundary
+    (e.g. presentation→application) or a network zone boundary must be
+    documented in serviceGroups[].connections, or the pattern must explicitly
+    state that no cross-boundary connections exist.
+  rationale: >
+    Service-to-service communication across tiers and zones is an architecture
+    decision with security, performance, and compliance implications. Without
+    explicit connection records the architecture cannot be analyzed for data-flow
+    compliance, blast-radius, or network policy conformance.
+  canBeSatisfiedBy:
+  - mechanism: field
+    key: serviceGroups[].connections
+    example: >
+      At least one connection entry per tier or zone crossing represented in the
+      deployment — from: <ref>, to: <ref>, protocol: REST, direction: outbound
+  - mechanism: architecturalDecision
+    key: noCrossBoundaryConnections
+    example: All services in this pattern communicate only within the same tier and zone
+  minimumSatisfactions: 1
+  requirementMode: recommended
+  naAllowed: true
+  naRationale: Acceptable when the deployment has only a single tier and no network zones.
+  validAnswerTypes:
+  - field
+  - architecturalDecision
+  interviewHint: >
+    Use the propose-and-confirm pattern. Ask one yes/no question per tier crossing
+    (presentation→application, application→data, application→utility). For each
+    confirmed crossing, present a multi-select list of the services in the source
+    tier and ask which ones make calls across. Then ask protocol once per crossing
+    using the connectionProtocols vocabulary list. Do not ask about port or label.
+    Do not attempt to enumerate every same-tier connection in a single session.
 lifecycleStatus: preferred
 tags:
 - software-deployment-pattern

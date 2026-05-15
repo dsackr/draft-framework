@@ -17,6 +17,7 @@ optionalFields:
 - followsReferenceArchitecture
 - architecturalDecisions
 - scalingUnits
+- networkZones
 - serviceGroups
 - externalInteractions
 - decisionRecords
@@ -40,6 +41,7 @@ fieldTypes:
   businessContext: dict
   architecturalDecisions: dict
   scalingUnits: list
+  networkZones: list
   serviceGroups: list
   externalInteractions: list
   decisionRecords: list
@@ -47,6 +49,7 @@ fieldTypes:
   requirementImplementations: list
 collectionSchemas:
   scalingUnits: scalingUnit
+  networkZones: networkZone
   serviceGroups: serviceGroup
   externalInteractions: externalInteraction
   decisionRecords: decisionRecordRef
@@ -62,6 +65,17 @@ scalingUnit:
     type:
     - replicable
     - shared
+networkZone:
+  requiredFields:
+  - id
+  - name
+  optionalFields:
+  - description
+  aiHint: >
+    A network zone is a logical traffic boundary within a deployment — for example
+    a public-facing network, private API network, or management plane. Use workspace
+    vocabulary list networkZones for approved zone IDs. Common patterns: public /
+    private / management; tenant / platform / management; dmz / internal / data.
 serviceGroup:
   requiredFields:
   - name
@@ -71,17 +85,21 @@ serviceGroup:
   - scalingUnit
   - deployableObjects
   - externalInteractions
+  - connections
   fieldTypes:
     deployableObjects: list
     externalInteractions: list
+    connections: list
   collectionSchemas:
     deployableObjects: deployableObjectEntry
     externalInteractions: externalInteraction
+    connections: serviceConnection
 deployableObjectEntry:
   requiredFields:
   - ref
   optionalFields:
   - diagramTier
+  - networkZone
   - intent
   - instance
   - riskRef
@@ -95,6 +113,48 @@ deployableObjectEntry:
   intent:
     - ha
     - sa
+  fieldDescriptions:
+    networkZone: >
+      ID of a networkZone declared on this SDP. If omitted the Draftsman infers the
+      zone from diagramTier using the workspace zone pattern. Only record explicitly
+      when the service is in a different zone than its tier default.
+serviceConnection:
+  requiredFields:
+  - from
+  - to
+  - protocol
+  optionalFields:
+  - direction
+  - port
+  - label
+  enumFields:
+    protocol:
+    - REST
+    - gRPC
+    - AMQP
+    - JDBC
+    - SQL
+    - WebSocket
+    - HTTPS
+    - GraphQL
+    - other
+    direction:
+    - outbound
+    - inbound
+    - bidirectional
+  fieldDescriptions:
+    from: UID of a deployable object ref declared in this serviceGroup's deployableObjects.
+    to: UID of a deployable object ref anywhere in this SDP (may be in another serviceGroup).
+    protocol: Communication protocol. Use workspace vocabulary list connectionProtocols for approved values.
+    direction: Direction from the perspective of the `from` object. Defaults to outbound.
+    port: Optional port or port range. Do not ask the engineer for this during a Draftsman session; capture only if volunteered.
+    label: Optional human label for this edge. Do not ask during a Draftsman session; capture only if volunteered.
+  aiHint: >
+    Capture only primary paths that cross a tier boundary (e.g. presentation→application)
+    or a network zone boundary. Do not attempt to enumerate all internal same-tier
+    connections during a single Draftsman session. Use the propose-and-confirm pattern:
+    infer likely crossings from diagramTier, ask yes/no per tier crossing, then
+    multi-select the specific services involved, then ask protocol once per crossing.
 externalInteraction:
   requiredFields:
   - name

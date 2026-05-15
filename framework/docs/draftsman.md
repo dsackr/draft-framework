@@ -418,8 +418,9 @@ Use this procedure:
    Group.
 8. Follow each object's Requirement Groups and capability lookups until the
    graph is closed.
-9. Preserve unresolved choices in the Drafting Session instead of making hidden
-   assumptions.
+9. Run the Network Zone and Connection Elicitation procedure (below).
+10. Preserve unresolved choices in the Drafting Session instead of making hidden
+    assumptions.
 
 The Draftsman must not assume EKS, EC2, Lambda, VM, physical, or container
 placement from a generic hosted-SaaS answer. The correct substrate question
@@ -434,6 +435,118 @@ requires region-level placement. Valid answers may be account boundaries,
 clusters, data centers, customer sites, tenant/environment boundaries, SaaS
 contexts, or another architecture-relevant execution context. Do not invent a
 default such as `us-west` when the source material does not provide one.
+
+## Network Zone and Connection Elicitation
+
+Run this procedure once per SDP session after service group identification is
+complete. Every question must be answerable by choosing from a list or
+answering yes/no. Do not ask open-ended questions. Never ask for port, label,
+or exhaustive same-tier connection lists during a single session.
+
+### Phase 1 — Network Zones (one question)
+
+Ask:
+
+> Does your deployment segment traffic into distinct network zones — for
+> example a public-facing network, a private application network, and a
+> management network? (yes / no)
+
+If **no**: skip phases 1 and 2. Leave `networkZones` empty. Do not assign
+`networkZone` to any deployable object entry. Proceed to Phase 3.
+
+If **yes**: present the workspace `networkZones` vocabulary list as
+multiple-choice. If no list is declared, present the standard patterns from
+`configurations/vocabulary/network-zone-patterns.yaml`:
+
+> Which of these zone patterns fits your deployment?
+>
+> A) Public / Private / Management — three-zone web service
+> B) Tenant / Platform / Management — multi-tenant SaaS
+> C) DMZ / Internal / Data — perimeter security model
+> D) Custom — I'll name the zones myself
+
+Record the selected pattern's zones as the SDP's `networkZones` list. For
+option D, ask the engineer to name each zone (one question per zone, at most
+three zones before offering to continue in a Drafting Session).
+
+### Phase 2 — Zone Assignment (propose, then confirm exceptions)
+
+The Draftsman infers default zone assignment from `diagramTier` using the
+selected pattern's `defaultTiers` mapping. Do not ask the engineer to assign
+each service individually.
+
+Instead, show the proposed mapping and ask for exceptions only:
+
+> Based on tier placement I'd assign:
+> — Presentation-tier services → [zone A]
+> — Application-tier services → [zone B]
+> — Data-tier services → [zone C]
+> — Utility-tier services → [zone D]
+>
+> Does this match your deployment? Name any services that belong in a
+> different zone than their tier suggests.
+
+Record `networkZone` on `deployableObjectEntry` only for services that differ
+from the tier default. Services matching their tier default do not need an
+explicit `networkZone` value.
+
+### Phase 3 — Connection Elicitation (propose-and-confirm, tier by tier)
+
+Ask one yes/no question per tier crossing. Stop after three questions per
+round; continue in a follow-up or Drafting Session if more crossings remain.
+
+**Round A — Tier crossings (yes/no per crossing):**
+
+> Does anything in your presentation tier call services in your application
+> tier? (yes / no)
+>
+> Does anything in your application tier call services in your data tier?
+> (yes / no)
+>
+> Do application services call shared utility or platform services — for
+> example authentication, messaging, or logging? (yes / no)
+
+For each **yes** answer, continue to Round B for that crossing.
+
+**Round B — Which services (multi-select per confirmed crossing):**
+
+Present the list of services in the source tier and ask the engineer to select
+which ones make calls across the boundary:
+
+> Which [presentation-tier] services call into the [application] tier?
+> [checkbox list of presentation-tier services]
+
+**Round C — Protocol (one multiple-choice question per crossing):**
+
+> For calls from [tier A] to [tier B], what protocol do they use?
+> REST / gRPC / AMQP / JDBC / WebSocket / HTTPS / GraphQL / other
+
+Use the workspace `connectionProtocols` vocabulary list if declared. Present
+at most one protocol question per tier crossing — assume all connections across
+a given crossing share the same protocol unless the engineer volunteers
+otherwise.
+
+**Recording connections:**
+
+For each confirmed crossing, write one `serviceConnection` entry per (from,
+to) pair identified in Round B, using the protocol from Round C and
+`direction: outbound` as the default. Do not ask about `port` or `label`.
+
+**Same-tier connections:**
+
+Do not ask about same-tier connections during the initial session. If the
+engineer volunteers a same-tier connection record it. Otherwise record in the
+Drafting Session that same-tier connections have not been reviewed.
+
+**Zone-boundary crossings:**
+
+If network zones are defined, also ask one yes/no question per zone boundary
+that is not already covered by a tier crossing:
+
+> Does any service in the [private] zone make calls to services in the
+> [public] zone? (yes / no)
+
+Follow the same Round B and C pattern for confirmed zone crossings.
 
 ## Source Provenance
 
