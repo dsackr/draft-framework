@@ -77,6 +77,10 @@ workspace:
   companyName: Acme
 ```
 
+Also set `repository.provider`, `repository.owner`, `repository.name`, and
+`repository.defaultBranch` before rendering templates when the company wants
+the generated README prompt to tell an AI exactly which repo to connect to.
+
 ## Step 2: Start Setup Mode
 
 In the connected AI tool, ask:

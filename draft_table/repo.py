@@ -277,10 +277,21 @@ def workspace_template_context(workspace: Path) -> dict[str, str]:
         or named_value(metadata.get("organization"))
         or workspace_label
     )
+    repository_provider = str(repository_data.get("provider") or "").strip().lower()
+    repository_owner = str(repository_data.get("owner") or "").strip()
+    repository_name = str(repository_data.get("name") or workspace_name).strip()
+    repository_slug = f"{repository_owner}/{repository_name}" if repository_owner and repository_name else repository_name
+    repository_url = ""
+    if repository_provider == "github" and repository_owner and repository_name:
+        repository_url = f"https://github.com/{repository_owner}/{repository_name}"
+    repository_reference = repository_url or repository_slug or str(workspace.resolve())
     return {
         "workspace_name": workspace_name,
         "workspace_label": workspace_label,
         "company_name": company_name,
+        "repository_slug": repository_slug,
+        "repository_url": repository_url,
+        "repository_reference": repository_reference,
     }
 
 

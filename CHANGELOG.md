@@ -3,6 +3,36 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.5 - 2026-05-14
+
+### Compatibility Impact
+
+No migration is required. This patch clarifies how the first-run prompt names
+the target workspace repository; it does not change schemas, validation
+behavior, or catalog object formats.
+
+### Added
+
+- Added rendered repository references to the company workspace README prompt
+  so copied prompts can tell an AI exactly which repo to connect to.
+
+### Changed
+
+- Updated workspace template rendering to derive repository slug and GitHub URL
+  from `.draft/workspace.yaml` repository metadata.
+
+### Fixed
+
+- Fixed the onboarding prompt gap where a copied company README prompt could
+  still be ambiguous about which repo the AI should use.
+
+### Migration Notes
+
+- Existing workspaces can continue unchanged.
+- To get repo-specific prompts in existing workspaces, add `repository`
+  metadata to `.draft/workspace.yaml` and refresh or update the workspace
+  README.
+
 ## 0.13.4 - 2026-05-14
 
 ### Compatibility Impact

@@ -81,6 +81,10 @@ Questions:
 > What should the workspace display name be, for example "Acme DRAFT
 > Workspace"?
 
+Record the repo metadata in `.draft/workspace.yaml` before rendering templates:
+provider, owner, repo name, and default branch. The generated README prompt
+should tell the AI exactly which repo to connect to.
+
 ### 2. Business Navigation
 
 Define enough business taxonomy for people to browse the catalog.
