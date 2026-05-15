@@ -3,6 +3,41 @@
 All notable DRAFT Framework changes are recorded here. Every release requires
 notes, including patch releases.
 
+## 0.13.6 - 2026-05-14
+
+### Compatibility Impact
+
+No migration is required. This patch simplifies the workspace README prompt and
+removes obsolete local app commands; it does not change schemas, validation
+behavior, or catalog object formats.
+
+### Added
+
+- Added explicit fallback prompt language telling the AI assistant to stop and
+  provide actionable enablement steps when it cannot connect to the repo,
+  inspect files, or write changes back.
+
+### Changed
+
+- Changed the workspace README prompt so it speaks directly to the AI
+  assistant, tells it to read the repo bootstrap, and tells it to stop with
+  actionable setup instructions when repo access is incomplete.
+- Removed the obsolete `Local Commands` section from the workspace README
+  template now that the `draft-table` app is not part of the launch path.
+
+### Fixed
+
+- Fixed the onboarding prompt duplication where the README repeated Draftsman
+  instructions that should be loaded from the repo bootstrap instead.
+- Fixed stale README guidance that still referenced the non-launch `draft-table`
+  app workflow.
+
+### Migration Notes
+
+- Existing workspaces can continue unchanged.
+- Existing company READMEs can refresh from the workspace template or apply the
+  same prompt simplification locally.
+
 ## 0.13.5 - 2026-05-14
 
 ### Compatibility Impact

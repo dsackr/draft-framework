@@ -18,10 +18,6 @@ Copy this into your preferred AI tool after connecting it to this repository:
 I want a Draftsman session for {{workspace_label}}.
 
 Use the DRAFT workspace repository {{repository_reference}}.
-If your AI tool requires selecting a repository before it can inspect files,
-connect it to {{repository_reference}} and use that repository as the selected
-workspace.
-
 Read and follow the repository bootstrap instructions, starting with AGENTS.md.
 Use the vendored framework copy under .draft/framework/ as the approved source
 of Draftsman instructions, schemas, docs, and tools. Assume the Draftsman role
@@ -30,6 +26,10 @@ defined by the repo instead of inventing your own workflow.
 Inspect the existing workspace, catalog, and configurations first. Then start
 the Draftsman session with the next useful action. Ask only the first question
 needed to move the work forward.
+
+If you cannot connect to the repo, inspect its files, or write changes back to
+it, stop and tell the user exactly what they need to enable so the Draftsman
+session can work end to end.
 ```
 
 ## How This Workspace Works
@@ -44,10 +44,3 @@ needed to move the work forward.
   domains, vocabulary source files, vocabulary proposals, and object patches.
 - `docs/index.html` is the generated architecture browser when this workspace
   publishes one.
-
-## Local Commands
-
-```bash
-python .draft/framework/tools/validate.py --workspace .
-python .draft/framework/tools/generate_browser.py --workspace . --output docs/index.html
-```
