@@ -2866,6 +2866,20 @@ html, body {
   flex-direction: column;
   gap: 3px;
 }
+/* ── Requirement group section heading (third-party compliance packs) */
+.rg-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin: 20px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
 /* ── SDP pillar + object tile grids ─────────────────────────────── */
 .sdp-pillar-grid .home-tile { min-height: 160px; }
 .sdp-object-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
