@@ -1847,10 +1847,18 @@ function subviewHeaderMarkup(backLabel, backTarget, title, subtitle, metaHtml = 
   `;
 }
 
-// ── Requirement Group classifier ───────────────────────────────────
+// ── Requirement Group classifiers ──────────────────────────────────
+// "Built-in" means authored and maintained by the DRAFT Framework itself.
+// Third-party compliance packs (NIST, SOC 2, TX-RAMP, etc.) have their own
+// authority and are distributed as plug-ins — they live with company groups
+// in the UI, not in "Built-In DRAFT Configurations".
 function isBuiltInGroup(group) {
-  return (group.authority?.name === 'DRAFT Framework') ||
-         (group.provider?.id === 'provider.draft-framework');
+  return group.authority?.name === 'DRAFT Framework';
+}
+
+function isThirdPartyGroup(group) {
+  const a = group.authority?.name;
+  return !!a && a !== 'DRAFT Framework';
 }
 
 // ── Requirement Groups list view ────────────────────────────────────
@@ -1864,20 +1872,34 @@ function renderRequirementGroupsView({ builtIn = false } = {}) {
   renderSidebarContent('');
 
   const allGroups = (browserData.requirements?.groups || []);
-  const groups = allGroups.filter(g => builtIn ? isBuiltInGroup(g) : !isBuiltInGroup(g));
-  // Company view: active first, then inactive. Built-in: always-on first, then by name.
-  const sorted = [...groups].sort((a, b) => {
+  const sortGroups = gs => [...gs].sort((a, b) => {
     const aActive = a.active || a.activation === 'always';
     const bActive = b.active || b.activation === 'always';
     if (aActive !== bActive) return aActive ? -1 : 1;
     return (a.name || '').localeCompare(b.name || '');
   });
-  const activeCount = sorted.filter(g => g.active || g.activation === 'always').length;
-  const backTarget = 'home';
-  const title = builtIn ? 'Built-In DRAFT Configurations' : 'Requirement Groups';
-  const subtitle = `${sorted.length} group${sorted.length === 1 ? '' : 's'} · ${activeCount} active`;
 
-  const groupCards = sorted.map(group => {
+  let sections, title, subtitle;
+  if (builtIn) {
+    const groups = sortGroups(allGroups.filter(g => isBuiltInGroup(g)));
+    const activeCount = groups.filter(g => g.active || g.activation === 'always').length;
+    title = 'Built-In DRAFT Configurations';
+    subtitle = `${groups.length} group${groups.length === 1 ? '' : 's'} · ${activeCount} active`;
+    sections = [{ heading: null, groups, thirdParty: false }];
+  } else {
+    const companyGroups = sortGroups(allGroups.filter(g => !isBuiltInGroup(g) && !isThirdPartyGroup(g)));
+    const thirdPartyGroups = sortGroups(allGroups.filter(g => isThirdPartyGroup(g)));
+    const totalCount = companyGroups.length + thirdPartyGroups.length;
+    const activeCount = [...companyGroups, ...thirdPartyGroups].filter(g => g.active || g.activation === 'always').length;
+    title = 'Requirement Groups';
+    subtitle = `${totalCount} group${totalCount === 1 ? '' : 's'} · ${activeCount} active`;
+    sections = [
+      { heading: null, groups: companyGroups, thirdParty: false },
+      { heading: 'Third-Party Compliance Packs', groups: thirdPartyGroups, thirdParty: true },
+    ];
+  }
+
+  function renderGroupCard(group, thirdParty) {
     const fullGroup = objectLookup[group.uid] || {};
     const requirements = Array.isArray(fullGroup.requirements) ? fullGroup.requirements : [];
     const requiredCount = requirements.filter(r => r.requirementMode === 'required').length;
@@ -1886,13 +1908,16 @@ function renderRequirementGroupsView({ builtIn = false } = {}) {
     const isActive = group.active || isAlwaysOn;
     const badgeClass = isAlwaysOn ? 'badge-always-on' : (isActive ? 'badge-active' : 'badge-inactive');
     const badgeLabel = isAlwaysOn ? 'Always On' : (isActive ? 'Active' : 'Inactive');
-    const authorityLabel = builtIn && group.authority?.shortName ? group.authority.shortName : null;
+    const authorityName = group.authority?.shortName || group.authority?.name || null;
+    const authorityBadge = (thirdParty || builtIn) && authorityName
+      ? `<span class="badge badge-inactive">${escapeHtml(authorityName)}</span>`
+      : '';
     return `
       <button class="rg-card ${isActive ? '' : 'rg-inactive'}" data-nav-rg="${escapeHtml(group.uid)}">
         <div class="rg-card-header">
           <span class="rg-name">${escapeHtml(group.name || group.uid)}</span>
           <span class="badge ${badgeClass}">${badgeLabel}</span>
-          ${authorityLabel ? `<span class="badge badge-inactive">${escapeHtml(authorityLabel)}</span>` : ''}
+          ${authorityBadge}
         </div>
         <div class="rg-card-counts">
           <span class="badge badge-inactive">${group.requirementCount || requirements.length} requirements</span>
@@ -1902,20 +1927,35 @@ function renderRequirementGroupsView({ builtIn = false } = {}) {
         ${group.description ? `<p class="rg-card-desc">${escapeHtml(group.description)}</p>` : ''}
       </button>
     `;
+  }
+
+  const sectionsHtml = sections.map(({ heading, groups, thirdParty }) => {
+    if (!groups.length && !heading) return '<p class="empty-state">No requirement groups found.</p>';
+    if (!groups.length) return '';
+    const headingHtml = heading
+      ? `<div class="rg-section-heading">
+           <span>${escapeHtml(heading)}</span>
+           <span class="badge badge-inactive">${groups.length}</span>
+         </div>`
+      : '';
+    return headingHtml + groups.map(g => renderGroupCard(g, thirdParty)).join('');
   }).join('');
 
   pageRoot.innerHTML = `
     <div class="view-shell">
       ${topNavMarkup()}
-      ${subviewHeaderMarkup('Home', backTarget, title, subtitle)}
+      ${subviewHeaderMarkup('Home', 'home', title, subtitle)}
       <div class="rg-list">
-        ${groupCards || `<p class="empty-state">No ${builtIn ? 'built-in' : 'company'} requirement groups found.</p>`}
+        ${sectionsHtml}
       </div>
     </div>
   `;
 
   pageRoot.querySelectorAll('[data-nav-rg]').forEach(btn => {
-    btn.addEventListener('click', () => renderRequirementGroupDetailView(btn.dataset.navRg, { builtIn }));
+    btn.addEventListener('click', () => {
+      const group = allGroups.find(g => g.uid === btn.dataset.navRg);
+      renderRequirementGroupDetailView(btn.dataset.navRg, { builtIn: group ? isBuiltInGroup(group) : builtIn });
+    });
   });
   attachExecutiveHandlers();
   attachTopNavHandlers();
@@ -2457,9 +2497,11 @@ function renderExecutiveView() {
   const vocabCount = Object.keys(vocab).length;
   const pillarCount = (browserData.businessTaxonomy?.pillars || []).length;
   const rgGroups = browserData.requirements?.groups || [];
-  const companyRgGroups = rgGroups.filter(g => !isBuiltInGroup(g));
+  const companyRgGroups = rgGroups.filter(g => !isBuiltInGroup(g) && !isThirdPartyGroup(g));
+  const thirdPartyRgGroups = rgGroups.filter(g => isThirdPartyGroup(g));
   const builtInRgGroups = rgGroups.filter(g => isBuiltInGroup(g));
-  const activeRgCount = companyRgGroups.filter(g => g.active || g.activation === 'always').length;
+  const allNonDraftGroups = [...companyRgGroups, ...thirdPartyRgGroups];
+  const activeRgCount = allNonDraftGroups.filter(g => g.active || g.activation === 'always').length;
   const activeBuiltInCount = builtInRgGroups.filter(g => g.active || g.activation === 'always').length;
   const sdps = (browserData.objects || []).filter(o => o.type === 'software_deployment_pattern');
   const targetSet = new Set();
@@ -2493,10 +2535,10 @@ function renderExecutiveView() {
   ];
 
   const configTiles = [
-    makeTile('✅', 'Requirement Groups', `${activeRgCount} of ${companyRgGroups.length} active — walk requirements`, companyRgGroups.length, 'requirement-groups'),
+    makeTile('✅', 'Requirement Groups', `${activeRgCount} of ${allNonDraftGroups.length} active${thirdPartyRgGroups.length ? ` · ${thirdPartyRgGroups.length} compliance pack${thirdPartyRgGroups.length === 1 ? '' : 's'}` : ''}`, allNonDraftGroups.length, 'requirement-groups'),
     makeTile('📋', 'Vocabulary Lists', 'Governed choices for deployment targets, protocols, zones, and more', vocabCount, 'vocabularies'),
     makeTile('🏛', 'Business Taxonomy', 'Business pillars and strategy domains', pillarCount, 'taxonomies'),
-    makeTile('🔧', 'Built-In DRAFT Configurations', `NIST, SOC 2, TX-RAMP, and DRAFT definition checklists · ${activeBuiltInCount} active`, builtInRgGroups.length, 'built-in-configs'),
+    makeTile('🔧', 'Built-In DRAFT Configurations', `Framework-provided checklists and operational conformance checks · ${activeBuiltInCount} active`, builtInRgGroups.length, 'built-in-configs'),
   ];
 
   pageRoot.innerHTML = `
