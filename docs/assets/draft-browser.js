@@ -359,6 +359,14 @@ function syncHashForTeamsView() {
   setHashState({ view: 'teams' });
 }
 
+function syncHashForTeamDetailView(teamId) {
+  setHashState({ view: 'team-detail', id: teamId });
+}
+
+function syncHashForTeamTypeView(teamId, objectType) {
+  setHashState({ view: 'team-type', id: teamId, objectType });
+}
+
 function syncHashForSdpsByPillarView() {
   setHashState({ view: 'sdps-by-pillar' });
 }
@@ -440,6 +448,20 @@ function applyRouteFromHash() {
     return;
   }
   if (view === 'teams') {
+    renderTeamsView();
+    return;
+  }
+  if (view === 'team-detail') {
+    const teamId = params.get('id');
+    if (teamId) { renderTeamDetailView(teamId); return; }
+    renderTeamsView();
+    return;
+  }
+  if (view === 'team-type') {
+    const teamId = params.get('id');
+    const objectType = params.get('objectType');
+    if (teamId && objectType) { renderTeamTypeObjectsView(teamId, objectType); return; }
+    if (teamId) { renderTeamDetailView(teamId); return; }
     renderTeamsView();
     return;
   }
@@ -2297,7 +2319,45 @@ function renderDeploymentTargetsView() {
   attachObjectLinkHandlers(pageRoot);
 }
 
-// ── Teams view — objects grouped by owner.team ──────────────────────
+// ── Shared team helpers ─────────────────────────────────────────────
+const TEAM_TYPES = ['software_deployment_pattern','reference_architecture','runtime_service','data_at_rest_service','edge_gateway_service','product_service','host'];
+const TEAM_TYPE_LABELS = {
+  software_deployment_pattern: 'Deployment Patterns',
+  reference_architecture: 'Reference Architectures',
+  runtime_service: 'Runtime Services',
+  data_at_rest_service: 'Data-at-Rest Services',
+  edge_gateway_service: 'Edge / Gateway Services',
+  product_service: 'Product Services',
+  host: 'Hosts',
+};
+const TEAM_TYPE_ICONS = {
+  software_deployment_pattern: '🗺',
+  reference_architecture: '📐',
+  runtime_service: '⚙️',
+  data_at_rest_service: '🗄',
+  edge_gateway_service: '🌐',
+  product_service: '📦',
+  host: '🖥',
+};
+
+function buildTeamMap() {
+  const teamMap = new Map();
+  const typeSet = new Set(TEAM_TYPES);
+  (browserData.objects || []).filter(o => typeSet.has(o.type)).forEach(obj => {
+    const team = obj.owner?.team || obj.definitionOwner?.team || '(unassigned)';
+    if (!teamMap.has(team)) teamMap.set(team, []);
+    teamMap.get(team).push(obj);
+  });
+  return teamMap;
+}
+
+function teamDisplayName(teamId) {
+  const vocabTeams = browserData.vocabulary?.teams?.values || [];
+  const match = vocabTeams.find(t => t.id === teamId);
+  return match?.name || teamId;
+}
+
+// ── Teams tile view ─────────────────────────────────────────────────
 function renderTeamsView() {
   currentMode = 'teams';
   currentDetailId = null;
@@ -2307,48 +2367,16 @@ function renderTeamsView() {
   syncHashForTeamsView();
   renderSidebarContent('');
 
-  const TEAM_TYPES = new Set(['software_deployment_pattern','reference_architecture','runtime_service','data_at_rest_service','edge_gateway_service','product_service','host']);
-  const TYPE_LABELS = {
-    software_deployment_pattern: 'Deployment Patterns',
-    reference_architecture: 'Reference Architectures',
-    runtime_service: 'Runtime Services',
-    data_at_rest_service: 'Data-at-Rest Services',
-    edge_gateway_service: 'Edge / Gateway Services',
-    product_service: 'Product Services',
-    host: 'Hosts',
-  };
-  const teamMap = new Map();
-  const unassigned = [];
-  (browserData.objects || []).filter(o => TEAM_TYPES.has(o.type)).forEach(obj => {
-    const team = (obj.owner?.team) || (obj.definitionOwner?.team) || null;
-    if (!team) { unassigned.push(obj); return; }
-    if (!teamMap.has(team)) teamMap.set(team, []);
-    teamMap.get(team).push(obj);
-  });
-  if (unassigned.length) teamMap.set('(unassigned)', unassigned);
-
-  const teamCards = [...teamMap.entries()].map(([teamName, objects]) => {
-    // Group by type within team
-    const byType = {};
-    objects.forEach(obj => {
-      if (!byType[obj.type]) byType[obj.type] = [];
-      byType[obj.type].push(obj);
-    });
-    const typeGroups = Object.entries(byType).map(([type, objs]) => `
-      <div class="team-object-group">
-        <p class="team-object-group-label">${escapeHtml(TYPE_LABELS[type] || type)}</p>
-        <div class="team-object-links">
-          ${objs.map(obj => `<span class="ard-link" data-object-link="${escapeHtml(obj.uid || '')}">${escapeHtml(obj.name || obj.uid || '')}</span>`).join('')}
-        </div>
-      </div>
-    `).join('');
+  const teamMap = buildTeamMap();
+  const tiles = [...teamMap.entries()].map(([teamId, objects]) => {
+    const label = teamDisplayName(teamId);
+    const count = objects.length;
     return `
-      <div class="team-card">
-        <div class="team-card-header">
-          <span>${escapeHtml(teamName)}</span>
-          <span class="badge badge-inactive">${objects.length} object${objects.length === 1 ? '' : 's'}</span>
-        </div>
-        <div class="team-objects">${typeGroups}</div>
+      <div class="home-tile team-tile" role="button" tabindex="0"
+           data-executive-target="team-detail:${escapeHtml(teamId)}">
+        <span class="home-tile-icon">👥</span>
+        <span class="home-tile-title">${escapeHtml(label)}</span>
+        <span class="home-tile-count">${count} object${count === 1 ? '' : 's'}</span>
       </div>
     `;
   }).join('');
@@ -2357,8 +2385,94 @@ function renderTeamsView() {
     <div class="view-shell">
       ${topNavMarkup()}
       ${subviewHeaderMarkup('Home', 'home', 'Teams', `${teamMap.size} team${teamMap.size === 1 ? '' : 's'} with owned objects`)}
-      <div class="teams-list">
-        ${teamCards || '<p class="empty-state">No team ownership assigned to any objects yet.</p>'}
+      <div class="home-tiles team-tile-grid">
+        ${tiles || '<p class="empty-state">No team ownership assigned to any objects yet.</p>'}
+      </div>
+    </div>
+  `;
+
+  attachExecutiveHandlers();
+  attachTopNavHandlers();
+  attachSidebarHandlers();
+}
+
+// ── Team detail — object type tiles ────────────────────────────────
+function renderTeamDetailView(teamId) {
+  currentMode = 'team-detail';
+  currentDetailId = null;
+  destroyDetailCy();
+  destroySdpGraphCy();
+  destroyImpactCy();
+  syncHashForTeamDetailView(teamId);
+  renderSidebarContent('');
+
+  const teamMap = buildTeamMap();
+  if (!teamMap.has(teamId)) { renderTeamsView(); return; }
+
+  const objects = teamMap.get(teamId);
+  const byType = {};
+  objects.forEach(obj => {
+    if (!byType[obj.type]) byType[obj.type] = [];
+    byType[obj.type].push(obj);
+  });
+
+  const label = teamDisplayName(teamId);
+  const tiles = TEAM_TYPES.filter(t => byType[t]?.length).map(type => {
+    const count = byType[type].length;
+    return `
+      <div class="home-tile team-type-tile" role="button" tabindex="0"
+           data-executive-target="team-type:${escapeHtml(teamId)}:${escapeHtml(type)}">
+        <span class="home-tile-icon">${TEAM_TYPE_ICONS[type] || '📄'}</span>
+        <span class="home-tile-title">${escapeHtml(TEAM_TYPE_LABELS[type] || type)}</span>
+        <span class="home-tile-count">${count} object${count === 1 ? '' : 's'}</span>
+      </div>
+    `;
+  }).join('');
+
+  pageRoot.innerHTML = `
+    <div class="view-shell">
+      ${topNavMarkup()}
+      ${subviewHeaderMarkup('Teams', 'teams', escapeHtml(label), `${objects.length} owned object${objects.length === 1 ? '' : 's'}`)}
+      <div class="home-tiles team-type-grid">
+        ${tiles || '<p class="empty-state">No owned objects found for this team.</p>'}
+      </div>
+    </div>
+  `;
+
+  attachExecutiveHandlers();
+  attachTopNavHandlers();
+  attachSidebarHandlers();
+}
+
+// ── Team type objects — clickable object list for one type ──────────
+function renderTeamTypeObjectsView(teamId, objectType) {
+  currentMode = 'team-type-objects';
+  currentDetailId = null;
+  destroyDetailCy();
+  destroySdpGraphCy();
+  destroyImpactCy();
+  syncHashForTeamTypeView(teamId, objectType);
+  renderSidebarContent('');
+
+  const teamMap = buildTeamMap();
+  if (!teamMap.has(teamId)) { renderTeamsView(); return; }
+
+  const objects = (teamMap.get(teamId) || []).filter(o => o.type === objectType);
+  const label = teamDisplayName(teamId);
+  const typeLabel = TEAM_TYPE_LABELS[objectType] || objectType;
+
+  const objectLinks = objects.map(obj => `
+    <span class="ard-link team-object-link" data-object-link="${escapeHtml(obj.uid || '')}">
+      ${escapeHtml(obj.name || obj.uid || '')}
+    </span>
+  `).join('');
+
+  pageRoot.innerHTML = `
+    <div class="view-shell">
+      ${topNavMarkup()}
+      ${subviewHeaderMarkup(escapeHtml(label), `team-detail:${escapeHtml(teamId)}`, escapeHtml(typeLabel), `${objects.length} object${objects.length === 1 ? '' : 's'}`)}
+      <div class="team-objects-list">
+        ${objectLinks || '<p class="empty-state">No objects found.</p>'}
       </div>
     </div>
   `;
@@ -2838,6 +2952,15 @@ function navigateExecutiveTarget(target) {
   }
   if (target === 'teams') {
     renderTeamsView();
+    return;
+  }
+  if (target.startsWith('team-detail:')) {
+    renderTeamDetailView(target.slice('team-detail:'.length));
+    return;
+  }
+  if (target.startsWith('team-type:')) {
+    const parts = target.slice('team-type:'.length).split(':');
+    renderTeamTypeObjectsView(parts[0], parts[1]);
     return;
   }
   if (target === 'capabilities') {
