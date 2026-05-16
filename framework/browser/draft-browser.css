@@ -2880,6 +2880,19 @@ html, body {
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
 }
+/* ── Team object type list (final drill-down level) ─────────────── */
+.team-objects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 0;
+}
+.team-object-link {
+  font-size: 0.92rem;
+  padding: 6px 2px;
+  border-bottom: 1px solid var(--border);
+}
+.team-object-link:last-child { border-bottom: none; }
 /* ── SDP pillar + object tile grids ─────────────────────────────── */
 .sdp-pillar-grid .home-tile { min-height: 160px; }
 .sdp-object-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
